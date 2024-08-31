@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct BootHillGMAppApp: App {
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(GameCore(aiService: AIService()))
         }
     }
 }

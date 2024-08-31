@@ -4,7 +4,7 @@ struct ContentView: View {
     @StateObject private var viewModel = AITestViewModel()
     
     var body: some View {
-        NavigationView {
+        NavigationView() {
             VStack {
                 Text("BootHillGM")
                     .font(.largeTitle)

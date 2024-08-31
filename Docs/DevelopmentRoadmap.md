@@ -113,5 +113,3 @@
 6. First Major Post-MVP Update
 
 Note: This roadmap is aligned with the component breakdown and recommended development order. Progress will be made as time allows, and the order of tasks may be adjusted based on emerging needs or insights gained during development.
-
-Last Updated: 2024-08-31

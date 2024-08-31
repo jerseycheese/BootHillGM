@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct CharacterCreationView: View {
+    @EnvironmentObject var gameCore: GameCore
     @StateObject private var viewModel = CharacterCreationViewModel()
     
     var body: some View {
@@ -30,17 +31,25 @@ struct CharacterCreationView: View {
         }
         .navigationTitle("Create Character")
         .onAppear {
-            viewModel.startConversation()
+            viewModel.startConversation(gameCore: gameCore)
         }
     }
 }
 
 class CharacterCreationViewModel: ObservableObject {
-    @Published var character = Character()
     @Published var conversationHistory: [String] = []
     @Published var userInput: String = ""
     
-    func startConversation() {
+    private var gameCore: GameCore?
+    private var character: GameCharacter?
+    private var currentStep: CreationStep = .name
+    
+    enum CreationStep {
+        case name, age, occupation, attributes, skills, background, complete
+    }
+    
+    func startConversation(gameCore: GameCore) {
+        self.gameCore = gameCore
         addAIMessage("Welcome to character creation! Let's start by choosing your character's name. What would you like your character to be called?")
     }
     
@@ -52,32 +61,92 @@ class CharacterCreationViewModel: ObservableObject {
     
     private func addUserMessage(_ message: String) {
         conversationHistory.append("You: \(message)")
-        character.addToConversationHistory("You: \(message)")
     }
     
     private func addAIMessage(_ message: String) {
         conversationHistory.append("AI: \(message)")
-        character.addToConversationHistory("AI: \(message)")
     }
     
     private func processUserInput(_ input: String) {
-        // This is a placeholder for AI-driven conversation logic
-        // In the future, this would interact with the AI service
+        guard let gameCore = gameCore else {
+            print("Error: GameCore not initialized")
+            return
+        }
         
-        if character.name.isEmpty {
-            character.name = input
-            addAIMessage("Great! Your character's name is \(character.name). Now, how old is \(character.name)?")
-        } else if character.age == 0 {
+        switch currentStep {
+        case .name:
+            gameCore.createCharacter(name: input) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success(let newCharacter):
+                        self.character = newCharacter
+                        self.currentStep = .age
+                        self.addAIMessage("Great! Your character's name is \(newCharacter.name). How old is \(newCharacter.name)?")
+                    case .failure(let error):
+                        self.addAIMessage("I'm sorry, there was an error creating your character: \(error.localizedDescription)")
+                    }
+                }
+            }
+        case .age:
             if let age = Int(input) {
-                character.age = age
-                addAIMessage("\(character.name) is \(character.age) years old. What is \(character.name)'s occupation?")
+                character?.age = age
+                currentStep = .occupation
+                addAIMessage("\(character?.name ?? "Your character") is \(age) years old. What is their occupation?")
             } else {
                 addAIMessage("I'm sorry, I didn't understand that. Please enter a number for your character's age.")
             }
-        } else if character.occupation.isEmpty {
-            character.occupation = input
-            addAIMessage("Excellent! \(character.name) is a \(character.age)-year-old \(character.occupation). Your character creation is complete for now.")
-            // In the future, this would continue with skills, attributes, and other details
+        case .occupation:
+            character?.occupation = input
+            currentStep = .attributes
+            addAIMessage("Excellent! \(character?.name ?? "Your character") is a \(input). Now let's determine their attributes. We'll go through each attribute, and you can assign a value from 1 to 10, with 10 being the highest. Let's start with Strength. What's their Strength value (1-10)?")
+        case .attributes:
+            if let attributeValue = Int(input), (1...10).contains(attributeValue) {
+                if character?.attributes.count ?? 0 < Attribute.allCases.count {
+                    let currentAttribute = Attribute.allCases[character?.attributes.count ?? 0]
+                    character?.attributes[currentAttribute] = attributeValue
+                    
+                    if character?.attributes.count ?? 0 < Attribute.allCases.count {
+                        let nextAttribute = Attribute.allCases[character?.attributes.count ?? 0]
+                        addAIMessage("Great! What's their \(nextAttribute.rawValue) value (1-10)?")
+                    } else {
+                        currentStep = .skills
+                        addAIMessage("Attributes are set. Now let's choose some skills. What skill would you like to add? Available skills are: \(Skill.allCases.map { $0.rawValue }.joined(separator: ", "))")
+                    }
+                }
+            } else {
+                addAIMessage("Please enter a valid number between 1 and 10 for the attribute value.")
+            }
+        case .skills:
+            if let skill = Skill(rawValue: input) {
+                if character?.skills.count ?? 0 < 5 {
+                    character?.skills[skill] = 1 // Start with a basic proficiency
+                    addAIMessage("Added \(skill.rawValue) to your character's skills. Would you like to add another skill? (Yes/No)")
+                } else {
+                    currentStep = .background
+                    addAIMessage("You've added 5 skills to your character. Now, let's add some background. In a few sentences, describe your character's background and personality.")
+                }
+            } else if input.lowercased() == "no" {
+                currentStep = .background
+                addAIMessage("Alright, let's move on to your character's background. In a few sentences, describe your character's background and personality.")
+            } else if input.lowercased() != "yes" {
+                addAIMessage("I didn't recognize that skill. Available skills are: \(Skill.allCases.map { $0.rawValue }.joined(separator: ", ")). Or say 'No' to finish adding skills.")
+            }
+        case .background:
+            character?.background = input
+            currentStep = .complete
+            addAIMessage("Thank you for creating your character! Here's a summary of \(character?.name ?? "your character"):")
+            if let character = character {
+                addAIMessage("""
+                    Name: \(character.name)
+                    Age: \(character.age ?? 0)
+                    Occupation: \(character.occupation ?? "Unknown")
+                    Attributes: \(character.attributes.map { "\($0.key.rawValue): \($0.value)" }.joined(separator: ", "))
+                    Skills: \(character.skills.map { $0.key.rawValue }.joined(separator: ", "))
+                    Background: \(character.background ?? "Not provided")
+                    """)
+            }
+        case .complete:
+            addAIMessage("Character creation is complete. You can now start your adventure!")
         }
     }
 }
@@ -85,5 +154,6 @@ class CharacterCreationViewModel: ObservableObject {
 struct CharacterCreationView_Previews: PreviewProvider {
     static var previews: some View {
         CharacterCreationView()
+            .environmentObject(GameCore(aiService: AIService()))
     }
 }

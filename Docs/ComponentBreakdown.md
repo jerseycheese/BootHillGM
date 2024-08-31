@@ -70,5 +70,3 @@ This document outlines the main components of the BootHillGM project, their func
 This order allows for building core functionality first, then adding more complex systems. The UI is placed early to allow for testing and iterating on user interactions. Data Persistence is last as it depends on all other components being relatively stable.
 
 Note: While developing these components, work on multiple components may occur simultaneously due to their interconnected nature. This order is a general guideline and may need adjustment based on specific implementation details or challenges that arise during development.
-
-Last Updated: 2024-08-31

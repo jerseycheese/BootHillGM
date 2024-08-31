@@ -68,5 +68,3 @@ We have decided to use the Model-View-ViewModel (MVVM) architecture for the Boot
 3. Approach for modularizing the app if complexity significantly increases.
 
 This ADR will be reviewed and updated as the project progresses and new architectural decisions are made.
-
-Last Updated: 08-31-24

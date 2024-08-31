@@ -12,6 +12,8 @@
 		C24B40232C83A5A200B4EF5F /* GoogleGenerativeAI in Frameworks */ = {isa = PBXBuildFile; productRef = C24B40222C83A5A200B4EF5F /* GoogleGenerativeAI */; };
 		C24B40272C83A6EA00B4EF5F /* GenerativeAI-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C24B40262C83A6EA00B4EF5F /* GenerativeAI-Info.plist */; };
 		C24B40292C83AC5500B4EF5F /* AITestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C24B40282C83AC5500B4EF5F /* AITestViewModel.swift */; };
+		C24B402C2C83B4D500B4EF5F /* CharacterManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C24B402A2C83B4D500B4EF5F /* CharacterManager.swift */; };
+		C24B402D2C83B4D500B4EF5F /* TurnManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C24B402B2C83B4D500B4EF5F /* TurnManager.swift */; };
 		C2B5ACDF2C82535D004A13C0 /* BootHillGMAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B5ACDE2C82535D004A13C0 /* BootHillGMAppApp.swift */; };
 		C2B5ACE12C82535D004A13C0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B5ACE02C82535D004A13C0 /* ContentView.swift */; };
 		C2B5ACE32C825364004A13C0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C2B5ACE22C825364004A13C0 /* Assets.xcassets */; };
@@ -69,6 +71,8 @@
 		C24B401F2C8382A200B4EF5F /* GameCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreTests.swift; sourceTree = "<group>"; };
 		C24B40262C83A6EA00B4EF5F /* GenerativeAI-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GenerativeAI-Info.plist"; sourceTree = "<group>"; };
 		C24B40282C83AC5500B4EF5F /* AITestViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AITestViewModel.swift; path = BootHillGMApp/ViewModels/AITestViewModel.swift; sourceTree = SOURCE_ROOT; };
+		C24B402A2C83B4D500B4EF5F /* CharacterManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CharacterManager.swift; sourceTree = "<group>"; };
+		C24B402B2C83B4D500B4EF5F /* TurnManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TurnManager.swift; sourceTree = "<group>"; };
 		C2B5ACDB2C82535D004A13C0 /* BootHillGMApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BootHillGMApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2B5ACDE2C82535D004A13C0 /* BootHillGMAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootHillGMAppApp.swift; sourceTree = "<group>"; };
 		C2B5ACE02C82535D004A13C0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -217,6 +221,8 @@
 		C2B5AD092C8253B6004A13C0 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				C24B402A2C83B4D500B4EF5F /* CharacterManager.swift */,
+				C24B402B2C83B4D500B4EF5F /* TurnManager.swift */,
 				C2B5AD282C825695004A13C0 /* Character.swift */,
 				C2B5AD2A2C82569A004A13C0 /* NPC.swift */,
 				C2B5AD2C2C8256A2004A13C0 /* Inventory.swift */,
@@ -415,6 +421,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C2B5AD2F2C8256A9004A13C0 /* Quest.swift in Sources */,
+				C24B402C2C83B4D500B4EF5F /* CharacterManager.swift in Sources */,
 				C2B5AD0F2C825581004A13C0 /* AppDelegate.swift in Sources */,
 				C2B5AD452C825731004A13C0 /* Constraints.swift in Sources */,
 				C2B5AD332C8256C0004A13C0 /* CharacterCreationViewModel.swift in Sources */,
@@ -431,6 +438,7 @@
 				C2B5AD212C82563E004A13C0 /* QuestView.swift in Sources */,
 				C2B5AD312C8256B0004A13C0 /* Location.swift in Sources */,
 				C2B5AD2B2C82569A004A13C0 /* NPC.swift in Sources */,
+				C24B402D2C83B4D500B4EF5F /* TurnManager.swift in Sources */,
 				C2B5AD1F2C825635004A13C0 /* InventoryView.swift in Sources */,
 				C2B5AD112C825593004A13C0 /* SceneDelegation.swift in Sources */,
 				C2B5AD1D2C825627004A13C0 /* CharacterSheetView.swift in Sources */,

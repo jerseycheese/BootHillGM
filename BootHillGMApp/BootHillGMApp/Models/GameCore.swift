@@ -1,64 +1,15 @@
 import Foundation
 
-// TurnManager class moved into the same file
-class TurnManager: ObservableObject {
-    @Published private(set) var currentTurn: Turn?
-    private(set) var turnHistory: [Turn] = []
-    private var characterIds: [String] = []
-    
-    init(characterIds: [String]) {
-        self.characterIds = characterIds
-    }
-    
-    func startNewTurn() {
-        let turnNumber = (currentTurn?.turnNumber ?? 0) + 1
-        let activeCharacterId = getNextCharacterId()
-        let newTurn = Turn(turnNumber: turnNumber, activeCharacterId: activeCharacterId)
-        currentTurn = newTurn
-        turnHistory.append(newTurn)
-    }
-    
-    func endCurrentTurn() {
-        guard currentTurn != nil else { return }
-        startNewTurn()
-    }
-    
-    private func getNextCharacterId() -> String {
-        guard let currentTurn = currentTurn,
-              let currentIndex = characterIds.firstIndex(of: currentTurn.activeCharacterId) else {
-            return characterIds.first ?? ""
-        }
-        let nextIndex = (currentIndex + 1) % characterIds.count
-        return characterIds[nextIndex]
-    }
-    
-    func addAction(_ action: String) {
-        currentTurn?.actions.append(action)
-    }
-}
-
-struct Turn {
-    let turnNumber: Int
-    let activeCharacterId: String
-    var actions: [String] = []
-    let timestamp: Date
-    
-    init(turnNumber: Int, activeCharacterId: String) {
-        self.turnNumber = turnNumber
-        self.activeCharacterId = activeCharacterId
-        self.timestamp = Date()
-    }
-}
-
 class GameCore: ObservableObject {
-    @Published var currentPlayer: Player?
     @Published var gameState: GameState = .notStarted
-    @Published var players: [Player] = []
     @Published var currentLocation: Location?
     
     private(set) var turnManager: TurnManager?
+    private(set) var characterManager: CharacterManager
     
-    init() {}
+    init(aiService: AIService) {
+        self.characterManager = CharacterManager(aiService: aiService)
+    }
     
     func startNewGame() throws {
         guard gameState == .notStarted else {
@@ -66,9 +17,9 @@ class GameCore: ObservableObject {
         }
         gameState = .inProgress
         
-        // Initialize TurnManager with player IDs
-        let playerIds = players.map { $0.id }
-        turnManager = TurnManager(characterIds: playerIds)
+        // Initialize TurnManager with character IDs
+        let characterIds = characterManager.characters.map { $0.id }
+        turnManager = TurnManager(characterIds: characterIds)
         turnManager?.startNewTurn()
         
         log("New game started")
@@ -87,8 +38,16 @@ class GameCore: ObservableObject {
         log("Advanced to turn \(turnManager?.currentTurn?.turnNumber ?? 0)")
     }
     
-    func addPlayer(_ player: Player) {
-        players.append(player)
+    func createCharacter(name: String, completion: @escaping (Result<GameCharacter, Error>) -> Void) {
+        characterManager.createCharacter(name: name) { result in
+            switch result {
+            case .success(let character):
+                self.log("Character created: \(character.name)")
+            case .failure(let error):
+                self.log("Failed to create character: \(error.localizedDescription)")
+            }
+            completion(result)
+        }
     }
     
     private func log(_ message: String) {
@@ -105,14 +64,6 @@ enum GameState {
 enum GameError: Error {
     case gameAlreadyInProgress
     case gameNotInProgress
-}
-
-class Player: Identifiable {
-    let id: String
-    
-    init(id: String) {
-        self.id = id
-    }
 }
 
 class Location {}

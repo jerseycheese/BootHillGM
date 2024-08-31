@@ -120,5 +120,3 @@ BootHillGM features a text-based interface with minimal graphics, designed for i
 - Implement haptic feedback for key interactions
 
 Note: These wireframes serve as a guideline for the UI implementation. The actual design may evolve during development based on usability testing and technical considerations.
-
-Last Updated: 2024-08-31
