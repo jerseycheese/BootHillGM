@@ -1,0 +1,1659 @@
+﻿THE GAME
+GAME MATERIALS & EQUIPMENT
+HOW THE GAME IS PLAYED
+TIME & GAME SCALE
+Tactical Tabletop Play
+Campaign Play
+BASIC RULES
+SETTING UP GAME CHARACTERS
+DETERMINATION OF INDIVIDUAL ABILITIES
+SPEED
+GUN ACCURACY (Includes All Firearms) and THROWING ACCURACY (Includes Knives, Spears and Bows)
+STRENGTH
+BRAVERY
+EXPERIENCE
+IMPROVING CHARACTER ABILITIES
+Initial Modification (Player characters only)
+Survival Modification (All characters)
+EQUIPPING THE CHARACTER
+PRICE CHART
+BASE NUMBERS (FIRST SHOT & "TO HIT")
+First Shot Determination
+Weapon Speed Class | Speed Modifier
+Hit Determination
+TURN SEQUENCE
+Game Turn Sequence Outline
+A. Random Movement Determination
+B. Firing resolution
+C. Brawls
+MOVEMENT
+COMBAT
+WEAPONS
+WEAPONS CHART
+OBSERVATION & SIGHTING
+TARGET SELECTION
+FIRST SHOT DETERMINATION CHART
+HIT DETERMINATION CHART
+WOUNDS
+SHOTGUN/SCATTER GUN EFFECTS TABLE
+WOUND CHART
+BRAWLS
+BRAWLING CHARTS
+CAMPAIGNS
+CAMPAIGN GAME SUGGESTIONS
+STRATEGIC MOUNTED MOVEMENT TABLE
+POSSES
+TRACKING
+AGING & PHYSICAL CHARACTERISTICS
+HEALING WOUNDS
+THE COST OF LIVING
+MISCELLANEOUS CHARACTERS
+THE FASTEST GUNS THAT EVER LIVED
+BOOT HILL CHARACTER RECORD
+Personal Information
+Abilities
+Gunfights
+Weapons
+Personal Accuracy
+Distribution of All Items Carried
+Other Items Owned
+Money & Valuables
+Major Land Holdings or Businesses
+Brief Personal History
+Hereditary Family Friends
+Hereditary Family Enemies
+Major Non-Player Characters Known
+Major Highlights of Character's Life
+THE GAME
+BOOT HILL is designed to function as a game in two ways — as a set of rules for man-to-man gunfighting action, and as an outline guide for setting up quasi-historical or fictional role-playing campaigns for an ongoing series of continuing events. Although in the first context alone BOOT HILL will provide many hours of exciting action, it is in the latter way that the game fully reveals all its enjoyable possibilities — as player characters pursue their individual goals and interact with each other in a continuing game situation. With a good mix of interesting players and a competent gamemaster/referee there will certainly be no lack of action — as sheep ranchers and cattlemen quarrel, ambitious railroad men push their rights of way onward, lawmen pursue outlaws and rustlers, unscrupulous businessmen expand their holdings, hostile Indians threaten, and much more.
+Players will find that, once learned, the mechanics of play for BOOT HILL will be easily handled. This means that tabletop games can be played with a minimum of trouble and preparation, either with a referee or without.
+The larger campaign games will require a gamemaster. This individual is not a player himself, but rather functions as a moderator of all the game activity — from devising the details of the setting and campaign situation and the player characters' part within it, to moderating and overseeing all game action (not only that which is to occur on the tabletop, but also the considerable pursuits and intrigues which go on "behind the scenes"). A good referee must possess imagination, creativity, and a sense of fair play. No more than an average knowledge of the "Old West" is needed since the game is designed to be flexible and can be set up as desired with the information and suggestions given in this booklet. If the game is set up and conducted in a way which will be challenging and enjoyable to the players (as well as interesting to the referee), then it will be a success.
+This booklet is divided into several sections to allow the complexity and detail desired by the players. The BASIC RULES describe the mechanics of setting up game characters and how combat is handled. The ADVANCED RULES and OPTIONAL RULES give further details and additional rules for more in-depth play, including actions which may be outside of normal gunfights and barroom brawls. The section on CAMPAIGNS gives further guidelines for continuing game scenarios, as well as a listing of suitable historical and fictional characters for possible inclusion in a campaign game. Finally, two historical situations which can be refought are listed in the SCENARIOS section, and one ("Gunfight at the OK Corral") is designed as a training game for new players.
+GAME MATERIALS & EQUIPMENT
+BOOT HILL in its boxed version includes this booklet, a pair of percentile dice, a set of gunfighter counters, and a game map which shows a fictional western town on one side (suitable for reference as well as tabletop play) and on the other side a fictional geographical area "somewhere in the Southwest", circa 1870-1890.
+Little other equipment is needed to play except for pencils and paper (players may find graph paper and/or hexagon paper useful in some instances), although serious players may wish to employ 25mm miniatures for game characters and HO scale (1:76) model buildings for tabletop play. Using such miniatures and buildings (especially when appropriately painted) will add a new dimension of "flavor" and visual impact to games of BOOT HILL. Old West-style buildings are available at most hobby stores, and a special line of "Western Gunfighter" miniatures is produced by Grenadier Models, Inc. which is ideally suited for use with BOOT HILL.
+HOW THE GAME IS PLAYED
+Playing BOOT HILL is quite simple. Since it is a role-playing game, each player participating takes on the persona of an individual character and controls his actions. In some cases, henchmen or associates will also be under his direction. In any event, the player takes the role of his character for the time that that individual is involved in the game situation (death, for instance, or a long jail term would remove that character from the game). The player makes the same decisions his character would make in the conduct of affairs (either in the heat of a gunfight if such a game is being played out on the tabletop, or the day-to-day activities if it is a campaign situation), and the combined actions of the entire cast of players as a whole (plus actions by non-player characters) make up an ever-changing game situation which is much like the unfolding story of a novel or movie script — except that no one knows exactly what might result or how the story might ultimately turn out! This unpredictability and open-ended nature is what makes any role-playing game enjoyable, and the often fast and furious action of BOOT HILL gives it an excitement all its own. Players should strive to take on the role of their game character and fully immerse themselves in the very enjoyable fantasy aspect of the game. If they do so, they will enjoy it even more ...
+Pre-arranged scenarios can be used for individual games (two such scenarios THE GUNFIGHT AT THE OK CORRAL and THE BATTLE OF COFFEYVILLE are included as appendices in this booklet) - and these games can be historically-based or constructed in any way desired. Setting up a bank robbery scenario for instance would be easy — splitting up the players as outlaws, citizens, sheriff, deputy, bank personnel, etc., arranging the location of buildings involved (using the town map provided or one drawn especially for the scenario) and handling any pursuit cross-country by using a hex map (which could well be the fictional area map within the game). The abilities and ratings of individual players are determined by dice rolling in the manner described in a following section (see SETTING UP GAME CHARACTERS) and once this is done the starting location of each character is noted and play begins. It is suggested that the first few games played be unrelated games of this type which (while enjoyable) will basically serve as training sessions.
+Once players become familiar with the game rules and mechanics they will find that the most enjoyable games are those that are tied together as part of a larger campaign (see CAMPAIGNS). In such a situation past events are reflected as closely as possible in successive games and each player has a stake in the future as well as a place in the status quo. Since players are in different positions with different objectives (as well as on both sides of the law) there will be enough conflict and contention to provide for plenty of interesting action (which will include the inevitable gunfights and shootouts which can be played as tabletop games). Some typical player character roles (depending upon the size of the campaign) would be: businessmen (banker, saloon keeper, newspaper owner, etc.), outlaws, lawmen (sheriff, deputy, Texas ranger, etc.), ranchers (cattleman or sheep rancher), Indian chiefs, gamblers, bounty hunters, hired guns, drifters, and so on.
+A campaign could be run with as few as 4 players and a referee although a referee is not strictly necessary in smaller games since players as a group can decide any questionable situations and together can put a check on any actions which tend to disrupt the smooth flow of a game (shooting anything which moves for instance quickly brings the wrath of the other players and the law down upon the head of the offender).
+A referee is always preferable in any size campaign and is a must for larger undertakings (which could easily encompass as many as 20 different players in different roles). When a referee moderates the action there is a secrecy aspect which the players can work to advantage and which can greatly add to the interest of the campaign. Thus the referee can relate information individually to each player depending upon the actions and position of his own character and each character will have his own outlook on the game situation since there will often be developments "behind the scenes" which will not be common knowledge to all. Likewise, secret plans can be made and related to the referee without the other players knowing of what transpires.
+In a campaign situation each player character will have his own identity and abilities (these are determined by dice rolling with a slight advantage to allow player characters to be above the norm). If this character is killed the player will have to take on another persona in the campaign (sometimes starting "from scratch" again in a similar character or in a position which is completely unrelated to the former). Note however that in a large game a player could conceivably take on the role of two different characters if carefully arranged and monitored by the referee. In such an instance the two roles would have to be completely independent and not subject to conflict or possible cooperation. For instance, a player could have one role as a major rancher who is seeking to expand his holdings and another character who is an outlaw specializing in stagecoach robberies. Obviously these two characters would have little cause to cooperate or conflict with each other so such an arrangement would provide two characters for the campaign (assuming the referee was agreeable) rather than only one.
+Campaigns can be as small or as expansive as desired, centering on a single town or a larger geographical area. Preparation can be minimal or as extensive as desired. While it is possible to structure rigid scenarios, freeform play will usually prove more interesting and challenging. It is easy to set up a town, give a few background details and allow the participants free rein thereafter. In no time at all lawmen will arrest troublemakers, gunfights will take place and Wells Fargo will lose yet another payroll to masked outlaws. This game isn't named BOOT HILL without reason!
+TIME & GAME SCALE
+Tactical Tabletop Play
+In man-to-man games on the tabletop or town map, each turn is considered as approximately ten seconds of time.
+If the town map provided with the game is being used, each square on the grid represents about six feet. If miniatures (and model buildings, if any) are being used, then 1" on the tabletop represents the same six-foot distance. For this reason, the listing of movement amounts and the ranges of weapons are given as a simple numerical amount only. For instance, a movement or range of 6 (36 scale feet) would correspond to either six spaces on the town map or six inches on the tabletop during a gunfight.
+Hot pursuit from a tactical game may move the opposing groups to the larger hex grid map, where each hex represents 2 miles. In such cases, pursuit turns can be handled as hourly until the pursued party either escapes or is forced into another tactical action.
+Campaign Play
+In a campaign game, the gamemaster moderates time according to the pace of the action, keeping track of a calendar as days, weeks, and months pass.
+Although activity could be on as immediate a level as day to day, weekly turns are often suitable. In such cases, the players would inform the referee of their character's intentions and activities for the upcoming week each turn, and he can moderate the combined ongoing actions of all participants on that basis.
+When an appropriate occurrence is about to take place, time can be temporarily "frozen" and the action can be moved to the tabletop for tactical games. Once resolved, the campaign as a whole is taken up again by the referee, who takes the results of the tactical action into account in all future happenings. For instance, two players who are outlaws might spend several weeks planning a stagecoach robbery, scouting out various holdup locations, checking stage schedules, and planning a hideout. Once preparations were complete, they would outline their plan to the gamemaster and indicate a time for their holdup attempt in the coming week. When that time arrived in the next turn, the gamemaster could arrange for a tabletop game of the robbery attempt, temporarily suspending all other activity until the attempt was resolved. (As an alternative, the referee could determine the results of the attempt himself if there was no need for a game to be fought out — for instance, if the robbery was a pushover job with no chance of failure).
+In most instances, players will not find their characters involved in every tabletop action that results in a campaign. This allows non-involved players to assume one-time roles as participant characters in the action being played out, while the involved players take their own character's role — for better or worse.
+The referee should never be constrained by a rigid timeframe, although he must handle the passage of time accurately, of course. If player activity were heavy, the passage of time could be slowed to allow numerous tabletop games within a given campaign turn. If player activity was minimal or primarily long-range in nature for a time, the referee could allow for the passage of weeks or months at a time, if reasonable.
+________________
+
+
+BASIC RULES
+SETTING UP GAME CHARACTERS
+DETERMINATION OF INDIVIDUAL ABILITIES
+At the beginning of each game or campaign, each participating player is assigned one personal character, and possibly one or more character "associates" (hirelings, flunkies, gang members, etc.). Players must then roll dice to determine the various abilities of each of their characters.
+Percentile dice, which are included with the game, are rolled to give a number between 1 and 100 for each ability category as described below. The dice are cast as a pair, with the colored die representing "tens" and the white die representing "ones", and are read as a number between 01 and 00 (100). For instance, if the dice are rolled and the colored die is a 5 and the white die is an 8, then the result of the roll is a 58.
+A separate percentile roll is made for each character for each of the individual abilities listed below: speed, gun accuracy, throwing accuracy, strength, bravery, and experience. The tables which follow outline the ratings which correspond to the numbers rolled in each category. The rolls should be recorded for each character, either on a sheet of paper, a note card, or on a BOOT HILL character sheet (a sample of which is included elsewhere in this booklet).
+Aging and physical characteristics are additional factors for characters in campaign games, and both aspects may affect the abilities of a character (see the appropriate section under CAMPAIGNS).
+SPEED
+Die Score
+	Description
+	Ability Score
+	01-05
+	Slow
+	- 5
+	06-10
+	Below Average
+	- 2
+	11-20
+	Average
+	0
+	21-35
+	Above Average
+	+ 2
+	36-50
+	Quick
+	+ 4
+	51-65
+	Very Quick
+	+ 6
+	66-80
+	Fast
+	+ 9
+	81-90
+	Very Fast
+	+12
+	91-95
+	Lightning
+	+15
+	96
+	Greased Lightning
+	+18
+	97
+	Greased Lightning
+	+19
+	98
+	Greased Lightning
+	+20
+	99
+	Greased Lightning
+	+21
+	00
+	Greased Lightning
+	+22
+	GUN ACCURACY (Includes All Firearms) and THROWING ACCURACY (Includes Knives, Spears and Bows)
+Die Score
+	Description
+	Ability Score
+	01-05
+	Very Poor
+	- 9
+	06-15
+	Poor
+	- 6
+	16-25
+	Below Average
+	- 3
+	26-35
+	Average
+	0
+	36-50
+	Above Average
+	+ 2
+	51-65
+	Fair
+	+ 5
+	66-75
+	Good
+	+ 7
+	76-85
+	Very Good
+	+10
+	86-95
+	Excellent
+	+15
+	96-98
+	Crack Shot
+	+18
+	99-00
+	Deadeye
+	+20
+	Note: Roll twice on the above chart, once for Gun Accuracy and once for Throwing Accuracy, recording each ability score separately.
+STRENGTH
+Die Score
+	Description
+	Ability Score
+	01-02
+	Feeble
+	8
+	03-05
+	Puny
+	9
+	06-10
+	Frail
+	10
+	11-17
+	Weakling
+	11
+	18-25
+	Sickly
+	12
+	26-40
+	Average
+	13
+	41-60
+	Above Average
+	14
+	61-75
+	Sturdy
+	15
+	76-83
+	Hardy
+	16
+	84-90
+	Strong
+	17
+	91-95
+	Very Strong
+	18
+	96-98
+	Powerful
+	19
+	99-00
+	Mighty
+	20
+	BRAVERY
+Die Score
+	Description
+	Ability Scores
+	Speed Modifier
+	Accuracy Modifier
+	01-10
+	Coward
+	- 4
+	- 6
+	
+
+	11-20
+	Cowardly
+	- 2
+	- 3
+	
+
+	21-35
+	Average
+	0
+	0
+	
+
+	36-65
+	Above Average
+	+ 1
+	+ 3
+	
+
+	66-80
+	Brave
+	+ 2
+	+ 6
+	
+
+	81-90
+	Very Brave
+	+ 3
+	+10
+	
+
+	91-98
+	Fearless
+	+ 4
+	+15
+	
+
+	99-00
+	Foolhardy
+	+ 5
+	+15
+	
+
+	
+
+EXPERIENCE
+Die Score
+	Previous Number of Gunfights
+	Ability Score Accuracy Modifier
+	01-40
+	None
+	- 10
+	41-60
+	1
+	- 5
+	61-75
+	2
+	- 5
+	76-85
+	3
+	0
+	86-90
+	4
+	0
+	91-93
+	5
+	+ 2
+	94-95
+	6
+	+ 2
+	96
+	7
+	+ 6
+	97
+	8
+	+ 6
+	98
+	9
+	+ 8
+	99
+	10
+	+ 8
+	00
+	11 or more
+	+10
+	IMPROVING CHARACTER ABILITIES
+The abilities of characters can be improved, both initially (for player characters) and through experience gained by surviving gunfights (for all characters).
+Initial Modification (Player characters only)
+When a player is rolling for the individual abilities of his or her personal character only, beneficial adjustments are possible to help insure that the character's abilities are somewhat better than the norm (since mediocre abilities for player characters would make the game less interesting and fun). This helps insure, and rightly, that player characters are normal or a "cut above" the rest of the characters in overall abilities in the various categories.
+Whenever the percentile dice are rolled for each of the following categories (SPEED, GUN ACCURACY, THROWING ACCURACY, STRENGTH and BRAVERY), consult the following chart to determine if the resultant rolls should be improved:
+Original Dice Score Rolled
+	Modification
+	01-25
+	Add 25 to percentile dice score
+	26-50
+	Add 15 to percentile dice score
+	51-70
+	Add 10 to percentile dice score
+	71-90
+	Add 5 to percentile dice score
+	91-00
+	Add nothing
+	Survival Modification (All characters)
+A character's EXPERIENCE, SPEED, and BRAVERY abilities will be beneficially affected by surviving gunfights, as follows:
+For each gunfight which the character (player character or otherwise) survives, "one" is added to the previous number of gunfights survived by that player (which may or may not increase the ability score modifier). This is reflected on the EXPERIENCE table listed previously.
+A character's SPEED and BRAVERY abilities will also increase as he or she survives gunfights. For each gunfight the character survives, the existing percentile dice scores for SPEED and BRAVERY are increased as follows:
+Current Dice Score
+	Modification to Dice Score
+	01-51
+	Add 3
+	51-70
+	Add 2
+	71-90
+	Add 1
+	91-95
+	Add ½
+	96-00
+	Add nothing
+	Note: In all instances, the modifications for surviving a gunfight are only applicable if the individual character faced the possibility of death — this always excludes backshooting and "dry gulching". Further, the character's participation in a gunfight counts toward EXPERIENCE even if the character "lost" the gunfight, i.e., was wounded, or did not harm the opponent.
+Experience can only be gained by a character once per individual scenario (not campaign scenario), regardless of the number of shootouts or persons killed.
+EQUIPPING THE CHARACTER
+Unless dictated differently by the background of the campaign or scenario to be played, each character at the start of the action should be allowed $150.00 to buy a horse, weapons, ammunition, and anything else he feels that he needs. (Continuing expenses and other pertinent cost figures ap-
+PRICE CHART
+Item
+	Abbreviation
+	Cost
+	Availability
+	Weapon Speed
+	Hunting Knife
+	KN
+	$ 1.00
+	
+
+	Average
+	Single Shot Derringer
+	1D
+	$ 5.00
+	
+
+	Average
+	Two-Shot Derringer
+	2D
+	$ 15.00
+	after 1870
+	Average
+	Cap & Ball Revolver (6 shot)
+	CBR
+	$ 20.00
+	
+
+	Below Average
+	Single Action Revolver (6 shot)
+	SAR6
+	$ 30.00
+	after 1869
+	Fast
+	Single Action Revolver (5 shot)
+	SAR5
+	$ 26.00
+	after 1869
+	Fast
+	Double Action Revolver (6 shot)
+	DAR6
+	$ 28.00
+	after 1869
+	Average
+	Double Action Revolver (5 shot)
+	DAR5
+	$ 25.00
+	after 1869
+	Average
+	Fast Draw Revolver (6 shot)**
+	FDR6
+	$ 40.00
+	after 1870
+	Very Fast
+	Fast Draw Revolver (5 shot)**
+	FDR5
+	$ 35.00
+	after 1870
+	Very Fast
+	Long Barrel Revolver (6 shot)
+	LBR
+	$ 35.00
+	after 1870
+	Below Average
+	Shotgun (single barrel)
+	1SG
+	$ 20.00
+	
+
+	Slow
+	Shotgun (double barrel)
+	2SG
+	$ 30.00
+	
+
+	Slow
+	Repeating Shotgun (6 shot)
+	6SG
+	$ 75.00
+	after 1885
+	Slow
+	Scatter Gun (double barrel)
+	SCG
+	$ 40.00
+	
+
+	Below Average
+	Civil War Type Repeating Rifle (7 shot)
+	CWR
+	$ 25.00
+	
+
+	Slow
+	Civil War Type Repeating Carbine (7 shot)
+	CWC
+	$ 20.00
+	
+
+	Slow
+	Repeating Rifle (15 shot)
+	15R
+	$ 50.00
+	after 1872
+	Slow
+	Repeating Rifle (9 shot)
+	9R
+	$ 40.00
+	after 1872
+	Slow
+	Repeating Rifle (6 shot)
+	6R
+	$ 30.00
+	after 1872
+	Slow
+	Repeating Carbine (12 shot)
+	12C
+	$ 48.00
+	after 1872
+	Slow
+	Repeating Carbine (9 shot)
+	9C
+	$ 38.00
+	after 1872
+	Slow
+	Repeating Carbine (6 shot)
+	6C
+	$ 28.00
+	after 1872
+	Slow
+	"Buffalo" Rifle (1 shot)
+	BR
+	$ 30.00
+	
+
+	Very Slow
+	"Army" Rifle (1 shot)
+	AR
+	$ 20.00
+	
+
+	Very Slow
+	Holster & Gun Belt
+	
+
+	$ 5.00
+	
+
+	
+
+	Rifle Sheath
+	
+
+	$ 4.00
+	
+
+	
+
+	Ammunition (except Shotgun loads)
+	
+
+	$ 2.00 per box of 100
+	
+
+	
+
+	Shotgun loads
+	
+
+	$ 2.00 per box of 25
+	
+
+	
+
+	Saddle, Bridle, & Pads
+	
+
+	$ 40.00
+	
+
+	
+
+	Poor horse
+	
+
+	$ 20.00
+	
+
+	
+
+	Fair horse
+	
+
+	$ 50.00
+	
+
+	
+
+	Good horse
+	
+
+	$100.00
+	
+
+	
+
+	Excellent horse
+	
+
+	$150.00
+	
+
+	
+
+	Mule
+	
+
+	$ 20.00
+	
+
+	
+
+	Oxen
+	
+
+	$ 25.00
+	
+
+	
+
+	**Includes holster and belt in price
+BASE NUMBERS (FIRST SHOT & "TO HIT")
+After all abilities have been rolled and equipment determined for each character, the characters' base scores for FIRST SHOT DETERMINATION and HIT DETERMINATION are computed. The FIRST SHOT DETERMINATION score should be determined separately for each individual weapon the character is likely to use, while two HIT DETERMINATION scores are calculated, one for firearms and another for thrown/launched weapons.
+First Shot Determination
+To determine the base number for a character's first shot score, add the character's speed ability score, bravery speed modifier, and the weapon speed modifier. The speed ability score and bravery speed modifier are directly from the SPEED and BRAVERY ability tables given previously (see SETTING UP GAME CHARACTERS), and the weapon speed modifiers (based on the listing of weapons included in the section EQUIPPING THE CHARACTER) are as follows:
+Weapon Speed Class | Speed Modifier
+* Very Slow | -10
+* Slow | - 5
+* Below Average | 0
+* Average | + 5
+* Fast | + 8
+* Very Fast | +10
+Hit Determination
+To determine the base number for a character's hit determination score, add the character's accuracy ability score, bravery accuracy modifier, and experience accuracy modifier. To this total add 50 to determine the base number needed to hit an opponent with a weapon (which will be a separate number for firearms as opposed to thrown/launched weapons).
+As an example of a character's base numbers, let us use the fictional character we'll call "The Colorado Kid", who uses a double action revolver (which is a weapon of "average" speed). His basic ability ratings, already modified due to the fact that he is a player character, are as follows: SPEED 90 (Very Fast, +12), GUN ACCURACY 64 (Fair, +5), THROWING ACCURACY 62 (Fair, +5), STRENGTH 80 (Hardy, 16), BRAVERY 55 (Above Average, +1 speed modifier, +3 accuracy modifier), and EXPERIENCE 30 (No previous gunfights, -10 accuracy modifier).
+The base number for first shot determination is figured by taking the speed ability score modifier (+12), adding the bravery speed modifier (+1), and the weapon speed modifier (+5 for an "average" speed weapon) to give a first shot rating of 18. This figure, when compared to the ratings of other participants in a gunfight, will determine who shoots first when several characters are attempting to fire in the same game turn. Naturally, the characters with the highest first shot rating will get their shots off first — and doing so could be the difference between survival and possible death.
+The base number for hit determination is figured by taking the gun accuracy ability modifier (+5), adding the bravery accuracy modifier (+3), and the experience accuracy modifier (-10) to give a hit determination rating of -2. This number is added (or, in this case, subtracted) from the base 50% chance to score a hit (to give a result of 48%). In addition, other factors (range, concealment or cover, etc.) will affect the chance of scoring a hit. (See the HIT DETERMINATION table).
+TURN SEQUENCE
+At the start of each game turn in the tactical tabletop game, each player rolls percentile dice for each of the characters he is controlling (any non-player characters under the referee's control are also rolled for, so that all characters have a number).
+For that game turn, the characters are moved in the order of their rolls — the lowest moves first, then the others in order of increasing die rolls, with the character having the highest number moving last.
+After all characters have been moved in a game turn and firing actions have been indicated, the order of firing is determined by the referee based upon each character's base number for first shot determination (which may vary according to individual abilities and weapons employed). Characters with the highest first shot determination scores fire first, and the shots are taken in decreasing order of their base numbers. If a character is wounded before he has had the opportunity to fire as indicated, the wound may adversely affect the speed and accuracy of his shot (see First Shot Determination under COMBAT).
+When it becomes a particular character's turn to fire, his chance to hit is computed based on various factors outlined in the Hit Determination portion of the COMBAT section. Percentile dice are rolled for each attempt to determine if the target has been hit.
+If a target character has been hit during the firing portion of the turn, the information in the WOUNDS section is utilized and dice are rolled again to determine the location and extent of injury.
+After each round of combat (or after all players have moved, if no combat has occurred in the turn), any hand-to-hand fights are resolved using the rules of the BRAWLING section. Each participant in a hand-to-hand fight will have two rounds of brawling per turn.
+To summarize, each game turn follows this outline:
+Game Turn Sequence Outline
+A. Random Movement Determination
+1. Players roll percentile dice and move in the indicated order (low numbers move first, high numbers last)
+B. Firing resolution
+1. Players state which characters are firing and indicate target and number of shots
+2. Firing order is determined and shots are taken in that order (high numbers first)
+3. Each character fires in his turn and percentile dice are rolled for hit or miss
+4. Characters who are hit suffer varying effects of wounds
+C. Brawls
+1. Characters engage in hand-to-hand combat for two rounds each
+MOVEMENT
+Each character moves at a certain maximum rate depending upon how he or she is travelling. The base movement rates for different types of travel are given below, and the numbers given correspond either to spaces on the town map provided with the game, or inches if miniature figures are being used on the tabletop.
+On Foot
+	Mounted
+	Crawling
+	2
+	Walking
+	6
+	Running and dodging
+	12
+	Running
+	24
+	Certain modifiers as described below will affect the base speeds:
+Outdoor Terrain
+Uphill movement or movement through rough or dense terrain should be at ½ normal speed, except for crawling and walking, which remain normal.
+Doors & Windows & Stairs
+Movement through a door means a subtraction of 1 from the movement rate (assuming it is unlocked, of course).
+Movement of any type through an open window means a subtraction of 3 from the movement rate and ends a character's move immediately.
+Movement on stairs (either up or down) means a subtraction of 6 from the movement rate for each flight traversed.
+Dropping a distance of 10 feet or more (from a roof, for instance) will end a character's move immediately.
+Mounting & Dismounting
+Mounting or dismounting a horse or vehicle means a subtraction of 2 from the movement rate and ends a character's move immediately.
+Wounds
+Wounds suffered by a character will reduce movement capabilities as follows:
+* Light wound in leg: Move at ½ speed
+* Serious wound in leg: Walk only, at ½ speed
+* Other serious wounds: Move at ½ speed, except walking
+Light wounds other than in the leg do not generally affect movement (see WOUNDS for further details).
+Movement Changes
+Movement speed may be changed by a character as desired, except when a mounted figure moves from a stopped position. In such cases, the first move is walking or trotting, and galloping is possible thereafter.
+Horses at a gallop can change course in a curve up to 60°, while horses that are trotting or walking can turn up to a full 90°.
+Movement over other types of terrain or obstacles not listed above should be adjudged by the referee based on the guidelines presented above.
+________________
+
+
+COMBAT
+WEAPONS
+The weapons types in BOOT HILL are representative of the various weapons used in the West from the times following the Civil War until about 1900.
+Each type of weapon can be employed up to its maximum range, although effectiveness will decrease as the target increases in range. The table below shows the various types of weapons and gives four range categories for use in determining hits or misses (see Hit Determination later in this section) as well as the reload rate for each. The reload rate shows the number of rounds that can be loaded into the weapon in a single turn. Reloading by a character is undertaken to the exclusion of all other activities except walking.
+WEAPONS CHART
+Weapon
+	Short
+	Medium
+	Long
+	Extreme
+	Rate of Fire
+	Reload Rate
+	Weapon Speed
+	Knife or Tomahawk
+	0 to 1
+	1+ to 2
+	2+ to 3
+	3+ to 4
+	1
+	-
+	Average
+	Bow
+	0 to 7
+	7+ to 18
+	18+ to 30
+	30+ to 50
+	1
+	1
+	Below Average
+	Lance
+	0 to 2
+	2+ to 5
+	5+ to 10
+	10+ to 15
+	1
+	-
+	Below Average
+	Derringer
+	0 to 1
+	1+ to 3
+	3+ to 6
+	6+ to 10
+	1*
+	2
+	Average
+	Cap & Ball Revolver
+	0 to 3
+	3+ to 7
+	7+ to 12
+	12+ to 26
+	3
+	1
+	Below Average
+	Single Action Revolver
+	0 to 4
+	4+ to 10
+	10+ to 20
+	20+ to 40
+	3
+	3
+	Fast
+	Double Action Revolver
+	0 to 4
+	4+ to 10
+	10+ to 20
+	20+ to 40
+	3
+	3
+	Average
+	Fast Draw Revolver
+	0 to 3
+	3+ to 7
+	7+ to 15
+	15+ to 30
+	3
+	3
+	Very Fast
+	Long Barrel Revolver
+	0 to 6
+	6+ to 12
+	12+ to 25
+	25+ to 45
+	1
+	3
+	Below Average
+	Scatter Gun
+	0 to 2
+	2+ to 4
+	4+ to 8
+	8+ to 15
+	1*
+	2
+	Below Average
+	Shotgun
+	0 to 6
+	6+ to 12
+	12+ to 18
+	18+ to 36
+	1*
+	2
+	Slow
+	Civil War Rifle
+	0 to 15
+	15+ to 30
+	30+ to 60
+	60+ to 120
+	1
+	2
+	Slow
+	Civil War Carbine
+	0 to 12
+	12+ to 24
+	24+ to 50
+	50+ to 100
+	1
+	2
+	Slow
+	Buffalo Rifle
+	0 to 30
+	30+ to 60
+	60+ to 120
+	120+ to 300
+	1
+	1
+	Very Slow
+	Army Rifle
+	0 to 25
+	25+ to 50
+	50+ to 100
+	100+ to 250
+	1
+	1
+	Very Slow
+	Other Rifles
+	0 to 20
+	20+ to 40
+	40+ to 80
+	80+ to 200
+	3
+	3
+	Slow
+	Other Carbines
+	0 to 15
+	15+ to 30
+	30+ to 50
+	50+ to 120
+	3
+	3
+	Slow
+	   * = 2 if double-barreled
+OBSERVATION & SIGHTING
+All characters on the tabletop or on the game map must indicate their facing for purposes of observation and sighting. A character will not observe all movement that goes on around his position, but will nonetheless be able to survey a wide area in the direction he is facing. The limitations of sighting are defined by a 90° arc as illustrated by the diagrams which follow. Persons or things within the area of observation will be noticeable, although details may not be immediately noticed, of course.
+When observation is attempted during movement, the facing desired during movement can be indicated and the arc of observation determined from the midpoint of the move. Because of the ten second duration of each turn, there is no penalty for observation by characters that are moving.
+(See the ADVANCED RULES for more complete use of the full ramifications of observation and sighting in conjunction with Hidden Movement in the ADVANCED MOVEMENT section.) If a referee is moderating play, these rules should be interpreted flexibly.
+TARGET SELECTION
+When a character's turn comes in the order of firing, he may shoot at any target of whose location he is aware. This includes any person firing at that character, even if the character has his back turned (although the penalty for total surprise would adversely affect a character turning to fire at someone behind).
+Normally a character will fire at a single target when shooting, with the following exceptions:
+1. A shooter may fire at up to three targets in the same or adjacent spaces (if the town map provided with the game is being used) or within a spread of 3 inches (if miniatures are being used).
+2. The field of fire of a shotgun or scatter gun will expand as range increases, as shown below:
+Shotgun fire may hit a single target at close range, every target in the space (or within 1 inch) at medium range, and every target within 3 spaces (or 3 inches) at long or extreme range.
+Scatter gun fire may hit every target in a space (or within 1 inch) at close range, every target within 3 spaces (or 3 inches) at medium range, and every target within 5 spaces (or 5 inches) at long or extreme range.
+Field of fire: scatter gun
+Note: The fields of fire of shotguns and scatter guns as defined in the diagrams shown are not in any way limited (nor are any other weapons) to firing down rows of spaces on the town map, as might be inferred from the illustration. These weapons will affect the defined width of their field of fire no matter what the direction, and range can be computed using a ruler if shooting is along some non-vertical/non-horizontal line of fire, i.e. point to point.
+First Shot Determination
+When more than one character is attempting to fire in a given game turn, the order of the various shots must be determined. This is done by calculating and comparing the adjusted scores for first shot determination for each person firing. Calculations are done using each character's first shot determination base number (see BASE NUMBERS, First Shot Determination) with the individual modifiers listed below as possible adjustments, depending upon the situation. The resultant number is the net speed score for each character.
+Once scores have been established for the turn for all firing characters, the character with the highest net speed score will fire his shot or shots first. After that character's shooting has been resolved, the other characters take their shots in the order of their descending net speed scores for that turn, and each is resolved in turn before the next character is allowed to fire.
+If a character is hit and wounded before being able to shoot in a turn, that character's net speed score must be readjusted to reflect the injury (which may drop them further down the order of firing for that turn). Anyone killed or rendered unconscious before their turn to fire comes up will naturally lose their shots.
+If two characters' net speed scores are identical, their shots are considered simultaneous.
+To each character's first shot determination base score, add and/or subtract the following to determine their net speed score for any given game turn:
+FIRST SHOT DETERMINATION CHART
+SURPRISE
+	
+
+	Giving opponent the first move
+	- 1
+	Character is surprised
+	- 5
+	Character is completely surprised (including returning fire on an unseen opponent)
+	- 10
+	
+
+MOVEMENT
+	
+
+	Character is running or running and dodging
+	- 20
+	Character is on horseback
+	- 10
+	
+
+WOUNDS
+	
+
+	Character has wounds totalling less than 50% of STRENGTH
+	- 5
+	Character has wounds totalling 50% or more of STRENGTH
+	- 20
+	
+
+MISCELLANEOUS
+	
+
+	Character draws two guns
+	- 3
+	Character hipshoots
+	+ 5
+	Character fires on same target for second or greater consecutive turn or
+	+ 10
+	Character aims at same target for second or greater consecutive turn
+	+ 5
+	Hit Determination
+Whenever a character fires a shot (or throws a weapon), a roll of the percentile dice will determine whether or not he has succeeded in hitting his target. The character's base number for hit determination is a measure of general accuracy ability, but a multiplicity of factors (not the least of which is range) will modify the chances of scoring a hit.
+The various modifiers are listed below. Starting with the base number for the character computed previously (see BASE NUMBERS, Hit Determination), add the bonuses and subtract the penalties appropriate to the situation for each shot made. The result will be the percentage chance of striking the target.
+Once the chance of a hit has been calculated, the percentile dice are rolled, generating a number from 1 to 100. If the number rolled is less than or equal to the percentage chance of hitting, a hit has been scored — if the number rolled exceeds the percentage chance of hitting, the shot is a miss. A separate roll is taken for each shot fired.
+The following factors will modify each character's hit determination base number as additions and/or subtractions. Note that all bonuses and penalties are cumulative.
+HIT DETERMINATION CHART
+RANGE
+	
+
+	Short
+	-10
+	Medium
+	0
+	Long
+	+15
+	Extreme
+	+25
+	
+
+MOVEMENT OF SHOOTER
+	
+
+	Walking
+	- 5
+	Crawling
+	- 10
+	Running and dodging
+	- 30
+	Running
+	- 20
+	Trotting
+	- 15
+	Galloping
+	- 25
+	
+
+MOVEMENT OF TARGET
+	
+
+	Walking or crawling
+	+ 5
+	Running or trotting
+	+10
+	Galloping
+	+15
+	Running and dodging
+	+20
+	
+
+WOUNDS
+	
+
+	Character has wounds totalling less than 50% of STRENGTH
+	- 5
+	Character has wounds totalling 50% or more of STRENGTH
+	- 20
+	
+
+MISCELLANEOUS
+	
+
+	Weapon at rest on solid object (not possible on the turn weapon is first aimed at target)
+	+10
+	Second shot this turn
+	-10
+	Third shot this turn
+	-20
+	Firing a scatter gun
+	-20
+	Firing a shotgun
+	-10
+	Shooting with the wrong hand (with left hand if right-handed, etc.)
+	-10
+	Light wound in gun arm
+	-25
+	Serious wound in gun arm
+	-50
+	Firing two pistols
+	-30
+	Hipshooting
+	-10
+	Target obscured (50% or less of target is visible)
+	-10
+	WOUNDS
+When a percentile roll for hit determination results in a hit, further rolls will indicate the location of the wound on the target person as well as the severity of injury.
+If the target has the advantage of hard protective cover (such as a brick wall, a bank of earth, or a stone boulder), a hit score in a body area which is behind the protective cover will actually result in a miss — even though a hit may have originally been indicated. As a rule of thumb, a person firing a pistol over a wall or around a corner will expose gun arm, head, and one shoulder. A person firing a rifle over a wall or around a corner will expose head, both arms, one shoulder and (if around a corner) one leg. These guidelines and common sense can be used to judge other situations.
+Shotguns and scatter guns fire multiple projectiles and, as such, require special treatment to reflect their capability of inflicting multiple wounds. In most cases (depending upon range), all possible targets in the field of fire will be individually checked to determine whether or not they are hit (see TARGET SELECTION earlier in this section). If a hit is indicated on a target within the field of fire, a single percentile die is rolled to give a number from 1 to 10 (0 being read as 10), which is compared to the appropriate range column of the proper table below to indicate the number of wounds suffered. (Note that at furthest ranges for these guns there is still a slight chance no projectile will wound the target, even though a hit may previously be indicated.)
+SHOTGUN/SCATTER GUN EFFECTS TABLE
+Die Roll
+	Scatter Gun Range
+	
+
+	
+
+	
+
+	
+
+	Shotgun Range
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	Short
+	Med.
+	Long
+	Ext.
+	
+
+	Short
+	Med.
+	Long
+	Ext.
+	1
+	
+
+	1
+	1
+	0
+	0
+	
+
+	1
+	1
+	1
+	0
+	2
+	
+
+	1
+	1
+	0
+	0
+	
+
+	2
+	1
+	1
+	0
+	3
+	
+
+	1
+	1
+	1
+	0
+	
+
+	2
+	1
+	1
+	1
+	4
+	
+
+	1
+	1
+	1
+	0
+	
+
+	2
+	2
+	1
+	1
+	5
+	
+
+	2
+	1
+	1
+	1
+	
+
+	3
+	2
+	1
+	1
+	6
+	
+
+	2
+	1
+	1
+	1
+	
+
+	3
+	2
+	1
+	1
+	7
+	
+
+	2
+	1
+	1
+	1
+	
+
+	3
+	2
+	1
+	1
+	8
+	
+
+	2
+	2
+	1
+	1
+	
+
+	4
+	2
+	1
+	1
+	9
+	
+
+	3
+	2
+	1
+	1
+	
+
+	4
+	3
+	1
+	1
+	10
+	
+
+	3
+	2
+	1
+	1
+	
+
+	4
+	3
+	2
+	1
+	For each hit that is scored on a target person, percentile dice are rolled twice. The first roll indicates the location of the hit on the target's body, and based upon that result, the second roll is made to determine the severity of the wound. The chart below outlines the necessary information and is used by rolling first on the column at left, then reading across to index the second roll in one of three wound categories (light, serious, or mortal). For example, a first roll of 49 would indicate a wound in the left shoulder, and a second roll of 72 would mean that the wound there was a serious one.
+WOUND CHART
+Dice Roll
+	Location
+	Lt. Wound (-3 on Strength)
+	Ser. Wound (-7 on Strength)
+	Mortal Wound
+	01-10
+	Left Leg
+	01-40
+	41-00
+	
+
+	11-20
+	Right Leg
+	01-40
+	41-00
+	
+
+	21-25
+	Left Arm/Hand
+	01-75
+	76-00
+	
+
+	26-30
+	Right Arm/Hand
+	01-75
+	76-00
+	
+
+	31-40
+	Right Shoulder
+	01-40
+	41-90
+	91-00
+	41-50
+	Left Shoulder
+	01-40
+	41-80
+	81-00
+	51-70
+	Abdomen/Groin
+	01-40
+	41-80
+	81-00
+	71-85
+	Chest
+	01-20
+	21-60
+	61-00
+	86-00
+	Head
+	01-20
+	21-40
+	41-00
+	Light and serious wounds reduce the strength of the victim, while a mortal wound results in immediate death. A LIGHT WOUND causes a subtraction of three points from the strength of the victim, while a SERIOUS WOUND causes a subtraction of seven points from the victim's strength.
+Any character who has his strength reduced to 0 or less is rendered unconscious for the duration of the battle (and for at least one hour). Likewise, in such an instance there is a considerable chance of death unless competent medical assistance is readily available — if it is not, there is a good chance that the wound or wounds will prove fatal.
+BRAWLS
+After the firing portion of the game turn is complete, characters who are within 6 feet (in the same or adjacent spaces on the town map or within 1 inch on the tabletop) have the option to engage in hand-to-hand fighting using the brawling rules. These rules are used for all forms of hand-to-hand action: fistfights, general melees, and bar-room brawls.
+The brawling portion of the turn consists of two rounds, and each participant has the choice of punching or grappling in each round.
+In all cases of hand-to-hand fighting, the player simply states which option (punching or grappling) their character is attempting and rolls the two percentile dice and adds the digits together to obtain a number score of 2 to 20 which is compared to the appropriate chart. The effects of opponents' actions in the previous round may cause a modification to the dice roll.
+Each table has a column listing for effect and the next round plus-or-minus on dice rolls. The effect column shows the number of strength points to be subtracted from the opponent's strength rating due to the action undertaken. In a manner similar to weapon wounds (and in addition to any taken), any character whose strength rating reaches 0 will pass out and be unable to function for the remainder of the game (or not less than 5 minutes in cases where non-turn time lapses are employed to move the play from scene to scene). The next round plus-or-minus column shows the results, if any, to the actions of a character and his opponent on the following brawling round. Any pluses or minuses shown are modifiers to the appropriate character's dice rolls in the next round. Note: if a character (assuming he has a hand free) attempts to fire a weapon in the firing resolution portion of the game turn which follows every two brawling rounds, any plus or minus shown from the previous round will be a percentage modifier to the chance of hitting. Each plus or minus will make a 10% adjustment to the hit determination chance, i.e., a -2 effect will lower the chance of hitting by 20%.
+Any weapon employed in hand-to-hand fighting must be used as a striking weapon — although, of course, firing is possible in the firing resolution portion of the turn which follows every two brawling rounds, assuming the firearm is in hand and easily employed. Using a striking weapon necessitates a roll on the PUNCHING table: if the weapon is a knife or similar cutting weapon (such as a tomahawk), any hit results in rolls on the WOUND chart to determine location and extent of the injury. Striking weapons such as a club or a gun barrel or butt use the normal column for effect on the PUNCHING table, causing an extra point of damage if a hit is made, but necessitating a subtraction of one from the dice roll to hit. Larger striking weapons, such as a chair, add two points to any damage scored, but mean a subtraction of two from the dice roll to hit.
+First Blow
+With the 6 foot proximity as a requisite, any character can engage in brawling with another character of his choice — whether or not the other character wishes to fight. The person with the highest speed ability (unless surprised) has the first blow for the first round. He may elect to throw a punch or grapple his opponent. The other party counters with a punch or by grappling after the results of the first character's actions have been determined. A second round follows in like manner.
+Punching
+Punching is primarily the use of the fists, although the PUNCHING table is also used for striking weapons and other objects used as weapons.
+Punching by a character assumes that one or both arms are free — thus, if the character is held in a bear hug he may not use the PUNCHING table. If he is held by an opponent with an arm lock, only one arm will be free to punch; a head lock, however, will not prevent punching (although it will mean a disadvantage in doing so, of course).
+The left-handed or right-handed nature of a character will only be pertinent in certain cases, and it will be noticeable in the effect column that the table is set up to favor right-handed characters. When necessary for left-handed characters, simply reverse the listings in the column. For purposes of simplicity, all characters can be assumed right-handed, or as an alternative, players' characters will have the same handedness as the players themselves.
+Grappling
+Grappling covers the hand-to-hand wrestling of characters, and allows the use of several different holds to inflict injury and restrict an opponent's fighting effectiveness. A disadvantage, however, is the possibility of being kneed or gouged, which will result in damage sustained by a character rather than inflicted upon another.
+There are 4 holds on the GRAPPLING table (arm locks left and right, head lock, and bear hug) and they require special consideration. If a character chooses to grapple and succeeds in getting a result which indicates a hold, his opponent will be at a disadvantage. A bear hug will totally negate any attempt at punching, while the other holds will allow punching at a disadvantage with a free arm or arms; in all cases, however, the only way to break the hold will be on a GRAPPLING table roll of either 15, 16 or 3 or less — all other rolls will be "no effect". The character employing a hold, on the other hand, may continue it from round to round (with appropriate effect) without rolling further, until such time as the hold is successfully broken or the holding character opts to try another action.
+BRAWLING CHARTS
+PUNCHING TABLE
+Adjusted Die Score
+	Result
+	Effect
+	Next round + or - on dice roll*
+	2 or less
+	Miss
+	
+
+	+2 (Opponent)
+	3 or 4
+	Miss
+	
+
+	+1 (Opponent)
+	5 to 7
+	Miss
+	
+
+	
+
+	8 or 9
+	Blocked
+	
+
+	
+
+	10 to 13
+	Glancing blow
+	1 (Left) 1 (Right)
+	
+
+	14
+	Jab
+	1 (Left) 2 (Right)
+	
+
+	15
+	Hook
+	2 (Left) 2 (Right)
+	
+
+	16
+	Combination#
+	2 plus 2
+	-1 (Opponent)
+	17
+	Rabbit punch
+	2 (Left) 3 (Right)
+	-1 (Opponent)
+	18
+	Uppercut
+	2 (Left) 3 (Right)
+	-2 (Opponent)
+	19 or more
+	Haymaker
+	3 (Left) 4 (Right)
+	-3 (Opponent)
+	Notes to the PUNCHING TABLE
+* The combination punch, if both arms are free, scores 2 + 2 points against the opponent's strength rating; if only one arm is free, but 2 points are scored.
+* The plus or minus will be as shown for punching or grappling in the following round, or will convert (X 10%) to a modification of the percentage chance to hit if weapon firing is subsequently attempted.
+GRAPPLING TABLE
+Adjusted Die Score
+	Result
+	Effect
+	Next round + or - on dice roll*
+	1 or less
+	Opponent knees you (or if held, you break hold)**
+	4 (-) (Opponent) - (-) (You) -4 (-) (You)
+	
+
+	2 or 3
+	Opponent gouges you (or if held, you break hold)**
+	1 (-) (Opponent) - (-) (You) -2 (-) (You)
+	
+
+	4 or 5
+	No hold
+	
+
+	+2 (Opponent)
+	6 or 7
+	No hold
+	
+
+	+1 (Opponent)
+	8 or 9
+	No hold
+	
+
+	
+
+	10 or 11
+	Arm lock, left
+	2
+	-1 (Opponent)
+	12 or 13
+	Arm lock, right
+	2
+	-1 (Opponent)
+	14
+	Elbow smash
+	2
+	-1 (Opponent)
+	15 or 16
+	Throw (and if held, you break hold)**
+	2 (Opponent) -2 (Opponent)
+	
+
+	17
+	Kick
+	3
+	-1 (Opponent)
+	18
+	Head lock
+	4
+	-2 (Opponent)
+	19 or more
+	Bear hug†
+	1
+	-4 (Opponent)
+	Notes to the GRAPPLING TABLE
+Bold listings show the four types of holds. These can only be broken (escaped) by an opponent's roll of either 15, 16, or 3 or less on the GRAPPLING table, although (except for the bear hug) an opponent could elect to punch rather than try to break the hold.
+Note that rolls of 3 or less on this table have different results depending on whether or not a character is held — if not, the character suffers a knee or gouge result; if so, the character escapes the hold, but without further immediate effect.
+** If held by an opponent, a character will only break the hold with a roll which gives this result — all other rolls are no effect and the hold may be continued.
+† A character held in a bear hug may only respond by grappling in an attempt to break the hold — no punching is possible.
+* The plus or minus will be as shown for punching or grappling in the following round, or will convert (X 10%) to a modification of the percentage chance to hit if weapon firing is subsequently attempted.
+Example of a brawl
+In the midst of a wild shoot-’em-up at close quarters, an unarmed and fleeing Mexican bandito, Juan Burrito (Strength: Average, 13; Speed: Quick) happens upon Silver Dollar Sam (Strength: Sturdy, 15; Speed: Very Fast), reloading his revolver in the doorway Juan seeks for his escape. Since Juan is unarmed, he tries to rush past his adversary, but Sam stops him by electing to engage in hand-to-hand combat.
+Sam has the higher speed, so he undertakes his action first. He attempts to use the revolver in his hand in a striking manner. A roll is made on the PUNCHING table, and a 14 results. Since a weapon is being employed, a subtraction of -1 is made to give an actual result of 13 — a glancing blow. This, if it
+were an actual punch, would have an effect of 1, but since a weapon is striking, the effect is 2, and Juan's strength is reduced accordingly. There is no effect on the next round's actions.
+Juan responds by grappling, so a roll is made on the GRAPPLING table. A roll of 18 results in a head lock on Sam, and this means Sam's strength is reduced by 4 and Sam will suffer a dice roll subtraction of -2 in the next round (or -20% to any shot, if shooting could be attempted). The first round of brawling is complete and ends with Juan reduced by 2 strength points, Sam reduced by 4 strength points, and Sam in a head lock and at a disadvantage.
+To begin the second round of brawling, Sam responds to the head lock by dropping his revolver and grappling in return to attempt to break the hold. A roll is made on the GRAPPLING table and a 5 results. Since Sam suffers a subtraction of -2 to this roll, the actual result is a 3, and Sam escapes the hold (which has no other effect on either character).
+Juan counters this action by deciding to punch, and a roll is made on the PUNCHING table. A 16 comprises the dice total, meaning that the Mexican has landed an effective combination punch on Sam for 2 + 2, or 4, points.
+The second round of brawling is finished and ends with Juan reduced by 2 points and Sam reduced by 8 points of strength. Since two rounds of brawling have been resolved, the action is suspended momentarily while another game turn is undertaken for all the characters in the overall game situation.
+When Sam's portion of the game turn comes, he elects to stay and fight (since his speed is greatest, his movement action is considered first). Juan has no intention to escape anymore, since he is gaining the upper hand in the hand-to-hand fight, so the brawling continues once shooting is resolved for the rest of the characters. Neither Sam nor Juan has a usable weapon in hand, so no shooting is possible for them.
+The brawling continues as Sam decides to punch, and his roll of a 7 is a miss. Juan responds with a decision to grapple, and rolls a 3. Instead of inflicting any injury on Sam, Juan is gouged and loses a strength point by this unfortunate occurrence!
+Sam grabs a chair which is near the doorway and attempts to swing it at Juan, rolling on the PUNCHING table but subtracting -2 due to its bulkiness and unwieldy nature. His roll is good, however — a 15, which is modified to become a 13. This is the equivalent of a glancing blow, scoring the normal 1 point effect, but plus 2 due to the chair's bulk. Juan reels under the hit and subtracts 3 strength points. But the Mexican is not finished yet, by any means. He elects to grapple, and rolls a 13. With an additional subtraction of -2 because of the gouge he just suffered in his last round, this becomes an 11, meaning he has Sam in an arm lock left. Sam suffers the loss of another strength point and releases the chair.
+After the fourth round of brawling, Sam is held in an arm lock and both participants are depleted in strength: Juan has lost a total of 6 strength points, giving him 7 remaining, and Sam has lost 9 strength points, giving him 6 points left.
+Since another two brawling rounds have been completed, the action is suspended and another game turn is undertaken for all the characters. After shooting has been resolved, brawling is done and Juan and Sam continue their fight.
+Sam, held in an arm lock, tries to escape the hold by rolling on the GRAPPLING table. The lock dictates a subtraction of -1, so his roll of a 17 becomes a 16. The result is that not only has he broken the hold, but he has thrown Juan, inflicting the loss of 2 strength points on the Mexican. Juan counters by attempting to grapple yet once more, and rolls a 3. The subtraction of -2 from being thrown makes the roll a 1, meaning Juan has been kneed by Sam, suffering the loss of 4 strength points more.
+Knowing that his adversary is nearly beaten, Sam decides to try a punch in the next brawling round in an attempt to finish the job (knowing full well that he himself cannot take much more!). His roll is a 15, a hook scoring 2 points. Juan, already down to only a single strength point remaining, crumples under what turns out to be a knockout punch. The fight is over as the battered Sam stands over the unconscious bandito...
+
+
+CAMPAIGNS
+CAMPAIGN GAME SUGGESTIONS
+The full flavor and scope of BOOT HILL comes out in campaign play, with numerous players vying, through the use of their game characters, for a wide assortment of goals and objectives. The interplay of personalities (on both sides of the law) can be fascinating and fun, and a well-run campaign with a competent gamemaster and a good assortment of players will be a satisfying endeavor for all. Campaigns should be tailored to suit the preferences of the players, but some general guidelines are given here. All campaigns require an impartial referee.
+The Referee
+The person taking the role of gamemaster is a pivotal figure, for it is he or she that will shoulder the principal responsibility for all aspects of play. The referee should thus be a person who has a good working knowledge of the rules.
+A referee should be impartial, and should moderate the action without interfering in the course it might take. The referee will be in charge of processing and revealing information as the campaign goes on, and this “limited intelligence” aspect will greatly add interest, since not every character will be aware of all that is happening.
+The gamemaster provides background for the players, and the scope of the campaign will be determined by the referee’s judgment. The referee’s decisions will be important in many instances, and the players must accept the judgments accordingly. (See the section entitled HOW THE GAME IS PLAYED near the beginning of this booklet for other comments on refereeing a campaign.)
+The Campaign Scenarios
+Two campaign scenarios are included in this booklet — one which is quasi-historical, and another which is completely fictional. These can provide the beginnings of a campaign in themselves, or an independent campaign can be started “from scratch” if desired. In any event, players can make up their own roles in such settings by rolling the dice to determine their character's abilities and then choosing a personal role or occupation. The objectives of each character can then be outlined by the referee, and these are the goals each will seek as the campaign goes on.
+The Maps
+The large mapsheet included with the game is printed on two sides, and is specially designed to serve several uses.
+The first side of the map shows a portion of a “typical” Western town, with streets defined and buildings of various types arrayed along them. Doors and windows are shown (the presence of two windows indicating a two-story structure), and individual buildings are identified by name.
+The town map is designed to serve three purposes. First of all, it can function as the main portion of the fictional town of “Promise City” which is prominent in the various scenarios of the game — as well as serving a similar purpose as almost any Western town of similar size. Second and thirdly, portions of the town map can be utilized for the two historical campaign scenarios given in this booklet — the Battle of Coffeyville, and the Gunfight at the O.K. Corral. The map’s scale is 1 space = 6 feet.
+On the opposite side of the town map is the fictional area of Promise City and El Dorado County, which is located “somewhere in the Southwest”. The map is designed to be used in any way desired by the referee, and details can be left as shown, or added or deleted as desired. The scale of the map is one hex = 2 miles. (See the section Using The Map in APPENDIX E for further suggestions on preparation of the large-scale map of the area.)
+Campaign Time
+At the referee’s discretion, campaign turns can be weekly or monthly or of any specified duration. Each turn, the players relate to the referee what their character’s actions and undertakings will be, and the referee moderates the resultant occurrences. The gamemaster takes all actions into account, and relates the appropriate information on various happenings to the players as seen through the eyes of their characters.
+When characters’ actions are appropriate for moving the action to the tabletop, the time frame changes to the lower level, and the larger campaign’s goings-on are suspended until the tabletop action is resolved. Once that is done, the rest of the whole moves on, with the results of the tabletop action reflected in the ongoing and ever-changing situation.
+Moves On The Campaign Map
+A campaign map such as the one included in the game or fashioned in the manner desired by the referee can be used for strategic movement. With a scale of two miles per hex, the following guidelines are appropriate to govern movement from place to place under various circumstances.
+1. Men on foot can move one hex per hour for up to 16 hours, then must rest for 8 hours. Men on foot can run two hexes per hour for three hours, but then must rest for an hour; running men must also rest for 8 hours per day.
+2. Mounted men can move two hexes per hour for up to 16 hours, but then must rest for 8 hours. Mounted men may also move at a higher rate depending upon the type of horse they have. Most horses are fair or good quality, but there are also poor or excellent types. Excellent horses cannot be captured wild, but are actually good quality horses that have been trained for speed and stamina. Use the following chart for the distances (in hexes per hour) that may be traveled (resting a horse for one hour will bring it up two steps of speed):
+STRATEGIC MOUNTED MOVEMENT TABLE
+Horse Type
+	1st Hour
+	2nd Hour
+	3rd Hour
+	4th Hour
+	5th Hour
+	Excellent
+	8
+	6
+	4
+	2
+	must rest
+	Good
+	7
+	5
+	3
+	1
+	must rest
+	Fair
+	6
+	4
+	2
+	1
+	must rest
+	Poor
+	5
+	3
+	1
+	must rest
+	—
+	Example: Crazy Pierre is escaping from a bank heist on a “good” horse. In the first hour he moves 7 hexes, in the second hour he moves 5, and in the third hour he moves 3 for a total of 15 hexes covered in 3 hours. Knowing that his horse (which is tiring rapidly) would only move 1 hex next hour, Crazy Pierre decides to rest his horse for a time. At the end of one hour of rest, Pierre could start travelling again at a speed of 5; however, he does not observe any close pursuit, and thus elects to rest his horse an additional consecutive hour which will bring the horse to its full speed of 7 hexes per hour.
+Roles & Objectives
+The roles and objectives assigned to the participants should be commensurate with the scope of the campaign. Thus, if the map covers a large area and the duration is expected to be several game years, players would represent major characters: large ranchers, outlaw leaders, sheriffs, Indian chiefs, cavalry commanders, and so on — each with many figures to operate or command. Objectives would likewise be broad. On the other hand, a campaign taking place in a small county with but a town or two would have participants cast in less grandiose roles and with smaller objectives — i.e., an outlaw’s objectives might be to lead a gang of desperadoes into town, rob the bank, escape to a hideout, and lay low for a month before pulling another job.
+Records
+The referee should keep copies of all starting statistics and changes made by all pertinent characters in the campaign, with special care taken for the player characters (who will also want to keep suitable records of their own). For example, the referee may inform each player at the start of the game as to his characters’ cash on hand, equipment, animals and possessions owned, hirelings/associates/friends, and so on. Thus, rancher Longloop starts with $671 and a herd of 600 head of longhorns. During the course of the first couple of game months he hires three extra hands, makes a cattle drive which mysteriously picks up several hundred additional doggies along the way, and sells off the lot. At that point he could then have $9,004 and 325 head of cattle.
+Orders for the actions of characters in each campaign turn can be given orally, but referees may wish to consider requiring written orders from each player to have a record of all desired undertakings.
+POSSES
+If a posse is needed to pursue bandits, Indian raiders, or whatever, there will be a delay in assembling the group (which will be an assortment of various citizen characters primarily), which, although on the same turn as the escaping group, starts out one hex behind the pursued on the campaign map.
+An additional 1-10 persons comprising the posse may be added to any pursuit by waiting one hour and rolling a die to determine the exact number available. An additional wait of another hour will add another 1-10 persons. The posse must then track as per the TRACKING rules.
+If word is telegraphed or taken by rider to another town or area, one hour must be spent preparing for the pursuit before the local law officers and from 1-10 persons can be ready to ride.
+TRACKING
+Tracking a band of outlaws or Indians can be accomplished by using the following rules. Check on the following table as each hex on the campaign map is entered by the posse or trackers:
+TRACKING CHART
+Terrain
+	Chance to follow correct trail
+	Chance to follow incorrect trail
+	Chance that the trail ends
+	Chance to notice lost trail if the posse/tracker recrosses it
+	Normal
+	01-90
+	91-95
+	96-00
+	01-10
+	Hard or rocky
+	01-75
+	76-80
+	81-00
+	01-02
+	Settled area
+	01-90
+	91-99
+	00
+	01-15
+	Large town
+	01-60
+	61-70
+	71-00
+	01-05
+	All other types of terrain are treated as “normal”.
+Other factors are important in tracking, as follows:
+1. If the trail ends or leads in the wrong direction, the tracker must spend an entire turn (one hour) trying to pick up the trail again. If a result of "trail ends" is indicated on the second try, the trail is lost permanently and can be picked up only if the trail is later recrossed and is "found" as indicated in the right-hand column of the table above.
+2. Scouts, detectives, and others with special tracking experience have a 5% better chance of following the correct trail, so -5 is subtracted from their percentile rolls on the TRACKING CHART. Indian scouts, if tracking Indians, subtract an additional -5 from the die roll unless in settled areas or towns.
+3. If Indians are being tracked, a +5 is added to the die roll unless they have passed through settled areas or towns, in which case -5 is deducted due to their noticeability in settled areas or -40 in large towns.
+4. If the trail crosses a stream, the tracker will lose one hex of movement in picking up the trail if the party being tracked went either up or downstream before crossing.
+5. If it rains during a chase, the trail is automatically lost and can only be picked up again in settled areas or towns.
+6. If a posse or an individual starts pursuing on the same turn that the pursued group leaves the hex on the campaign map that the posse is in, the posse starts its pursuit one hex behind the pursued group. As long as the posse can remain one hex behind, they will automatically follow. As soon as they become more than one hex behind, they must follow the TRACKING rules as previously outlined. Nightfall affects all parties equally, and thus is disregarded — although the passage of time can be monitored by the referee as he sees fit.
+AGING & PHYSICAL CHARACTERISTICS
+When abilities are determined for characters, the age of the persons can likewise be determined and may have an effect on individual capabilities. To determine a character's age, a percentile die is rolled three times for a 1-10 result, the sum of the numbers rolled is computed, and 12 is added to give the final age (thus giving an age spread of 15 to 42 years of age). As an alternative, the referee may simply assign an age if he desires. Age will affect abilities in the following manner, based upon the character's survival:
+* Speed — Add 1% to the SPEED percentile roll for each game year survived up to age 25; after age 35, subtract 1% per year.
+* Accuracy — Add 1% for every other game year survived up to age 25; subtract 1% every other game year after age 40.
+* Bravery — No effect.
+* Strength — Add 2% for each game year survived up to age 25; subtract 2% each year after age 35.
+HEALING WOUNDS
+Wounds heal at the rate of one point restored per week for each wound (thus, a serious wound would take seven weeks to heal fully). Multiple wounds will heal at the same time. This assumes proper medical treatment.
+Special penalties due to certain wounds will no longer be in effect after the wounds are more than 50% healed.
+Brawling damage can be restored at the rate of one point per hour of rest. Non-brawling wounds heal at the normal rate. The point at which a character recovers consciousness should be decided by the referee on an individual basis. Note that if a character is not fully recovered from a brawl, it will affect the character's accuracy, movement, strength, etc. just as in the case of firearm wounds.
+In some cases where medical treatment is not readily available or where special considerations dictate, the referee will have to use discretion in assigning appropriate chances for survival and recovery.
+THE COST OF LIVING
+As characters progress in a campaign, they will probably get jobs, eat meals, and locate a place of residence. The following list is a sample for guidelines of wages and expenses which can occur in Promise City, or elsewhere in a typical Western town of its size.
+For simplicity, one may assume that a character can live cheaply for about $25.00 per month (this includes two meals per day and lodging in a sleazy hotel) if the person lives in town. A cowboy has virtually no expenses as he lives in the ranch bunkhouse and eats at the ranch — however, he must work about 16 hours a day six days a week, or longer on cattle drives!
+COST OF LIVING TABLE
+Clothing
+* Hat: $2.00
+* Shirt: $1.00
+* Vest: $1.00
+* Trousers: $2.00
+* Socks: 25¢ per pair
+* Boots: $10.00
+* Chaps: $5.00
+* Spurs: $7.00 per pair
+Entertainment and Miscellaneous
+* Tobacco: 10¢ per plug
+* Whiskey: 10¢ per shot or $2.00 per bottle
+* Beer: 5¢ per mug or glass
+* Shave and haircut: 25¢
+* Bath: 75¢, with fresh water $1.00
+* Steers: as calf: $5.00 as yearlings: $10.00 at Kansas railhead: $30.00
+* Doctor’s services (3$ per visit min.):
+   * bullet removed: 25¢
+   * bullet hole patched: 50¢
+   * broken bone set: 50¢
+   * broken bone splinted: 75¢
+   * buckshot removed: $2.00
+   * lacerations stitched: 50¢
+   * concussion treated: 50¢
+   * powder burns treated: $1.00
+   * other burns treated: $2.00
+   * leeching: 25¢
+   * amputation: $5.00
+   * diseases* treated: $2.00
+Lodging
+* Sleazy hotel: 25¢ per night
+* Average hotel: 75¢ per night
+* “Deluxe” hotel: $2.00 per night (free at deluxe hotel)
+* Corral space for horses: 25¢ per day
+* Rooming house: $1.00 per day, meals included
+Food
+* Coffee: 30¢ per pound
+* Bacon: 20¢ per pound
+* Beef: 7¢ per pound
+* Flour: 4¢ per pound
+* Cheap meal: 25¢
+* Mess kit: $2.00
+* Canteen: $1.00
+* Survival rations (hardtack, beans, beef jerky, etc.): $1.50 per day
+Wages and Salary
+* Cowboy: $30.00 per month
+* Cowboy foreman: $45.00 per month
+* Guard at territorial prison: $3.00 per day
+* Coroner: $5.00 per inquest
+* Lawmen: $75.00 per month, plus $2.00 per arrest leading to conviction
+* Deputies: $50.00 per month, plus arrest bonus as above
+* Justice of the Peace:
+   * Fines: $2.00 to $20.00 for disorderly conduct
+   * Court costs: $2.00 to $5.00 for above
+   * Marriages: $5.00
+* Bartender: $50.00 per month
+* Waitress/saloon girl: $17.50 plus tips per mo. and room/board
+* Hired gunfighter: $5.00 per day plus expenses
+* Teamster: $40.00 per month
+* Civilian scout for the army: $75.00 per month
+* Undertaker: $20.00 per burial
+* Midwife: $3.50 per delivery
+MISCELLANEOUS CHARACTERS
+In a typical game setting in a Western town, a lot of minor non-player characters such as shopkeepers, bank tellers, bartenders, and the like are needed in the course of play. It is advisable for the referee to have a stock set of such characters already determined in advance, and when a character of a certain type is needed, one is chosen from the proper category by chance.
+The abilities of miscellaneous characters are determined in the normal
+MISCELLANEOUS CHARACTERS CHART
+Type
+	Speed
+	Gun Accuracy
+	Throwing Accuracy
+	Bravery
+	Strength
+	Experience
+	Town Marshal/
+	Quick-Very Fast
+	Fair-Excellent
+	Average-Good
+	Brave-Fearless
+	Any
+	1-5
+	Deputies
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	Sheriff/Stage Guard
+	Average-Fast
+	Above Average-Very Good
+	Average-Good
+	Any
+	Any
+	0-4
+	Deputy US Marshal/
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	Gunfighter
+	Fast-Lightning
+	Good-Crack Shot
+	Fair-Very Good
+	Very Brave-Fearless
+	15+
+	2-6
+	Detective/Drifter
+	Quick-Lightning
+	Fair-Excellent
+	Any
+	Above Average
+	Any
+	1-4
+	Bounty Hunter
+	Fast+
+	Good+
+	Fair+
+	Very Brave+
+	Any
+	3-8
+	Cavalry Trooper
+	Any
+	Fair-Excellent
+	Any
+	Any
+	Any
+	0-4
+	Indian
+	Above Average-Lightning
+	Fair+
+	Good+
+	Brave-Fearless
+	Any
+	0-3
+	Cowboy
+	Any
+	Above Average-Crack Shot
+	Fair-Excellent
+	Any
+	Any
+	0-2
+	Homesteader
+	Below Average-Quick
+	Any
+	Any
+	Any
+	Any
+	0
+	Miner
+	Average-Fast
+	Above Average-Very Good
+	Any
+	Above Average+
+	Any
+	0-2
+	Bartender
+	Above Average-Very Fast
+	Fair-Excellent
+	Above Average-Excellent
+	Brave+
+	Any
+	1-3
+	Gambler
+	Very Quick+
+	Fair+
+	Fair-Excellent
+	Any
+	Any
+	0-4
+	Bank Teller
+	Any
+	Above Average-Very Good
+	Any
+	Any
+	Any
+	0-2
+	Merchant/Clerk
+	Slow-Quick
+	Any
+	Any
+	Any
+	Any
+	0
+	Saloon Gal
+	Below Avg.-Very Quick
+	Any
+	Any
+	Any
+	13+
+	0-1
+	________________
