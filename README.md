@@ -22,7 +22,19 @@ BootHillGM is an iOS app providing an AI-driven virtual Game Master for the Boot
 
 ## Getting Started
 
-[Include instructions for setting up the development environment, running the project, and any other relevant information for developers joining the project.]
+1. Clone the repository
+2. Open the project in Xcode
+3. Install the GoogleGenerativeAI Swift package:
+   - In Xcode, go to File > Add Packages...
+   - Enter the package URL: https://github.com/google/generative-ai-swift
+   - Click "Add Package"
+4. Set up your Gemini API key:
+   - Create a `GenerativeAI-Info.plist` file in the BootHillGMApp/BootHillGMApp directory
+   - Add your API key to this file with the key "API_KEY"
+   - Ensure this file is added to .gitignore to keep your API key secure
+5. Build and run the project
+
+[Include any additional setup instructions or requirements]
 
 ## Contributing
 
@@ -58,4 +70,4 @@ BootHillGM is an iOS app providing an AI-driven virtual Game Master for the Boot
 
 ---
 
-Last Updated: 2024-08-31
+Last Updated: 2024-09-01

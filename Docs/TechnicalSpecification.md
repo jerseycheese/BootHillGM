@@ -11,6 +11,7 @@
 - Primary Model: Gemini 1.5 Pro
 - API: Google Generative AI API
 - Integration Method: GoogleGenerativeAI Swift package
+- API Key Storage: Securely stored in GenerativeAI-Info.plist file (not tracked by Git)
 
 ## 3. Architecture Overview
 - MVVM (Model-View-ViewModel) architecture
@@ -55,7 +56,7 @@
 - Ensure smooth interactions between components to prevent bottlenecks
 
 ## 8. Security Measures
-- Secure storage of API keys
+- Secure storage of API keys in GenerativeAI-Info.plist (not tracked by Git)
 - Implement HTTPS for all network requests
 - Regular security audits and updates
 - Implement data encryption for sensitive user data
