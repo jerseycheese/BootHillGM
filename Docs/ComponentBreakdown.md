@@ -5,7 +5,7 @@ This document outlines the main components of the BootHillGM project, their func
 ## Components
 
 ### 1. Core Game Engine (GameCore)
-- **Main Functionality:** Manages game state, turns, and basic game flow
+- **Main Functionality:** Manages game state, turns, and basic game flow (including TurnManager functionality)
 - **Potential Challenges:** Ensuring thread safety, handling complex state changes
 - **Interactions:** Interacts with almost all other components, especially AIManager and CharacterManager
 
@@ -71,4 +71,4 @@ This order allows for building core functionality first, then adding more comple
 
 Note: While developing these components, work on multiple components may occur simultaneously due to their interconnected nature. This order is a general guideline and may need adjustment based on specific implementation details or challenges that arise during development.
 
-Last Updated: 08-31-2024
+Last Updated: 2024-08-31

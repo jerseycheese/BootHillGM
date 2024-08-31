@@ -1,24 +1,38 @@
-//
-//  ContentView.swift
-//  BootHillGMApp
-//
-//  Created by Jack Haas on 8/30/24.
-//
-
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var viewModel = AITestViewModel()
+    
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            Text("BootHillGM AI Test")
+                .font(.title)
+                .padding()
+            
+            Button("Generate Western Town Description") {
+                viewModel.generateTownDescription()
+            }
+            .padding()
+            .disabled(viewModel.isLoading)
+            
+            if viewModel.isLoading {
+                ProgressView()
+            } else if let errorMessage = viewModel.errorMessage {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+                    .padding()
+            } else {
+                Text(viewModel.townDescription)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
-        .padding()
     }
 }
 
-#Preview {
-    ContentView()
+// Preview provider for SwiftUI canvas
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }

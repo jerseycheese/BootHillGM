@@ -12,12 +12,14 @@
 ### Core Game Engine (GameCore)
 - [x] Implement game state management
 - [x] Develop turn-based system
-- [ ] Create basic game flow logic
+- [x] Create basic game flow logic
+- [x] Integrate TurnManager into GameCore for better encapsulation
 
 ### AI Integration Service (AIManager)
-- [ ] Set up Gemini API integration
+- [x] Set up Gemini API integration
+- [x] Implement basic AI response generation
 - [ ] Implement context management
-- [ ] Develop AI response processing system
+- [ ] Develop comprehensive AI response processing system
 
 ### Character Management System (CharacterManager)
 - [ ] Implement character creation flow
@@ -25,7 +27,7 @@
 - [ ] Create character progression logic
 
 ### User Interface (UIManager)
-- [ ] Design and implement basic UI framework
+- [x] Design and implement basic UI framework for AI testing
 - [ ] Create character creation interface
 - [ ] Develop game session view
 
@@ -112,4 +114,4 @@
 
 Note: This roadmap is aligned with the component breakdown and recommended development order. Progress will be made as time allows, and the order of tasks may be adjusted based on emerging needs or insights gained during development.
 
-Last Updated: 2024-09-01
+Last Updated: 2024-08-31

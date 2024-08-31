@@ -1,7 +1,10 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Hello, world!" : {
+    "BootHillGM AI Test" : {
+
+    },
+    "Generate Western Town Description" : {
 
     }
   },

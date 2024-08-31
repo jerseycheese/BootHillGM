@@ -11,6 +11,7 @@
 		C24B40202C8382A200B4EF5F /* GameCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C24B401F2C8382A200B4EF5F /* GameCoreTests.swift */; };
 		C24B40232C83A5A200B4EF5F /* GoogleGenerativeAI in Frameworks */ = {isa = PBXBuildFile; productRef = C24B40222C83A5A200B4EF5F /* GoogleGenerativeAI */; };
 		C24B40272C83A6EA00B4EF5F /* GenerativeAI-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C24B40262C83A6EA00B4EF5F /* GenerativeAI-Info.plist */; };
+		C24B40292C83AC5500B4EF5F /* AITestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C24B40282C83AC5500B4EF5F /* AITestViewModel.swift */; };
 		C2B5ACDF2C82535D004A13C0 /* BootHillGMAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B5ACDE2C82535D004A13C0 /* BootHillGMAppApp.swift */; };
 		C2B5ACE12C82535D004A13C0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B5ACE02C82535D004A13C0 /* ContentView.swift */; };
 		C2B5ACE32C825364004A13C0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C2B5ACE22C825364004A13C0 /* Assets.xcassets */; };
@@ -67,6 +68,7 @@
 		C24B401D2C8381BD00B4EF5F /* GameCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCore.swift; sourceTree = "<group>"; };
 		C24B401F2C8382A200B4EF5F /* GameCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreTests.swift; sourceTree = "<group>"; };
 		C24B40262C83A6EA00B4EF5F /* GenerativeAI-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GenerativeAI-Info.plist"; sourceTree = "<group>"; };
+		C24B40282C83AC5500B4EF5F /* AITestViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AITestViewModel.swift; path = BootHillGMApp/ViewModels/AITestViewModel.swift; sourceTree = SOURCE_ROOT; };
 		C2B5ACDB2C82535D004A13C0 /* BootHillGMApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BootHillGMApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2B5ACDE2C82535D004A13C0 /* BootHillGMAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootHillGMAppApp.swift; sourceTree = "<group>"; };
 		C2B5ACE02C82535D004A13C0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -201,6 +203,7 @@
 		C2B5AD082C8253B0004A13C0 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C24B40282C83AC5500B4EF5F /* AITestViewModel.swift */,
 				C2B5AD162C8255E8004A13C0 /* MainView.swift */,
 				C2B5AD182C8255FB004A13C0 /* CharacterCreationView.swift */,
 				C2B5AD1A2C82560B004A13C0 /* GameSessionView.swift */,
@@ -417,6 +420,7 @@
 				C2B5AD332C8256C0004A13C0 /* CharacterCreationViewModel.swift in Sources */,
 				C2B5AD1B2C82560B004A13C0 /* GameSessionView.swift in Sources */,
 				C2B5AD292C825695004A13C0 /* Character.swift in Sources */,
+				C24B40292C83AC5500B4EF5F /* AITestViewModel.swift in Sources */,
 				C2B5AD392C8256E4004A13C0 /* InventoryViewModel.swift in Sources */,
 				C2B5AD352C8256CB004A13C0 /* GameSessionViewModel.swift in Sources */,
 				C2B5AD3D2C8256FA004A13C0 /* AIService.swift in Sources */,
