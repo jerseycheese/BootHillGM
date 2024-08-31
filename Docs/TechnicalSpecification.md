@@ -20,6 +20,7 @@
 
 ## 4. Key Components
 1. Core Game Engine (GameCore): Manages game state, turns, and basic game flow
+   - TurnManager: Handles turn-based gameplay mechanics
 2. AI Integration Service (AIManager): Handles communication with the Gemini API, manages context, and processes AI responses
 3. Character Management System (CharacterManager): Manages character creation, attributes, skills, and progression
 4. Narrative Engine (NarrativeEngine): Generates and manages storylines, quests, and narrative elements

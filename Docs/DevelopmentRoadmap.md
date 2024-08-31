@@ -11,7 +11,7 @@
 
 ### Core Game Engine (GameCore)
 - [x] Implement game state management
-- [ ] Develop turn-based system
+- [x] Develop turn-based system
 - [ ] Create basic game flow logic
 
 ### AI Integration Service (AIManager)
@@ -112,4 +112,4 @@
 
 Note: This roadmap is aligned with the component breakdown and recommended development order. Progress will be made as time allows, and the order of tasks may be adjusted based on emerging needs or insights gained during development.
 
-Last Updated: 2024-08-31
+Last Updated: 2024-09-01
