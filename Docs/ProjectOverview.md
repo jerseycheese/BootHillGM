@@ -16,7 +16,7 @@ BootHillGM is an iOS app providing an AI-driven virtual Game Master for the Boot
 - Newcomers to tabletop RPGs seeking an accessible entry point
 
 ## 4. Key Features (MVP)
-- Boot Hill Character Creation
+- Conversation-driven Boot Hill Character Creation
 - AI-powered Game Mastering for Western settings
 - AI-powered NPCs with persistent memory
 - Game Session and State Management
@@ -52,4 +52,7 @@ The BootHillGM app is built using a modular component structure, including:
 
 This modular approach allows for easier development, testing, and future expansions.
 
-Last Updated: 2024-08-31
+## 8. Current Development Status
+- Implemented foundation for conversation-driven character creation
+- Character model includes basic attributes and conversation history
+- Character creation UI designed as a chat-like interface for AI-driven interactions

@@ -4,28 +4,40 @@ struct ContentView: View {
     @StateObject private var viewModel = AITestViewModel()
     
     var body: some View {
-        VStack {
-            Text("BootHillGM AI Test")
-                .font(.title)
+        NavigationView {
+            VStack {
+                Text("BootHillGM")
+                    .font(.largeTitle)
+                    .padding()
+                
+                NavigationLink(destination: CharacterCreationView()) {
+                    Text("Create Character")
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
                 .padding()
-            
-            Button("Generate Western Town Description") {
-                viewModel.generateTownDescription()
+                
+                Button("Generate Western Town Description") {
+                    viewModel.generateTownDescription()
+                }
+                .padding()
+                .disabled(viewModel.isLoading)
+                
+                if viewModel.isLoading {
+                    ProgressView()
+                } else if let errorMessage = viewModel.errorMessage {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                        .padding()
+                } else {
+                    Text(viewModel.townDescription)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
-            .padding()
-            .disabled(viewModel.isLoading)
-            
-            if viewModel.isLoading {
-                ProgressView()
-            } else if let errorMessage = viewModel.errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.red)
-                    .padding()
-            } else {
-                Text(viewModel.townDescription)
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
+            .navigationBarHidden(true)
         }
     }
 }

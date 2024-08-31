@@ -23,29 +23,31 @@
 1. Core Game Engine (GameCore): Manages game state, turns, and basic game flow
    - TurnManager: Handles turn-based gameplay mechanics
 2. AI Integration Service (AIManager): Handles communication with the Gemini API, manages context, and processes AI responses
-3. Character Management System (CharacterManager): Manages character creation, attributes, skills, and progression
+3. Character Management System:
+   - Character Model: Stores character data including attributes, skills, and conversation history
+   - CharacterCreationViewModel: Manages the conversation-driven character creation process
 4. Narrative Engine (NarrativeEngine): Generates and manages storylines, quests, and narrative elements
 5. Combat System (CombatSystem): Manages combat mechanics, turn order, and resolution
 6. Inventory System (InventorySystem): Manages items, equipment, and economy
 7. NPC Management (NPCManager): Generates and manages non-player characters
 8. Quest System (QuestSystem): Manages quest creation, tracking, and completion
-9. User Interface (UIManager): Manages all user interface elements and user interactions
+9. User Interface:
+   - CharacterCreationView: Provides a chat-like interface for AI-driven character creation
 10. Data Persistence (DataManager): Handles saving and loading game states, character data, and settings
 
 ## 5. Data Flow
-1. User interacts with the UI (UIManager)
-2. UIManager processes user input and communicates with relevant components
-3. GameCore updates game state based on user actions and component interactions
-4. AIManager generates responses based on game state, user input, and context from other components
-5. Relevant components (e.g., NarrativeEngine, CombatSystem) process AI responses and update their states
-6. GameCore coordinates updates across all components
-7. UIManager reflects changes in the UI
+1. User interacts with the UI (e.g., CharacterCreationView)
+2. ViewModel (e.g., CharacterCreationViewModel) processes user input and manages the conversation state
+3. Character model is updated based on user responses
+4. AIManager (to be implemented) will generate responses based on the conversation state and character data
+5. ViewModel updates the UI with AI responses and prompts for further user input
+6. Process repeats until character creation is complete
 
 ## 6. AI Integration Approach
 1. Develop a standardized interface for AI model interaction
 2. Implement error handling and recovery mechanisms
 3. Optimize prompts for Western genre and Boot Hill RPG rules
-4. Maintain context across user sessions
+4. Maintain context across user sessions using conversation history
 5. Implement efficient token usage strategies
 
 ## 7. Performance Considerations
@@ -69,9 +71,12 @@
 
 ## 10. Testing Strategy
 - Unit tests for core logic components and individual managers
-- UI tests for critical user flows
+- UI tests for critical user flows, including the conversation-driven character creation
 - Integration tests for AI service interactions and inter-component communication
 - Performance testing for response times and resource usage
 - Stress testing for complex game scenarios
 
-Last Updated: 2024-08-31
+## 11. Current Implementation Status
+- Character model implemented with basic attributes and conversation history
+- CharacterCreationView and CharacterCreationViewModel implemented for conversation-driven character creation
+- Placeholder logic for AI-driven conversation in place, ready for integration with actual AI service

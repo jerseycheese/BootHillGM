@@ -1,10 +1,19 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "BootHillGM AI Test" : {
+    "BootHillGM" : {
+
+    },
+    "Create Character" : {
 
     },
     "Generate Western Town Description" : {
+
+    },
+    "Send" : {
+
+    },
+    "Your response" : {
 
     }
   },
