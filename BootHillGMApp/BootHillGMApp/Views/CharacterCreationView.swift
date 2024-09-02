@@ -10,17 +10,8 @@ struct CharacterCreationView: View {
     
     var body: some View {
         VStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
-                    ForEach(viewModel.conversationHistory) { message in
-                        Text(message.content)
-                            .padding()
-                            .background(message.isUser ? Color.blue.opacity(0.2) : Color.gray.opacity(0.2))
-                            .cornerRadius(10)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ChatScrollView(messages: $viewModel.messages)
+                .frame(maxWidth: CGFloat.infinity, maxHeight: CGFloat.infinity)
             
             if viewModel.isProcessing {
                 ProgressView()

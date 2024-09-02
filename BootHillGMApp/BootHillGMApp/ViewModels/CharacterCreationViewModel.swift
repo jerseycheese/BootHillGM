@@ -2,9 +2,16 @@ import Foundation
 import Combine
 
 class CharacterCreationViewModel: ObservableObject {
-    @Published var conversationHistory: [Message] = []
+    /// The collection of messages in the chat.
+    @Published var messages: [BootHillGMApp.Message] = []
+    
+    /// The current user input in the text field.
     @Published var userInput: String = ""
+    
+    /// Indicates whether the AI is currently processing a response.
     @Published var isProcessing = false
+    
+    /// Indicates whether the view is waiting for user input.
     @Published var waitingForUserInput = false
     
     private let aiService: AIService
@@ -21,12 +28,14 @@ class CharacterCreationViewModel: ObservableObject {
         self.aiService = aiService
     }
     
+    /// Starts the conversation with the AI for character creation.
     func startConversation(gameCore: GameCore) {
         self.gameCore = gameCore
         addAIMessage("Welcome to character creation! Let's start by choosing your character's name. What would you like your character to be called?")
         waitingForUserInput = true
     }
     
+    /// Sends the user's message and processes it.
     func sendMessage() {
         guard !userInput.isEmpty else { return }
         let currentInput = userInput
@@ -36,12 +45,14 @@ class CharacterCreationViewModel: ObservableObject {
         waitingForUserInput = false
     }
     
+    /// Adds a user message to the chat.
     private func addUserMessage(_ message: String) {
-        conversationHistory.append(Message(id: UUID(), content: message, isUser: true))
+        messages.append(BootHillGMApp.Message(content: message, isAI: false))
     }
     
+    /// Adds an AI message to the chat.
     private func addAIMessage(_ message: String) {
-        conversationHistory.append(Message(id: UUID(), content: message, isUser: false))
+        messages.append(BootHillGMApp.Message(content: message, isAI: true))
     }
     
     private func processUserInput(_ input: String) {
@@ -49,7 +60,7 @@ class CharacterCreationViewModel: ObservableObject {
         
         Task {
             do {
-                let context = conversationHistory.map { "\($0.isUser ? "User" : "AI"): \($0.content)" }.joined(separator: "\n")
+                let context = messages.map { "\($0.isAI ? "AI" : "User"): \($0.content)" }.joined(separator: "\n")
                 let aiResponse = try await aiService.generateCharacterCreationResponse(context: context, userInput: input)
                 
                 await MainActor.run {
@@ -210,10 +221,4 @@ class CharacterCreationViewModel: ObservableObject {
     private func extractSkill(from response: String) -> Skill? {
         return Skill.allCases.first { response.lowercased().contains($0.rawValue.lowercased()) }
     }
-}
-
-struct Message: Identifiable {
-    let id: UUID
-    let content: String
-    let isUser: Bool
 }

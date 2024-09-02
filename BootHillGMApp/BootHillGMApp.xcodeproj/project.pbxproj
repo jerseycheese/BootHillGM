@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C2071DF22C8623CD006C9BDE /* ChatScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2071DF12C8623CC006C9BDE /* ChatScrollView.swift */; };
+		C2071DF42C8625D4006C9BDE /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2071DF32C8625D4006C9BDE /* Message.swift */; };
 		C24B401E2C8381BD00B4EF5F /* GameCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C24B401D2C8381BD00B4EF5F /* GameCore.swift */; };
 		C24B40202C8382A200B4EF5F /* GameCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C24B401F2C8382A200B4EF5F /* GameCoreTests.swift */; };
 		C24B40232C83A5A200B4EF5F /* GoogleGenerativeAI in Frameworks */ = {isa = PBXBuildFile; productRef = C24B40222C83A5A200B4EF5F /* GoogleGenerativeAI */; };
@@ -67,6 +69,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C2071DF12C8623CC006C9BDE /* ChatScrollView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatScrollView.swift; sourceTree = "<group>"; };
+		C2071DF32C8625D4006C9BDE /* Message.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		C24B401D2C8381BD00B4EF5F /* GameCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCore.swift; sourceTree = "<group>"; };
 		C24B401F2C8382A200B4EF5F /* GameCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreTests.swift; sourceTree = "<group>"; };
 		C24B40262C83A6EA00B4EF5F /* GenerativeAI-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GenerativeAI-Info.plist"; sourceTree = "<group>"; };
@@ -207,6 +211,7 @@
 		C2B5AD082C8253B0004A13C0 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C2071DF12C8623CC006C9BDE /* ChatScrollView.swift */,
 				C24B40282C83AC5500B4EF5F /* AITestViewModel.swift */,
 				C2B5AD162C8255E8004A13C0 /* MainView.swift */,
 				C2B5AD182C8255FB004A13C0 /* CharacterCreationView.swift */,
@@ -221,6 +226,7 @@
 		C2B5AD092C8253B6004A13C0 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				C2071DF32C8625D4006C9BDE /* Message.swift */,
 				C24B402A2C83B4D500B4EF5F /* CharacterManager.swift */,
 				C24B402B2C83B4D500B4EF5F /* TurnManager.swift */,
 				C2B5AD282C825695004A13C0 /* Character.swift */,
@@ -433,6 +439,7 @@
 				C2B5AD3D2C8256FA004A13C0 /* AIService.swift in Sources */,
 				C2B5AD372C8256D8004A13C0 /* CharacterSheetViewModel.swift in Sources */,
 				C2B5AD2D2C8256A2004A13C0 /* Inventory.swift in Sources */,
+				C2071DF42C8625D4006C9BDE /* Message.swift in Sources */,
 				C2B5ACE12C82535D004A13C0 /* ContentView.swift in Sources */,
 				C2B5AD412C82571D004A13C0 /* PersistenceManager.swift in Sources */,
 				C2B5AD212C82563E004A13C0 /* QuestView.swift in Sources */,
@@ -449,6 +456,7 @@
 				C2B5AD472C825738004A13C0 /* Helpers.swift in Sources */,
 				C2B5AD3F2C825714004A13C0 /* GameStateManager.swift in Sources */,
 				C2B5AD432C825725004A13C0 /* DiceRollService.swift in Sources */,
+				C2071DF22C8623CD006C9BDE /* ChatScrollView.swift in Sources */,
 				C24B401E2C8381BD00B4EF5F /* GameCore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
