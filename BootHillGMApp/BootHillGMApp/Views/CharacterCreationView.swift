@@ -28,9 +28,14 @@ struct CharacterCreationView: View {
             }
             
             HStack {
+                // Modified TextField with onSubmit modifier
                 TextField("Your response", text: $viewModel.userInput)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .disabled(viewModel.isProcessing)
+                    .onSubmit {
+                        // Call sendMessage when Return key is pressed
+                        viewModel.sendMessage()
+                    }
                 
                 Button("Send") {
                     viewModel.sendMessage()
