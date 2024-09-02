@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel = AITestViewModel()
+    let aiService = AIService()
     
     var body: some View {
         NavigationView() {
@@ -10,7 +11,7 @@ struct ContentView: View {
                     .font(.largeTitle)
                     .padding()
                 
-                NavigationLink(destination: CharacterCreationView()) {
+                NavigationLink(destination: CharacterCreationView(aiService: aiService)) {
                     Text("Create Character")
                         .padding()
                         .background(Color.blue)

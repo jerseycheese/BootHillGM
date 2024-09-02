@@ -9,15 +9,25 @@ This document outlines the main components of the BootHillGM project, their func
 - **Potential Challenges:** Ensuring thread safety, handling complex state changes
 - **Interactions:** Interacts with almost all other components, especially AIManager and CharacterManager
 
-### 2. AI Integration Service (AIManager)
+### 2. AI Integration Service (AIService)
 - **Main Functionality:** Handles communication with Gemini API, manages context, and processes AI responses
 - **Potential Challenges:** Optimizing prompts, handling API errors, managing token usage
 - **Interactions:** Interacts with GameCore, NarrativeEngine, and NPCManager
+- **Key Methods:**
+  - `generateWesternTownDescription`: Generates descriptions of Western towns
+  - `generateCharacterCreationResponse`: Generates context-aware responses for the character creation process
 
-### 3. Character Management System (CharacterManager)
+### 3. Character Management System
 - **Main Functionality:** Handles character creation, attributes, skills, and progression
 - **Potential Challenges:** Implementing Boot Hill RPG rules accurately, balancing character progression
 - **Interactions:** Interacts with GameCore, InventorySystem, and CombatSystem
+- **Key Components:**
+  - CharacterManager: Manages character data and operations
+  - CharacterCreationViewModel: Implements the conversation-driven character creation process
+    - Handles step-by-step creation of character attributes, skills, and background
+    - Manages conversation flow and AI interactions during character creation
+    - Implements error handling and input validation
+  - Character Model: Stores character data including attributes, skills, and background
 
 ### 4. Narrative Engine (NarrativeEngine)
 - **Main Functionality:** Generates and manages storylines, quests, and narrative elements
@@ -48,6 +58,8 @@ This document outlines the main components of the BootHillGM project, their func
 - **Main Functionality:** Manages all user interface elements and user interactions
 - **Potential Challenges:** Creating an intuitive text-based interface, handling dynamic content
 - **Interactions:** Interacts with all other components to display information and gather user input
+- **Key Views:**
+  - CharacterCreationView: Provides a chat-like interface for AI-driven character creation
 
 ### 10. Data Persistence (DataManager)
 - **Main Functionality:** Handles saving and loading game states, character data, and settings
@@ -57,8 +69,8 @@ This document outlines the main components of the BootHillGM project, their func
 ## Recommended Development Order
 
 1. Core Game Engine (GameCore)
-2. AI Integration Service (AIManager)
-3. Character Management System (CharacterManager)
+2. AI Integration Service (AIService)
+3. Character Management System
 4. User Interface (UIManager)
 5. Combat System (CombatSystem)
 6. Inventory System (InventorySystem)

@@ -12,6 +12,9 @@
 - API: Google Generative AI API
 - Integration Method: GoogleGenerativeAI Swift package
 - API Key Storage: Securely stored in GenerativeAI-Info.plist file (not tracked by Git)
+- Key AI Service Methods:
+  - `generateWesternTownDescription`: Generates descriptions of Western towns
+  - `generateCharacterCreationResponse`: Generates context-aware responses for the character creation process
 
 ## 3. Architecture Overview
 - MVVM (Model-View-ViewModel) architecture
@@ -39,7 +42,7 @@
 1. User interacts with the UI (e.g., CharacterCreationView)
 2. ViewModel (e.g., CharacterCreationViewModel) processes user input and manages the conversation state
 3. Character model is updated based on user responses
-4. AIManager (to be implemented) will generate responses based on the conversation state and character data
+4. AIService generates responses based on the conversation state and character data
 5. ViewModel updates the UI with AI responses and prompts for further user input
 6. Process repeats until character creation is complete
 
@@ -79,4 +82,5 @@
 ## 11. Current Implementation Status
 - Character model implemented with basic attributes and conversation history
 - CharacterCreationView and CharacterCreationViewModel implemented for conversation-driven character creation
-- Placeholder logic for AI-driven conversation in place, ready for integration with actual AI service
+- AI-driven conversation integrated with AIService for character creation process
+- Basic error handling and user feedback implemented in character creation flow

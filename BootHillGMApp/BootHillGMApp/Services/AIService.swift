@@ -48,6 +48,29 @@ class AIService {
         return try await generateResponse(prompt: prompt)
     }
     
+    func generateCharacterCreationResponse(context: String, userInput: String) async throws -> String {
+        let prompt = """
+        You are an AI game master for the Boot Hill RPG, a Western-themed tabletop role-playing game. You are currently assisting a player in creating their character. Use the following context and user input to generate an appropriate response that guides the player through the character creation process.
+
+        Character Creation Context:
+        \(context)
+
+        User Input:
+        \(userInput)
+
+        Provide a response that:
+        1. Acknowledges the user's input
+        2. Asks relevant questions about the character's background, skills, or attributes
+        3. Offers suggestions or options that fit the Boot Hill setting
+        4. Maintains a friendly and engaging tone
+        5. Keeps the response concise (2-3 sentences)
+
+        Response:
+        """
+        
+        return try await generateResponse(prompt: prompt)
+    }
+    
     func testConnection() async -> Bool {
         do {
             let response = try await generateWesternTownDescription()

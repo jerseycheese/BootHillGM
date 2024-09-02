@@ -15,21 +15,28 @@
 - [x] Create basic game flow logic
 - [x] Integrate TurnManager into GameCore for better encapsulation
 
-### AI Integration Service (AIManager)
+### AI Integration Service (AIService)
 - [x] Set up Gemini API integration
 - [x] Implement basic AI response generation
-- [ ] Implement context management
-- [ ] Develop comprehensive AI response processing system
+- [x] Implement context management for character creation
+- [x] Develop comprehensive AI response processing system for character creation
+- [ ] Extend AI integration to other game aspects (e.g., narrative generation, NPC interactions)
 
-### Character Management System (CharacterManager)
-- [ ] Implement character creation flow
-- [ ] Develop attribute and skill system
-- [ ] Create character progression logic
+### Character Management System
+- [x] Implement character creation flow
+- [x] Develop attribute and skill system
+- [x] Create CharacterCreationViewModel for managing the creation process
+- [x] Implement AI-driven conversation for character creation
+- [ ] Implement character progression logic
+- [ ] Develop character editing and updating functionality
+- [ ] Create character inventory management
 
 ### User Interface (UIManager)
 - [x] Design and implement basic UI framework for AI testing
-- [ ] Create character creation interface
+- [x] Create character creation interface (CharacterCreationView)
 - [ ] Develop game session view
+- [ ] Implement character sheet view
+- [ ] Create inventory management interface
 
 ### Combat System (CombatSystem)
 - [ ] Implement Boot Hill RPG combat rules
