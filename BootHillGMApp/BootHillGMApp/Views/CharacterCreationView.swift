@@ -4,8 +4,8 @@ struct CharacterCreationView: View {
     @EnvironmentObject var gameCore: GameCore
     @StateObject private var viewModel: CharacterCreationViewModel
     
-    init(aiService: AIService) {
-        _viewModel = StateObject(wrappedValue: CharacterCreationViewModel(aiService: aiService))
+    init(aiService: AIService, diceRollService: DiceRollService) {
+        _viewModel = StateObject(wrappedValue: CharacterCreationViewModel(aiService: aiService, diceRollService: diceRollService))
     }
     
     var body: some View {
@@ -44,7 +44,7 @@ struct CharacterCreationView: View {
 
 struct CharacterCreationView_Previews: PreviewProvider {
     static var previews: some View {
-        CharacterCreationView(aiService: AIService())
+        CharacterCreationView(aiService: AIService(), diceRollService: DiceRollService())
             .environmentObject(GameCore(aiService: AIService()))
     }
 }

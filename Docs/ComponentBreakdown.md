@@ -28,6 +28,7 @@ This document outlines the main components of the BootHillGM project, their func
     - Manages conversation flow and AI interactions during character creation
     - Implements error handling and input validation
   - Character Model: Stores character data including attributes, skills, and background
+  - DiceRollService: Handles virtual dice rolls for automated attribute generation
 
 ### 4. Narrative Engine (NarrativeEngine)
 - **Main Functionality:** Generates and manages storylines, quests, and narrative elements

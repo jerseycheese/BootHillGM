@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var viewModel = AITestViewModel()
     let aiService = AIService()
+    let diceRollService = DiceRollService()
     
     var body: some View {
         NavigationView() {
@@ -11,7 +12,7 @@ struct ContentView: View {
                     .font(.largeTitle)
                     .padding()
                 
-                NavigationLink(destination: CharacterCreationView(aiService: aiService)) {
+                NavigationLink(destination: CharacterCreationView(aiService: aiService, diceRollService: diceRollService)) {
                     Text("Create Character")
                         .padding()
                         .background(Color.blue)

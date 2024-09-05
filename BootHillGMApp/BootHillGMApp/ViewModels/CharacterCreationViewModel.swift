@@ -15,6 +15,8 @@ class CharacterCreationViewModel: ObservableObject {
     @Published var waitingForUserInput = false
     
     private let aiService: AIService
+    /// The service responsible for handling dice rolls
+    private let diceRollService: DiceRollService
     private var gameCore: GameCore?
     private var character: GameCharacter?
     private var currentStep: CreationStep = .name
@@ -24,8 +26,13 @@ class CharacterCreationViewModel: ObservableObject {
         case name, age, occupation, attributes, skills, background, complete
     }
     
-    init(aiService: AIService) {
+    /// Initializes the CharacterCreationViewModel with required services
+    /// - Parameters:
+    ///   - aiService: The service for AI-assisted character creation
+    ///   - diceRollService: The service for handling dice rolls
+    init(aiService: AIService, diceRollService: DiceRollService) {
         self.aiService = aiService
+        self.diceRollService = diceRollService
     }
     
     /// Starts the conversation with the AI for character creation.
@@ -97,23 +104,13 @@ class CharacterCreationViewModel: ObservableObject {
             if let occupation = extractOccupation(from: userInput) {
                 character?.occupation = occupation
                 currentStep = .attributes
-                addAIMessage("Excellent! Your character is a \(occupation). Now let's determine their attributes. We'll go through each attribute, and you can assign a value from 1 to 10, with 10 being the highest. Let's start with Strength. What's their Strength value (1-10)?")
+                generateAndDisplayAttributes()
             } else {
                 addAIMessage("I'm sorry, I couldn't understand the occupation. Can you please provide a clear occupation for your character?")
             }
         case .attributes:
-            if let attribute = extractAttribute(from: userInput) {
-                character?.attributes[attribute.key] = attribute.value
-                if character?.attributes.count == Attribute.allCases.count {
-                    currentStep = .skills
-                    addAIMessage("Great! We've set all the attributes. Now let's choose some skills. What skill would you like to add? Available skills are: \(Skill.allCases.map { $0.rawValue }.joined(separator: ", "))")
-                } else {
-                    let nextAttribute = Attribute.allCases[character?.attributes.count ?? 0]
-                    addAIMessage("What's their \(nextAttribute.rawValue) value (1-10)?")
-                }
-            } else {
-                addAIMessage("I'm sorry, I couldn't understand the attribute value. Please provide a number between 1 and 10 for the current attribute.")
-            }
+            // Attributes are now automatically generated, so we skip user input for this step
+            break
         case .skills:
             if userInput.lowercased() == "no" {
                 moveToBackgroundStep()
@@ -165,6 +162,18 @@ class CharacterCreationViewModel: ObservableObject {
         }
     }
     
+    /// Generates attribute scores using dice rolls and displays them to the user
+    private func generateAndDisplayAttributes() {
+        // Use the DiceRollService to generate attribute scores
+        let attributeScores = diceRollService.generateAttributeScores()
+        character?.attributes = attributeScores
+        
+        // Format the attribute scores for display
+        let attributeDescription = attributeScores.map { "\($0.key): \($0.value)" }.joined(separator: "\n")
+        addAIMessage("I've rolled the dice for your character's attributes. Here are the results:\n\n\(attributeDescription)\n\nLet's move on to skills. What skill would you like to add? Available skills are: \(Skill.allCases.map { $0.rawValue }.joined(separator: ", "))")
+        currentStep = .skills
+    }
+    
     private func summarizeCharacter() {
         guard let character = character else {
             addAIMessage("I'm sorry, there was an error summarizing your character. Please try creating your character again.")
@@ -176,7 +185,7 @@ class CharacterCreationViewModel: ObservableObject {
         Name: \(character.name)
         Age: \(character.age ?? 0)
         Occupation: \(character.occupation ?? "Unknown")
-        Attributes: \(character.attributes.map { "\($0.key.rawValue): \($0.value)" }.joined(separator: ", "))
+        Attributes: \(character.attributes.map { "\($0.key): \($0.value)" }.joined(separator: ", "))
         Skills: \(character.skills.map { $0.key.rawValue }.joined(separator: ", "))
         Background: \(character.background ?? "Not provided")
         """
@@ -199,23 +208,6 @@ class CharacterCreationViewModel: ObservableObject {
     
     private func extractOccupation(from response: String) -> String? {
         return response.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-    
-    private func extractAttribute(from response: String) -> (key: Attribute, value: Int)? {
-        guard let value = Int(response), (1...10).contains(value) else {
-            print("Failed to extract valid attribute value from: \(response)")
-            return nil
-        }
-        
-        let currentAttributeIndex = character?.attributes.count ?? 0
-        guard currentAttributeIndex < Attribute.allCases.count else {
-            print("All attributes have already been set")
-            return nil
-        }
-        
-        let attribute = Attribute.allCases[currentAttributeIndex]
-        print("Extracted attribute: \(attribute.rawValue) with value: \(value)")
-        return (attribute, value)
     }
     
     private func extractSkill(from response: String) -> Skill? {

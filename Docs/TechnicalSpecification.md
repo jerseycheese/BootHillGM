@@ -29,6 +29,7 @@
 3. Character Management System:
    - Character Model: Stores character data including attributes, skills, and conversation history
    - CharacterCreationViewModel: Manages the conversation-driven character creation process
+   - DiceRollService: Handles virtual dice rolls for automated attribute generation
 4. Narrative Engine (NarrativeEngine): Generates and manages storylines, quests, and narrative elements
 5. Combat System (CombatSystem): Manages combat mechanics, turn order, and resolution
 6. Inventory System (InventorySystem): Manages items, equipment, and economy
@@ -41,7 +42,7 @@
 ## 5. Data Flow
 1. User interacts with the UI (e.g., CharacterCreationView)
 2. ViewModel (e.g., CharacterCreationViewModel) processes user input and manages the conversation state
-3. Character model is updated based on user responses
+3. Character model is updated based on user responses and automated processes (e.g., attribute generation)
 4. AIService generates responses based on the conversation state and character data
 5. ViewModel updates the UI with AI responses and prompts for further user input
 6. Process repeats until character creation is complete
@@ -84,3 +85,4 @@
 - CharacterCreationView and CharacterCreationViewModel implemented for conversation-driven character creation
 - AI-driven conversation integrated with AIService for character creation process
 - Basic error handling and user feedback implemented in character creation flow
+- Automated attribute generation implemented using DiceRollService
