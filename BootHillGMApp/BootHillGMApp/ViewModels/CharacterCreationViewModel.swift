@@ -193,7 +193,7 @@ class CharacterCreationViewModel: ObservableObject {
             currentStep = .complete
             summarizeCharacter()
         case .complete:
-            // Character creation is already complete, no action needed
+            // Remove the AI question and just provide a final message
             generateAIResponse(userInput: "Character creation complete")
         }
     }
@@ -241,7 +241,9 @@ class CharacterCreationViewModel: ObservableObject {
         character?.abilities = abilityScores
         
         let abilityDescription = abilityScores.map { "\($0.key.rawValue): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: "\n")
-        addAIMessage("Here are your character's abilities:\n\n\(abilityDescription)")
+        
+        // Combine ability scores and explanation into a single message
+        addAIMessage("Here are your character's abilities:\n\n\(abilityDescription)\n\nLet me explain what these abilities mean and how they might affect your character in the Boot Hill setting.")
         
         generateAIResponse(userInput: "Explain abilities: \(abilityDescription)")
     }
@@ -253,15 +255,19 @@ class CharacterCreationViewModel: ObservableObject {
         }
         
         let summary = """
+        Character Creation Complete! Here's a summary of your character:
+
         Name: \(character.name)
         Age: \(character.age ?? 0)
         Occupation: \(character.occupation ?? "Unknown")
         Attributes: \(character.attributes.map { "\($0.key): \($0.value)" }.joined(separator: ", "))
         Abilities: \(character.abilities.map { "\($0.key.rawValue): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: ", "))
         Background: \(character.background ?? "Not provided")
+
+        Your character is now ready for adventure in the Wild West! Good luck, partner!
         """
         
-        generateAIResponse(userInput: "Character summary: \(summary)")
+        addAIMessage(summary)
     }
     
     private func extractAge(from response: String) -> Int? {
