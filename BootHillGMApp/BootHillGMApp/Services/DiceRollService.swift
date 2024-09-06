@@ -37,4 +37,40 @@ class DiceRollService {
         
         return scores
     }
+    
+    /// Generates a percentile score (1-100) for an ability
+    /// - Returns: A random number between 1 and 100
+    func generatePercentileScore() -> Int {
+        return rollDice(count: 1, sides: 100)
+    }
+    
+    /// Converts a percentile score to a rating
+    /// - Parameter percentile: The percentile score to convert
+    /// - Returns: The corresponding rating (0 to 5)
+    func convertPercentileToRating(_ percentile: Int) -> Int {
+        switch percentile {
+        case 1...20: return 0
+        case 21...40: return 1
+        case 41...60: return 2
+        case 61...80: return 3
+        case 81...95: return 4
+        case 96...100: return 5
+        default: return 0
+        }
+    }
+    
+    /// Generates a complete set of ability scores for character creation
+    /// - Returns: A dictionary with BootHillAbility enum cases as keys and AbilityScore structs as values
+    func generateAbilityScores() -> [BootHillAbility: AbilityScore] {
+        var scores: [BootHillAbility: AbilityScore] = [:]
+        
+        // Generate a percentile score and rating for each ability
+        for ability in BootHillAbility.allCases {
+            let percentile = generatePercentileScore()
+            let rating = convertPercentileToRating(percentile)
+            scores[ability] = AbilityScore(percentile: percentile, rating: rating)
+        }
+        
+        return scores
+    }
 }

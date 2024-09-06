@@ -1,13 +1,57 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld" : {
+
+    },
+    "%lld%% (Rating: %lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld%% (Rating: %2$lld)"
+          }
+        }
+      }
+    },
+    "Abilities" : {
+
+    },
+    "Age: %lld" : {
+
+    },
+    "Attributes" : {
+
+    },
+    "Background" : {
+
+    },
     "BootHillGM" : {
+
+    },
+    "Character Info" : {
 
     },
     "Create Character" : {
 
     },
     "Generate Western Town Description" : {
+
+    },
+    "Hit Points: %lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hit Points: %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "Money: $%lld" : {
+
+    },
+    "Occupation: %@" : {
 
     },
     "Send" : {

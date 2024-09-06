@@ -6,7 +6,25 @@ class GameCoreTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        gameCore = GameCore()
+        let mockAIService = MockAIService() // You'll need to create this mock
+        gameCore = GameCore(aiService: mockAIService)
+    }
+
+    func testCreateCharacter() {
+        let expectation = self.expectation(description: "Create character")
+        
+        gameCore.createCharacter(name: "Test Character") { result in
+            switch result {
+            case .success(let character):
+                XCTAssertEqual(character.name, "Test Character")
+                XCTAssertNotNil(character.id)
+            case .failure(let error):
+                XCTFail("Character creation failed with error: \(error)")
+            }
+            expectation.fulfill()
+        }
+        
+        waitForExpectations(timeout: 5, handler: nil)
     }
     
     func testStartNewGame() throws {

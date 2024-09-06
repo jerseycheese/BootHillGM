@@ -10,6 +10,7 @@ class GameCore: ObservableObject {
     init(aiService: AIService) {
         self.characterManager = CharacterManager(aiService: aiService)
     }
+
     
     func startNewGame() throws {
         guard gameState == .notStarted else {
@@ -38,7 +39,7 @@ class GameCore: ObservableObject {
         log("Advanced to turn \(turnManager?.currentTurn?.turnNumber ?? 0)")
     }
     
-    func createCharacter(name: String, completion: @escaping (Result<GameCharacter, Error>) -> Void) {
+    func createCharacter(name: String, completion: @escaping (Result<Character, Error>) -> Void) {
         characterManager.createCharacter(name: name) { result in
             switch result {
             case .success(let character):

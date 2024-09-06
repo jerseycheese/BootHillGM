@@ -18,12 +18,11 @@ class CharacterCreationViewModel: ObservableObject {
     /// The service responsible for handling dice rolls
     private let diceRollService: DiceRollService
     private var gameCore: GameCore?
-    private var character: GameCharacter?
+    private var character: Character?
     private var currentStep: CreationStep = .name
-    private let maxSkills = 5
     
     enum CreationStep: String {
-        case name, age, occupation, attributesExplanation, attributesRolling, skills, background, complete
+        case name, age, occupation, attributesExplanation, attributesRolling, abilitiesExplanation, abilitiesRolling, background, complete
     }
     
     /// Initializes the CharacterCreationViewModel with required services
@@ -81,8 +80,14 @@ class CharacterCreationViewModel: ObservableObject {
                         self.currentStep = .attributesRolling
                         self.generateAndDisplayAttributes()
                     } else if self.currentStep == .attributesRolling {
-                        self.currentStep = .skills
-                        self.generateAIResponse(userInput: "move to skills")
+                        self.currentStep = .abilitiesExplanation
+                        self.generateAIResponse(userInput: "move to abilities explanation")
+                    } else if self.currentStep == .abilitiesExplanation {
+                        self.currentStep = .abilitiesRolling
+                        self.generateAndDisplayAbilities()
+                    } else if self.currentStep == .abilitiesRolling {
+                        self.currentStep = .background
+                        self.generateAIResponse(userInput: "move to background")
                     }
                 }
             } catch {
@@ -113,8 +118,8 @@ class CharacterCreationViewModel: ObservableObject {
             if !character.attributes.isEmpty {
                 context += "Attributes: \(character.attributes.map { "\($0.key): \($0.value)" }.joined(separator: ", "))\n"
             }
-            if !character.skills.isEmpty {
-                context += "Skills: \(character.skills.map { $0.key.rawValue }.joined(separator: ", "))\n"
+            if !character.abilities.isEmpty {
+                context += "Abilities: \(character.abilities.map { "\($0.key.rawValue): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: ", "))\n"
             }
             if let background = character.background {
                 context += "Background: \(background)\n"
@@ -138,9 +143,10 @@ class CharacterCreationViewModel: ObservableObject {
         case .attributesRolling:
             // Specific instructions to prevent AI from asking questions about attributes
             context += "The attributes have been rolled. Provide a brief explanation of what each attribute means and how it might affect the character in the Boot Hill setting. Do not ask any questions or prompt the user for input. Do not move to the next step."
-        case .skills:
-            // Instructions to prevent implying previous user responses
-            context += "Introduce the skills step without implying any previous user response. Ask the user to choose a skill or say 'no' to finish. List available skills if needed."
+        case .abilitiesExplanation:
+            context += "Explain that you are about to generate the character's abilities. Describe the process of determining percentile scores and ratings for each ability in Boot Hill. Do not generate any ability scores yet."
+        case .abilitiesRolling:
+            context += "The abilities have been generated. Provide a brief explanation of what each ability means and how it might affect the character in the Boot Hill setting. Do not ask any questions or prompt the user for input. Do not move to the next step."
         case .background:
             context += "Ask for a brief background of the character. Do not ask for any other information."
         case .complete:
@@ -170,22 +176,9 @@ class CharacterCreationViewModel: ObservableObject {
             } else {
                 generateAIResponse(userInput: "Invalid occupation")
             }
-        case .attributesExplanation, .attributesRolling:
+        case .attributesExplanation, .attributesRolling, .abilitiesExplanation, .abilitiesRolling:
             // These steps are handled automatically after AI response
             break
-        case .skills:
-            if input.lowercased() == "no" {
-                moveToBackgroundStep()
-            } else if let skill = extractSkill(from: input) {
-                character?.skills[skill] = 1 // Start with a basic proficiency
-                if (character?.skills.count ?? 0) >= maxSkills {
-                    moveToBackgroundStep()
-                } else {
-                    generateAIResponse(userInput: "Skill added: \(skill.rawValue)")
-                }
-            } else {
-                generateAIResponse(userInput: "Invalid skill")
-            }
         case .background:
             character?.background = input
             currentStep = .complete
@@ -194,11 +187,6 @@ class CharacterCreationViewModel: ObservableObject {
             // Character creation is already complete, no action needed
             generateAIResponse(userInput: "Character creation complete")
         }
-    }
-    
-    private func moveToBackgroundStep() {
-        currentStep = .background
-        generateAIResponse(userInput: "move to background")
     }
     
     private func createCharacter(name: String) {
@@ -239,6 +227,16 @@ class CharacterCreationViewModel: ObservableObject {
         generateAIResponse(userInput: "Explain attributes: \(attributeDescription)")
     }
     
+    private func generateAndDisplayAbilities() {
+        let abilityScores = diceRollService.generateAbilityScores()
+        character?.abilities = abilityScores
+        
+        let abilityDescription = abilityScores.map { "\($0.key.rawValue): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: "\n")
+        addAIMessage("Here are your character's abilities:\n\n\(abilityDescription)")
+        
+        generateAIResponse(userInput: "Explain abilities: \(abilityDescription)")
+    }
+    
     private func summarizeCharacter() {
         guard let character = character else {
             addAIMessage("I'm sorry, there was an error summarizing your character. Please try creating your character again.")
@@ -250,7 +248,7 @@ class CharacterCreationViewModel: ObservableObject {
         Age: \(character.age ?? 0)
         Occupation: \(character.occupation ?? "Unknown")
         Attributes: \(character.attributes.map { "\($0.key): \($0.value)" }.joined(separator: ", "))
-        Skills: \(character.skills.map { $0.key.rawValue }.joined(separator: ", "))
+        Abilities: \(character.abilities.map { "\($0.key.rawValue): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: ", "))
         Background: \(character.background ?? "Not provided")
         """
         
@@ -264,9 +262,5 @@ class CharacterCreationViewModel: ObservableObject {
     
     private func extractOccupation(from response: String) -> String? {
         return response.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-    
-    private func extractSkill(from response: String) -> Skill? {
-        return Skill.allCases.first { response.lowercased().contains($0.rawValue.lowercased()) }
     }
 }
