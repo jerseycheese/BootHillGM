@@ -22,8 +22,8 @@ class CharacterCreationViewModel: ObservableObject {
     private var currentStep: CreationStep = .name
     private let maxSkills = 5
     
-    enum CreationStep {
-        case name, age, occupation, attributes, skills, background, complete
+    enum CreationStep: String {
+        case name, age, occupation, attributesExplanation, attributesRolling, skills, background, complete
     }
     
     /// Initializes the CharacterCreationViewModel with required services
@@ -38,8 +38,8 @@ class CharacterCreationViewModel: ObservableObject {
     /// Starts the conversation with the AI for character creation.
     func startConversation(gameCore: GameCore) {
         self.gameCore = gameCore
-        addAIMessage("Welcome to character creation! Let's start by choosing your character's name. What would you like your character to be called?")
-        waitingForUserInput = true
+        currentStep = .name
+        generateAIResponse(userInput: "start character creation")
     }
     
     /// Sends the user's message and processes it.
@@ -49,7 +49,6 @@ class CharacterCreationViewModel: ObservableObject {
         addUserMessage(currentInput)
         processUserInput(currentInput)
         userInput = ""
-        waitingForUserInput = false
     }
     
     /// Adds a user message to the chat.
@@ -62,18 +61,29 @@ class CharacterCreationViewModel: ObservableObject {
         messages.append(BootHillGMApp.Message(content: message, isAI: true))
     }
     
-    private func processUserInput(_ input: String) {
+    private func generateAIResponse(userInput: String) {
+        guard !isProcessing else { return }
         isProcessing = true
+        waitingForUserInput = false
         
         Task {
             do {
-                let context = messages.map { "\($0.isAI ? "AI" : "User"): \($0.content)" }.joined(separator: "\n")
-                let aiResponse = try await aiService.generateCharacterCreationResponse(context: context, userInput: input)
+                let context = buildContext(userInput: userInput)
+                let aiResponse = try await aiService.generateCharacterCreationResponse(context: context, userInput: userInput)
                 
                 await MainActor.run {
-                    handleAIResponse(aiResponse, userInput: input)
+                    addAIMessage(aiResponse)
                     isProcessing = false
                     waitingForUserInput = true
+                    
+                    // Handle special cases after AI response
+                    if self.currentStep == .attributesExplanation {
+                        self.currentStep = .attributesRolling
+                        self.generateAndDisplayAttributes()
+                    } else if self.currentStep == .attributesRolling {
+                        self.currentStep = .skills
+                        self.generateAIResponse(userInput: "move to skills")
+                    }
                 }
             } catch {
                 print("Error generating AI response: \(error.localizedDescription)")
@@ -86,56 +96,109 @@ class CharacterCreationViewModel: ObservableObject {
         }
     }
     
-    private func handleAIResponse(_ response: String, userInput: String) {
-        let cleanedResponse = cleanMessage(response)
+    /// Builds the context for the AI service, providing instructions based on the current step
+    /// - Parameter userInput: The latest input from the user
+    /// - Returns: A string containing the context and instructions for the AI
+    private func buildContext(userInput: String) -> String {
+        var context = "Current step: \(currentStep.rawValue)\n"
+        context += "Character creation progress:\n"
+        if let character = character {
+            context += "Name: \(character.name)\n"
+            if let age = character.age {
+                context += "Age: \(age)\n"
+            }
+            if let occupation = character.occupation {
+                context += "Occupation: \(occupation)\n"
+            }
+            if !character.attributes.isEmpty {
+                context += "Attributes: \(character.attributes.map { "\($0.key): \($0.value)" }.joined(separator: ", "))\n"
+            }
+            if !character.skills.isEmpty {
+                context += "Skills: \(character.skills.map { $0.key.rawValue }.joined(separator: ", "))\n"
+            }
+            if let background = character.background {
+                context += "Background: \(background)\n"
+            }
+        }
+        context += "\nUser input: \(userInput)\n"
         
+        // Global instructions to prevent unwanted AI behavior
+        context += "\nInstructions: Focus only on the current step. Do not reference or ask about information from previous steps. Do not ask about or mention any steps that haven't happened yet. Do not ask any questions or prompt the user for input. "
+        
+        // Step-specific instructions
         switch currentStep {
         case .name:
-            createCharacter(name: userInput.trimmingCharacters(in: .whitespacesAndNewlines))
+            context += "Ask for the character's name. Do not ask for any other information."
         case .age:
-            if let age = extractAge(from: cleanedResponse) {
+            context += "Ask for the character's age. Do not ask for any other information."
+        case .occupation:
+            context += "Ask for the character's occupation. Do not ask for any other information."
+        case .attributesExplanation:
+            context += "Explain that you are about to roll virtual dice for the attributes. Describe the dice rolling process (3d6 for each attribute) and its significance in Boot Hill. Do not roll the dice or provide any attribute values yet."
+        case .attributesRolling:
+            // Specific instructions to prevent AI from asking questions about attributes
+            context += "The attributes have been rolled. Provide a brief explanation of what each attribute means and how it might affect the character in the Boot Hill setting. Do not ask any questions or prompt the user for input. Do not move to the next step."
+        case .skills:
+            // Instructions to prevent implying previous user responses
+            context += "Introduce the skills step without implying any previous user response. Ask the user to choose a skill or say 'no' to finish. List available skills if needed."
+        case .background:
+            context += "Ask for a brief background of the character. Do not ask for any other information."
+        case .complete:
+            context += "Summarize the character and conclude the creation process."
+        }
+        
+        return context
+    }
+    
+    private func processUserInput(_ input: String) {
+        switch currentStep {
+        case .name:
+            createCharacter(name: input.trimmingCharacters(in: .whitespacesAndNewlines))
+        case .age:
+            if let age = extractAge(from: input) {
                 character?.age = age
                 currentStep = .occupation
-                addAIMessage("Great! Your character is \(age) years old. What is their occupation?")
+                generateAIResponse(userInput: "age set to \(age)")
             } else {
-                addAIMessage("I'm sorry, I couldn't understand the age. Please provide a clear number for your character's age.")
+                generateAIResponse(userInput: "Invalid age")
             }
         case .occupation:
-            if let occupation = extractOccupation(from: userInput) {
+            if let occupation = extractOccupation(from: input) {
                 character?.occupation = occupation
-                currentStep = .attributes
-                generateAndDisplayAttributes()
+                currentStep = .attributesExplanation
+                generateAIResponse(userInput: "occupation set to \(occupation)")
             } else {
-                addAIMessage("I'm sorry, I couldn't understand the occupation. Can you please provide a clear occupation for your character?")
+                generateAIResponse(userInput: "Invalid occupation")
             }
-        case .attributes:
-            // Attributes are now automatically generated, so we skip user input for this step
+        case .attributesExplanation, .attributesRolling:
+            // These steps are handled automatically after AI response
             break
         case .skills:
-            if userInput.lowercased() == "no" {
+            if input.lowercased() == "no" {
                 moveToBackgroundStep()
-            } else if let skill = extractSkill(from: cleanedResponse) {
+            } else if let skill = extractSkill(from: input) {
                 character?.skills[skill] = 1 // Start with a basic proficiency
                 if (character?.skills.count ?? 0) >= maxSkills {
                     moveToBackgroundStep()
                 } else {
-                    addAIMessage("Skill added. Would you like to add another skill? (Yes/No)")
+                    generateAIResponse(userInput: "Skill added: \(skill.rawValue)")
                 }
             } else {
-                addAIMessage("I'm sorry, I couldn't understand the skill. Available skills are: \(Skill.allCases.map { $0.rawValue }.joined(separator: ", ")). Or say 'No' to finish adding skills.")
+                generateAIResponse(userInput: "Invalid skill")
             }
         case .background:
-            character?.background = userInput
+            character?.background = input
             currentStep = .complete
             summarizeCharacter()
         case .complete:
-            addAIMessage("Character creation is already complete. You can now start your adventure!")
+            // Character creation is already complete, no action needed
+            generateAIResponse(userInput: "Character creation complete")
         }
     }
     
     private func moveToBackgroundStep() {
         currentStep = .background
-        addAIMessage("Great! We've finished adding skills. Now, let's add some background. In a few sentences, describe your character's background and personality.")
+        generateAIResponse(userInput: "move to background")
     }
     
     private func createCharacter(name: String) {
@@ -151,13 +214,13 @@ class CharacterCreationViewModel: ObservableObject {
                 case .success(let newCharacter):
                     self.character = newCharacter
                     self.currentStep = .age
-                    self.addAIMessage("Great! Your character's name is \(newCharacter.name). How old is \(newCharacter.name)?")
+                    self.generateAIResponse(userInput: "Character created with name: \(name)")
                 case .failure(let error):
                     print("Error creating character: \(error.localizedDescription)")
                     self.addAIMessage("I'm sorry, there was an error creating your character. Let's try again. What would you like your character's name to be?")
-                    self.currentStep = .name
+                    // Keep the current step as .name
+                    self.generateAIResponse(userInput: "Error creating character")
                 }
-                self.waitingForUserInput = true
             }
         }
     }
@@ -168,10 +231,12 @@ class CharacterCreationViewModel: ObservableObject {
         let attributeScores = diceRollService.generateAttributeScores()
         character?.attributes = attributeScores
         
-        // Format the attribute scores for display
+        // Display attributes clearly, each on a new line
         let attributeDescription = attributeScores.map { "\($0.key): \($0.value)" }.joined(separator: "\n")
-        addAIMessage("I've rolled the dice for your character's attributes. Here are the results:\n\n\(attributeDescription)\n\nLet's move on to skills. What skill would you like to add? Available skills are: \(Skill.allCases.map { $0.rawValue }.joined(separator: ", "))")
-        currentStep = .skills
+        addAIMessage("Here are your character's attributes:\n\n\(attributeDescription)")
+        
+        // Generate AI response to explain the attributes without asking questions
+        generateAIResponse(userInput: "Explain attributes: \(attributeDescription)")
     }
     
     private func summarizeCharacter() {
@@ -181,7 +246,6 @@ class CharacterCreationViewModel: ObservableObject {
         }
         
         let summary = """
-        Thank you for creating your character! Here's a summary of \(character.name):
         Name: \(character.name)
         Age: \(character.age ?? 0)
         Occupation: \(character.occupation ?? "Unknown")
@@ -190,15 +254,7 @@ class CharacterCreationViewModel: ObservableObject {
         Background: \(character.background ?? "Not provided")
         """
         
-        addAIMessage(summary)
-        addAIMessage("Character creation is complete. You can now start your adventure!")
-    }
-    
-    private func cleanMessage(_ message: String) -> String {
-        var cleaned = message.trimmingCharacters(in: .whitespacesAndNewlines)
-        cleaned = cleaned.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-        cleaned = cleaned.replacingOccurrences(of: "[,!?]", with: "", options: .regularExpression)
-        return cleaned
+        generateAIResponse(userInput: "Character summary: \(summary)")
     }
     
     private func extractAge(from response: String) -> Int? {
