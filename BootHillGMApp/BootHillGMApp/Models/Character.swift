@@ -1,5 +1,21 @@
 import Foundation
 
+// Add these type definitions at the top of the Character.swift file
+enum Attribute: String, CaseIterable {
+    case strength, agility, intelligence
+    // Add other attributes as needed
+}
+
+enum BootHillAbility: String, CaseIterable {
+    case shooting, riding, brawling, gambling
+    // Add other abilities as needed
+}
+
+struct AbilityScore {
+    let percentile: Int
+    let rating: Int
+}
+
 struct Character: Identifiable {
     let id: UUID
     var name: String
@@ -21,7 +37,7 @@ struct Character: Identifiable {
         self.age = nil
         self.occupation = nil
         self.attributes = [:]
-        self.abilities = Dictionary(uniqueKeysWithValues: BootHillAbility.allCases.map { ($0, AbilityScore()) })
+        self.abilities = [:]
         self.hitPoints = 0
         self.maximumHitPoints = 0
         self.money = 0

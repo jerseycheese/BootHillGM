@@ -1,16 +1,24 @@
 import SwiftUI
 
-/// A scrollable view that displays a chat interface with messages.
 struct ChatScrollView: View {
-    /// The collection of messages to display in the chat.
-    @Binding var messages: [BootHillGMApp.Message]
+    @Binding var messages: [Message]
     
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 10) {
                     ForEach(messages) { message in
-                        MessageBubble(message: message)
+                        VStack(alignment: message.isAI ? .leading : .trailing, spacing: 4) {
+                            Text(message.content)
+                                .padding()
+                                .background(message.isAI ? Color.blue.opacity(0.2) : Color.gray.opacity(0.2))
+                                .cornerRadius(10)
+                            
+                            Text(metadataText(for: message))
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: message.isAI ? .leading : .trailing)
                     }
                 }
                 .padding()
@@ -21,13 +29,21 @@ struct ChatScrollView: View {
         }
     }
     
-    /// Scrolls the view to the bottom to show the latest message.
     private func scrollToBottom(proxy: ScrollViewProxy) {
         if let lastMessage = messages.last {
             withAnimation {
                 proxy.scrollTo(lastMessage.id, anchor: .bottom)
             }
         }
+    }
+    
+    /// Generates the metadata text for a given message.
+    private func metadataText(for message: Message) -> String {
+        var text = "Stage: \(message.metadata.stage.rawValue)"
+        if let debugInfo = message.metadata.debugInfo {
+            text += " | \(debugInfo)"
+        }
+        return text
     }
 }
 
@@ -51,15 +67,13 @@ struct MessageBubble: View {
     }
 }
 
-#if DEBUG
-/// A preview provider for the ChatScrollView.
+// Update the preview provider to include metadata
 struct ChatScrollView_Previews: PreviewProvider {
     static var previews: some View {
         ChatScrollView(messages: .constant([
-            BootHillGMApp.Message(content: "Hello, I'm the AI GM!", isAI: true),
-            BootHillGMApp.Message(content: "Hi there! Let's create a character.", isAI: false),
-            BootHillGMApp.Message(content: "Great! Let's start with your character's name.", isAI: true)
+            Message(content: "Hello, I'm the AI GM!", isAI: true, metadata: MessageMetadata(stage: .name)),
+            Message(content: "Hi there! Let's create a character.", isAI: false, metadata: MessageMetadata(stage: .name)),
+            Message(content: "Great! Let's start with your character's name.", isAI: true, metadata: MessageMetadata(stage: .name, debugInfo: "Prompting for name"))
         ]))
     }
 }
-#endif

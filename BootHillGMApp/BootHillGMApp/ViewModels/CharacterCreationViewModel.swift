@@ -14,12 +14,14 @@ class CharacterCreationViewModel: ObservableObject {
     /// Indicates whether the view is waiting for user input.
     @Published var waitingForUserInput = false
     
+    /// The current stage of character creation. This is used for both progression tracking and metadata.
+    @Published private(set) var currentStep: CharacterCreationStage = .name
+
     private let aiService: AIService
     /// The service responsible for handling dice rolls
     private let diceRollService: DiceRollService
     private var gameCore: GameCore?
     private var character: Character?
-    private var currentStep: CreationStep = .name
     
     enum CreationStep: String {
         case name, age, occupation, attributesExplanation, attributesRolling, abilitiesExplanation, abilitiesRolling, background, complete
@@ -50,14 +52,14 @@ class CharacterCreationViewModel: ObservableObject {
         userInput = ""
     }
     
-    /// Adds a user message to the chat.
+    /// Adds a user message to the conversation, including metadata about the current creation stage.
     private func addUserMessage(_ message: String) {
-        messages.append(BootHillGMApp.Message(content: message, isAI: false))
+        messages.append(Message(content: message, isAI: false, metadata: MessageMetadata(stage: currentStep)))
     }
     
-    /// Adds an AI message to the chat.
+    /// Adds an AI message to the conversation, including metadata about the current creation stage and debug info.
     private func addAIMessage(_ message: String) {
-        messages.append(BootHillGMApp.Message(content: message, isAI: true))
+        messages.append(Message(content: message, isAI: true, metadata: MessageMetadata(stage: currentStep, debugInfo: "AI response for \(currentStep)")))
     }
     
     private func generateAIResponse(userInput: String) {
@@ -76,19 +78,7 @@ class CharacterCreationViewModel: ObservableObject {
                     waitingForUserInput = true
                     
                     // Handle special cases after AI response
-                    if self.currentStep == .attributesExplanation {
-                        self.currentStep = .attributesRolling
-                        self.generateAndDisplayAttributes()
-                    } else if self.currentStep == .attributesRolling {
-                        self.currentStep = .abilitiesExplanation
-                        self.generateAIResponse(userInput: "move to abilities explanation")
-                    } else if self.currentStep == .abilitiesExplanation {
-                        self.currentStep = .abilitiesRolling
-                        self.generateAndDisplayAbilities()
-                    } else if self.currentStep == .abilitiesRolling {
-                        self.currentStep = .background
-                        self.generateAIResponse(userInput: "move to background")
-                    }
+                    handleSpecialCases()
                 }
             } catch {
                 print("Error generating AI response: \(error.localizedDescription)")
@@ -98,6 +88,25 @@ class CharacterCreationViewModel: ObservableObject {
                     waitingForUserInput = true
                 }
             }
+        }
+    }
+
+    private func handleSpecialCases() {
+        switch currentStep {
+        case .attributesExplanation:
+            currentStep = .attributesRolling
+            generateAndDisplayAttributes()
+        case .attributesRolling:
+            currentStep = .abilitiesExplanation
+            generateAIResponse(userInput: "move to abilities explanation")
+        case .abilitiesExplanation:
+            currentStep = .abilitiesRolling
+            generateAndDisplayAbilities()
+        case .abilitiesRolling:
+            currentStep = .background
+            generateAIResponse(userInput: "move to background")
+        default:
+            break
         }
     }
     
