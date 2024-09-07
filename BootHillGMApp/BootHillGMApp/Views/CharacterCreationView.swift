@@ -3,6 +3,7 @@ import SwiftUI
 struct CharacterCreationView: View {
     @EnvironmentObject var gameCore: GameCore
     @StateObject private var viewModel: CharacterCreationViewModel
+    @FocusState private var isInputFocused: Bool
     
     init(aiService: AIService, diceRollService: DiceRollService) {
         _viewModel = StateObject(wrappedValue: CharacterCreationViewModel(aiService: aiService, diceRollService: diceRollService))
@@ -16,15 +17,19 @@ struct CharacterCreationView: View {
             if viewModel.isProcessing {
                 ProgressView()
                     .padding()
+            } else if viewModel.waitingForUserInput {
+                Text("Your turn to respond")
+                    .foregroundColor(.secondary)
+                    .padding()
             }
             
             HStack {
-                // Modified TextField with onSubmit modifier
+                // TextField with focus state and onSubmit action
                 TextField("Your response", text: $viewModel.userInput)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .disabled(viewModel.isProcessing)
+                    .focused($isInputFocused)
                     .onSubmit {
-                        // Call sendMessage when Return key is pressed
                         viewModel.sendMessage()
                     }
                 
@@ -38,6 +43,12 @@ struct CharacterCreationView: View {
         .navigationTitle("Create Character")
         .onAppear {
             viewModel.startConversation(gameCore: gameCore)
+        }
+        // Automatically focus on the text input when it's the user's turn
+        .onChange(of: viewModel.waitingForUserInput) { newValue in
+            if newValue {
+                isInputFocused = true
+            }
         }
     }
 }

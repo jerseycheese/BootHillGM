@@ -226,16 +226,19 @@ class CharacterCreationViewModel: ObservableObject {
             }
         }
     }
-    
+
     /// Generates attribute scores and combines them with the AI response
     private func generateAttributesResponse() {
-        // Use the DiceRollService to generate attribute scores
+        // Use the DiceRollService to generate attribute scores for all attributes
         let attributeScores = diceRollService.generateAttributeScores()
         character?.attributes = attributeScores
         
         // Display attributes clearly, each on a new line
-        let attributeDescription = attributeScores.map { "\(capitalizeCharacterTrait($0.key.rawValue)): \($0.value)" }.joined(separator: "\n")
-        let attributeMessage = "Here are your character's attributes:\n\n\(attributeDescription)\n\nNow, let me explain what these attributes mean and how they might affect your character in the Boot Hill setting."
+        let attributeDescription = Attribute.allCases.map { attribute in
+            "\(capitalizeCharacterTrait(attribute.rawValue)): \(attributeScores[attribute] ?? 0)"
+        }.joined(separator: "\n")
+        
+        let attributeMessage = "Here are your character's attributes:\n\n\(attributeDescription)"
         
         // Generate AI response to explain the attributes without asking questions
         generateAIResponse(userInput: "Explain attributes: \(attributeDescription)")
@@ -246,13 +249,17 @@ class CharacterCreationViewModel: ObservableObject {
 
     /// Generates ability scores and combines them with the AI response
     private func generateAbilitiesResponse() {
-        // Generate ability scores using the DiceRollService
+        // Generate ability scores for all abilities using the DiceRollService
         let abilityScores = diceRollService.generateAbilityScores()
         character?.abilities = abilityScores
         
         // Create a description of the abilities with proper capitalization
-        let abilityDescription = abilityScores.map { "\(capitalizeCharacterTrait($0.key.rawValue)): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: "\n")
-        let abilityMessage = "Here are your character's abilities:\n\n\(abilityDescription)\n\nNow, let me explain what these abilities mean and how they might affect your character in the Boot Hill setting."
+        let abilityDescription = BootHillAbility.allCases.map { ability in
+            let score = abilityScores[ability] ?? AbilityScore(percentile: 0, rating: 0)
+            return "\(capitalizeCharacterTrait(ability.rawValue)): \(score.percentile)% (Rating: \(score.rating))"
+        }.joined(separator: "\n")
+        
+        let abilityMessage = "Here are your character's abilities:\n\n\(abilityDescription)"
         
         // Generate AI response to explain the abilities without asking questions
         Task {
@@ -278,12 +285,23 @@ class CharacterCreationViewModel: ObservableObject {
         }
     }
     
-    /// Summarizes the created character
+    /// Summarizes the created character with all attributes and abilities
     private func summarizeCharacter() {
         guard let character = character else {
             addAIMessage("I'm sorry, there was an error summarizing your character. Please try creating your character again.")
             return
         }
+        
+        // Summarize all attributes
+        let attributesSummary = Attribute.allCases.map { attribute in
+            "\(capitalizeCharacterTrait(attribute.rawValue)): \(character.attributes[attribute] ?? 0)"
+        }.joined(separator: "\n")
+        
+        // Summarize all abilities
+        let abilitiesSummary = BootHillAbility.allCases.map { ability in
+            let score = character.abilities[ability] ?? AbilityScore(percentile: 0, rating: 0)
+            return "\(capitalizeCharacterTrait(ability.rawValue)): \(score.percentile)% (Rating: \(score.rating))"
+        }.joined(separator: "\n")
         
         let summary = """
         Character Creation Complete! Here's a summary of your character:
@@ -291,8 +309,13 @@ class CharacterCreationViewModel: ObservableObject {
         Name: \(character.name)
         Age: \(character.age ?? 0)
         Occupation: \(character.occupation ?? "Unknown")
-        Attributes: \(character.attributes.map { "\(capitalizeCharacterTrait($0.key.rawValue)): \($0.value)" }.joined(separator: ", "))
-        Abilities: \(character.abilities.map { "\(capitalizeCharacterTrait($0.key.rawValue)): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: ", "))
+        
+        Attributes:
+        \(attributesSummary)
+        
+        Abilities:
+        \(abilitiesSummary)
+        
         Background: \(character.background ?? "Not provided")
 
         Your character is now ready for adventure in the Wild West! Good luck, partner!
@@ -300,7 +323,7 @@ class CharacterCreationViewModel: ObservableObject {
         
         addAIMessage(summary)
     }
-    
+
     /// Extracts the age from the user's response
     /// - Parameter response: The user's input
     /// - Returns: The extracted age as an Int, or nil if not found

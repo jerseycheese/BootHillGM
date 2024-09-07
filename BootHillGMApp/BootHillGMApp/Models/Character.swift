@@ -1,16 +1,16 @@
 import Foundation
 
-// Add these type definitions at the top of the Character.swift file
+// Define all attributes used in Boot Hill
 enum Attribute: String, CaseIterable {
-    case strength, agility, intelligence
-    // Add other attributes as needed
+    case strength, dexterity, speed, intelligence, stamina, luck
 }
 
+// Define all abilities used in Boot Hill
 enum BootHillAbility: String, CaseIterable {
-    case shooting, riding, brawling, gambling
-    // Add other abilities as needed
+    case shooting, fistFighting, knifeFighting, throwing, boxing, climbing, swimming, tracking, sneaking, riding, gambling, firstAid, animalHandling, survival
 }
 
+// Represent an ability score with percentile and rating
 struct AbilityScore {
     let percentile: Int
     let rating: Int
