@@ -62,6 +62,8 @@ class CharacterCreationViewModel: ObservableObject {
         messages.append(Message(content: message, isAI: true, metadata: MessageMetadata(stage: currentStep, debugInfo: "AI response for \(currentStep)")))
     }
     
+    /// Generates an AI response based on the current context and user input
+    /// - Parameter userInput: The latest input from the user
     private func generateAIResponse(userInput: String) {
         guard !isProcessing else { return }
         isProcessing = true
@@ -91,17 +93,18 @@ class CharacterCreationViewModel: ObservableObject {
         }
     }
 
+    /// Handles special cases after receiving an AI response
     private func handleSpecialCases() {
         switch currentStep {
         case .attributesExplanation:
             currentStep = .attributesRolling
-            generateAndDisplayAttributes()
+            generateAttributesResponse()
+        case .abilitiesExplanation:
+            currentStep = .abilitiesRolling
+            generateAbilitiesResponse()
         case .attributesRolling:
             currentStep = .abilitiesExplanation
             generateAIResponse(userInput: "move to abilities explanation")
-        case .abilitiesExplanation:
-            currentStep = .abilitiesRolling
-            generateAndDisplayAbilities()
         case .abilitiesRolling:
             currentStep = .background
             generateAIResponse(userInput: "move to background")
@@ -125,10 +128,10 @@ class CharacterCreationViewModel: ObservableObject {
                 context += "Occupation: \(occupation)\n"
             }
             if !character.attributes.isEmpty {
-                context += "Attributes: \(character.attributes.map { "\($0.key): \($0.value)" }.joined(separator: ", "))\n"
+                context += "Attributes: \(character.attributes.map { "\(capitalizeCharacterTrait($0.key.rawValue)): \($0.value)" }.joined(separator: ", "))\n"
             }
             if !character.abilities.isEmpty {
-                context += "Abilities: \(character.abilities.map { "\($0.key.rawValue): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: ", "))\n"
+                context += "Abilities: \(character.abilities.map { "\(capitalizeCharacterTrait($0.key.rawValue)): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: ", "))\n"
             }
             if let background = character.background {
                 context += "Background: \(background)\n"
@@ -150,7 +153,6 @@ class CharacterCreationViewModel: ObservableObject {
         case .attributesExplanation:
             context += "Explain that you are about to roll virtual dice for the attributes. Describe the dice rolling process (3d6 for each attribute) and its significance in Boot Hill. Do not roll the dice or provide any attribute values yet."
         case .attributesRolling:
-            // Specific instructions to prevent AI from asking questions about attributes
             context += "The attributes have been rolled. Provide a brief explanation of what each attribute means and how it might affect the character in the Boot Hill setting. Do not ask any questions or prompt the user for input. Do not move to the next step."
         case .abilitiesExplanation:
             context += "Explain that you are about to generate the character's abilities. Describe the process of determining percentile scores and ratings for each ability in Boot Hill. Do not generate any ability scores yet."
@@ -165,6 +167,8 @@ class CharacterCreationViewModel: ObservableObject {
         return context
     }
     
+    /// Processes the user's input based on the current creation step
+    /// - Parameter input: The user's input
     private func processUserInput(_ input: String) {
         switch currentStep {
         case .name:
@@ -193,11 +197,12 @@ class CharacterCreationViewModel: ObservableObject {
             currentStep = .complete
             summarizeCharacter()
         case .complete:
-            // Remove the AI question and just provide a final message
             generateAIResponse(userInput: "Character creation complete")
         }
     }
     
+    /// Creates a new character with the given name
+    /// - Parameter name: The character's name
     private func createCharacter(name: String) {
         guard let gameCore = gameCore else {
             print("Error: GameCore not initialized")
@@ -222,32 +227,58 @@ class CharacterCreationViewModel: ObservableObject {
         }
     }
     
-    /// Generates attribute scores using dice rolls and displays them to the user
-    private func generateAndDisplayAttributes() {
+    /// Generates attribute scores and combines them with the AI response
+    private func generateAttributesResponse() {
         // Use the DiceRollService to generate attribute scores
         let attributeScores = diceRollService.generateAttributeScores()
         character?.attributes = attributeScores
         
         // Display attributes clearly, each on a new line
-        let attributeDescription = attributeScores.map { "\($0.key): \($0.value)" }.joined(separator: "\n")
-        addAIMessage("Here are your character's attributes:\n\n\(attributeDescription)")
+        let attributeDescription = attributeScores.map { "\(capitalizeCharacterTrait($0.key.rawValue)): \($0.value)" }.joined(separator: "\n")
+        let attributeMessage = "Here are your character's attributes:\n\n\(attributeDescription)\n\nNow, let me explain what these attributes mean and how they might affect your character in the Boot Hill setting."
         
         // Generate AI response to explain the attributes without asking questions
         generateAIResponse(userInput: "Explain attributes: \(attributeDescription)")
+        
+        // Combine the attribute scores and AI explanation into a single message
+        addAIMessage(attributeMessage)
     }
-    
-    private func generateAndDisplayAbilities() {
+
+    /// Generates ability scores and combines them with the AI response
+    private func generateAbilitiesResponse() {
+        // Generate ability scores using the DiceRollService
         let abilityScores = diceRollService.generateAbilityScores()
         character?.abilities = abilityScores
         
-        let abilityDescription = abilityScores.map { "\($0.key.rawValue): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: "\n")
+        // Create a description of the abilities with proper capitalization
+        let abilityDescription = abilityScores.map { "\(capitalizeCharacterTrait($0.key.rawValue)): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: "\n")
+        let abilityMessage = "Here are your character's abilities:\n\n\(abilityDescription)\n\nNow, let me explain what these abilities mean and how they might affect your character in the Boot Hill setting."
         
-        // Combine ability scores and explanation into a single message
-        addAIMessage("Here are your character's abilities:\n\n\(abilityDescription)\n\nLet me explain what these abilities mean and how they might affect your character in the Boot Hill setting.")
-        
-        generateAIResponse(userInput: "Explain abilities: \(abilityDescription)")
+        // Generate AI response to explain the abilities without asking questions
+        Task {
+            do {
+                let context = buildContext(userInput: "Explain abilities: \(abilityDescription)")
+                let aiExplanation = try await aiService.generateCharacterCreationResponse(context: context, userInput: "Explain abilities: \(abilityDescription)")
+                
+                await MainActor.run {
+                    // Combine the ability scores and AI explanation into a single message
+                    let combinedMessage = "\(abilityMessage)\n\n\(aiExplanation)"
+                    addAIMessage(combinedMessage)
+                    
+                    // Automatically move to the next step (background)
+                    currentStep = .background
+                    generateAIResponse(userInput: "move to background")
+                }
+            } catch {
+                print("Error generating AI response for abilities: \(error.localizedDescription)")
+                await MainActor.run {
+                    addAIMessage("I'm sorry, there was an error explaining your character's abilities. Please try again.")
+                }
+            }
+        }
     }
     
+    /// Summarizes the created character
     private func summarizeCharacter() {
         guard let character = character else {
             addAIMessage("I'm sorry, there was an error summarizing your character. Please try creating your character again.")
@@ -260,8 +291,8 @@ class CharacterCreationViewModel: ObservableObject {
         Name: \(character.name)
         Age: \(character.age ?? 0)
         Occupation: \(character.occupation ?? "Unknown")
-        Attributes: \(character.attributes.map { "\($0.key): \($0.value)" }.joined(separator: ", "))
-        Abilities: \(character.abilities.map { "\($0.key.rawValue): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: ", "))
+        Attributes: \(character.attributes.map { "\(capitalizeCharacterTrait($0.key.rawValue)): \($0.value)" }.joined(separator: ", "))
+        Abilities: \(character.abilities.map { "\(capitalizeCharacterTrait($0.key.rawValue)): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: ", "))
         Background: \(character.background ?? "Not provided")
 
         Your character is now ready for adventure in the Wild West! Good luck, partner!
@@ -270,12 +301,26 @@ class CharacterCreationViewModel: ObservableObject {
         addAIMessage(summary)
     }
     
+    /// Extracts the age from the user's response
+    /// - Parameter response: The user's input
+    /// - Returns: The extracted age as an Int, or nil if not found
     private func extractAge(from response: String) -> Int? {
         let words = response.components(separatedBy: .whitespacesAndNewlines)
         return words.compactMap { Int($0) }.first
     }
     
+    /// Extracts the occupation from the user's response
+    /// - Parameter response: The user's input
+    /// - Returns: The extracted occupation as a String, or nil if not found
     private func extractOccupation(from response: String) -> String? {
         return response.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Capitalizes the first letter of each word in the character trait name
+    /// This function is used for both attributes and abilities to ensure consistent capitalization
+    /// - Parameter name: The character trait name to capitalize
+    /// - Returns: The capitalized character trait name
+    private func capitalizeCharacterTrait(_ name: String) -> String {
+        return name.split(separator: " ").map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }.joined(separator: " ")
     }
 }
