@@ -18,9 +18,34 @@ struct CharacterCreationView: View {
                 ProgressView()
                     .padding()
             } else if viewModel.waitingForUserInput {
-                Text("Your turn to respond")
-                    .foregroundColor(.secondary)
+                if viewModel.showContinueButton {
+                    Button("Continue") {
+                        viewModel.continueToNextStage()
+                    }
+                    .buttonStyle(.borderedProminent)
                     .padding()
+                    .accessibility(label: Text("Continue to next stage"))
+                } else {
+                    Text("Your turn to respond")
+                        .foregroundColor(.secondary)
+                        .padding()
+                    
+                    HStack {
+                        TextField("Your response", text: $viewModel.userInput)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .disabled(viewModel.isProcessing)
+                            .focused($isInputFocused)
+                            .onSubmit {
+                                viewModel.sendMessage()
+                            }
+                        
+                        Button("Send") {
+                            viewModel.sendMessage()
+                        }
+                        .disabled(viewModel.userInput.isEmpty || viewModel.isProcessing)
+                    }
+                    .padding()
+                }
             }
             
             HStack {
@@ -46,7 +71,7 @@ struct CharacterCreationView: View {
         }
         // Automatically focus on the text input when it's the user's turn
         .onChange(of: viewModel.waitingForUserInput) { newValue in
-            if newValue {
+            if newValue && !viewModel.showContinueButton {
                 isInputFocused = true
             }
         }

@@ -13,9 +13,15 @@ class CharacterCreationViewModel: ObservableObject {
     
     /// Indicates whether the view is waiting for user input.
     @Published var waitingForUserInput = false
+
+    /// Controls the visibility of the "Continue" button
+    @Published var showContinueButton: Bool = false
     
     /// The current stage of character creation. This is used for both progression tracking and metadata.
     @Published private(set) var currentStep: CharacterCreationStage = .name
+
+    /// Indicates whether the current stage of character creation is complete
+    @Published private(set) var isCurrentStageComplete: Bool = false
 
     private let aiService: AIService
     /// The service responsible for handling dice rolls
@@ -66,9 +72,9 @@ class CharacterCreationViewModel: ObservableObject {
     /// Generates an AI response based on the current context and user input
     /// - Parameter userInput: The latest input from the user
     private func generateAIResponse(userInput: String) {
-        guard !isProcessing else { return }
         isProcessing = true
         waitingForUserInput = false
+        showContinueButton = false
         
         Task {
             do {
@@ -79,16 +85,24 @@ class CharacterCreationViewModel: ObservableObject {
                     addAIMessage(aiResponse)
                     isProcessing = false
                     waitingForUserInput = true
-                    
-                    // Handle special cases after AI response
-                    handleSpecialCases()
+
+                    if currentStep == .attributesRolling {
+                        isCurrentStageComplete = true
+                    }
+
+                    if isCurrentStageComplete || currentStep == .complete {
+                        showContinueButton = true
+                    } else {
+                        handleNextStepInCurrentStage()
+                    }
                 }
             } catch {
                 print("Error generating AI response: \(error.localizedDescription)")
                 await MainActor.run {
-                    addAIMessage("I'm sorry, there was an error processing your input. Please try again.")
+                    addAIMessage("I'm sorry, there was an error generating a response. Please try again.")
                     isProcessing = false
                     waitingForUserInput = true
+                    showContinueButton = true // Show button even on error to allow progression
                 }
             }
         }
@@ -111,11 +125,12 @@ class CharacterCreationViewModel: ObservableObject {
             generateAIResponse(userInput: "move to background")
         case .background:
             // Handle the two-step process for background
-            if hasProvidedBackground && !hasGeneratedBackgroundResponse {
+            if !hasProvidedBackground {
+                // First step: Ask for background
+                generateAIResponse(userInput: "Ask for character background")
+            } else if !hasGeneratedBackgroundResponse {
+                // Second step: Generate response to provided background
                 generateBackgroundResponse()
-            } else if hasGeneratedBackgroundResponse {
-                currentStep = .complete
-                summarizeCharacter()
             }
         default:
             break
@@ -181,6 +196,49 @@ class CharacterCreationViewModel: ObservableObject {
         
         return context
     }
+
+    /// Handles the progression to the next stage of character creation
+    func continueToNextStage() {
+        showContinueButton = false
+        isCurrentStageComplete = false
+        switch currentStep {
+        case .name:
+            currentStep = .age
+            generateAIResponse(userInput: "Ask for character's age")
+        case .age:
+            currentStep = .occupation
+            generateAIResponse(userInput: "Ask for character's occupation")
+        case .occupation:
+            currentStep = .attributesExplanation
+            generateAIResponse(userInput: "Explain attributes")
+        case .attributesExplanation:
+            currentStep = .attributesRolling
+            generateAttributesResponse()
+        case .attributesRolling:
+            currentStep = .abilitiesExplanation
+            generateAIResponse(userInput: "Explain abilities")
+        case .abilitiesExplanation:
+            currentStep = .abilitiesRolling
+            generateAbilitiesResponse()
+        case .abilitiesRolling:
+            currentStep = .background
+            generateAIResponse(userInput: "Ask for character background")
+        case .background:
+            if !hasProvidedBackground {
+                // If background hasn't been provided, ask for it
+                generateAIResponse(userInput: "Ask for character background")
+            } else {
+                // If background has been provided and responded to, move to complete
+                currentStep = .complete
+                summarizeCharacter()
+            }
+        case .complete:
+            // Handle completion of character creation
+            break
+        @unknown default:
+            break
+        }
+    }
     
     /// Processes the user's input based on the current creation step
     /// - Parameter input: The user's input
@@ -188,10 +246,14 @@ class CharacterCreationViewModel: ObservableObject {
         switch currentStep {
         case .name:
             createCharacter(name: input.trimmingCharacters(in: .whitespacesAndNewlines))
+            // Don't show continue button after name input
+            showContinueButton = false
         case .age:
             if let age = extractAge(from: input) {
                 character?.age = age
                 currentStep = .occupation
+                // Don't show continue button after age input
+                showContinueButton = false
                 generateAIResponse(userInput: "age set to \(age)")
             } else {
                 generateAIResponse(userInput: "Invalid age")
@@ -200,13 +262,29 @@ class CharacterCreationViewModel: ObservableObject {
             if let occupation = extractOccupation(from: input) {
                 character?.occupation = occupation
                 currentStep = .attributesExplanation
+                showContinueButton = true
                 generateAIResponse(userInput: "occupation set to \(occupation)")
             } else {
                 generateAIResponse(userInput: "Invalid occupation")
             }
-        case .attributesExplanation, .attributesRolling, .abilitiesExplanation, .abilitiesRolling:
-            // These steps are handled automatically after AI response
-            break
+        case .attributesExplanation:
+            currentStep = .attributesRolling
+            showContinueButton = true
+            generateAIResponse(userInput: "Ready to roll attributes")
+        case .attributesRolling:
+            // After rolling attributes, move to abilities explanation
+            currentStep = .abilitiesExplanation
+            showContinueButton = true
+            generateAIResponse(userInput: "Attributes rolled, ready for abilities explanation")
+        case .abilitiesExplanation:
+            currentStep = .abilitiesRolling
+            showContinueButton = true
+            generateAIResponse(userInput: "Ready to roll abilities")
+        case .abilitiesRolling:
+            // After rolling abilities, move to background
+            currentStep = .background
+            showContinueButton = false
+            generateAIResponse(userInput: "Abilities rolled, ready for background")
         case .background:
             // Handle the first step of the background process
             if !hasProvidedBackground {
@@ -248,6 +326,24 @@ class CharacterCreationViewModel: ObservableObject {
         }
     }
 
+    /// Handles the next step within the current stage of character creation
+    private func handleNextStepInCurrentStage() {
+        switch currentStep {
+        case .attributesRolling:
+            if !isCurrentStageComplete {
+                generateAttributesResponse()
+            }
+        case .abilitiesRolling:
+            if !isCurrentStageComplete {
+                generateAbilitiesResponse()
+            }
+        default:
+            // For stages that complete in one AI response
+            isCurrentStageComplete = true
+            showContinueButton = true
+        }
+    }
+
     /// Generates attribute scores and combines them with the AI response
     private func generateAttributesResponse() {
         // Use the DiceRollService to generate attribute scores for all attributes
@@ -261,11 +357,14 @@ class CharacterCreationViewModel: ObservableObject {
         
         let attributeMessage = "Here are your character's attributes:\n\n\(attributeDescription)"
         
-        // Generate AI response to explain the attributes without asking questions
+        // Add the attribute message first
+        addAIMessage(attributeMessage)
+        
+        // Then generate AI response to explain the attributes
         generateAIResponse(userInput: "Explain attributes: \(attributeDescription)")
         
-        // Combine the attribute scores and AI explanation into a single message
-        addAIMessage(attributeMessage)
+        // Mark the stage as complete after the AI response
+        isCurrentStageComplete = true
     }
 
     /// Generates ability scores and combines them with the AI response
@@ -293,14 +392,15 @@ class CharacterCreationViewModel: ObservableObject {
                     let combinedMessage = "\(abilityMessage)\n\n\(aiExplanation)"
                     addAIMessage(combinedMessage)
                     
-                    // Automatically move to the next step (background)
-                    currentStep = .background
-                    generateAIResponse(userInput: "move to background")
+                    // Mark the stage as complete and show the continue button
+                    isCurrentStageComplete = true
+                    showContinueButton = true
                 }
             } catch {
                 print("Error generating AI response for abilities: \(error.localizedDescription)")
                 await MainActor.run {
-                    addAIMessage("I'm sorry, there was an error explaining your character's abilities. Please try again.")
+                    isCurrentStageComplete = true
+                    showContinueButton = true
                 }
             }
         }
@@ -322,13 +422,15 @@ class CharacterCreationViewModel: ObservableObject {
                 await MainActor.run {
                     addAIMessage(aiResponse)
                     hasGeneratedBackgroundResponse = true
-                    handleSpecialCases()
+                    isCurrentStageComplete = true
+                    showContinueButton = true
                 }
             } catch {
                 print("Error generating AI response for background: \(error.localizedDescription)")
                 await MainActor.run {
                     addAIMessage("I'm sorry, there was an error responding to your character's background. Please try again.")
                     hasProvidedBackground = false // Reset this flag to allow the user to try again
+                    showContinueButton = true 
                 }
             }
         }
@@ -371,6 +473,8 @@ class CharacterCreationViewModel: ObservableObject {
         """
         
         addAIMessage(summary)
+        isCurrentStageComplete = true
+        showContinueButton = true
     }
 
     /// Extracts the age from the user's response
