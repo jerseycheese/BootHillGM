@@ -23,9 +23,10 @@ class CharacterCreationViewModel: ObservableObject {
     private var gameCore: GameCore?
     private var character: Character?
     
-    enum CreationStep: String {
-        case name, age, occupation, attributesExplanation, attributesRolling, abilitiesExplanation, abilitiesRolling, background, complete
-    }
+    // Flag to track if background has been provided by the user
+    private var hasProvidedBackground = false
+    // Flag to track if background response has been generated
+    private var hasGeneratedBackgroundResponse = false
     
     /// Initializes the CharacterCreationViewModel with required services
     /// - Parameters:
@@ -108,6 +109,14 @@ class CharacterCreationViewModel: ObservableObject {
         case .abilitiesRolling:
             currentStep = .background
             generateAIResponse(userInput: "move to background")
+        case .background:
+            // Handle the two-step process for background
+            if hasProvidedBackground && !hasGeneratedBackgroundResponse {
+                generateBackgroundResponse()
+            } else if hasGeneratedBackgroundResponse {
+                currentStep = .complete
+                summarizeCharacter()
+            }
         default:
             break
         }
@@ -159,9 +168,15 @@ class CharacterCreationViewModel: ObservableObject {
         case .abilitiesRolling:
             context += "The abilities have been generated. Provide a brief explanation of what each ability means and how it might affect the character in the Boot Hill setting. Do not ask any questions or prompt the user for input. Do not move to the next step."
         case .background:
-            context += "Ask for a brief background of the character. Do not ask for any other information."
+            if !hasProvidedBackground {
+                context += "Ask for a brief background of the character. Do not ask for any other information."
+            } else {
+                context += "Provide a brief response to the character's background. Highlight interesting aspects and how they might influence the character's adventures in the Wild West. Do not ask any questions or prompt for more information."
+            }
         case .complete:
             context += "Summarize the character and conclude the creation process."
+        @unknown default:
+            context += "Unknown step. Please provide general information about character creation in Boot Hill."
         }
         
         return context
@@ -193,11 +208,17 @@ class CharacterCreationViewModel: ObservableObject {
             // These steps are handled automatically after AI response
             break
         case .background:
-            character?.background = input
-            currentStep = .complete
-            summarizeCharacter()
+            // Handle the first step of the background process
+            if !hasProvidedBackground {
+                character?.background = input
+                hasProvidedBackground = true
+                generateBackgroundResponse()
+            }
         case .complete:
             generateAIResponse(userInput: "Character creation complete")
+        @unknown default:
+            print("Unknown character creation step")
+            generateAIResponse(userInput: "Continue character creation")
         }
     }
     
@@ -280,6 +301,34 @@ class CharacterCreationViewModel: ObservableObject {
                 print("Error generating AI response for abilities: \(error.localizedDescription)")
                 await MainActor.run {
                     addAIMessage("I'm sorry, there was an error explaining your character's abilities. Please try again.")
+                }
+            }
+        }
+    }
+    
+    /// Generates an AI response to the character's background
+    private func generateBackgroundResponse() {
+        guard let background = character?.background else {
+            print("Error: Character background is missing")
+            addAIMessage("I'm sorry, there was an error processing your character's background. Please try again.")
+            return
+        }
+        
+        Task {
+            do {
+                let context = buildContext(userInput: "Respond to background: \(background)")
+                let aiResponse = try await aiService.generateCharacterCreationResponse(context: context, userInput: "Respond to background: \(background)")
+                
+                await MainActor.run {
+                    addAIMessage(aiResponse)
+                    hasGeneratedBackgroundResponse = true
+                    handleSpecialCases()
+                }
+            } catch {
+                print("Error generating AI response for background: \(error.localizedDescription)")
+                await MainActor.run {
+                    addAIMessage("I'm sorry, there was an error responding to your character's background. Please try again.")
+                    hasProvidedBackground = false // Reset this flag to allow the user to try again
                 }
             }
         }
