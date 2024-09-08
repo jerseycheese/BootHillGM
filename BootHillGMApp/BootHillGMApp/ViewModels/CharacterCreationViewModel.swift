@@ -84,6 +84,7 @@ class CharacterCreationViewModel: ObservableObject {
     /// Generates an AI response based on the current context and user input
     /// - Parameter userInput: The latest input from the user
     private func generateAIResponse(userInput: String) {
+        // Set initial UI state
         isProcessing = true
         waitingForUserInput = false
         showTextInput = false
@@ -96,16 +97,18 @@ class CharacterCreationViewModel: ObservableObject {
                 
                 await MainActor.run {
                     addAIMessage(aiResponse)
+                    
+                    // Reset processing state
                     isProcessing = false
                     waitingForUserInput = true
 
-                    // Determine which UI elements to show based on the current step
+                    // Set UI elements based on current creation step
                     switch currentStep {
                     case .name, .age, .occupation:
                         // Show text input for user-provided information
                         showTextInput = true
                         showContinueButton = false
-                    case .attributesExplanation, .abilitiesExplanation, .attributesRolling, .abilitiesRolling, .complete:
+                    case .attributesExplanation, .abilitiesExplanation, .attributesRolling, .abilitiesRolling:
                         // Show continue button for AI-driven stages
                         showTextInput = false
                         showContinueButton = true
@@ -118,8 +121,14 @@ class CharacterCreationViewModel: ObservableObject {
                             // Show continue button after background is provided
                             showTextInput = false
                             showContinueButton = true
+                            hasGeneratedBackgroundResponse = true
                         }
+                    case .complete:
+                        // Show continue button at completion
+                        showTextInput = false
+                        showContinueButton = true
                     @unknown default:
+                        // Default to showing text input for unknown stages
                         showTextInput = true
                         showContinueButton = false
                     }
@@ -127,6 +136,7 @@ class CharacterCreationViewModel: ObservableObject {
             } catch {
                 print("Error generating AI response: \(error.localizedDescription)")
                 await MainActor.run {
+                    // Handle error state
                     addAIMessage("I'm sorry, there was an error generating a response. Please try again.")
                     isProcessing = false
                     waitingForUserInput = true
@@ -181,10 +191,10 @@ class CharacterCreationViewModel: ObservableObject {
                 context += "Occupation: \(occupation)\n"
             }
             if !character.attributes.isEmpty {
-                context += "Attributes: \(character.attributes.map { "\(capitalizeCharacterTrait($0.key.rawValue)): \($0.value)" }.joined(separator: ", "))\n"
+                context += "Attributes: \(character.attributes.map { "\($0.key.rawValue): \($0.value)" }.joined(separator: ", "))\n"
             }
             if !character.abilities.isEmpty {
-                context += "Abilities: \(character.abilities.map { "\(capitalizeCharacterTrait($0.key.rawValue)): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: ", "))\n"
+                context += "Abilities: \(character.abilities.map { "\($0.key.rawValue): \($0.value.percentile)% (Rating: \($0.value.rating))" }.joined(separator: ", "))\n"
             }
             if let background = character.background {
                 context += "Background: \(background)\n"
@@ -192,35 +202,43 @@ class CharacterCreationViewModel: ObservableObject {
         }
         context += "\nUser input: \(userInput)\n"
         
-        // Global instructions to prevent unwanted AI behavior
-        context += "\nInstructions: Focus only on the current step. Do not reference or ask about information from previous steps. Do not ask about or mention any steps that haven't happened yet. Do not ask any questions or prompt the user for input. "
+        // Global instructions
+        context += "\nCRITICAL INSTRUCTIONS: You are an AI assistant helping with character creation for a Western RPG. "
+        context += "Your responses must strictly adhere to the following rules:\n"
+        context += "1. Focus only on the current step.\n"
+        context += "2. Do not reference or ask about information from previous steps.\n"
+        context += "3. Do not mention any steps that haven't happened yet.\n"
+        context += "4. NEVER ask questions or prompt for more information unless explicitly instructed to do so.\n"
+        context += "5. Provide statements and information only, ending with a definitive statement.\n"
+        context += "6. Use proper capitalization and punctuation in your responses.\n"
+        context += "7. Maintain a natural flow between sentences without abrupt transitions.\n"
         
         // Step-specific instructions
         switch currentStep {
         case .name:
-            context += "Ask for the character's name. Do not ask for any other information."
+            context += "Ask for the character's name only. Example: 'What's your character's name?'"
         case .age:
-            context += "Ask for the character's age. Do not ask for any other information."
+            context += "Ask for the character's age only. Example: 'How old is your character?'"
         case .occupation:
-            context += "Ask for the character's occupation. Do not ask for any other information."
+            context += "Ask for the character's occupation only. Example: 'What's your character's occupation?'"
         case .attributesExplanation:
-            context += "Explain that you are about to roll virtual dice for the attributes. Describe the dice rolling process (3d6 for each attribute) and its significance in Boot Hill. Do not roll the dice or provide any attribute values yet."
+            context += "Explain the attribute rolling process in Boot Hill (3d6 for each attribute). Do NOT list specific abilities. Do NOT ask any questions or speculate. End with a statement about readiness to roll."
         case .attributesRolling:
-            context += "The attributes have been rolled. Provide a brief explanation of what each attribute means and how it might affect the character in the Boot Hill setting. Do not ask any questions or prompt the user for input. Do not move to the next step."
+            context += "Provide a brief analysis of the rolled attributes. Focus on the character's strengths based on these numbers. Do NOT ask any questions or speculate. End with a statement about the character's potential in the Wild West."
         case .abilitiesExplanation:
-            context += "Explain that you are about to generate the character's abilities. Describe the process of determining percentile scores and ratings for each ability in Boot Hill. Do not generate any ability scores yet."
+            context += "Explain the abilities rolling process in Boot Hill (percentile dice for each ability). Do NOT list specific abilities. Do NOT ask any questions or speculate. End with a statement about readiness to roll."
         case .abilitiesRolling:
-            context += "The abilities have been generated. Provide a brief explanation of what each ability means and how it might affect the character in the Boot Hill setting. Do not ask any questions or prompt the user for input. Do not move to the next step."
+            context += "Provide a brief analysis of the rolled attributes. Do NOT ask any questions or speculate. End with a statement about the character's potential in the Wild West."
         case .background:
             if !hasProvidedBackground {
-                context += "Ask for a brief background of the character. Do not ask for any other information."
+                context += "Ask for a brief background of the character. Example: 'Tell me a bit about your character's background.'"
             } else {
-                context += "Provide a brief response to the character's background. Highlight interesting aspects and how they might influence the character's adventures in the Wild West. Do not ask any questions or prompt for more information."
+                context += "Respond to the provided background by highlighting interesting aspects. Do NOT ask any questions, speculate, or prompt for more information. Provide a concise statement about how the background fits into the Western setting."
             }
         case .complete:
-            context += "Summarize the character and conclude the creation process."
+            context += "Summarize the character and conclude the creation process. Do NOT ask any questions. End with a definitive statement about the character being ready for adventure."
         @unknown default:
-            context += "Unknown step. Please provide general information about character creation in Boot Hill."
+            context += "Provide general information about character creation in Boot Hill without asking any questions."
         }
         
         return context
@@ -246,16 +264,15 @@ class CharacterCreationViewModel: ObservableObject {
             generateAbilitiesResponse()
         case .abilitiesRolling:
             currentStep = .background
-            showTextInput = true
+            hasProvidedBackground = false
+            hasGeneratedBackgroundResponse = false
             generateAIResponse(userInput: "Ask for character background")
         case .background:
-            if !hasProvidedBackground {
-                showTextInput = true
-                generateAIResponse(userInput: "Ask for character background")
-            } else {
-                // If background has been provided and responded to, move to complete
+            if hasGeneratedBackgroundResponse {
                 currentStep = .complete
                 summarizeCharacter()
+            } else {
+                generateBackgroundResponse()
             }
         case .complete:
             // Handle completion of character creation
@@ -350,7 +367,7 @@ class CharacterCreationViewModel: ObservableObject {
             "\(capitalizeCharacterTrait(attribute.rawValue)): \(attributeScores[attribute] ?? 0)"
         }.joined(separator: "\n")
         
-        let attributeMessage = "Here's what I rolled for each attribute:\n\n\(attributeDescription)"
+        let attributeMessage = "Here's what you rolled for each attribute:\n\n\(attributeDescription)"
         
         Task {
             do {
@@ -388,7 +405,7 @@ class CharacterCreationViewModel: ObservableObject {
             return "\(capitalizeCharacterTrait(ability.rawValue)): \(score.percentile)% (Rating: \(score.rating))"
         }.joined(separator: "\n")
         
-        let abilityMessage = "Here's what I rolled for each of your abilities:\n\n\(abilityDescription)"
+        let abilityMessage = "Here's what you rolled for each of your abilities:\n\n\(abilityDescription)"
         
         // Generate AI response to explain the abilities without asking questions
         Task {
@@ -430,16 +447,21 @@ class CharacterCreationViewModel: ObservableObject {
                 
                 await MainActor.run {
                     addAIMessage(aiResponse)
+                    
+                    // Update state and UI for completed background response
                     hasGeneratedBackgroundResponse = true
                     isCurrentStageComplete = true
+                    showTextInput = false
                     showContinueButton = true
                 }
             } catch {
                 print("Error generating AI response for background: \(error.localizedDescription)")
                 await MainActor.run {
+                    // Handle error state
                     addAIMessage("I'm sorry, there was an error responding to your character's background. Please try again.")
-                    hasProvidedBackground = false // Reset this flag to allow the user to try again
-                    showContinueButton = true 
+                    hasProvidedBackground = false // Reset to allow retry
+                    showTextInput = true
+                    showContinueButton = false
                 }
             }
         }
