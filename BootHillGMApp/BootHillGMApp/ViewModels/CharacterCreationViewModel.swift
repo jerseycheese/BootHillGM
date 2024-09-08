@@ -340,6 +340,7 @@ class CharacterCreationViewModel: ObservableObject {
 
     /// Generates attribute scores and combines them with the AI response
     private func generateAttributesResponse() {
+        
         // Use the DiceRollService to generate attribute scores for all attributes
         let attributeScores = diceRollService.generateAttributeScores()
         character?.attributes = attributeScores
@@ -349,16 +350,30 @@ class CharacterCreationViewModel: ObservableObject {
             "\(capitalizeCharacterTrait(attribute.rawValue)): \(attributeScores[attribute] ?? 0)"
         }.joined(separator: "\n")
         
-        let attributeMessage = "Here are your character's attributes:\n\n\(attributeDescription)"
+        let attributeMessage = "Here's what I rolled for each attribute:\n\n\(attributeDescription)"
         
-        // Add the attribute message first
-        addAIMessage(attributeMessage)
-        
-        // Then generate AI response to explain the attributes
-        generateAIResponse(userInput: "Explain attributes: \(attributeDescription)")
-        
-        // Mark the stage as complete after the AI response
-        isCurrentStageComplete = true
+        Task {
+            do {
+                let context = buildContext(userInput: "Explain attributes: \(attributeDescription)")
+                let aiExplanation = try await aiService.generateCharacterCreationResponse(context: context, userInput: "Explain attributes: \(attributeDescription)")
+                
+                await MainActor.run {
+                    // Combine the attribute scores and AI explanation into a single message
+                    let combinedMessage = "\(attributeMessage)\n\n\(aiExplanation)"
+                    addAIMessage(combinedMessage)
+                    
+                    // Mark the stage as complete and show the continue button
+                    isCurrentStageComplete = true
+                    showContinueButton = true
+                }
+            } catch {
+                print("Error generating AI response for attributes: \(error.localizedDescription)")
+                await MainActor.run {
+                    isCurrentStageComplete = true
+                    showContinueButton = true
+                }
+            }
+        }
     }
 
     /// Generates ability scores and combines them with the AI response
@@ -373,7 +388,7 @@ class CharacterCreationViewModel: ObservableObject {
             return "\(capitalizeCharacterTrait(ability.rawValue)): \(score.percentile)% (Rating: \(score.rating))"
         }.joined(separator: "\n")
         
-        let abilityMessage = "Here are your character's abilities:\n\n\(abilityDescription)"
+        let abilityMessage = "Here's what I rolled for each of your abilities:\n\n\(abilityDescription)"
         
         // Generate AI response to explain the abilities without asking questions
         Task {
@@ -449,7 +464,7 @@ class CharacterCreationViewModel: ObservableObject {
         }.joined(separator: "\n")
         
         let summary = """
-        Character Creation Complete! Here's a summary of your character:
+        Your character is complete! Here's a summary:
 
         Name: \(character.name)
         Age: \(character.age ?? 0)
@@ -463,7 +478,7 @@ class CharacterCreationViewModel: ObservableObject {
         
         Background: \(character.background ?? "Not provided")
 
-        Your character is now ready for adventure in the Wild West! Good luck, partner!
+        Your character is now ready for adventure! Good luck, partner!
         """
         
         addAIMessage(summary)
