@@ -1,14 +1,36 @@
 import Foundation
 import GoogleGenerativeAI
 
+// Define possible errors that can occur in the AIService
 enum AIServiceError: Error {
-    case noResponseGenerated
-    case apiError(String)
+    case noResponseGenerated // When the AI doesn't produce any response
+    case apiError(String)    // When there's an error from the Gemini API
 }
 
 class AIService {
     private let apiKey: String
-    private lazy var model = GenerativeModel(name: "gemini-1.5-pro", apiKey: apiKey)
+    private lazy var model: GenerativeModel = {
+        let config = GenerationConfig(
+            temperature: 0.7,
+            topP: 1.0,
+            topK: 40,
+            maxOutputTokens: 2048
+        )
+        
+        let safetySettings: [SafetySetting] = [
+            SafetySetting(harmCategory: .sexuallyExplicit, threshold: .blockNone),
+            SafetySetting(harmCategory: .hateSpeech, threshold: .blockNone),
+            SafetySetting(harmCategory: .harassment, threshold: .blockNone),
+            SafetySetting(harmCategory: .dangerousContent, threshold: .blockNone)
+        ]
+        
+        return GenerativeModel(
+            name: "gemini-1.5-pro",
+            apiKey: apiKey,
+            generationConfig: config,
+            safetySettings: safetySettings
+        )
+    }()
     
     init() {
         self.apiKey = AIService.getAPIKey()
@@ -23,16 +45,22 @@ class AIService {
         return apiKey
     }
     
+    // Generate a response from the AI model based on the given prompt
     func generateResponse(prompt: String) async throws -> String {
         do {
+            // Send the prompt to the Gemini model and await the response
             let response = try await model.generateContent(prompt)
+            
+            // Check if the response contains text
             guard let text = response.text else {
+                // If no text is generated, throw a noResponseGenerated error
                 throw AIServiceError.noResponseGenerated
             }
+            
+            // Return the generated text
             return text
-        } catch let error as AIServiceError {
-            throw error
-        } catch {
+        } catch let error as GoogleGenerativeAI.GenerateContentError {
+            // If a Gemini API error occurs, throw an apiError with the error description
             throw AIServiceError.apiError(error.localizedDescription)
         }
     }
