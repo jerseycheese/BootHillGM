@@ -1,7 +1,7 @@
-# AiGM API Integration Guide
+# Gemini API Integration Guide
 
 ## 1. Overview
-This guide covers the integration of the Gemini 1.5 Pro API into the AiGM app, including usage limits, pricing, token management, function calling, context caching, system instructions, and long context capabilities.
+This guide covers the integration of the Gemini 1.5 Pro API into the BootHillGM app, including usage limits, pricing, token management, function calling, context caching, system instructions, and long context capabilities.
 
 ## 2. API Usage Limits and Pricing
 
@@ -50,7 +50,7 @@ This guide covers the integration of the Gemini 1.5 Pro API into the AiGM app, i
 - For Gemini models, 1 token ≈ 4 characters, 100 tokens ≈ 60-80 English words
 - Consider the impact of genre-specific information on token usage
 
-### 3.5 Implications for AiGM
+### 3.5 Implications for BootHillGM
 - Monitor token usage for cost optimization
 - Consider token limits when designing prompts and responses
 - Be aware of additional tokens from system instructions and tools
@@ -95,7 +95,7 @@ Function calling allows defining custom functions for structured data output, en
 - Prioritize functions related to character creation, basic inventory management, and simple quest handling.
 - Design functions to be extensible for future enhancements while keeping initial implementation focused on MVP requirements.
 
-### 4.8 Implications for AiGM
+### 4.8 Implications for BootHillGM
 - Enables creation of genre-agnostic game mechanics
 - Facilitates flexible character creation across various settings
 - Allows for dynamic adaptation of game rules based on chosen genre
@@ -217,6 +217,4 @@ System instructions allow steering the behavior of the AI model based on specifi
 - Implement efficient methods for including inventory and quest data in API requests without exceeding token limits
 - Develop strategies for handling API responses that need to update both inventory and quest states
 
-This guide provides comprehensive information on integrating and optimizing the use of the Gemini 1.5 Pro API in the AiGM app, with a focus on implementing genre-agnostic features and flexible character creation. Refer to this document for best practices, implementation details, and optimization strategies.
-
-Last Updated: [Current Date]
+This guide provides comprehensive information on integrating and optimizing the use of the Gemini 1.5 Pro API in the BootHillGM app, with a focus on implementing genre-agnostic features and flexible character creation. Refer to this document for best practices, implementation details, and optimization strategies.

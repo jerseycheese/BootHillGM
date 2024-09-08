@@ -12,50 +12,49 @@ struct CharacterCreationView: View {
     var body: some View {
         VStack {
             ChatScrollView(messages: $viewModel.messages)
-                .frame(maxWidth: CGFloat.infinity, maxHeight: CGFloat.infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             
             if viewModel.isProcessing {
                 ProgressView()
                     .padding()
             } else if viewModel.waitingForUserInput {
                 if viewModel.showContinueButton {
+                    // Show Continue button when it's not the user's turn to respond
                     Button("Continue") {
                         viewModel.continueToNextStage()
                     }
                     .buttonStyle(.borderedProminent)
                     .padding()
                     .accessibility(label: Text("Continue to next stage"))
-                } else {
-                    Text("Your turn to respond")
-                        .foregroundColor(.secondary)
-                        .padding()
                 }
-            }
-            
-            HStack {
-                // TextField with focus state and onSubmit action
-                TextField("Your response", text: $viewModel.userInput)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .disabled(viewModel.isProcessing)
-                    .focused($isInputFocused)
-                    .onSubmit {
-                        viewModel.sendMessage()
-                    }
                 
-                Button("Send") {
-                    viewModel.sendMessage()
+                if viewModel.showTextInput {
+                    // Show text input when it's the user's turn to respond
+                    HStack {
+                        // TextField with focus state and onSubmit action
+                        TextField("Your response", text: $viewModel.userInput)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .focused($isInputFocused)
+                            .onSubmit {
+                                viewModel.sendMessage()
+                            }
+                        
+                        Button("Send") {
+                            viewModel.sendMessage()
+                        }
+                        .disabled(viewModel.userInput.isEmpty)
+                    }
+                    .padding()
                 }
-                .disabled(viewModel.userInput.isEmpty || viewModel.isProcessing)
             }
-            .padding()
         }
         .navigationTitle("Create Character")
         .onAppear {
             viewModel.startConversation(gameCore: gameCore)
         }
         // Automatically focus on the text input when it's the user's turn
-        .onChange(of: viewModel.waitingForUserInput) { newValue in
-            if newValue && !viewModel.showContinueButton {
+        .onChange(of: viewModel.showTextInput) { newValue in
+            if newValue {
                 isInputFocused = true
             }
         }

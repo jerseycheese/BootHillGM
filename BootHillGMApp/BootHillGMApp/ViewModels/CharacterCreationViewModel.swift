@@ -10,9 +10,12 @@ class CharacterCreationViewModel: ObservableObject {
     
     /// Indicates whether the AI is currently processing a response.
     @Published var isProcessing = false
-    
+
     /// Indicates whether the view is waiting for user input.
     @Published var waitingForUserInput = false
+
+    /// Indicates whether the view should show the text input field
+    @Published var showTextInput: Bool = true
 
     /// Controls the visibility of the "Continue" button
     @Published var showContinueButton: Bool = false
@@ -42,11 +45,12 @@ class CharacterCreationViewModel: ObservableObject {
         self.aiService = aiService
         self.diceRollService = diceRollService
     }
-    
+
     /// Starts the conversation with the AI for character creation.
     func startConversation(gameCore: GameCore) {
         self.gameCore = gameCore
         currentStep = .name
+        setInitialState()
         generateAIResponse(userInput: "start character creation")
     }
     
@@ -58,6 +62,14 @@ class CharacterCreationViewModel: ObservableObject {
         processUserInput(currentInput)
         userInput = ""
     }
+
+    /// Sets the initial state for the character creation process
+    private func setInitialState() {
+        showTextInput = true
+        showContinueButton = false
+        waitingForUserInput = true
+        isProcessing = false
+    }
     
     /// Adds a user message to the conversation, including metadata about the current creation stage.
     private func addUserMessage(_ message: String) {
@@ -68,12 +80,13 @@ class CharacterCreationViewModel: ObservableObject {
     private func addAIMessage(_ message: String) {
         messages.append(Message(content: message, isAI: true, metadata: MessageMetadata(stage: currentStep, debugInfo: "AI response for \(currentStep)")))
     }
-    
+
     /// Generates an AI response based on the current context and user input
     /// - Parameter userInput: The latest input from the user
     private func generateAIResponse(userInput: String) {
         isProcessing = true
         waitingForUserInput = false
+        showTextInput = false
         showContinueButton = false
         
         Task {
@@ -86,14 +99,29 @@ class CharacterCreationViewModel: ObservableObject {
                     isProcessing = false
                     waitingForUserInput = true
 
-                    if currentStep == .attributesRolling {
-                        isCurrentStageComplete = true
-                    }
-
-                    if isCurrentStageComplete || currentStep == .complete {
+                    // Determine which UI elements to show based on the current step
+                    switch currentStep {
+                    case .name, .age, .occupation:
+                        // Show text input for user-provided information
+                        showTextInput = true
+                        showContinueButton = false
+                    case .attributesExplanation, .abilitiesExplanation, .attributesRolling, .abilitiesRolling, .complete:
+                        // Show continue button for AI-driven stages
+                        showTextInput = false
                         showContinueButton = true
-                    } else {
-                        handleNextStepInCurrentStage()
+                    case .background:
+                        if !hasProvidedBackground {
+                            // Show text input for initial background input
+                            showTextInput = true
+                            showContinueButton = false
+                        } else {
+                            // Show continue button after background is provided
+                            showTextInput = false
+                            showContinueButton = true
+                        }
+                    @unknown default:
+                        showTextInput = true
+                        showContinueButton = false
                     }
                 }
             } catch {
@@ -102,7 +130,8 @@ class CharacterCreationViewModel: ObservableObject {
                     addAIMessage("I'm sorry, there was an error generating a response. Please try again.")
                     isProcessing = false
                     waitingForUserInput = true
-                    showContinueButton = true // Show button even on error to allow progression
+                    showTextInput = true
+                    showContinueButton = false
                 }
             }
         }
@@ -201,16 +230,11 @@ class CharacterCreationViewModel: ObservableObject {
     func continueToNextStage() {
         showContinueButton = false
         isCurrentStageComplete = false
+        
         switch currentStep {
-        case .name:
-            currentStep = .age
-            generateAIResponse(userInput: "Ask for character's age")
-        case .age:
-            currentStep = .occupation
-            generateAIResponse(userInput: "Ask for character's occupation")
-        case .occupation:
-            currentStep = .attributesExplanation
-            generateAIResponse(userInput: "Explain attributes")
+        case .name, .age, .occupation:
+            // These steps are handled by processUserInput
+            break
         case .attributesExplanation:
             currentStep = .attributesRolling
             generateAttributesResponse()
@@ -222,10 +246,11 @@ class CharacterCreationViewModel: ObservableObject {
             generateAbilitiesResponse()
         case .abilitiesRolling:
             currentStep = .background
+            showTextInput = true
             generateAIResponse(userInput: "Ask for character background")
         case .background:
             if !hasProvidedBackground {
-                // If background hasn't been provided, ask for it
+                showTextInput = true
                 generateAIResponse(userInput: "Ask for character background")
             } else {
                 // If background has been provided and responded to, move to complete
@@ -239,52 +264,38 @@ class CharacterCreationViewModel: ObservableObject {
             break
         }
     }
-    
+
     /// Processes the user's input based on the current creation step
     /// - Parameter input: The user's input
     private func processUserInput(_ input: String) {
         switch currentStep {
         case .name:
             createCharacter(name: input.trimmingCharacters(in: .whitespacesAndNewlines))
-            // Don't show continue button after name input
-            showContinueButton = false
         case .age:
             if let age = extractAge(from: input) {
                 character?.age = age
                 currentStep = .occupation
-                // Don't show continue button after age input
-                showContinueButton = false
                 generateAIResponse(userInput: "age set to \(age)")
             } else {
-                generateAIResponse(userInput: "Invalid age")
+                // Show error message and keep text input visible for invalid age
+                addAIMessage("I'm sorry, I couldn't understand that age. Please enter a valid number for your character's age.")
+                showTextInput = true
+                showContinueButton = false
             }
         case .occupation:
             if let occupation = extractOccupation(from: input) {
                 character?.occupation = occupation
                 currentStep = .attributesExplanation
-                showContinueButton = true
                 generateAIResponse(userInput: "occupation set to \(occupation)")
             } else {
-                generateAIResponse(userInput: "Invalid occupation")
+                // Show error message and keep text input visible for invalid occupation
+                addAIMessage("I'm sorry, I couldn't understand that occupation. Please enter a valid occupation for your character.")
+                showTextInput = true
+                showContinueButton = false
             }
-        case .attributesExplanation:
-            currentStep = .attributesRolling
-            showContinueButton = true
-            generateAIResponse(userInput: "Ready to roll attributes")
-        case .attributesRolling:
-            // After rolling attributes, move to abilities explanation
-            currentStep = .abilitiesExplanation
-            showContinueButton = true
-            generateAIResponse(userInput: "Attributes rolled, ready for abilities explanation")
-        case .abilitiesExplanation:
-            currentStep = .abilitiesRolling
-            showContinueButton = true
-            generateAIResponse(userInput: "Ready to roll abilities")
-        case .abilitiesRolling:
-            // After rolling abilities, move to background
-            currentStep = .background
-            showContinueButton = false
-            generateAIResponse(userInput: "Abilities rolled, ready for background")
+        case .attributesExplanation, .attributesRolling, .abilitiesExplanation, .abilitiesRolling:
+            // These steps are handled by continueToNextStage()
+            break
         case .background:
             // Handle the first step of the background process
             if !hasProvidedBackground {
@@ -293,13 +304,14 @@ class CharacterCreationViewModel: ObservableObject {
                 generateBackgroundResponse()
             }
         case .complete:
-            generateAIResponse(userInput: "Character creation complete")
+            // Character creation is complete, no further input needed
+            break
         @unknown default:
             print("Unknown character creation step")
             generateAIResponse(userInput: "Continue character creation")
         }
     }
-    
+
     /// Creates a new character with the given name
     /// - Parameter name: The character's name
     private func createCharacter(name: String) {
@@ -319,28 +331,10 @@ class CharacterCreationViewModel: ObservableObject {
                 case .failure(let error):
                     print("Error creating character: \(error.localizedDescription)")
                     self.addAIMessage("I'm sorry, there was an error creating your character. Let's try again. What would you like your character's name to be?")
-                    // Keep the current step as .name
-                    self.generateAIResponse(userInput: "Error creating character")
+                    self.showTextInput = true
+                    self.showContinueButton = false
                 }
             }
-        }
-    }
-
-    /// Handles the next step within the current stage of character creation
-    private func handleNextStepInCurrentStage() {
-        switch currentStep {
-        case .attributesRolling:
-            if !isCurrentStageComplete {
-                generateAttributesResponse()
-            }
-        case .abilitiesRolling:
-            if !isCurrentStageComplete {
-                generateAbilitiesResponse()
-            }
-        default:
-            // For stages that complete in one AI response
-            isCurrentStageComplete = true
-            showContinueButton = true
         }
     }
 

@@ -155,5 +155,3 @@
 5. Use SwiftLint or similar tools to enforce consistent code style.
 
 These best practices provide a comprehensive guide for developing the BootHillGM iOS app. By following these guidelines, we can ensure a scalable, maintainable, and high-quality codebase.
-
-Last Updated: [Current Date]
