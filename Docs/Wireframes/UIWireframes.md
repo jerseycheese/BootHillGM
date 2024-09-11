@@ -1,7 +1,7 @@
 # BootHillGM User Interface (UI) Wireframes
 
 ## 1. Overview
-BootHillGM features a text-based interface with minimal graphics, designed for iOS using SwiftUI. The UI focuses on clear presentation of game text, easy input methods, and quick access to essential game information.
+BootHillGM features a text-based interface with minimal graphics, designed for cross-platform mobile devices using React Native. The UI focuses on clear presentation of game text, easy input methods, and quick access to essential game information.
 
 ## 2. Key Screens
 
@@ -87,7 +87,7 @@ BootHillGM features a text-based interface with minimal graphics, designed for i
 - Accent Color: Aged gold or rust red
 
 ### 3.2 Typography
-- Main Text: Clear, easily readable serif font
+- Main Text: Clear, easily readable sans-serif font
 - Headers: Western-style font for titles and headers
 - Button Text: Sans-serif font for clarity
 
@@ -104,19 +104,19 @@ BootHillGM features a text-based interface with minimal graphics, designed for i
 - Subtle hover/selection effects
 
 ## 4. Accessibility Considerations
-- Implement Dynamic Type for adjustable text sizes
+- Implement dynamic font scaling for adjustable text sizes
 - Ensure sufficient color contrast for readability
 - Design tap targets with adequate size and spacing
 
 ## 5. Responsiveness
-- Design UI to adapt to different iOS device sizes
+- Design UI to adapt to different mobile device sizes and orientations
 - Implement scrolling for content that exceeds screen height
-- Use SwiftUI's adaptive layout capabilities
+- Use React Native's flexbox layout for adaptive designs
 
 ## 6. Future Enhancements (Post-MVP)
 - Implement dark/light mode toggle
 - Add subtle Western-themed background images or textures
 - Integrate simple animations for transitions and effects
-- Implement haptic feedback for key interactions
+- Implement haptic feedback for key interactions (platform-specific)
 
-Note: These wireframes serve as a guideline for the UI implementation. The actual design may evolve during development based on usability testing and technical considerations.
+Note: These wireframes serve as a guideline for the UI implementation. The actual design may evolve during development based on usability testing and technical considerations specific to React Native.

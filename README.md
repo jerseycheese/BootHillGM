@@ -1,6 +1,6 @@
 # BootHillGM Project
 
-BootHillGM is an iOS app providing an AI-driven virtual Game Master for the Boot Hill tabletop RPG, offering an engaging, user-friendly experience for solo players in the Western genre.
+BootHillGM is a cross-platform mobile app providing an AI-driven virtual Game Master for the Boot Hill tabletop RPG, offering an engaging, user-friendly experience for solo players in the Western genre. Built with React Native, it's designed to run on both iOS and Android devices.
 
 ## Key Features (MVP)
 
@@ -14,25 +14,26 @@ BootHillGM is an iOS app providing an AI-driven virtual Game Master for the Boot
 
 ## Technical Stack
 
-- Platform: iOS app using Swift and SwiftUI
+- Platform: Cross-platform mobile app using React Native
 - AI Model: Gemini 1.5 Pro API (Google Generative AI)
-- Development Environment: Xcode for iOS development, Git for version control
-- User Interface: SwiftUI for responsive and native iOS UI
-- Data Persistence: UserDefaults for simple data storage (MVP phase)
+- Development Environment: Visual Studio Code or WebStorm, Git for version control
+- User Interface: React Native components for cross-platform UI
+- State Management: Redux for global state management
+- Data Persistence: AsyncStorage for simple data storage (MVP phase)
 
 ## Getting Started
 
 1. Clone the repository
-2. Open the project in Xcode
-3. Install the GoogleGenerativeAI Swift package:
-   - In Xcode, go to File > Add Packages...
-   - Enter the package URL: https://github.com/google/generative-ai-swift
-   - Click "Add Package"
-4. Set up your Gemini API key:
-   - Create a `GenerativeAI-Info.plist` file in the BootHillGMApp/BootHillGMApp directory
-   - Add your API key to this file with the key "API_KEY"
+2. Install Node.js and npm if not already installed
+3. Install React Native CLI: `npm install -g react-native-cli`
+4. Navigate to the project directory and run: `npm install`
+5. Set up your Gemini API key:
+   - Create a `.env` file in the root directory
+   - Add your API key to this file: `GEMINI_API_KEY=your_api_key_here`
    - Ensure this file is added to .gitignore to keep your API key secure
-5. Build and run the project
+6. To run the app:
+   - For iOS: `npx react-native run-ios`
+   - For Android: `npx react-native run-android`
 
 [Include any additional setup instructions or requirements]
 
@@ -62,12 +63,7 @@ BootHillGM is an iOS app providing an AI-driven virtual Game Master for the Boot
 
 #### Technical Folder
 - [Gemini-API-Integration-Guide.md](Docs/Technical/Gemini-API-Integration-Guide.md): Guide for integrating the Gemini API.
-- [iOS-Development-Best-Practices.md](Docs/Technical/iOS-Development-Best-Practices.md): Best practices for iOS development.
+- [React-Native-Best-Practices.md](Docs/Technical/React-Native-Best-Practices.md): Best practices for React Native development.
 
 #### Wireframes Folder
 - [UIWireframes.md](Docs/Wireframes/UIWireframes.md): User interface wireframes for the app.
-
-
----
-
-Last Updated: 2024-09-01

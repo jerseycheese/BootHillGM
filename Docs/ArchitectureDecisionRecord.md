@@ -8,63 +8,66 @@
 
 ## Context and Problem Statement
 
-We need to design a scalable and maintainable architecture for the BootHillGM iOS app that can efficiently handle AI-driven game management, user interactions, and local data persistence. The architecture should support the unique requirements of a text-based RPG with AI integration.
+We need to design a scalable and maintainable architecture for the BootHillGM mobile app that can efficiently handle AI-driven game management, user interactions, and local data persistence. The architecture should support the unique requirements of a text-based RPG with AI integration and be deployable on both iOS and Android platforms.
 
 ## Considered Options
 
-1. Model-View-Controller (MVC)
-2. Model-View-ViewModel (MVVM)
-3. View-Interactor-Presenter-Entity-Router (VIPER)
-4. The Composable Architecture (TCA)
+1. Native development (separate iOS and Android codebases)
+2. React Native
+3. Flutter
+4. Xamarin
 
 ## Decision
 
-We have decided to use the Model-View-ViewModel (MVVM) architecture for the BootHillGM iOS app.
+We have decided to use React Native for the development of the BootHillGM mobile app.
 
 ## Rationale
 
-- MVVM provides a clear separation of concerns, which is crucial for managing the complex logic of an AI-driven RPG.
-- It works well with SwiftUI, our chosen UI framework, which has built-in support for binding data to views.
-- MVVM facilitates easier unit testing, particularly for business logic contained in ViewModels.
-- It offers a good balance between simplicity and scalability, suitable for both MVP development and future expansions.
+- React Native allows for cross-platform development, reducing development time and maintenance efforts.
+- It provides near-native performance while allowing for code reuse between platforms.
+- React Native has a large and active community, providing access to numerous third-party libraries and resources.
+- It allows for easy integration with native modules when needed for platform-specific functionality.
+- The team's existing JavaScript/React knowledge can be leveraged, reducing the learning curve.
 
 ## Consequences
 
 ### Positive
 
-- Clear separation of UI logic (View) from business logic (ViewModel) and data (Model).
-- Improved testability, especially for complex game logic and AI interactions.
-- Better maintainability and readability of code.
-- Easier to implement reactive programming patterns using Combine framework.
+- Faster development cycle with a single codebase for both iOS and Android.
+- Easier maintenance and feature parity between platforms.
+- Access to a wide range of third-party libraries and tools.
+- Ability to use native modules for performance-critical or platform-specific features.
+- Potential for web deployment in the future using React Native Web.
 
 ### Negative
 
-- Potential for overloaded ViewModels if not carefully managed.
-- Learning curve for developers not familiar with MVVM.
-- Slightly more boilerplate code compared to MVC.
+- Potential performance overhead compared to fully native apps.
+- Dependency on the React Native ecosystem and its updates.
+- May require platform-specific code for some advanced features.
+- Potential challenges with complex animations or highly custom UI elements.
 
 ## Related Decisions and Trade-offs
 
-1. **UI Framework**: We've chosen SwiftUI for its declarative syntax and built-in state management, which pairs well with MVVM.
+1. **State Management**: We'll use Redux for global state management due to its robust ecosystem and compatibility with React Native.
 
-2. **State Management**: We'll use Combine framework for reactive programming, complementing the MVVM architecture.
+2. **Navigation**: We'll use React Navigation for its deep integration with React Native and extensive feature set.
 
-3. **Dependency Injection**: We'll implement a simple dependency injection system to facilitate testing and modular development.
+3. **UI Components**: We'll primarily use React Native's built-in components, supplemented by carefully selected third-party libraries when necessary.
 
-4. **Data Persistence**: For MVP, we'll use UserDefaults for simple data storage. We may revisit this decision for more complex data needs post-MVP.
+4. **Data Persistence**: For MVP, we'll use AsyncStorage for simple data storage. We may revisit this decision for more complex data needs post-MVP.
 
-5. **AI Integration**: The AI service will be abstracted into its own service layer, interacting with ViewModels but not directly with Views.
+5. **AI Integration**: The AI service will be abstracted into its own service layer, interacting with Redux actions and reducers but not directly with React components.
 
 ## Additional Considerations
 
-- We'll need to carefully design the interaction between the game state, AI service, and ViewModels to ensure efficient updates and avoid unnecessary API calls.
-- As the project grows, we may need to implement additional patterns (e.g., Coordinator pattern for navigation) to complement the MVVM architecture.
-- Regular architecture reviews will be necessary to ensure we're not overloading ViewModels or violating MVVM principles as new features are added.
+- We'll need to carefully manage the balance between cross-platform code and platform-specific optimizations.
+- Regular updates of React Native and key dependencies will be crucial to maintain app performance and security.
+- We'll need to implement comprehensive testing strategies that cover both platforms.
 
 ## Future Decisions to Consider
 
 1. Implementation of a more robust data persistence solution post-MVP.
 2. Strategies for handling long-running AI operations without blocking the UI.
-3. Approach for modularizing the app if complexity significantly increases.
+3. Approach for integrating more complex, platform-specific features if required.
 
 This ADR will be reviewed and updated as the project progresses and new architectural decisions are made.

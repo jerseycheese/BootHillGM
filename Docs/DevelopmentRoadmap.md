@@ -1,41 +1,39 @@
-# BootHillGM Development Roadmap
+# BootHillGM Development Roadmap (React Native Version)
 
 ## Phase 1: Project Initiation and Planning
-- [x] Define project scope and objectives
-- [x] Create initial project documentation
-- [x] Set up development environment
-- [x] Establish version control system
-- [x] Create basic project structure
+- [ ] Define project scope and objectives
+- [ ] Create initial project documentation
+- [ ] Set up React Native development environment
+- [ ] Establish version control system
+- [ ] Create basic project structure
 
 ## Phase 2: Core Component Development
 
 ### Core Game Engine (GameCore)
-- [x] Implement game state management
-- [x] Develop turn-based system
-- [x] Create basic game flow logic
-- [x] Integrate TurnManager into GameCore for better encapsulation
+- [ ] Implement game state management
+- [ ] Develop turn-based system
+- [ ] Create basic game flow logic
 
 ### AI Integration Service (AIService)
-- [x] Set up Gemini API integration
-- [x] Implement basic AI response generation
-- [x] Implement context management for character creation
-- [x] Develop comprehensive AI response processing system for character creation
-- [ ] Extend AI integration to other game aspects (e.g., narrative generation, NPC interactions)
+- [ ] Set up Gemini API integration
+- [ ] Implement basic AI response generation
+- [ ] Implement context management for game elements
+- [ ] Develop AI response processing system
 
 ### Character Management System
-- [x] Implement character creation flow
-- [x] Develop attribute and skill system
-- [x] Create CharacterCreationViewModel for managing the creation process
-- [x] Implement AI-driven conversation for character creation
+- [ ] Implement character creation flow
+- [ ] Develop attribute and skill system
+- [ ] Create character creation interface
+- [ ] Implement AI-driven conversation for character creation
 - [ ] Implement character progression logic
-- [ ] Develop character editing and updating functionality
+- [ ] Develop character editing functionality
 - [ ] Create character inventory management
 
 ### User Interface (UIManager)
-- [x] Design and implement basic UI framework for AI testing
-- [x] Create character creation interface (CharacterCreationView)
-- [ ] Develop game session view
-- [ ] Implement character sheet view
+- [ ] Design and implement basic UI framework
+- [ ] Create character creation interface
+- [ ] Develop game session screen
+- [ ] Implement character sheet screen
 - [ ] Create inventory management interface
 
 ### Combat System (CombatSystem)

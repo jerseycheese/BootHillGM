@@ -1,14 +1,14 @@
 # BootHillGM Project Overview
 
 ## 1. Project Description
-BootHillGM is an iOS app providing an AI-driven virtual Game Master for the Boot Hill tabletop RPG, offering an engaging, user-friendly experience for solo players in the Western genre. The app is built with a modular component structure, allowing for flexibility and scalability in development and future expansions.
+BootHillGM is a cross-platform mobile app providing an AI-driven virtual Game Master for the Boot Hill tabletop RPG, offering an engaging, user-friendly experience for solo players in the Western genre. The app is built with React Native, allowing for deployment on both iOS and Android platforms.
 
 ## 2. Project Objectives
 - Develop an AI-driven virtual Game Master app specifically for Boot Hill RPG
 - Automate Western-themed campaign management via AI
 - Create an engaging, user-friendly experience for solo players
 - Faithfully implement Boot Hill RPG rules and mechanics
-- Build a flexible and scalable app architecture using modular components
+- Build a flexible and scalable app architecture using React Native
 
 ## 3. Target Audience
 - Solo players interested in Western-themed RPGs
@@ -16,7 +16,7 @@ BootHillGM is an iOS app providing an AI-driven virtual Game Master for the Boot
 - Newcomers to tabletop RPGs seeking an accessible entry point
 
 ## 4. Key Features (MVP)
-- Conversation-driven Boot Hill Character Creation
+- AI-driven Boot Hill Character Creation
 - AI-powered Game Mastering for Western settings
 - AI-powered NPCs with persistent memory
 - Game Session and State Management
@@ -27,7 +27,7 @@ BootHillGM is an iOS app providing an AI-driven virtual Game Master for the Boot
 ## 5. Boot Hill RPG Core Elements
 - Percentile dice (d100) system
 - Quick-action combat emphasizing gunfighting
-- Extensive skill selection (60+ skills)
+- Extensive skill selection
 - High lethality gameplay
 - Historical Western setting and themes
 
@@ -38,7 +38,7 @@ BootHillGM is an iOS app providing an AI-driven virtual Game Master for the Boot
 - Customization Options
 
 ## 7. App Architecture
-The BootHillGM app is built using a modular component structure, including:
+The BootHillGM app is built using React Native with a modular component structure, including:
 - Core Game Engine
 - AI Integration Service
 - Character Management System
@@ -52,7 +52,5 @@ The BootHillGM app is built using a modular component structure, including:
 
 This modular approach allows for easier development, testing, and future expansions.
 
-## 8. Current Development Status
-- Implemented foundation for conversation-driven character creation
-- Character model includes basic attributes and conversation history
-- Character creation UI designed as a chat-like interface for AI-driven interactions
+## 8. Development Status
+The project is in the initial planning and design phase, with development yet to begin.
