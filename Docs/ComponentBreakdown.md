@@ -6,6 +6,10 @@ This document outlines the main components of the BootHillGM project, their func
 
 ### 1. Core Game Engine (GameCore)
 - **Main Functionality:** Manages game state, turns, and basic game flow
+- **Current Status:** Basic implementation completed
+  - Integrated with Redux for state management
+  - Displays current game state (game status, character, location, inventory, quests)
+  - Provides UI elements to trigger game actions (start game, create character, update location, add item, add quest)
 - **Potential Challenges:** Ensuring consistent state management across components, handling complex state changes
 - **Interactions:** Interacts with almost all other components, especially AIManager and CharacterManager
 
@@ -16,13 +20,14 @@ This document outlines the main components of the BootHillGM project, their func
 
 ### 3. Character Management System
 - **Main Functionality:** Handles character creation, attributes, skills, and progression
+- **Current Status:** Basic structure implemented in Redux state
 - **Potential Challenges:** Implementing Boot Hill RPG rules accurately, balancing character progression, managing state updates efficiently
 - **Interactions:** Interacts with GameCore, InventorySystem, and CombatSystem
 - **Key Components:**
-  - CharacterManager: Manages character data and operations
-  - CharacterCreationContainer: Implements the conversation-driven character creation process
-  - Character Model: Stores character data including attributes, skills, and background
-  - DiceRollService: Handles virtual dice rolls for automated attribute generation
+  - CharacterManager: Manages character data and operations (to be implemented)
+  - CharacterCreationContainer: Implements the conversation-driven character creation process (to be implemented)
+  - Character Model: Stores character data including attributes, skills, and background (basic structure in Redux state)
+  - DiceRollService: Handles virtual dice rolls for automated attribute generation (to be implemented)
 
 ### 4. Narrative Engine (NarrativeEngine)
 - **Main Functionality:** Generates and manages storylines, quests, and narrative elements
@@ -61,15 +66,15 @@ This document outlines the main components of the BootHillGM project, their func
 
 ## Recommended Development Order
 
-1. Core Game Engine (GameCore)
+1. Core Game Engine (GameCore) - Basic implementation completed
 2. AI Integration Service (AIService)
-3. Character Management System
-4. User Interface (UIManager)
+3. Character Management System - Partially implemented
+4. User Interface (UIManager) - Basic implementation in GameCore
 5. Combat System (CombatSystem)
-6. Inventory System (InventorySystem)
+6. Inventory System (InventorySystem) - Basic structure in Redux
 7. NPC Management (NPCManager)
 8. Narrative Engine (NarrativeEngine)
-9. Quest System (QuestSystem)
+9. Quest System (QuestSystem) - Basic structure in Redux
 10. Data Persistence (DataManager)
 
 This order allows for building core functionality first, then adding more complex systems. The UI is placed early to allow for testing and iterating on user interactions. Data Persistence is last as it depends on all other components being relatively stable.

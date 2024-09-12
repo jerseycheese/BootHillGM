@@ -19,7 +19,7 @@ BootHillGM is a cross-platform mobile app providing an AI-driven virtual Game Ma
 - AI-driven Boot Hill Character Creation
 - AI-powered Game Mastering for Western settings
 - AI-powered NPCs with persistent memory
-- Game Session and State Management
+- Game Session and State Management using Redux
 - Boot Hill's percentile dice system for chance-based outcomes
 - Character Sheet View
 - Basic Inventory and Quest Systems
@@ -49,8 +49,9 @@ The BootHillGM app is built using React Native with a modular component structur
 - Quest System
 - User Interface
 - Data Persistence
+- Redux for State Management
 
 This modular approach allows for easier development, testing, and future expansions.
 
 ## 8. Development Status
-The project is in the initial planning and design phase, with development yet to begin.
+The project has progressed from the initial planning phase. A basic React Native project structure has been set up, and Redux has been implemented for state management. The GameCore component has been created and integrated with Redux to demonstrate basic game state manipulation.
