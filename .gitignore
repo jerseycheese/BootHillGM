@@ -1,5 +1,4 @@
-# Xcode
-#
+### Xcode ###
 build/
 *.pbxuser
 !default.pbxuser
@@ -9,68 +8,200 @@ build/
 !default.mode2v3
 *.perspectivev3
 !default.perspectivev3
-xcuserdata
+xcuserdata/
 *.xccheckout
 *.moved-aside
 DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
+*.dSYM.zip
+*.dSYM
+*.xcscmblueprint
 
-# Swift Package Manager
-#
+### Swift Package Manager ###
 .build/
 
-# CocoaPods
-#
+### CocoaPods ###
 Pods/
 
-# Carthage
-#
+### Carthage ###
 Carthage/Build
 
-# fastlane
-#
+### fastlane ###
 fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 
-# Code Injection
-#
+### Code Injection ###
 iOSInjectionProject/
 
-# Environment variables
-.env
-
-# macOS
+### macOS ###
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
 
-# PHPStorm
+### IDE ###
 .idea/
+.vscode-test
 
-# App files
+### App Specific ###
 Config.swift
-
-# Google API key
 GenerativeAI-Info.plist
 
-# Xcode
+### Environment ###
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
-## User settings
-xcuserdata/
+### React Native ###
+.expo
+__generated__
 
-## Obj-C/Swift specific
-*.hmap
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
-## App packaging
-*.ipa
-*.dSYM.zip
-*.dSYM
+# Diagnostic reports
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-## Playgrounds
-timeline.xctimeline
-playground.xcworkspace
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-## Repopack
+# Testing
+coverage
+*.lcov
+.nyc_output
+
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+bower_components
+
+# Caches
+.npm
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.cache
+.parcel-cache
+.next
+.nuxt
+.vuepress/dist
+.temp
+.docusaurus
+.serverless/
+.fusebox/
+
+# Compiled output
+build/
+dist/
+out/
+
+# TypeScript
+*.tsbuildinfo
+
+# Microbundles
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Yarn
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Webpack
+.webpack/
+
+# dotenv environment variables file
+.env
+
+### Android ###
+.gradle/
+build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+output.json
+
+# IntelliJ
+*.iml
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# Keystore files
+*.jks
+*.keystore
+
+# Google Services
+google-services.json
+
+# Android Profiling
+*.hprof
+
+### Buck ###
+buck-out/
+.buckconfig.local
+.buckd/
+.buckversion
+.fakebuckversion
+
+### Gradle ###
+.gradle
+**/build/
+!src/**/build/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+.gradletasknamecache
+
+### Eclipse ###
+.project
+.classpath
+
+### Linux ###
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+### Repopack ###
 repopack-output.txt
