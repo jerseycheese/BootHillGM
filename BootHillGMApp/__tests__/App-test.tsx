@@ -1,14 +1,23 @@
-/**
- * @format
- */
-
 import 'react-native';
 import React from 'react';
+import { render } from '@testing-library/react-native';
 import App from '../App';
 
-// Note: test renderer must be required after react-native.
-import renderer from 'react-test-renderer';
+// Mock the Redux store
+jest.mock('../src/store', () => ({
+  store: {
+    getState: () => ({}),
+    dispatch: jest.fn(),
+    subscribe: jest.fn(),
+  },
+}));
 
-it('renders correctly', () => {
-  renderer.create(<App />);
+// Mock the AppNavigator
+jest.mock('../src/navigation/AppNavigator', () => 'MockedAppNavigator');
+
+describe('App', () => {
+  it('renders correctly', () => {
+    const { getByTestId } = render(<App />);
+    expect(getByTestId('mocked-app-navigator')).toBeTruthy();
+  });
 });
