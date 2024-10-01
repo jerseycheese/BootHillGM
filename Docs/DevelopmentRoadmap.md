@@ -1,107 +1,130 @@
-# BootHillGM Development Roadmap (React Native Version)
+# BootHillGM Development Roadmap (Next.js Version)
 
-## Phase 1: Project Initiation and Planning
-- [ ] Define project scope and objectives
-- [ ] Create initial project documentation
-- [ ] Set up React Native development environment
-- [ ] Establish version control system
-- [ ] Create basic project structure
+## Phase 1: Project Setup and Initial Development (MVP)
 
-## Phase 2: Core Component Development
+### 1.1 Environment Setup
+- [x] Set up Next.js development environment
+- [x] Configure TypeScript
+- [x] Set up version control with Git
+- [x] Configure ESLint and Prettier for code quality
 
-### Core Game Engine (GameCore)
-- [ ] Implement game state management
+### 1.2 Project Structure
+- [ ] Set up basic Next.js project structure
+- [ ] Create initial pages (Home, Character Creation, Game Session)
+- [ ] Set up API routes structure
+
+### 1.3 Core Game Engine (GameCore)
+- [ ] Implement basic game state management using React Context
 - [ ] Develop turn-based system
 - [ ] Create basic game flow logic
 
-### AI Integration Service (AIService)
+### 1.4 AI Integration Service (AIService)
 - [ ] Set up Gemini API integration
-- [ ] Implement basic AI response generation
-- [ ] Implement context management for game elements
-- [ ] Develop AI response processing system
+- [ ] Implement AI response generation using Next.js API routes
+- [ ] Develop basic context management for game elements
+- [ ] Implement error handling for AI interactions
 
-### Character Management System
+## Phase 2: Core Gameplay Development (MVP)
+
+### 2.1 Character Management System
 - [ ] Implement character creation flow
 - [ ] Develop attribute and skill system
 - [ ] Create character creation interface
 - [ ] Implement AI-driven conversation for character creation
-- [ ] Implement character progression logic
-- [ ] Develop character editing functionality
-- [ ] Create character inventory management
 
-### User Interface (UIManager)
-- [ ] Design and implement basic UI framework
-- [ ] Create character creation interface
-- [ ] Develop game session screen
-- [ ] Implement character sheet screen
-- [ ] Create inventory management interface
+### 2.2 User Interface (UIManager)
+- [ ] Design and implement basic UI components
+- [ ] Develop responsive layouts for different screen sizes
+- [ ] Create character sheet view
+- [ ] Implement inventory management interface
 
-### Combat System (CombatSystem)
-- [ ] Implement Boot Hill RPG combat rules
+### 2.3 Combat System (CombatSystem)
+- [ ] Implement basic Boot Hill RPG combat rules
 - [ ] Develop turn order and action resolution
 - [ ] Create combat UI elements
 
-### Inventory System (InventorySystem)
-- [ ] Implement item management
+### 2.4 Inventory System (InventorySystem)
+- [ ] Implement basic item management
 - [ ] Develop equipment system
-- [ ] Create basic economy for buying/selling items
+- [ ] Create simple economy for buying/selling items
 
-## Phase 3: Advanced Component Development
+## Phase 3: Narrative and World Development (MVP)
 
-### NPC Management (NPCManager)
-- [ ] Implement NPC generation system
-- [ ] Develop NPC interaction logic
-- [ ] Create NPC persistence mechanism
+### 3.1 Narrative Engine (NarrativeEngine)
+- [ ] Develop basic story generation system
+- [ ] Implement simple quest creation and management
+- [ ] Create linear narrative elements
 
-### Narrative Engine (NarrativeEngine)
-- [ ] Develop story generation system
-- [ ] Implement quest creation and management
-- [ ] Create dynamic narrative elements
+### 3.2 NPC Management (NPCManager)
+- [ ] Implement basic NPC generation system
+- [ ] Develop simple NPC interaction logic
+- [ ] Create NPC persistence using Next.js API routes
 
-### Quest System (QuestSystem)
-- [ ] Implement quest tracking
+### 3.3 Quest System (QuestSystem)
+- [ ] Implement basic quest tracking
 - [ ] Develop quest completion logic
-- [ ] Create quest reward system
+- [ ] Create simple quest reward system
 
-### Data Persistence (DataManager)
-- [ ] Implement save/load functionality
-- [ ] Develop data migration strategies
-- [ ] Create backup and restore features
+## Phase 4: Data Management and Persistence (MVP)
 
-## Phase 4: Integration and Testing
-- [ ] Integrate all components
-- [ ] Conduct internal testing and bug fixes
-- [ ] Perform initial performance optimizations
-- [ ] Refine AI prompts and responses
+### 4.1 Data Persistence (DataManager)
+- [ ] Implement save/load functionality using Next.js API routes and localStorage
+- [ ] Develop basic data migration strategies
+- [ ] Create simple backup and restore features
 
-## Phase 5: Polish and Soft Launch
-- [ ] Refine user interface and experience
+## Phase 5: Testing and Optimization (MVP)
+
+### 5.1 Testing
+- [ ] Implement unit tests for core components
+- [ ] Conduct integration testing for critical user flows
+- [ ] Perform manual testing of AI interactions and game scenarios
+
+### 5.2 Performance Optimization
+- [ ] Utilize Next.js built-in performance optimizations
+- [ ] Implement basic caching for frequently accessed data
+- [ ] Optimize critical API routes
+
+## Phase 6: Deployment and Launch Preparation (MVP)
+
+### 6.1 Deployment Setup
+- [ ] Set up deployment pipeline on Vercel
+- [ ] Configure environment variables for production
+
+### 6.2 Final Testing and Polishing
 - [ ] Conduct user acceptance testing
-- [ ] Make final adjustments based on feedback
-- [ ] Prepare for App Store submission
-- [ ] Soft launch MVP version
+- [ ] Address critical bugs and issues
+- [ ] Optimize UI/UX based on feedback
+
+### 6.3 Launch
+- [ ] Deploy MVP version to production
+- [ ] Monitor initial user feedback and system performance
 
 ## Post-MVP Development Ideas (Priority Order)
 
 1. Enhanced Gameplay Features
-   - Expand skill list and character progression system
-   - Implement more complex combat mechanics
-   - Develop dynamic quest generation system
+   - [ ] Expand skill list and character progression system
+   - [ ] Implement more complex combat mechanics
+   - [ ] Develop dynamic quest generation system
 
 2. World Expansion
-   - Add multiple towns and wilderness areas
-   - Implement map feature for navigation
-   - Enhance NPC interactions and persistence
+   - [ ] Add multiple towns and wilderness areas
+   - [ ] Implement map feature for navigation
+   - [ ] Enhance NPC interactions and persistence
 
 3. Advanced AI and Narrative Features
-   - Improve AI Game Master with more dynamic storytelling
-   - Implement branching narratives and consequences
-   - Develop system for integrating historical events
+   - [ ] Improve AI Game Master with more dynamic storytelling
+   - [ ] Implement branching narratives and consequences
+   - [ ] Develop system for integrating historical events
 
-4. Multiplayer and Social Features
-   - Design and implement basic multiplayer functionality
-   - Add social features like character sharing
-   - Develop cooperative and competitive play modes
+4. Performance Optimizations
+   - [ ] Implement advanced caching strategies
+   - [ ] Optimize asset loading and delivery
+   - [ ] Explore static site generation (SSG) for suitable pages
+
+5. Expanded User Features
+   - [ ] Implement user authentication and profiles
+   - [ ] Develop multi-campaign management
+   - [ ] Create community features (e.g., character sharing)
 
 ## Ongoing Tasks Throughout Development
 - Regular code reviews and refactoring
@@ -109,12 +132,4 @@
 - Performance monitoring and optimization
 - Security audits and updates
 
-## Key Milestones
-1. Project Kickoff
-2. Core Components Complete
-3. Advanced Components Complete
-4. Internal MVP Testing Complete
-5. Soft Launch
-6. First Major Post-MVP Update
-
-Note: This roadmap is aligned with the component breakdown and recommended development order. Progress will be made as time allows, and the order of tasks may be adjusted based on emerging needs or insights gained during development.
+Note: This roadmap is aligned with the Next.js-based implementation. Progress will be made as time allows, and the order of tasks may be adjusted based on emerging needs or insights gained during development.

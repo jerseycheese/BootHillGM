@@ -1,73 +1,74 @@
 # Architecture Decision Record (ADR)
 
-## ADR 1: Mobile App Architecture for BootHillGM
+## ADR 1: Web Application Framework for BootHillGM
 
-### Date: [Current Date]
+### Date: 10/1/2024
 
 ### Status: Accepted
 
 ## Context and Problem Statement
 
-We need to design a scalable and maintainable architecture for the BootHillGM mobile app that can efficiently handle AI-driven game management, user interactions, and local data persistence. The architecture should support the unique requirements of a text-based RPG with AI integration and be deployable on both iOS and Android platforms.
+We need to design a scalable and maintainable architecture for the BootHillGM application that can efficiently handle AI-driven game management, user interactions, and data persistence. The architecture should support the unique requirements of a text-based RPG with AI integration and be accessible across various devices.
 
 ## Considered Options
 
-1. Native development (separate iOS and Android codebases)
-2. React Native
-3. Flutter
-4. Xamarin
+1. React Native (original choice)
+2. Next.js
+3. Plain React with Express backend
+4. Vue.js with Nuxt.js
 
 ## Decision
 
-We have decided to use React Native for the development of the BootHillGM mobile app.
+We have decided to use Next.js for the development of the BootHillGM web application.
 
 ## Rationale
 
-- React Native allows for cross-platform development, reducing development time and maintenance efforts.
-- It provides near-native performance while allowing for code reuse between platforms.
-- React Native has a large and active community, providing access to numerous third-party libraries and resources.
-- It allows for easy integration with native modules when needed for platform-specific functionality.
+- Next.js provides server-side rendering (SSR) and static site generation (SSG) out of the box, improving performance and SEO capabilities.
+- It offers a great developer experience with features like hot module replacement and automatic code splitting.
+- Next.js has built-in API routes, allowing for easy implementation of serverless functions.
+- The framework's file-based routing system simplifies navigation management.
+- Next.js has excellent TypeScript support, enhancing code quality and developer productivity.
+- It allows for easy deployment on platforms like Vercel, which is optimized for Next.js applications.
 - The team's existing JavaScript/React knowledge can be leveraged, reducing the learning curve.
 
 ## Consequences
 
 ### Positive
 
-- Faster development cycle with a single codebase for both iOS and Android.
-- Easier maintenance and feature parity between platforms.
-- Access to a wide range of third-party libraries and tools.
-- Ability to use native modules for performance-critical or platform-specific features.
-- Potential for web deployment in the future using React Native Web.
+- Improved performance and SEO capabilities through SSR and SSG.
+- Simplified development process with built-in features like routing and API routes.
+- Easier deployment and scaling options.
+- Potential for better user experience across various devices due to web-based nature.
+- Simplified testing process compared to mobile app development.
 
 ### Negative
 
-- Potential performance overhead compared to fully native apps.
-- Dependency on the React Native ecosystem and its updates.
-- May require platform-specific code for some advanced features.
-- Potential challenges with complex animations or highly custom UI elements.
+- Loss of native mobile app features and offline capabilities (compared to the original React Native choice).
+- Potential learning curve for team members not familiar with Next.js specifics.
+- May require additional effort to make the application feel "app-like" on mobile devices.
 
 ## Related Decisions and Trade-offs
 
-1. **State Management**: We'll use Redux for global state management due to its robust ecosystem and compatibility with React Native.
+1. **State Management**: We'll start with React's Context API for global state management, with the option to introduce Redux if complexity increases.
 
-2. **Navigation**: We'll use React Navigation for its deep integration with React Native and extensive feature set.
+2. **Styling**: We'll use CSS Modules for component-specific styles and consider using Tailwind CSS for utility-first styling.
 
-3. **UI Components**: We'll primarily use React Native's built-in components, supplemented by carefully selected third-party libraries when necessary.
+3. **API Routes**: We'll leverage Next.js API routes for server-side operations and AI interactions.
 
-4. **Data Persistence**: For MVP, we'll use AsyncStorage for simple data storage. We may revisit this decision for more complex data needs post-MVP.
+4. **Data Persistence**: We'll use a combination of client-side storage (localStorage) and server-side storage (database) depending on the data sensitivity and persistence requirements.
 
-5. **AI Integration**: The AI service will be abstracted into its own service layer, interacting with Redux actions and reducers but not directly with React components.
+5. **Authentication**: We'll implement authentication using Next.js middleware and consider using NextAuth.js for more complex auth flows.
 
 ## Additional Considerations
 
-- We'll need to carefully manage the balance between cross-platform code and platform-specific optimizations.
-- Regular updates of React Native and key dependencies will be crucial to maintain app performance and security.
-- We'll need to implement comprehensive testing strategies that cover both platforms.
+- We'll need to optimize the web application for mobile devices to ensure a good user experience across all platforms.
+- Regular updates of Next.js and key dependencies will be crucial to maintain app performance and security.
+- We'll implement progressive enhancement techniques to support a wide range of browsers and devices.
 
 ## Future Decisions to Consider
 
 1. Implementation of a more robust data persistence solution post-MVP.
 2. Strategies for handling long-running AI operations without blocking the UI.
-3. Approach for integrating more complex, platform-specific features if required.
+3. Approach for implementing "app-like" features such as offline support and push notifications.
 
 This ADR will be reviewed and updated as the project progresses and new architectural decisions are made.
