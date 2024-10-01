@@ -1,135 +1,91 @@
-# BootHillGM Development Roadmap (Next.js Version)
+# BootHillGM Development Roadmap (MVP Focus)
 
-## Phase 1: Project Setup and Initial Development (MVP)
+This roadmap outlines the development phases for the BootHillGM MVP, tailored for implementation by a single developer new to React and Next.js.
 
-### 1.1 Environment Setup
-- [x] Set up Next.js development environment
-- [x] Configure TypeScript
-- [x] Set up version control with Git
-- [x] Configure ESLint and Prettier for code quality
+## Phase 1: Project Setup and Learning (2-3 weeks)
 
-### 1.2 Project Structure
+1.1 Environment Setup
+- [ ] Set up Next.js development environment
+- [ ] Configure TypeScript
+- [ ] Set up version control with Git
+
+1.2 Learning and Experimentation
+- [ ] Complete Next.js tutorial
+- [ ] Experiment with basic React concepts (components, props, state)
+- [ ] Learn about React Hooks (useState, useEffect, useContext)
+
+1.3 Project Structure
 - [ ] Set up basic Next.js project structure
 - [ ] Create initial pages (Home, Character Creation, Game Session)
-- [ ] Set up API routes structure
+- [ ] Experiment with API routes
 
-### 1.3 Core Game Engine (GameCore)
-- [ ] Implement basic game state management using React Context
-- [ ] Develop turn-based system
-- [ ] Create basic game flow logic
+## Phase 2: Core Functionality Development (4-6 weeks)
 
-### 1.4 AI Integration Service (AIService)
+2.1 State Management
+- [ ] Implement basic game state using React Context
+- [ ] Create reducers for state updates
+
+2.2 AI Integration
 - [ ] Set up Gemini API integration
-- [ ] Implement AI response generation using Next.js API routes
-- [ ] Develop basic context management for game elements
-- [ ] Implement error handling for AI interactions
+- [ ] Implement basic AI response generation using Next.js API routes
+- [ ] Develop simple context management for game elements
 
-## Phase 2: Core Gameplay Development (MVP)
+2.3 Character System
+- [ ] Implement simplified character creation flow
+- [ ] Create basic character sheet display
 
-### 2.1 Character Management System
-- [ ] Implement character creation flow
-- [ ] Develop attribute and skill system
-- [ ] Create character creation interface
-- [ ] Implement AI-driven conversation for character creation
+2.4 User Interface
+- [ ] Design and implement essential UI components
+- [ ] Develop responsive layout for game session page
 
-### 2.2 User Interface (UIManager)
-- [ ] Design and implement basic UI components
-- [ ] Develop responsive layouts for different screen sizes
-- [ ] Create character sheet view
-- [ ] Implement inventory management interface
+## Phase 3: Game Mechanics Implementation (4-6 weeks)
 
-### 2.3 Combat System (CombatSystem)
-- [ ] Implement basic Boot Hill RPG combat rules
-- [ ] Develop turn order and action resolution
-- [ ] Create combat UI elements
-
-### 2.4 Inventory System (InventorySystem)
-- [ ] Implement basic item management
-- [ ] Develop equipment system
-- [ ] Create simple economy for buying/selling items
-
-## Phase 3: Narrative and World Development (MVP)
-
-### 3.1 Narrative Engine (NarrativeEngine)
+3.1 Narrative Engine
 - [ ] Develop basic story generation system
-- [ ] Implement simple quest creation and management
-- [ ] Create linear narrative elements
+- [ ] Implement simple dialogue system
 
-### 3.2 NPC Management (NPCManager)
-- [ ] Implement basic NPC generation system
-- [ ] Develop simple NPC interaction logic
-- [ ] Create NPC persistence using Next.js API routes
+3.2 Combat System
+- [ ] Implement simplified Boot Hill combat rules
+- [ ] Create basic combat UI
 
-### 3.3 Quest System (QuestSystem)
-- [ ] Implement basic quest tracking
-- [ ] Develop quest completion logic
-- [ ] Create simple quest reward system
+3.3 Inventory System
+- [ ] Implement basic item management
+- [ ] Create simple inventory UI
 
-## Phase 4: Data Management and Persistence (MVP)
+## Phase 4: Data Persistence and Refinement (2-3 weeks)
 
-### 4.1 Data Persistence (DataManager)
-- [ ] Implement save/load functionality using Next.js API routes and localStorage
-- [ ] Develop basic data migration strategies
-- [ ] Create simple backup and restore features
+4.1 Save/Load Functionality
+- [ ] Implement game state serialization
+- [ ] Create save/load system using localStorage
 
-## Phase 5: Testing and Optimization (MVP)
+4.2 Bug Fixes and Optimizations
+- [ ] Address any bugs or issues discovered during development
+- [ ] Optimize performance of critical game loops
 
-### 5.1 Testing
-- [ ] Implement unit tests for core components
-- [ ] Conduct integration testing for critical user flows
-- [ ] Perform manual testing of AI interactions and game scenarios
+4.3 Polish UI/UX
+- [ ] Refine user interface based on playtesting feedback
+- [ ] Improve responsiveness across different devices
 
-### 5.2 Performance Optimization
-- [ ] Utilize Next.js built-in performance optimizations
-- [ ] Implement basic caching for frequently accessed data
-- [ ] Optimize critical API routes
+## Phase 5: Testing and Deployment (2-3 weeks)
 
-## Phase 6: Deployment and Launch Preparation (MVP)
+5.1 Testing
+- [ ] Conduct thorough playtesting
+- [ ] Fix critical bugs and issues
 
-### 6.1 Deployment Setup
-- [ ] Set up deployment pipeline on Vercel
-- [ ] Configure environment variables for production
+5.2 Deployment
+- [ ] Set up deployment pipeline (e.g., Vercel)
+- [ ] Deploy MVP version for limited release
 
-### 6.2 Final Testing and Polishing
-- [ ] Conduct user acceptance testing
-- [ ] Address critical bugs and issues
-- [ ] Optimize UI/UX based on feedback
-
-### 6.3 Launch
-- [ ] Deploy MVP version to production
-- [ ] Monitor initial user feedback and system performance
-
-## Post-MVP Development Ideas (Priority Order)
-
-1. Enhanced Gameplay Features
-   - [ ] Expand skill list and character progression system
-   - [ ] Implement more complex combat mechanics
-   - [ ] Develop dynamic quest generation system
-
-2. World Expansion
-   - [ ] Add multiple towns and wilderness areas
-   - [ ] Implement map feature for navigation
-   - [ ] Enhance NPC interactions and persistence
-
-3. Advanced AI and Narrative Features
-   - [ ] Improve AI Game Master with more dynamic storytelling
-   - [ ] Implement branching narratives and consequences
-   - [ ] Develop system for integrating historical events
-
-4. Performance Optimizations
-   - [ ] Implement advanced caching strategies
-   - [ ] Optimize asset loading and delivery
-   - [ ] Explore static site generation (SSG) for suitable pages
-
-5. Expanded User Features
-   - [ ] Implement user authentication and profiles
-   - [ ] Develop multi-campaign management
-   - [ ] Create community features (e.g., character sharing)
-
-## Ongoing Tasks Throughout Development
+## Ongoing Tasks
 - Regular code reviews and refactoring
 - Documentation updates
-- Performance monitoring and optimization
-- Security audits and updates
+- Learning and applying React and Next.js best practices
 
-Note: This roadmap is aligned with the Next.js-based implementation. Progress will be made as time allows, and the order of tasks may be adjusted based on emerging needs or insights gained during development.
+## Post-MVP Considerations
+- Expand narrative complexity
+- Enhance AI interactions
+- Implement more advanced combat and inventory systems
+- Add user authentication and profiles
+- Develop multi-campaign management
+
+Note: This roadmap is designed to be flexible. Adjust timelines and priorities as you progress and gain more experience with React and Next.js. Regular review and revision of this roadmap is recommended as you better understand the development process and challenges.

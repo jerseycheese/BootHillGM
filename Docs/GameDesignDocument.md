@@ -3,72 +3,124 @@
 ## 1. Game Overview
 BootHillGM is an AI-driven, text-based RPG set in the American Old West, based on the Boot Hill tabletop RPG system. Players engage in a solo adventure guided by an AI Game Master, experiencing the gritty and dangerous life of the frontier through a web-based interface built with Next.js.
 
-## 2. Core Gameplay (MVP)
+## 2. Core Gameplay
+### MVP
 - [ ] Text-based interaction with an AI Game Master
-- [ ] Character creation based on simplified Boot Hill RPG rules
-- [ ] Narrative-driven adventures in a Western setting
-- [ ] Basic decision-making that impacts the story
+- [ ] Basic character creation based on simplified Boot Hill RPG rules
+- [ ] Linear narrative-driven adventures in a Western setting
+- [ ] Simple decision-making that impacts the story
 - [ ] Simplified combat system focusing on gunfights
 
+### Post-MVP
+- [ ] Advanced character creation with more options and backgrounds
+- [ ] Branching narratives with long-term consequences
+- [ ] Complex decision-making with far-reaching impacts
+- [ ] Expanded combat system with tactical options
+
 ## 3. Setting
+### MVP
 - Time Period: American Old West (circa 1865-1895)
 - Locations: One frontier town and immediate surroundings
 - Themes: Survival, law vs. outlaw, frontier justice
 
-## 4. Character System (MVP)
-### 4.1 Attributes
+### Post-MVP
+- Multiple towns and wilderness areas
+- Dynamic world events and changing landscapes
+- Deeper exploration of historical themes and events
+
+## 4. Character System
+### MVP
+#### 4.1 Attributes
 - [ ] Strength: Physical power and endurance
 - [ ] Agility: Speed, reflexes, and coordination
 - [ ] Intelligence: Mental acuity and problem-solving
 
-### 4.2 Skills
-- [ ] Limited skill list (10-15 key skills)
-- [ ] Essential skills: Shooting, Riding, Brawling, Gambling
+#### 4.2 Skills
+- [ ] Limited skill list (5-10 key skills)
+- [ ] Essential skills: Shooting, Riding, Brawling
 
-### 4.3 Character Creation
-- [ ] AI-guided, conversational character creation process
-- [ ] Basic background generation
+#### 4.3 Character Creation
+- [ ] Basic AI-guided character creation process
+- [ ] Simple background generation
 - [ ] Starting equipment based on available funds
 
-## 5. Game Mechanics (MVP)
-### 5.1 Core Mechanic
-- [ ] Percentile dice (d100) system for skill resolution
-- [ ] Simplified target numbers based on skill levels
+### Post-MVP
+- Expanded attributes and derived statistics
+- Comprehensive skill list (20+ skills)
+- Complex background generation with personal history
+- Character progression and experience system
+
+## 5. Game Mechanics
+### MVP
+#### 5.1 Core Mechanic
+- [ ] Simplified percentile dice (d100) system for skill resolution
+- [ ] Basic target numbers based on skill levels
 - [ ] Implementation of virtual dice rolls in web environment
 
-### 5.2 Combat System
-- [ ] Basic initiative system
-- [ ] Simplified hit resolution
+#### 5.2 Combat System
+- [ ] Simple initiative system
+- [ ] Basic hit resolution
 - [ ] High lethality maintained
 - [ ] Turn-based combat interface optimized for web interaction
 
-## 6. AI Game Master (MVP)
-### 6.1 Narrative Generation
-- [ ] Linear story creation with limited branching
-- [ ] Integration of basic Boot Hill RPG rules into narrative decisions
-- [ ] Dynamic text generation and display in web interface
+### Post-MVP
+- Advanced skill resolution with modifiers and circumstances
+- Detailed combat system with positioning and tactics
+- Injury and healing mechanics
+- Integration of environment and weather effects on gameplay
 
-### 6.2 NPC Interaction
+## 6. AI Game Master
+### MVP
+#### 6.1 Narrative Generation
+- [ ] Linear story creation with minimal branching
+- [ ] Integration of basic Boot Hill RPG rules into narrative decisions
+- [ ] Simple text generation and display in web interface
+
+#### 6.2 NPC Interaction
 - [ ] AI-generated NPCs with basic personalities
 - [ ] Simple dialogue generation
-- [ ] Text-based conversation system with clickable response options
+- [ ] Text-based conversation system with limited response options
 
-## 7. Quests and Missions (MVP)
+### Post-MVP
+- Dynamic story creation based on player choices and character background
+- Complex NPC system with goals, relationships, and memory
+- Advanced dialogue system with natural language processing
+
+## 7. Quests and Missions
+### MVP
 - [ ] One main storyline with minimal branching
-- [ ] 2-3 side quests for additional gameplay
-- [ ] Quest log accessible through web interface
+- [ ] 1-2 side quests for additional gameplay
+- [ ] Simple quest log accessible through web interface
 
-## 8. Inventory and Economy (MVP)
-- [ ] Limited list of period-appropriate items and weapons
+### Post-MVP
+- Multiple intertwining storylines
+- Dynamic quest generation based on player actions and world state
+- Complex quest system with consequences and reputation impacts
+
+## 8. Inventory and Economy
+### MVP
+- [ ] Limited list of essential period-appropriate items and weapons
 - [ ] Basic economic system for buying/selling goods
-- [ ] Visual representation of inventory in web UI
+- [ ] Simple inventory management in web UI
 
-## 9. User Interface (MVP)
+### Post-MVP
+- Extensive item list with crafting and customization
+- Complex economic system with supply/demand dynamics
+- Detailed inventory management with weight and capacity considerations
+
+## 9. User Interface
+### MVP
 - [ ] Responsive web-based interface with minimal graphics
-- [ ] Text-based interaction with clickable options for common actions
+- [ ] Text-based interaction with basic clickable options
 - [ ] Simple character sheet displaying current stats and equipment
 - [ ] Basic action buttons for common interactions (e.g., "Draw Gun")
 - [ ] Optimization for both desktop and mobile web browsers
+
+### Post-MVP
+- Enhanced UI with thematic graphics and animations
+- Interactive map for navigation and exploration
+- Advanced character sheet with visual representations of stats and skills
+- Customizable UI elements and themes
 
 ## 10. Technical Implementation
 - [ ] Built using Next.js for a responsive web application
@@ -77,58 +129,31 @@ BootHillGM is an AI-driven, text-based RPG set in the American Old West, based o
 - [ ] Responsive design for compatibility with various devices and screen sizes
 
 ## 11. Accessibility
-- [ ] Implement proper semantic HTML for screen reader compatibility
-- [ ] Ensure keyboard navigation for all game functions
-- [ ] Provide options for text scaling and high contrast modes
-- [ ] ARIA labels and roles for complex UI elements
+### MVP
+- [ ] Basic semantic HTML for screen reader compatibility
+- [ ] Keyboard navigation for essential game functions
+- [ ] Simple high contrast mode
+
+### Post-MVP
+- Comprehensive accessibility features including screen reader optimizations
+- Advanced color contrast options and text scaling
+- Keyboard shortcuts for all game functions
 
 ## 12. Data Persistence
+### MVP
 - [ ] Utilize local storage for saving game progress
-- [ ] Implement cloud save functionality for cross-device play (post-MVP)
 
-## 13. Multiplayer Considerations (Post-MVP)
-- [ ] Asynchronous multiplayer features
-- [ ] Shared world elements between players
+### Post-MVP
+- Cloud save functionality for cross-device play
+- User accounts with encrypted data storage
 
-## 14. Post-MVP Features and Expansions
-### 14.1 Enhanced Character System
-- [ ] Expanded skill list (60+ skills as per Boot Hill 3rd edition)
-- [ ] More detailed background generation
-- [ ] Character progression and experience system
+## 13. Post-MVP Features and Expansions
+- Asynchronous multiplayer features
+- Shared world elements between players
+- Historical event integration
+- Mod support for user-created content
+- Mobile app version with offline capabilities
+- Community features (character sharing, custom scenarios)
+- Audio integration (ambient sounds, music, voice acting)
 
-### 14.2 Advanced Game Mechanics
-- [ ] Hit location system for varied combat effects
-- [ ] More complex economic and political systems
-- [ ] Advanced weather and environmental effects
-
-### 14.3 Expanded AI Game Master Capabilities
-- [ ] Dynamic story creation based on player choices and character background
-- [ ] Adaptive difficulty based on player performance
-- [ ] Ongoing events in the game world that progress with or without player intervention
-
-### 14.4 Additional Content
-- [ ] Multiple towns and wilderness areas
-- [ ] Expanded quest system with dynamically generated side quests
-- [ ] Integration of historical events and figures
-
-### 14.5 Enhanced User Interface
-- [ ] Interactive map feature for town and region navigation
-- [ ] More detailed character sheets and inventory management
-- [ ] Optional graphical elements for key scenes or locations
-
-### 14.6 Progressive Web App (PWA) Features
-- [ ] Offline play capabilities
-- [ ] Push notifications for game events or updates
-- [ ] "Install" option for app-like experience on devices
-
-### 14.7 Community Features
-- [ ] Character sharing system
-- [ ] Player-created content (e.g., custom quests, items)
-- [ ] Leaderboards and achievements
-
-### 14.8 Audio
-- [ ] Ambient sound effects to enhance immersion
-- [ ] Optional Western-themed background music
-- [ ] Text-to-speech option for narrative and dialogue
-
-This updated Game Design Document now fully aligns with our web-based implementation using Next.js, considering both the limitations and opportunities presented by this platform.
+This updated Game Design Document now clearly distinguishes between MVP features for personal/family/friends usage and post-MVP expansions for a broader audience and more advanced gameplay.

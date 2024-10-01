@@ -1,4 +1,4 @@
-# Architecture Decision Record (ADR)
+# Architecture Decision Record (ADR) - MVP Focus
 
 ## ADR 1: Web Application Framework for BootHillGM
 
@@ -8,67 +8,57 @@
 
 ## Context and Problem Statement
 
-We need to design a scalable and maintainable architecture for the BootHillGM application that can efficiently handle AI-driven game management, user interactions, and data persistence. The architecture should support the unique requirements of a text-based RPG with AI integration and be accessible across various devices.
-
-## Considered Options
-
-1. React Native (original choice)
-2. Next.js
-3. Plain React with Express backend
-4. Vue.js with Nuxt.js
+We need to design a maintainable architecture for the BootHillGM MVP that can handle basic AI-driven game management, user interactions, and data persistence. The architecture should support the core requirements of a text-based RPG with AI integration and be accessible across various devices, while being manageable for a single developer new to React.
 
 ## Decision
 
-We have decided to use Next.js for the development of the BootHillGM web application.
+We have decided to use Next.js for the development of the BootHillGM web application MVP.
 
 ## Rationale
 
-- Next.js provides server-side rendering (SSR) and static site generation (SSG) out of the box, improving performance and SEO capabilities.
-- It offers a great developer experience with features like hot module replacement and automatic code splitting.
-- Next.js has built-in API routes, allowing for easy implementation of serverless functions.
-- The framework's file-based routing system simplifies navigation management.
-- Next.js has excellent TypeScript support, enhancing code quality and developer productivity.
-- It allows for easy deployment on platforms like Vercel, which is optimized for Next.js applications.
-- The team's existing JavaScript/React knowledge can be leveraged, reducing the learning curve.
+- Next.js provides server-side rendering (SSR) out of the box, improving initial load performance.
+- It offers a straightforward developer experience with features like file-based routing and API routes.
+- Next.js has good TypeScript support, enhancing code quality and developer productivity.
+- It allows for easy deployment on platforms like Vercel, simplifying the deployment process.
+- The framework's structure helps enforce good practices, beneficial for a developer new to React.
 
 ## Consequences
 
 ### Positive
 
-- Improved performance and SEO capabilities through SSR and SSG.
 - Simplified development process with built-in features like routing and API routes.
-- Easier deployment and scaling options.
+- Easier deployment and basic scaling options.
 - Potential for better user experience across various devices due to web-based nature.
-- Simplified testing process compared to mobile app development.
+- Good documentation and community support for learning and problem-solving.
 
 ### Negative
 
-- Loss of native mobile app features and offline capabilities (compared to the original React Native choice).
-- Potential learning curve for team members not familiar with Next.js specifics.
+- Learning curve for a developer new to both React and Next.js.
 - May require additional effort to make the application feel "app-like" on mobile devices.
 
-## Related Decisions and Trade-offs
+## MVP-Focused Decisions and Trade-offs
 
-1. **State Management**: We'll start with React's Context API for global state management, with the option to introduce Redux if complexity increases.
+1. **State Management**: We'll use React's Context API for global state management in the MVP. This approach is simpler to implement and understand compared to more complex solutions like Redux.
 
-2. **Styling**: We'll use CSS Modules for component-specific styles and consider using Tailwind CSS for utility-first styling.
+2. **Styling**: We'll use CSS Modules for component-specific styles. This approach provides a good balance between simplicity and style encapsulation.
 
-3. **API Routes**: We'll leverage Next.js API routes for server-side operations and AI interactions.
+3. **API Routes**: We'll use Next.js API routes for server-side operations and AI interactions. This keeps our backend logic colocated with our frontend code, simplifying development.
 
-4. **Data Persistence**: We'll use a combination of client-side storage (localStorage) and server-side storage (database) depending on the data sensitivity and persistence requirements.
+4. **Data Persistence**: For the MVP, we'll primarily use client-side storage (localStorage) for saving game state. This simplifies our data architecture for initial development.
 
-5. **Authentication**: We'll implement authentication using Next.js middleware and consider using NextAuth.js for more complex auth flows.
+5. **Authentication**: We'll defer implementing user authentication for the MVP, focusing instead on core gameplay features.
 
-## Additional Considerations
+## Additional MVP Considerations
 
-- We'll need to optimize the web application for mobile devices to ensure a good user experience across all platforms.
-- Regular updates of Next.js and key dependencies will be crucial to maintain app performance and security.
-- We'll implement progressive enhancement techniques to support a wide range of browsers and devices.
+- We'll prioritize desktop development first, with basic responsiveness for mobile devices.
+- We'll implement progressive enhancement techniques to support a wide range of browsers.
+- We'll focus on essential accessibility features to ensure basic usability for all users.
 
-## Future Decisions to Consider
+## Future Decisions to Consider (Post-MVP)
 
-1. Implementation of a more robust data persistence solution post-MVP.
-2. Strategies for handling long-running AI operations without blocking the UI.
-3. Approach for implementing "app-like" features such as offline support and push notifications.
+1. Implementation of a more robust data persistence solution.
+2. Strategies for optimizing AI operations and response times.
+3. Enhanced mobile-friendly features and design.
+4. User authentication and multi-user support.
 
-This ADR will be reviewed and updated as the project progresses and new architectural decisions are made.
+This ADR will be reviewed and updated as the project progresses beyond the MVP phase.

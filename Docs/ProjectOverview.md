@@ -11,19 +11,37 @@ BootHillGM is a web-based application providing an AI-driven virtual Game Master
 - Build a flexible and scalable app architecture using Next.js
 
 ## 3. Target Audience
-- Solo players interested in Western-themed RPGs
-- Boot Hill RPG enthusiasts
+### MVP
+- Personal use, family, and friends interested in Western-themed RPGs
+- Boot Hill RPG enthusiasts within the developer's circle
+
+### Post-MVP
+- Broader audience of solo players interested in Western-themed RPGs
 - Newcomers to tabletop RPGs seeking an accessible entry point
 
-## 4. Key Features (MVP)
-- [ ] AI-driven Boot Hill Character Creation
-- [ ] AI-powered Game Mastering for Western settings
-- [ ] AI-powered NPCs with persistent memory
-- [ ] Game Session and State Management
+## 4. Key Features
+### MVP
+- [ ] AI-driven Boot Hill Character Creation (basic)
+- [ ] AI-powered Game Mastering for Western settings (limited scope)
+- [ ] AI-powered NPCs with basic persistence
+- [ ] Simple Game Session and State Management
 - [ ] Boot Hill's percentile dice system for chance-based outcomes
-- [ ] Character Sheet View
-- [ ] Basic Inventory System
-- [ ] Simple Quest System
+- [ ] Basic Character Sheet View
+- [ ] Simple Inventory System
+- [ ] Linear Quest System
+
+### Post-MVP
+- [ ] Advanced AI-driven Character Creation with more options
+- [ ] Enhanced Game Mastering with dynamic storytelling
+- [ ] Complex NPC system with advanced persistence and relationships
+- [ ] Advanced Game Session and State Management
+- [ ] Expanded Character Sheet with progression tracking
+- [ ] Comprehensive Inventory System with economics
+- [ ] Complex Quest System with branching narratives
+- [ ] Multiple Campaign and Character Management
+- [ ] Rich Media Integration (images, ambient sounds)
+- [ ] Customization Options (house rules, custom items)
+- [ ] Mobile-optimized version
 
 ## 5. Boot Hill RPG Core Elements
 - Percentile dice (d100) system
@@ -32,13 +50,7 @@ BootHillGM is a web-based application providing an AI-driven virtual Game Master
 - High lethality gameplay
 - Historical Western setting and themes
 
-## 6. Future Expansion Possibilities
-- Multiple Campaign and Character Management
-- Rich Media Integration
-- Customization Options
-- Mobile-optimized version
-
-## 7. App Architecture
+## 6. App Architecture
 The BootHillGM app is built using Next.js with a modular component structure, including:
 - Core Game Engine
 - AI Integration Service
@@ -54,5 +66,17 @@ The BootHillGM app is built using Next.js with a modular component structure, in
 
 This modular approach allows for easier development, testing, and future expansions.
 
-## 8. Development Status
+## 7. Development Status
 The project has transitioned from a React Native mobile app to a Next.js web application. The basic Next.js project structure has been set up, and the team is in the process of migrating and adapting the existing components and logic to the new framework.
+
+## 8. MVP Development Focus
+- Implement core gameplay loop for personal/family/friends use
+- Prioritize basic AI integration for character creation and simple storytelling
+- Develop essential UI components for game interaction
+- Implement basic data persistence for game sessions
+
+## 9. Post-MVP Considerations
+- Enhance AI capabilities for more dynamic and complex gameplay
+- Expand features for a broader audience
+- Implement advanced UI/UX improvements
+- Develop infrastructure for user accounts and online features
