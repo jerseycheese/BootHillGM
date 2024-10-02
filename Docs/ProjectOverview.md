@@ -51,7 +51,7 @@ BootHillGM is a web-based application providing an AI-driven virtual Game Master
 - Historical Western setting and themes
 
 ## 6. App Architecture
-The BootHillGM app is built using Next.js with a modular component structure, including:
+The BootHillGM app is built using Next.js 14.x with the App Router, featuring a modular component structure, including:
 - Core Game Engine
 - AI Integration Service
 - Character Management System
@@ -64,10 +64,10 @@ The BootHillGM app is built using Next.js with a modular component structure, in
 - Data Persistence
 - Next.js API routes for server-side logic
 
-This modular approach allows for easier development, testing, and future expansions.
+This modular approach, combined with the App Router structure, allows for easier development, testing, and future expansions.
 
 ## 7. Development Status
-The project has transitioned from a React Native mobile app to a Next.js web application. The basic Next.js project structure has been set up, and the team is in the process of migrating and adapting the existing components and logic to the new framework.
+The project has transitioned to a Next.js 14.x web application using the App Router. The basic Next.js project structure has been set up, and the team is in the process of implementing core components and adapting the existing logic to the new framework.
 
 ## 8. MVP Development Focus
 - Implement core gameplay loop for personal/family/friends use

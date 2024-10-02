@@ -2,14 +2,15 @@
 
 ## 1. Technical Stack
 - [ ] Framework: Next.js 14.x (React-based framework for web applications)
+- [ ] Routing: Next.js App Router
 - [ ] Programming Language: TypeScript 5.x for enhanced type safety
 - [ ] AI Model: Gemini 1.5 Pro API (Google Generative AI)
 - [ ] Development Environment: Visual Studio Code with ESLint and Prettier
 - [ ] Version Control: Git
 - [ ] UI Components: Custom React components
-- [ ] State Management: React Context API
-- [ ] Styling: CSS Modules
-- [ ] Data Persistence: localStorage for client-side storage
+- [ ] State Management: React Context API (for MVP)
+- [ ] Styling: CSS Modules and Tailwind CSS
+- [ ] Data Persistence: localStorage for client-side storage (MVP phase)
 
 ## 2. Architecture Overview
 - [ ] Next.js pages and API routes
@@ -18,17 +19,18 @@
 - [ ] Client-side navigation for subsequent page transitions
 
 ## 3. Key Components
-1. Pages:
-   - Home (pages/index.tsx)
-   - Character Creation (pages/character-creation.tsx)
-   - Game Session (pages/game-session.tsx)
-   - Character Sheet (pages/character-sheet.tsx)
-2. Game Engine: Manages game state, turns, and basic game flow
-3. AI Integration Service: Handles communication with the Gemini API
-4. Character Management System: Manages character creation and stats
-5. Narrative Engine: Generates basic storylines and dialogues
-6. Combat System: Manages simplified combat mechanics
-7. UI Components: Basic reusable React components
+1. Pages (now using App Router):
+   - Home (app/page.tsx)
+   - Character Creation (app/character-creation/page.tsx)
+   - Game Session (app/game-session/page.tsx)
+   - Character Sheet (app/character-sheet/page.tsx)
+2. Layout (app/layout.tsx): Defines the main layout for the application
+3. Game Engine: Manages game state, turns, and basic game flow
+4. AI Integration Service: Handles communication with the Gemini API
+5. Character Management System: Manages character creation and stats
+6. Narrative Engine: Generates basic storylines and dialogues
+7. Combat System: Manages simplified combat mechanics
+8. UI Components: Basic reusable React components
 
 ## 4. Data Flow
 1. User interacts with the UI

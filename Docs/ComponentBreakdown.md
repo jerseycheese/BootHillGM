@@ -4,21 +4,22 @@ This document outlines the main components of the BootHillGM project for the MVP
 
 ## Essential Components (MVP)
 
-### 1. Pages
-- **Main Functionality:** Serve as entry points for different routes in the application
-- **Key Pages:**
-  - [ ] Home (pages/index.tsx)
-  - [ ] Character Creation (pages/character-creation.tsx)
-  - [ ] Game Session (pages/game-session.tsx)
-  - [ ] Character Sheet (pages/character-sheet.tsx)
-- **Potential Challenges:** Understanding Next.js routing and page structure
+### 1. App Directory Structure
+- **Main Functionality:** Serves as the core of the Next.js application using the App Router
+- **Key Components:**
+  - [ ] app/layout.tsx (Main layout component)
+  - [ ] app/page.tsx (Home page)
+  - [ ] app/character-creation/page.tsx
+  - [ ] app/game-session/page.tsx
+  - [ ] app/character-sheet/page.tsx
+- **Potential Challenges:** Understanding and implementing the App Router structure and conventions
 
 ### 2. API Routes
 - **Main Functionality:** Handle server-side logic and AI interactions
 - **Key Routes:**
-  - [ ] AI Interaction (pages/api/ai-interaction.ts)
-  - [ ] Game State Management (pages/api/game-state.ts)
-- **Potential Challenges:** Implementing asynchronous operations, error handling
+  - [ ] app/api/ai-interaction/route.ts
+  - [ ] app/api/game-state/route.ts
+- **Potential Challenges:** Implementing API routes within the App Router structure
 
 ### 3. GameEngine
 - **Main Functionality:** Manages game state and basic game flow

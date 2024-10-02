@@ -61,4 +61,46 @@ We have decided to use Next.js for the development of the BootHillGM web applica
 3. Enhanced mobile-friendly features and design.
 4. User authentication and multi-user support.
 
+## ADR 2: Transition to Next.js App Router
+
+### Date: 10/2/2024
+
+### Status: Accepted
+
+## Context and Problem Statement
+
+With the upgrade to Next.js 14.x, we needed to decide whether to continue using the Pages Router or transition to the new App Router. The App Router offers new features and is the recommended approach for new Next.js projects.
+
+## Decision
+
+We have decided to transition the BootHillGM project to use the Next.js App Router.
+
+## Rationale
+
+- The App Router is the future of Next.js and offers improved performance and features.
+- It provides a more intuitive project structure, aligning closely with the file-system based routing.
+- The App Router supports easier implementation of layouts and nested routing.
+- It offers better support for server-side rendering and static site generation.
+
+## Consequences
+
+### Positive
+
+- Improved performance and scalability for the application.
+- Better alignment with modern Next.js best practices.
+- Simplified routing and layout management.
+- Enhanced server-side rendering capabilities.
+
+### Negative
+
+- Requires refactoring of existing pages and components.
+- Learning curve for developers unfamiliar with the App Router.
+- Potential compatibility issues with some third-party libraries not yet updated for App Router.
+
+## Implementation Notes
+
+- Refactor existing pages to fit the new `app` directory structure.
+- Update routing logic to align with App Router conventions.
+- Ensure all team members are familiar with App Router concepts and best practices.
+
 This ADR will be reviewed and updated as the project progresses beyond the MVP phase.
