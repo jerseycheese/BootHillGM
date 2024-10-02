@@ -21,9 +21,11 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 
 ## Phase 2: Core Functionality Development (4-6 weeks)
 
+## Phase 2: Core Functionality Development (4-6 weeks)
+
 2.1 State Management
-- [ ] Implement basic game state using React Context
-- [ ] Create reducers for state updates
+- [x] Implement basic game state using React Context
+- [x] Create reducers for state updates
 
 2.2 AI Integration
 - [ ] Set up Gemini API integration
@@ -31,12 +33,13 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [ ] Develop simple context management for game elements
 
 2.3 Character System
-- [ ] Implement simplified character creation flow
+- [x] Implement simplified character creation flow
 - [ ] Create basic character sheet display
 
 2.4 User Interface
-- [ ] Design and implement essential UI components
-- [ ] Develop responsive layout for game session page
+- [x] Design and implement essential UI components
+- [x] Develop responsive layout for game session page
+
 
 ## Phase 3: Game Mechanics Implementation (4-6 weeks)
 

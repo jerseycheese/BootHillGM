@@ -1,14 +1,12 @@
 # BootHillGM Component Breakdown (MVP Focus)
 
-This document outlines the main components of the BootHillGM project for the MVP, their core functionalities, and a suggested development order. It's tailored for implementation by a single developer new to React and Next.js.
-
 ## Essential Components (MVP)
 
 ### 1. App Directory Structure
 - **Main Functionality:** Serves as the core of the Next.js application using the App Router
 - **Key Components:**
-  - [ ] app/layout.tsx (Main layout component)
-  - [ ] app/page.tsx (Home page)
+  - [x] app/layout.tsx (Main layout component)
+  - [x] app/page.tsx (Home page)
   - [ ] app/character-creation/page.tsx
   - [ ] app/game-session/page.tsx
   - [ ] app/character-sheet/page.tsx
@@ -24,8 +22,8 @@ This document outlines the main components of the BootHillGM project for the MVP
 ### 3. GameEngine
 - **Main Functionality:** Manages game state and basic game flow
 - **Key Components:**
-  - [ ] GameContext (contexts/GameContext.tsx)
-  - [ ] GameReducer (reducers/gameReducer.ts)
+  - [x] GameContext (app/utils/gameEngine.tsx)
+  - [x] GameReducer (integrated in app/utils/gameEngine.tsx)
 - **Potential Challenges:** Implementing state management with Context API
 
 ### 4. AIService

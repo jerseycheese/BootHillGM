@@ -67,7 +67,12 @@ The BootHillGM app is built using Next.js 14.x with the App Router, featuring a 
 This modular approach, combined with the App Router structure, allows for easier development, testing, and future expansions.
 
 ## 7. Development Status
-The project has transitioned to a Next.js 14.x web application using the App Router. The basic Next.js project structure has been set up, and the team is in the process of implementing core components and adapting the existing logic to the new framework.
+The project has made significant progress:
+- Implemented the basic Next.js 14.x project structure using the App Router.
+- Set up the core game engine using React Context for state management.
+- Created the main layout and home page.
+- Implemented a basic character creation page.
+- The team is now focusing on expanding the character creation functionality and implementing the game session page.
 
 ## 8. MVP Development Focus
 - Implement core gameplay loop for personal/family/friends use
