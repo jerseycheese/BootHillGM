@@ -6,9 +6,12 @@ import React, { createContext, useContext, useReducer, ReactNode, Dispatch } fro
 interface Character {
   name: string;
   attributes: {
+    speed: number;
+    gunAccuracy: number;
+    throwingAccuracy: number;
     strength: number;
-    agility: number;
-    intelligence: number;
+    bravery: number;
+    experience: number;
   };
   skills: {
     shooting: number;
