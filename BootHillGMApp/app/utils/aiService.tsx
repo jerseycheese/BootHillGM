@@ -196,3 +196,19 @@ function generateRandomValue(key: keyof Character['attributes'] | keyof Characte
   const [min, max] = ranges[key];
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+// Generate a character summary based on the provided character data
+export async function generateCharacterSummary(character: Character): Promise<string> {
+  const prompt = `
+    Generate a brief, engaging summary for a character in a Western-themed RPG based on the following attributes:
+    Name: ${character.name}
+    Attributes:
+    ${Object.entries(character.attributes).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+    Skills:
+    ${Object.entries(character.skills).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+    
+    The summary should capture the essence of the character, their strengths, potential weaknesses, and how they might fit into a Western setting. Keep the tone consistent with a gritty, Wild West atmosphere.
+  `;
+
+  return getAIResponse(prompt);
+}

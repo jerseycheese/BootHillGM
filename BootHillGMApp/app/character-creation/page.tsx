@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGame } from '../utils/gameEngine';
-import { getCharacterCreationStep, getAttributeDescription, validateAttributeValue, generateCompleteCharacter, generateFieldValue } from '../utils/aiService';
+import { getCharacterCreationStep, getAttributeDescription, validateAttributeValue, generateFieldValue, generateCompleteCharacter, generateCharacterSummary } from '../utils/aiService';
 import { Character } from '../types/character';
 
 // TODO: Add a button to generate a complete character for quicker testing
@@ -38,6 +38,7 @@ export default function CharacterCreation() {
   const [isLoading, setIsLoading] = useState(true);
   const [attributeDescription, setAttributeDescription] = useState('');
   const [error, setError] = useState('');
+  const [characterSummary, setCharacterSummary] = useState('');
 
   // Define the structure of each step in the character creation process
   const steps = useMemo(() => [
@@ -51,7 +52,7 @@ export default function CharacterCreation() {
   const getNextAIPrompt = useCallback(async () => {
     try {
       if (steps[currentStep].key === 'summary') {
-        setAiPrompt("Review your character details below. If you're satisfied, click 'Finish' to create your character.");
+        // AI prompt for summary will be set in generateSummary function
       } else {
         const prompt = await getCharacterCreationStep(currentStep, steps[currentStep].key);
         setAiPrompt(prompt);
@@ -76,6 +77,27 @@ export default function CharacterCreation() {
       getNextAIPrompt();
     }
   }, [currentStep, isLoading, getNextAIPrompt]);
+
+  // Generate and display a summary of the character at the final step
+  const generateSummary = useCallback(async () => {
+    if (currentStep === steps.length - 1) {
+      try {
+        const summary = await generateCharacterSummary(character);
+        setCharacterSummary(summary);
+        setAiPrompt("Review your character summary below. If you're satisfied, click 'Finish' to create your character.");
+      } catch (error) {
+        console.error('Error generating character summary:', error);
+        setCharacterSummary("An error occurred while generating the character summary. Please try again.");
+      }
+    }
+  }, [character, currentStep, steps.length]);
+
+  // Trigger summary generation when reaching the final step
+  useEffect(() => {
+    if (currentStep === steps.length - 1) {
+      generateSummary();
+    }
+  }, [currentStep, steps.length, generateSummary]);
 
   // Handle user input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -180,9 +202,11 @@ export default function CharacterCreation() {
   const renderInput = () => {
     const { type } = steps[currentStep];
     if (type === 'review') {
+      // Display character summary and details at the final step
       return (
         <div className="space-y-2">
           <h2 className="text-xl font-bold">Character Summary</h2>
+          <p>{characterSummary}</p>
           <p><strong>Name:</strong> {character.name}</p>
           <h3 className="text-lg font-bold">Attributes</h3>
           {Object.entries(character.attributes).map(([attr, value]) => (
@@ -195,6 +219,7 @@ export default function CharacterCreation() {
         </div>
       );
     }
+    // Render input field for character attributes and skills
     return (
       <div>
         <label htmlFor="userResponse" className="block mb-2">Your Response:</label>
@@ -217,7 +242,7 @@ export default function CharacterCreation() {
           </button>
         </div>
         {attributeDescription && (
-          <p className="mt-2 text-sm">{attributeDescription}</p>
+          <p className="mt-2 text-sm text-gray-600">{attributeDescription}</p>
         )}
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>

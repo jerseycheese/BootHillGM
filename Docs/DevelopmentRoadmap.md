@@ -40,11 +40,10 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [x] Develop responsive layout for game session page
 - [x] Implement wireframe styling across all pages
 
-
 ## Phase 3: Game Mechanics Implementation
 
 3.1 Narrative Engine
-- [x] Develop basic story generation system
+- [ ] Develop basic story generation system
 - [ ] Implement simple dialogue system
 
 3.2 Combat System
@@ -54,6 +53,10 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 3.3 Inventory System
 - [ ] Implement basic item management
 - [ ] Create simple inventory UI
+
+3.4 Character Summary
+- [x] Implement character summary generation
+- [x] Integrate summary display in character creation process
 
 ## Phase 4: Data Persistence and Refinement
 

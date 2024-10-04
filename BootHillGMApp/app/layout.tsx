@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GameProviderWrapper } from './components/GameProviderWrapper';
+import Navigation from './components/Navigation';
 import "./globals.css";
 import "./styles/wireframe.css";
 
@@ -17,7 +18,10 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <GameProviderWrapper>
-          {children}
+          <Navigation />
+          <main className="p-4">
+            {children}
+          </main>
         </GameProviderWrapper>
       </body>
     </html>
