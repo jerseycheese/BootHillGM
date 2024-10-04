@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Character } from '../types/character';
 
 // TODO: Improve formatting of AI messages for better readability and engagement
 
@@ -67,4 +68,90 @@ export function validateAttributeValue(attribute: string, value: number): boolea
   }
 
   return true; // For any attributes not explicitly defined
+}
+
+export async function generateCompleteCharacter(): Promise<Character> {
+  // Prompt for the AI to generate a character with specific attributes and skills
+  const prompt = `
+    Generate a complete character for the Boot Hill RPG. Provide values for the following attributes and skills:
+    - Name
+    - Speed (1-20)
+    - GunAccuracy (1-20)
+    - ThrowingAccuracy (1-20)
+    - Strength (8-20)
+    - Bravery (1-20)
+    - Experience (0-11)
+    - Shooting (1-100)
+    - Riding (1-100)
+    - Brawling (1-100)
+
+    Format the response as a valid JSON object without any markdown formatting.
+  `;
+
+  const response = await getAIResponse(prompt);
+  try {
+    // Remove any markdown code block syntax from the AI response
+    const cleanedResponse = response.replace(/```json\n?|\n?```/g, '');
+    
+    // Parse the cleaned response as JSON
+    const characterData = JSON.parse(cleanedResponse);
+    
+    // Transform the parsed data into our Character structure
+    const character: Character = {
+      name: characterData.Name || characterData.name,
+      attributes: {
+        speed: Number(characterData.Speed),
+        gunAccuracy: Number(characterData.GunAccuracy),
+        throwingAccuracy: Number(characterData.ThrowingAccuracy),
+        strength: Number(characterData.Strength),
+        bravery: Number(characterData.Bravery),
+        experience: Number(characterData.Experience)
+      },
+      skills: {
+        shooting: Number(characterData.Shooting),
+        riding: Number(characterData.Riding),
+        brawling: Number(characterData.Brawling)
+      }
+    };
+    
+    // Validate that all character attributes and skills are present and are valid numbers
+    const isValid = (
+      !isNaN(character.attributes.speed) &&
+      !isNaN(character.attributes.gunAccuracy) &&
+      !isNaN(character.attributes.throwingAccuracy) &&
+      !isNaN(character.attributes.strength) &&
+      !isNaN(character.attributes.bravery) &&
+      !isNaN(character.attributes.experience) &&
+      !isNaN(character.skills.shooting) &&
+      !isNaN(character.skills.riding) &&
+      !isNaN(character.skills.brawling)
+    );
+
+    if (!isValid) {
+      throw new Error('Invalid character data: some attributes or skills are missing or not numbers');
+    }
+    
+    return character;
+  } catch (error) {
+    console.error('Error parsing AI response:', error);
+    console.log('Raw AI response:', response);
+    
+    // Return a default character if parsing fails
+    return {
+      name: 'John Doe',
+      attributes: {
+        speed: 10,
+        gunAccuracy: 10,
+        throwingAccuracy: 10,
+        strength: 10,
+        bravery: 10,
+        experience: 5
+      },
+      skills: {
+        shooting: 50,
+        riding: 50,
+        brawling: 50
+      }
+    };
+  }
 }

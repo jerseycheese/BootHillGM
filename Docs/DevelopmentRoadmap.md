@@ -28,12 +28,13 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [x] Create reducers for state updates
 
 2.2 AI Integration
-- [ ] Set up Gemini API integration
-- [ ] Implement basic AI response generation using Next.js API routes
-- [ ] Develop simple context management for game elements
+- [x] Set up Gemini API integration
+- [x] Implement basic AI response generation using Next.js API routes
+- [x] Develop simple context management for game elements
 
 2.3 Character System
 - [x] Implement simplified character creation flow
++ [x] Implement AI-driven random character generation
 - [ ] Create basic character sheet display
 
 2.4 User Interface

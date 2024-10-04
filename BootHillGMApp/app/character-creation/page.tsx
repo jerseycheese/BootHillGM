@@ -3,29 +3,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGame } from '../utils/gameEngine';
-import { getCharacterCreationStep, getAttributeDescription, validateAttributeValue } from '../utils/aiService';
+import { getCharacterCreationStep, getAttributeDescription, validateAttributeValue, generateCompleteCharacter } from '../utils/aiService';
+import { Character } from '../types/character';
 
 // TODO: Add a button to generate a complete character for quicker testing
 // TODO: Add a button to generate a value for the current field in each step
 // TODO: Remove all non-layout CSS rules while working out MVP functionality
-
-// Define the structure of a character based on Boot Hill RPG rules
-interface Character {
-  name: string;
-  attributes: {
-    speed: number;
-    gunAccuracy: number;
-    throwingAccuracy: number;
-    strength: number;
-    bravery: number;
-    experience: number;
-  };
-  skills: {
-    shooting: number;
-    riding: number;
-    brawling: number;
-  };
-}
 
 // Initial character state with default values
 const initialCharacter: Character = {
@@ -131,6 +114,24 @@ export default function CharacterCreation() {
     return true;
   };
 
+  const generateCharacter = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      // Attempt to generate a complete character using the AI
+      const generatedCharacter = await generateCompleteCharacter();
+      setCharacter(generatedCharacter);
+      // Move to the summary step to display the generated character
+      setCurrentStep(steps.length - 1);
+    } catch (error) {
+      console.error('Error generating character:', error);
+      // Display a user-friendly error message
+      setError(`Failed to generate character. Please try again. (Error: ${error instanceof Error ? error.message : 'Unknown error'})`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Update character state based on current step and user response
   const updateCharacter = () => {
     const { key, type } = steps[currentStep];
@@ -199,6 +200,14 @@ export default function CharacterCreation() {
         <p className="font-bold">Step {currentStep + 1}: {steps[currentStep].key}</p>
         {isLoading ? <p>Loading...</p> : <p>{aiPrompt}</p>}
       </div>
+      <button
+        type="button"
+        onClick={generateCharacter}
+        className="bg-green-500 text-white px-4 py-2 rounded mb-4"
+        disabled={isLoading}
+      >
+        Generate Random Character
+      </button>
       <form onSubmit={handleSubmit} className="space-y-4">
         {renderInput()}
         <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded" disabled={isLoading}>
