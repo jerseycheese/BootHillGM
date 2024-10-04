@@ -1,0 +1,46 @@
+/* app/styles/wireframe.css */
+
+/* Main container for page content */
+.wireframe-container {
+  @apply max-w-4xl mx-auto p-4;
+}
+
+/* Section divider */
+.wireframe-section {
+  @apply border border-white p-4 mb-4;
+}
+
+/* Main title styling */
+.wireframe-title {
+  @apply text-2xl font-normal mb-4;
+}
+
+/* Subtitle styling */
+.wireframe-subtitle {
+  @apply text-xl font-normal mb-2;
+}
+
+/* Regular text styling */
+.wireframe-text {
+  @apply text-base;
+}
+
+/* Input field styling */
+.wireframe-input {
+  @apply w-full p-2 mb-2 border border-white text-black;
+}
+
+/* Button styling */
+.wireframe-button {
+  @apply px-4 py-2 border border-white bg-white cursor-pointer text-black;
+}
+
+/* List styling */
+.wireframe-list {
+  @apply list-disc list-inside;
+}
+
+/* Card styling for grouped content */
+.wireframe-card {
+  @apply border border-white p-4 mb-4;
+}

@@ -204,20 +204,20 @@ export default function CharacterCreation() {
             id="userResponse"
             value={userResponse}
             onChange={handleInputChange}
-            className="flex-grow p-2 border rounded"
+            className="wireframe-input"
             required
           />
           <button
             type="button"
             onClick={generateFieldValueForStep}
-            className="bg-yellow-500 text-white px-4 py-2 rounded"
+            className="wireframe-button mb-2"
             disabled={isLoading}
           >
             Generate
           </button>
         </div>
         {attributeDescription && (
-          <p className="mt-2 text-sm text-gray-600">{attributeDescription}</p>
+          <p className="mt-2 text-sm">{attributeDescription}</p>
         )}
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>
@@ -226,23 +226,23 @@ export default function CharacterCreation() {
 
   // Render the character creation form
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Create Your Character</h1>
-      <div className="mb-4">
-        <p className="font-bold">Step {currentStep + 1}: {steps[currentStep].key}</p>
-        {isLoading ? <p>Loading...</p> : <p>{aiPrompt}</p>}
+    <div className="wireframe-container">
+      <h1 className="wireframe-title">Create Your Character</h1>
+      <div className="wireframe-section">
+        <p className="wireframe-text mb-4">Step {currentStep + 1}: {steps[currentStep].key}</p>
+        {isLoading ? <p>Loading...</p> : <p className="wireframe-text">{aiPrompt}</p>}
       </div>
       <button
         type="button"
         onClick={generateCharacter}
-        className="bg-green-500 text-white px-4 py-2 rounded mb-4"
+        className="wireframe-button mb-4"
         disabled={isLoading}
       >
         Generate Random Character
       </button>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="wireframe-section">
         {renderInput()}
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded" disabled={isLoading}>
+        <button type="submit" className="wireframe-button" disabled={isLoading}>
           {currentStep < steps.length - 1 ? 'Next Step' : 'Finish Character Creation'}
         </button>
       </form>

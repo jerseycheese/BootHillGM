@@ -2,11 +2,19 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold mb-8">Welcome to BootHillGM</h1>
-      <Link href="/character-creation" className="bg-blue-500 text-white px-4 py-2 rounded">
-        Create Character
-      </Link>
+    <main className="wireframe-container">
+      <h1 className="wireframe-title">Welcome to BootHillGM</h1>
+      <div className="wireframe-section">
+        <p className="wireframe-text mb-4">
+          Experience the Wild West with our AI-driven Boot Hill RPG Game Master.
+        </p>
+        <Link 
+          href="/character-creation" 
+          className="wireframe-button inline-block"
+        >
+          Create Character
+        </Link>
+      </div>
     </main>
   );
 }

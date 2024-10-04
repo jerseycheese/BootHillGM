@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GameProviderWrapper } from './components/GameProviderWrapper';
 import "./globals.css";
+import "./styles/wireframe.css";
 
 export const metadata: Metadata = {
   title: "BootHillGM",

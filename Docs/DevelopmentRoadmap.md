@@ -2,7 +2,7 @@
 
 This roadmap outlines the development phases for the BootHillGM MVP, tailored for implementation by a single developer new to React and Next.js.
 
-## Phase 1: Project Setup and Learning (2-3 weeks)
+## Phase 1: Project Setup and Learning
 
 1.1 Environment Setup
 - [ ] Set up Next.js development environment
@@ -19,9 +19,7 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [ ] Create initial pages (Home, Character Creation, Game Session)
 - [ ] Experiment with API routes
 
-## Phase 2: Core Functionality Development (4-6 weeks)
-
-## Phase 2: Core Functionality Development (4-6 weeks)
+## Phase 2: Core Functionality Development
 
 2.1 State Management
 - [x] Implement basic game state using React Context
@@ -34,18 +32,19 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 
 2.3 Character System
 - [x] Implement simplified character creation flow
-+ [x] Implement AI-driven random character generation
-- [ ] Create basic character sheet display
+- [x] Implement AI-driven random character generation
+- [x] Create basic character sheet display
 
 2.4 User Interface
 - [x] Design and implement essential UI components
 - [x] Develop responsive layout for game session page
+- [x] Implement wireframe styling across all pages
 
 
-## Phase 3: Game Mechanics Implementation (4-6 weeks)
+## Phase 3: Game Mechanics Implementation
 
 3.1 Narrative Engine
-- [ ] Develop basic story generation system
+- [x] Develop basic story generation system
 - [ ] Implement simple dialogue system
 
 3.2 Combat System
@@ -56,7 +55,7 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [ ] Implement basic item management
 - [ ] Create simple inventory UI
 
-## Phase 4: Data Persistence and Refinement (2-3 weeks)
+## Phase 4: Data Persistence and Refinement
 
 4.1 Save/Load Functionality
 - [ ] Implement game state serialization
