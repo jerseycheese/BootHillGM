@@ -155,3 +155,44 @@ export async function generateCompleteCharacter(): Promise<Character> {
     };
   }
 }
+
+// Generate a field value for character creation
+// Uses AI for character name and random generation for attributes and skills
+export async function generateFieldValue(
+  key: keyof Character['attributes'] | keyof Character['skills'] | 'name'
+): Promise<string | number> {
+  if (key === 'name') {
+    return generateCharacterName();
+  } else {
+    return generateRandomValue(key as keyof Character['attributes'] | keyof Character['skills']);
+  }
+}
+
+async function generateCharacterName(): Promise<string> {
+  try {
+    const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name, no additional text.";
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text().trim();
+  } catch (error) {
+    console.error('Error generating character name:', error);
+    throw new Error('Failed to generate character name');
+  }
+}
+
+function generateRandomValue(key: keyof Character['attributes'] | keyof Character['skills']): number {
+  const ranges: Record<keyof Character['attributes'] | keyof Character['skills'], [number, number]> = {
+    speed: [1, 20],
+    gunAccuracy: [1, 20],
+    throwingAccuracy: [1, 20],
+    strength: [8, 20],
+    bravery: [1, 20],
+    experience: [0, 11],
+    shooting: [1, 100],
+    riding: [1, 100],
+    brawling: [1, 100],
+  };
+
+  const [min, max] = ranges[key];
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}

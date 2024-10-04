@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGame } from '../utils/gameEngine';
-import { getCharacterCreationStep, getAttributeDescription, validateAttributeValue, generateCompleteCharacter } from '../utils/aiService';
+import { getCharacterCreationStep, getAttributeDescription, validateAttributeValue, generateCompleteCharacter, generateFieldValue } from '../utils/aiService';
 import { Character } from '../types/character';
 
 // TODO: Add a button to generate a complete character for quicker testing
@@ -39,13 +39,13 @@ export default function CharacterCreation() {
   const [attributeDescription, setAttributeDescription] = useState('');
   const [error, setError] = useState('');
 
-  // Memoize steps to prevent unnecessary re-renders
+  // Define the structure of each step in the character creation process
   const steps = useMemo(() => [
-    { key: 'name', type: 'string' },
-    ...Object.keys(character.attributes).map(attr => ({ key: attr, type: 'number' })),
-    ...Object.keys(character.skills).map(skill => ({ key: skill, type: 'number' })),
-    { key: 'summary', type: 'review' }
-  ], [character.attributes, character.skills]);
+    { key: 'name' as const, type: 'string' },
+    ...Object.keys(character.attributes).map(attr => ({ key: attr as keyof Character['attributes'], type: 'number' as const })),
+    ...Object.keys(character.skills).map(skill => ({ key: skill as keyof Character['skills'], type: 'number' as const })),
+    { key: 'summary' as const, type: 'review' as const }
+  ] as const, [character.attributes, character.skills]);
 
   // Fetch AI-generated prompts for each character creation step
   const getNextAIPrompt = useCallback(async () => {
@@ -136,7 +136,7 @@ export default function CharacterCreation() {
   const updateCharacter = () => {
     const { key, type } = steps[currentStep];
     const value = type === 'number' ? parseInt(userResponse) : userResponse;
-    
+
     setCharacter(prev => {
       if (key === 'name') {
         return { ...prev, name: value as string };
@@ -152,6 +152,28 @@ export default function CharacterCreation() {
   const finishCharacterCreation = () => {
     dispatch({ type: 'SET_CHARACTER', payload: character });
     router.push('/game-session');
+  };
+
+  // Generate a value for the current field using AI or random generation
+  const generateFieldValueForStep = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const { key } = steps[currentStep];
+      if (key !== 'summary') {
+        // Use AI service to generate a value for the current field
+        const generatedValue = await generateFieldValue(key);
+        setUserResponse(generatedValue.toString());
+      } else {
+        // Set a default message for the summary step
+        setUserResponse("Character creation complete. Review your character.");
+      }
+    } catch (error) {
+      console.error('Error generating field value:', error);
+      setError(`Failed to generate value. Please try again. (Error: ${error instanceof Error ? error.message : 'Unknown error'})`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Render input field or character summary based on current step
@@ -176,14 +198,24 @@ export default function CharacterCreation() {
     return (
       <div>
         <label htmlFor="userResponse" className="block mb-2">Your Response:</label>
-        <input
-          type={type}
-          id="userResponse"
-          value={userResponse}
-          onChange={handleInputChange}
-          className="w-full p-2 border rounded"
-          required
-        />
+        <div className="flex space-x-2">
+          <input
+            type={type}
+            id="userResponse"
+            value={userResponse}
+            onChange={handleInputChange}
+            className="flex-grow p-2 border rounded"
+            required
+          />
+          <button
+            type="button"
+            onClick={generateFieldValueForStep}
+            className="bg-yellow-500 text-white px-4 py-2 rounded"
+            disabled={isLoading}
+          >
+            Generate
+          </button>
+        </div>
         {attributeDescription && (
           <p className="mt-2 text-sm text-gray-600">{attributeDescription}</p>
         )}
