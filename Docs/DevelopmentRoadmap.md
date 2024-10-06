@@ -60,21 +60,31 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [x] Implement character summary generation
 - [x] Integrate summary display in character creation process
 
+3.5 Campaign Persistence
+- [ ] Design and implement CampaignStateManager
+- [ ] Integrate campaign state saving/loading into GameSession component
+- [ ] Implement basic journal system for tracking important story information
+- [ ] Update AI service to use journal context in prompts
+
 ## Phase 4: Data Persistence and Refinement
 
 4.1 Save/Load Functionality
-- [ ] Implement game state serialization
+- [ ] Implement campaign state serialization
 - [ ] Create save/load system using localStorage
+- [ ] Add error handling for save/load operations
+- [ ] Test save/load functionality across different scenarios
 
 4.2 Bug Fixes and Optimizations
 - [ ] Address any bugs or issues discovered during development
 - [ ] Optimize performance of critical game loops
+- [ ] Optimize journal context selection for AI prompts
 
 4.3 Polish UI/UX
 - [ ] Refine user interface based on playtesting feedback
 - [ ] Improve responsiveness across different devices
+- [ ] Add UI elements for viewing journal entries (if time permits)
 
-## Phase 5: Testing and Deployment (2-3 weeks)
+## Phase 5: Testing and Deployment
 
 5.1 Testing
 - [ ] Conduct thorough playtesting
@@ -88,6 +98,7 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - Regular code reviews and refactoring
 - Documentation updates
 - Learning and applying React and Next.js best practices
+- Continuously improve AI prompt engineering for better storytelling
 
 ## Post-MVP Considerations
 - Expand narrative complexity

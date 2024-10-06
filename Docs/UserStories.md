@@ -70,6 +70,18 @@
   - Check that player choices influence the story without derailing the main plot
   **Status:** Not yet implemented.
 
+- [ ] As a player, I want my game progress to be automatically saved, so that I don't lose my progress if I need to stop playing.
+  **Test Plan:**
+  - Verify that game state is saved after significant events (e.g., completing a conversation, finishing a combat encounter)
+  - Check that saved state includes character information, current location, and game progress
+  - Ensure that saving occurs without noticeable impact on game performance
+
+- [ ] As a player, I want to be able to resume my game from where I left off, so that I can continue my adventure across multiple play sessions.
+  **Test Plan:**
+  - Test loading a saved game from the main menu
+  - Verify that the game resumes with the correct character, location, and narrative context
+  - Ensure that all relevant game state (inventory, quest progress, etc.) is correctly restored
+
 ### Combat System
 - [ ] As a player, I want to engage in simple turn-based combat so that I can experience the dangers of the Old West.
   **Test Plan:**
@@ -176,6 +188,25 @@
 - [ ] As a player, I want to use an interactive map for navigation and exploration so that I can better understand the game world.
 - [ ] As a player, I want to hear ambient sounds and music so that I feel more immersed in the Western setting.
 
+### Campaign Persistence
+- [ ] As a player, I want important story information to be recorded in a journal, so that I can keep track of the game's narrative.
+  **Test Plan:**
+  - Verify that significant story events are automatically added to the journal
+  - Check that journal entries include a timestamp and relevant content
+  - Ensure that the journal is saved as part of the campaign state
+
+- [ ] As a player, I want the AI Game Master to remember important story details from previous sessions, so that the narrative remains consistent across play sessions.
+  **Test Plan:**
+  - Test that AI responses reference events and information from previous play sessions
+  - Verify that the AI maintains consistent NPC personalities and plot points across sessions
+  - Check that the AI doesn't contradict previously established story elements
+
+- [ ] As a player, I want to be able to view my journal entries, so that I can refresh my memory on important story details.
+  **Test Plan:**
+  - Implement a basic UI for viewing journal entries
+  - Verify that journal entries are displayed in chronological order
+  - Ensure that the journal UI is accessible during gameplay without disrupting the game flow
+
 ## Completed Tasks
 - [x] As a developer, I want to set up the Next.js project structure so that I have a solid foundation for the app.
 - [x] As a developer, I want to implement basic state management using React Context so that I can manage game state effectively.
@@ -219,6 +250,17 @@ This section is for tracking bugs found during development and testing. Each bug
    - Actual Behavior: User must manually scroll to see new messages.
    - Status: Open
    - Priority: Medium
+
+4. [BUG-005] Incomplete Game State Restoration
+   - Description: Some elements of the game state are not properly restored when loading a saved game.
+   - Steps to Reproduce: 
+     1. Play a game session and make various character and world state changes.
+     2. Save the game and exit.
+     3. Load the saved game and check all game state elements.
+   - Expected Behavior: All game state elements should be fully restored to their saved state.
+   - Actual Behavior: Some state elements (e.g., NPC relationships, quest flags) are not correctly restored.
+   - Status: Open
+   - Priority: High
 
 ### Closed Bugs
 

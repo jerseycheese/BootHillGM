@@ -7,17 +7,21 @@ BootHillGM is an AI-driven, text-based RPG set in the American Old West, based o
 
 ## 2. Core Gameplay
 ### MVP
-- [ ] Text-based interaction with an AI Game Master
-- [ ] Basic character creation based on simplified Boot Hill RPG rules
-- [ ] Linear narrative-driven adventures in a Western setting
-- [ ] Simple decision-making that impacts the story
-- [ ] Simplified combat system focusing on gunfights
+- [x] Text-based interaction with an AI Game Master
+- [x] Basic character creation based on simplified Boot Hill RPG rules
+- [x] Linear narrative-driven adventures in a Western setting
+- [x] Simple decision-making that impacts the story
+- [x] Simplified combat system focusing on gunfights
+- [ ] Campaign persistence across sessions
+- [ ] Basic journal system for tracking important story information
 
 ### Post-MVP
 - [ ] Advanced character creation with more options and backgrounds
 - [ ] Branching narratives with long-term consequences
 - [ ] Complex decision-making with far-reaching impacts
 - [ ] Expanded combat system with tactical options
+- [ ] Enhanced journal system with categorization and search functionality
+- [ ] Multiple save slots for different campaigns
 
 ## 3. Setting
 ### MVP
@@ -65,11 +69,21 @@ BootHillGM is an AI-driven, text-based RPG set in the American Old West, based o
 - [ ] High lethality maintained
 - [ ] Turn-based combat interface optimized for web interaction
 
+#### 5.3 Campaign Persistence
+- [ ] Save and load campaign state using client-side storage
+- [ ] Automatically save progress after significant game events
+- [ ] Resume gameplay from the last saved point
+- [ ] Basic journal system to track important story information
+- [ ] Use journal entries to provide context for AI storytelling
+
 ### Post-MVP
 - Advanced skill resolution with modifiers and circumstances
 - Detailed combat system with positioning and tactics
 - Injury and healing mechanics
 - Integration of environment and weather effects on gameplay
+- Cloud save functionality for cross-device play
+- Enhanced journal system with player notes and categorization
+- Dynamic world state persistence (NPC relationships, economy, etc.)
 
 ## 6. AI Game Master
 ### MVP
@@ -145,11 +159,14 @@ BootHillGM is an AI-driven, text-based RPG set in the American Old West, based o
 
 ## 12. Data Persistence
 ### MVP
-- [ ] Utilize local storage for saving game progress
+- [ ] Utilize localStorage for saving game progress and campaign state
+- [ ] Implement basic error handling for save/load operations
+- [ ] Store journal entries as part of the campaign state
 
 ### Post-MVP
 - Cloud save functionality for cross-device play
 - User accounts with encrypted data storage
+- Multiple save slots per user
 
 ## 13. Post-MVP Features and Expansions
 - Asynchronous multiplayer features

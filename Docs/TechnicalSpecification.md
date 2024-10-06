@@ -31,6 +31,8 @@
 6. Narrative Engine: Generates basic storylines and dialogues
 7. Combat System: Manages simplified combat mechanics
 8. UI Components: Basic reusable React components
+9. Campaign State Manager: Handles saving, loading, and managing campaign state
+10. Journal System: Manages the storage and retrieval of important story information
 
 ## 4. Data Flow
 1. User interacts with the UI
@@ -38,17 +40,23 @@
 3. API routes handle server-side logic, including AI interactions
 4. Server responds with updated data
 5. Client-side components re-render based on new data
+6. Campaign state is saved after significant game events
+7. Journal entries are added based on important story developments
+8. AI responses are generated with context from the journal
 
 ## 5. AI Integration
 - [x] Implement interface for AI model interaction with uncensored responses
 - [x] Design prompts for character creation, dialogue, and unrestricted player actions
 - [x] Implement error handling for common failure scenarios
 - [x] Maintain minimal context for the current game session
+- [ ] Integrate journal context into AI prompts for story continuity
 
 ## 6. State Management
 - [ ] Utilize React Context for global game state
 - [ ] Implement reducers for state updates
 - [ ] Store game state in localStorage for persistence
+- [ ] Create a CampaignStateManager for handling save/load operations
+- [ ] Implement a Journal system as part of the campaign state
 
 ## 7. UI/UX Design
 - [ ] Develop responsive layouts using CSS Modules
@@ -59,6 +67,8 @@
 - [ ] Utilize Next.js built-in performance optimizations
 - [ ] Implement basic caching for frequently accessed data
 - [ ] Optimize critical API routes for efficient processing
+- [ ] Optimize journal context selection for AI prompts to minimize token usage
+- [ ] Implement efficient serialization/deserialization of campaign state
 
 ## 9. Security Measures
 - [ ] Secure storage of API keys using Next.js environment variables
@@ -91,5 +101,30 @@
 ## 15. Monitoring and Logging
 - [ ] Implement basic error logging to console
 - [ ] Set up simple analytics for usage tracking (e.g., Google Analytics)
+
+## 16. Data Structures
+### Campaign State
+```typescript
+interface CampaignState {
+  character: Character;
+  currentLocation: string;
+  gameProgress: number;
+  journal: JournalEntry[];
+  narrative: string;
+}
+
+interface JournalEntry {
+  timestamp: number;
+  content: string;
+}
+```
+
+## 17. Key Functions
+- `saveCampaignState(state: CampaignState): void`
+- `loadCampaignState(): CampaignState | null`
+- `updateJournal(entry: string): void`
+- `getJournalContext(): string`
+
+These functions will be implemented in the CampaignStateManager.
 
 This technical specification outlines the essential requirements for the BootHillGM MVP. It focuses on core functionality and maintainable architecture, suitable for implementation by a single developer new to React and Next.js. As development progresses and skills improve, this specification can be expanded to include more advanced features and optimizations.
