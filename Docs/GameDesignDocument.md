@@ -1,5 +1,7 @@
 # BootHillGM Game Design Document
 
+Note: For the most up-to-date list of features currently in development, please refer to the User Stories document. This Game Design Document serves as a comprehensive overview of the game's vision, mechanics, and design principles.
+
 ## 1. Game Overview
 BootHillGM is an AI-driven, text-based RPG set in the American Old West, based on the Boot Hill tabletop RPG system. Players engage in a solo adventure guided by an AI Game Master, experiencing the gritty and dangerous life of the frontier through a web-based interface built with Next.js.
 
