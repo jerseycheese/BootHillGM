@@ -314,17 +314,24 @@ This section is for tracking bugs found during development and testing. Each bug
    - Status: Open
    - Priority: Medium
 
-8. [BUG-09] API Error: Insufficient Resources
-    - Description: API calls to the Gemini model are failing due to insufficient resources.
-    - Steps to Reproduce: 
-      1. Interact with the AI in the Game Session
-      2. Observe console errors
-    - Expected Behavior: API calls should succeed and return content
-    - Actual Behavior: POST request fails with ERR_INSUFFICIENT_RESOURCES
-    - Status: Open
-    - Priority: Critical (prevents core functionality)
+### Closed Bugs
 
-9. [BUG-010] Infinite Rendering Loop in Combat System
+1. [BUG-000] Example Resolved Bug
+   - Description: Brief description of the resolved bug
+   - Resolution: How the bug was fixed
+   - Closed Date: YYYY-MM-DD
+
+2. [BUG-09] API Error: Insufficient Resources
+- Description: API calls to the Gemini model are failing due to insufficient resources.
+- Steps to Reproduce: 
+  1. Interact with the AI in the Game Session
+  2. Observe console errors
+- Expected Behavior: API calls should succeed and return content
+- Actual Behavior: POST request fails with ERR_INSUFFICIENT_RESOURCES
+- Status: Open
+- Priority: Critical (prevents core functionality)
+
+3. [BUG-010] Infinite Rendering Loop in Combat System
     - Description: The CombatSystem component is causing an infinite loop of updates.
     - Steps to Reproduce: 
       1. Enter a combat scenario in the Game Session
@@ -333,10 +340,3 @@ This section is for tracking bugs found during development and testing. Each bug
     - Actual Behavior: Maximum update depth is exceeded, causing continuous re-renders
     - Status: Open
     - Priority: Critical (causes application instability and poor performance)
-
-### Closed Bugs
-
-1. [BUG-000] Example Resolved Bug
-   - Description: Brief description of the resolved bug
-   - Resolution: How the bug was fixed
-   - Closed Date: YYYY-MM-DD

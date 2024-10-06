@@ -98,12 +98,6 @@ export default function GameSession() {
       <p>Name: {state.character?.name}</p>
       <p>Location: {currentLocation}</p>
       <p>Health: {state.character?.health}</p>
-      <h3>Inventory (Placeholder):</h3>
-      <ul>
-        <li>Placeholder Item 1</li>
-        <li>Placeholder Item 2</li>
-      </ul>
-      <p className="text-sm italic">Note: Inventory system is not yet implemented.</p>
     </div>
   );
 
@@ -115,6 +109,9 @@ export default function GameSession() {
     <div className="wireframe-container">
       <h1 className="wireframe-title">Game Session</h1>
       {renderCharacterStatus()}
+      <div className="wireframe-section h-64 overflow-y-auto" ref={narrativeRef}>
+        <pre className="wireframe-text whitespace-pre-wrap">{narrative}</pre>
+      </div>
       {isCombatActive && opponent ? (
         <CombatSystem
           playerCharacter={state.character}
@@ -123,24 +120,19 @@ export default function GameSession() {
           onPlayerHealthChange={updatePlayerHealth}
         />
       ) : (
-        <>
-          <div className="wireframe-section h-64 overflow-y-auto" ref={narrativeRef}>
-            <pre className="wireframe-text whitespace-pre-wrap">{narrative}</pre>
-          </div>
-          <form onSubmit={handleUserInput} className="wireframe-section">
-            <input
-              type="text"
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              className="wireframe-input"
-              placeholder="What would you like to do? (You can do anything!)"
-              disabled={isLoading}
-            />
-            <button type="submit" className="wireframe-button" disabled={isLoading}>
-              {isLoading ? 'Processing...' : 'Take Action'}
-            </button>
-          </form>
-        </>
+        <form onSubmit={handleUserInput} className="wireframe-section">
+          <input
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            className="wireframe-input"
+            placeholder="What would you like to do? (You can do anything!)"
+            disabled={isLoading}
+          />
+          <button type="submit" className="wireframe-button" disabled={isLoading}>
+            {isLoading ? 'Processing...' : 'Take Action'}
+          </button>
+        </form>
       )}
     </div>
   );

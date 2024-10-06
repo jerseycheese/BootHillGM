@@ -51,6 +51,9 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 3.2 Combat System
 - [x] Implement simplified Boot Hill combat rules
 - [x] Create basic combat UI
+- [x] Implement turn-based combat flow
+- [x] Add health tracking for player and opponent
+- [x] Create combat log for narrating fight progression
 - [ ] Implement critical hits and misses
 - [ ] Add combat-specific inventory interactions (e.g., weapon switching, item usage)
 

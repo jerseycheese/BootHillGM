@@ -1,27 +1,6 @@
-// app/utils/gameEngine.tsx
-
 import React, { createContext, useContext, useReducer, ReactNode, Dispatch } from 'react';
+import { Character } from '../types/character';
 
-// Define the structure of a character
-interface Character {
-  name: string;
-  health: number;
-  attributes: {
-    speed: number;
-    gunAccuracy: number;
-    throwingAccuracy: number;
-    strength: number;
-    bravery: number;
-    experience: number;
-  };
-  skills: {
-    shooting: number;
-    riding: number;
-    brawling: number;
-  };
-}
-
-// Define the overall game state
 interface GameState {
   currentPlayer: string;
   npcs: string[];
@@ -67,10 +46,29 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_CHARACTER':
       return { ...state, character: action.payload };
     case 'UPDATE_CHARACTER':
-      // Only update the character if it exists in the state
-      return state.character
-        ? { ...state, character: { ...state.character, ...action.payload } }
-        : state;
+      if (!state.character) {
+        return state; // Don't update if there's no character
+      }
+      // Only update if there are actual changes
+      const updatedCharacter = {
+        ...state.character,
+        ...action.payload,
+        attributes: {
+          ...state.character.attributes,
+          ...(action.payload.attributes || {})
+        },
+        skills: {
+          ...state.character.skills,
+          ...(action.payload.skills || {})
+        }
+      };
+      if (JSON.stringify(updatedCharacter) === JSON.stringify(state.character)) {
+        return state; // No changes, return the current state
+      }
+      return {
+        ...state,
+        character: updatedCharacter
+      };
     default:
       return state;
   }
@@ -86,8 +84,10 @@ const GameContext = createContext<{
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
+  const contextValue = React.useMemo(() => ({ state, dispatch }), [state]);
+
   return (
-    <GameContext.Provider value={{ state, dispatch }}>
+    <GameContext.Provider value={contextValue}>
       {children}
     </GameContext.Provider>
   );
@@ -100,10 +100,10 @@ export function useGame() {
     throw new Error('useGame must be used within a GameProvider');
   }
   
-  // Helper function to update character properties
-  const updateCharacter = (updates: Partial<Character>) => {
+  const updateCharacter = React.useCallback((updates: Partial<Character>) => {
+    if (Object.keys(updates).length === 0) return; // Don't dispatch if there are no updates
     context.dispatch({ type: 'UPDATE_CHARACTER', payload: updates });
-  };
+  }, [context]);
 
   // Return the context along with the updateCharacter helper function
   return { ...context, updateCharacter };
