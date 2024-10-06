@@ -1,5 +1,6 @@
 export interface Character {
   name: string;
+  health: number;
   attributes: {
     speed: number;
     gunAccuracy: number;

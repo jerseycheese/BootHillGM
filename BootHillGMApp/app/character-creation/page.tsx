@@ -9,6 +9,7 @@ import { Character } from '../types/character';
 // Initial character state with default values
 const initialCharacter: Character = {
   name: '',
+  health: 0,
   attributes: {
     speed: 0,
     gunAccuracy: 0,
@@ -46,9 +47,7 @@ export default function GameSession() {
   // Fetch AI-generated prompts for each character creation step
   const getNextAIPrompt = useCallback(async () => {
     try {
-      if (steps[currentStep].key === 'summary') {
-        // AI prompt for summary will be set in generateSummary function
-      } else {
+      if (currentStep < steps.length - 1) {
         const prompt = await getCharacterCreationStep(currentStep, steps[currentStep].key);
         setAiPrompt(prompt);
       }
@@ -62,31 +61,29 @@ export default function GameSession() {
 
   // Fetch new AI prompt when step changes
   useEffect(() => {
-    if (isLoading) {
+    if (isLoading && currentStep < steps.length - 1) {
       getNextAIPrompt();
     }
-  }, [currentStep, isLoading, getNextAIPrompt]);
+  }, [currentStep, isLoading, getNextAIPrompt, steps.length]);
 
   // Generate and display a summary of the character at the final step
   const generateSummary = useCallback(async () => {
-    if (currentStep === steps.length - 1) {
-      try {
-        const summary = await generateCharacterSummary(character);
-        setCharacterSummary(summary);
-        setAiPrompt("Review your character summary below. If you're satisfied, click 'Finish' to create your character.");
-      } catch (error) {
-        console.error('Error generating character summary:', error);
-        setCharacterSummary("An error occurred while generating the character summary. Please try again.");
-      }
+    try {
+      const summary = await generateCharacterSummary(character);
+      setCharacterSummary(summary);
+      setAiPrompt("Review your character summary below. If you're satisfied, click 'Finish' to create your character.");
+    } catch (error) {
+      console.error('Error generating character summary:', error);
+      setCharacterSummary("An error occurred while generating the character summary. Please try again.");
     }
-  }, [character, currentStep, steps.length]);
+  }, [character]);
 
   // Trigger summary generation when reaching the final step
   useEffect(() => {
-    if (currentStep === steps.length - 1) {
+    if (currentStep === steps.length - 1 && !characterSummary) {
       generateSummary();
     }
-  }, [currentStep, steps.length, generateSummary]);
+  }, [currentStep, steps.length, characterSummary, generateSummary]);
 
   // Handle user input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

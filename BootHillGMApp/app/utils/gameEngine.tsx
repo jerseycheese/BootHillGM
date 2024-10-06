@@ -5,6 +5,7 @@ import React, { createContext, useContext, useReducer, ReactNode, Dispatch } fro
 // Define the structure of a character
 interface Character {
   name: string;
+  health: number;
   attributes: {
     speed: number;
     gunAccuracy: number;
@@ -37,7 +38,8 @@ type GameAction =
   | { type: 'SET_LOCATION'; payload: string }
   | { type: 'ADD_ITEM'; payload: string }
   | { type: 'ADD_QUEST'; payload: string }
-  | { type: 'SET_CHARACTER'; payload: Character };
+  | { type: 'SET_CHARACTER'; payload: Character }
+  | { type: 'UPDATE_CHARACTER'; payload: Partial<Character> };
 
 // Initial state of the game
 const initialState: GameState = {
@@ -64,6 +66,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, quests: [...state.quests, action.payload] };
     case 'SET_CHARACTER':
       return { ...state, character: action.payload };
+    case 'UPDATE_CHARACTER':
+      // Only update the character if it exists in the state
+      return state.character
+        ? { ...state, character: { ...state.character, ...action.payload } }
+        : state;
     default:
       return state;
   }
@@ -92,5 +99,12 @@ export function useGame() {
   if (context === undefined) {
     throw new Error('useGame must be used within a GameProvider');
   }
-  return context;
+  
+  // Helper function to update character properties
+  const updateCharacter = (updates: Partial<Character>) => {
+    context.dispatch({ type: 'UPDATE_CHARACTER', payload: updates });
+  };
+
+  // Return the context along with the updateCharacter helper function
+  return { ...context, updateCharacter };
 }

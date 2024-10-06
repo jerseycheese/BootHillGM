@@ -3,6 +3,7 @@ import { Character } from '../types/character';
 
 // TODO: Improve formatting of AI messages for better readability and engagement
 
+// Set up the API key for the Google Generative AI
 const apiKey = typeof window === 'undefined' ? process.env.GEMINI_API_KEY : process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey || '');
 
@@ -25,9 +26,28 @@ const AI_CONFIG = {
 
 const model = genAI.getGenerativeModel({ model: AI_CONFIG.modelName });
 
-export async function getAIResponse(prompt: string): Promise<{ narrative: string; location?: string }> {
+// Retry mechanism for AI requests with exponential backoff
+async function retryAIRequest<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i))); // Exponential backoff
+    }
+  }
+  throw new Error('Max retries reached');
+}
+
+// Main function to get AI response for game narration
+export async function getAIResponse(prompt: string): Promise<{ 
+  narrative: string; 
+  location?: string; 
+  combatInitiated?: boolean; 
+  opponent?: Character;
+}> {
   try {
-    // Construct a prompt that emphasizes player agency and uncensored storytelling
+    // Construct the full prompt for the AI
     const fullPrompt = `
       You are an AI Game Master for a Western-themed RPG. Your role is to facilitate an immersive and uncensored gaming experience. Always remember:
 
@@ -42,24 +62,54 @@ export async function getAIResponse(prompt: string): Promise<{ narrative: string
 
       Respond as the Game Master, describing the results of the player's action and advancing the story. 
       If the action involves using an item, update their inventory accordingly. 
-      If combat occurs, describe it narratively without using a separate combat system. 
+      If combat occurs, describe it narratively and include a COMBAT: tag followed by the opponent's name.
       If the location has changed, on a new line, write "LOCATION:" followed by a brief (2-5 words) description of the new location. 
       If the location hasn't changed, don't include a LOCATION line.
 
       Game Master response:
     `;
 
-    // Generate content using the AI model
-    const result = await model.generateContent(fullPrompt);
+    // Generate content using the AI model with retry mechanism
+    const result = await retryAIRequest(() => model.generateContent(fullPrompt));
     const response = await result.response;
     const text = response.text();
     
-    // Parse the response to separate narrative and location
+    // Parse the response to separate narrative, location, and combat information
     const parts = text.split('LOCATION:');
-    const narrative = parts[0].trim();
+    let narrative = parts[0].trim();
     const location = parts[1] ? parts[1].trim() : undefined;
 
-    return { narrative, location };
+    let combatInitiated = false;
+    let opponent: Character | undefined;
+
+    // Check if combat has been initiated and create an opponent if necessary
+    if (narrative.includes('COMBAT:')) {
+      combatInitiated = true;
+      const combatParts = narrative.split('COMBAT:');
+      narrative = combatParts[0].trim();
+      const opponentName = combatParts[1].trim();
+      
+      // Create a basic opponent Character object
+      opponent = {
+        name: opponentName,
+        health: 100,
+        attributes: {
+          speed: 10,
+          gunAccuracy: 10,
+          throwingAccuracy: 10,
+          strength: 10,
+          bravery: 10,
+          experience: 5
+        },
+        skills: {
+          shooting: 50,
+          riding: 50,
+          brawling: 50
+        }
+      };
+    }
+
+    return { narrative, location, combatInitiated, opponent };
   } catch (error) {
     // Error handling for API issues
     console.error('Error getting AI response:', error);
@@ -72,6 +122,7 @@ export async function getAIResponse(prompt: string): Promise<{ narrative: string
   }
 }
 
+// Function to get AI-generated prompts for character creation steps
 export async function getCharacterCreationStep(step: number, currentField: string): Promise<string> {
   const prompt = `
     You are an AI Game Master guiding a player through creating a character for the Boot Hill RPG. 
@@ -88,8 +139,8 @@ export async function getCharacterCreationStep(step: number, currentField: strin
   return response.narrative;
 }
 
+// Function to validate attribute values based on Boot Hill rules
 export function validateAttributeValue(attribute: string, value: number): boolean {
-  // Basic validation logic - can be expanded based on Boot Hill rules
   const validRanges: Record<string, [number, number]> = {
     speed: [1, 20],
     gunAccuracy: [1, 20],
@@ -107,14 +158,15 @@ export function validateAttributeValue(attribute: string, value: number): boolea
     return value >= min && value <= max;
   }
 
-  return true; // For any attributes not explicitly defined
+  return true;
 }
 
+// Function to generate a complete character using AI
 export async function generateCompleteCharacter(): Promise<Character> {
-  // Prompt for the AI to generate a character with specific attributes and skills
   const prompt = `
     Generate a complete character for the Boot Hill RPG. Provide values for the following attributes and skills:
     - Name
+    - Health (50-100)
     - Speed (1-20)
     - GunAccuracy (1-20)
     - ThrowingAccuracy (1-20)
@@ -125,37 +177,71 @@ export async function generateCompleteCharacter(): Promise<Character> {
     - Riding (1-100)
     - Brawling (1-100)
 
-    Format the response as a valid JSON object without any markdown formatting.
+    Respond with a valid JSON object. No additional text or formatting.
   `;
 
   const response = await getAIResponse(prompt);
   try {
-    // Remove any markdown code block syntax from the AI response
-    const cleanedResponse = response.narrative.replace(/```json\n?|\n?```/g, '');
+    const cleanedResponse = response.narrative.replace(/```json\n?|\n?```/g, '').trim();
     
-    // Parse the cleaned response as JSON
-    const characterData = JSON.parse(cleanedResponse);
+    let characterData: Partial<{
+      Name: string;
+      name: string;
+      Health: string | number;
+      Speed: string | number;
+      GunAccuracy: string | number;
+      ThrowingAccuracy: string | number;
+      Strength: string | number;
+      Bravery: string | number;
+      Experience: string | number;
+      Shooting: string | number;
+      Riding: string | number;
+      Brawling: string | number;
+    }>;
+
+    try {
+      characterData = JSON.parse(cleanedResponse);
+    } catch (parseError) {
+      console.error('JSON parsing failed, attempting to fix the response');
+      // Attempt to fix common JSON issues
+      const fixedResponse = cleanedResponse
+        .replace(/'/g, '"')
+        .replace(/(\w+):/g, '"$1":')
+        .replace(/,\s*([\]}])/g, '$1')
+        .replace(/\n/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      try {
+        characterData = JSON.parse(fixedResponse);
+      } catch (secondParseError) {
+        console.error('Failed to parse JSON even after attempting fixes:', secondParseError);
+        throw new Error('Unable to parse character data');
+      }
+    }
     
-    // Transform the parsed data into our Character structure
+    // Create a Character object from the parsed data
     const character: Character = {
-      name: characterData.Name || characterData.name,
+      name: characterData.Name || characterData.name || 'Unknown',
+      health: Number(characterData.Health) || 75,
       attributes: {
-        speed: Number(characterData.Speed),
-        gunAccuracy: Number(characterData.GunAccuracy),
-        throwingAccuracy: Number(characterData.ThrowingAccuracy),
-        strength: Number(characterData.Strength),
-        bravery: Number(characterData.Bravery),
-        experience: Number(characterData.Experience)
+        speed: Number(characterData.Speed) || 10,
+        gunAccuracy: Number(characterData.GunAccuracy) || 10,
+        throwingAccuracy: Number(characterData.ThrowingAccuracy) || 10,
+        strength: Number(characterData.Strength) || 10,
+        bravery: Number(characterData.Bravery) || 10,
+        experience: Number(characterData.Experience) || 5
       },
       skills: {
-        shooting: Number(characterData.Shooting),
-        riding: Number(characterData.Riding),
-        brawling: Number(characterData.Brawling)
+        shooting: Number(characterData.Shooting) || 50,
+        riding: Number(characterData.Riding) || 50,
+        brawling: Number(characterData.Brawling) || 50
       }
     };
     
     // Validate that all character attributes and skills are present and are valid numbers
     const isValid = (
+      character.name !== 'Unknown' &&
+      !isNaN(character.health) &&
       !isNaN(character.attributes.speed) &&
       !isNaN(character.attributes.gunAccuracy) &&
       !isNaN(character.attributes.throwingAccuracy) &&
@@ -174,11 +260,12 @@ export async function generateCompleteCharacter(): Promise<Character> {
     return character;
   } catch (error) {
     console.error('Error parsing AI response:', error);
-    console.log('Raw AI response:', response);
+    console.log('Raw AI response:', response.narrative);
     
     // Return a default character if parsing fails
     return {
       name: 'John Doe',
+      health: 75,
       attributes: {
         speed: 10,
         gunAccuracy: 10,
@@ -199,17 +286,20 @@ export async function generateCompleteCharacter(): Promise<Character> {
 // Generate a field value for character creation
 // Uses AI for character name and random generation for attributes and skills
 export async function generateFieldValue(
-  key: keyof Character['attributes'] | keyof Character['skills'] | 'name'
+  key: keyof Character['attributes'] | keyof Character['skills'] | 'name' | 'health'
 ): Promise<string | number> {
   if (key === 'name') {
-    const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name, no additional text.";
+    const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name.";
     const response = await getAIResponse(prompt);
     return response.narrative.trim();
+  } else if (key === 'health') {
+    return Math.floor(Math.random() * (100 - 50 + 1)) + 50; // Random health between 50 and 100
   } else {
     return generateRandomValue(key as keyof Character['attributes'] | keyof Character['skills']);
   }
 }
 
+// Generate a random value for a given attribute or skill
 function generateRandomValue(key: keyof Character['attributes'] | keyof Character['skills']): number {
   const ranges: Record<keyof Character['attributes'] | keyof Character['skills'], [number, number]> = {
     speed: [1, 20],
@@ -232,6 +322,7 @@ export async function generateCharacterSummary(character: Character): Promise<st
   const prompt = `
     Generate a brief, engaging summary for a character in a Western-themed RPG based on the following attributes:
     Name: ${character.name}
+    Health: ${character.health}
     Attributes:
     ${Object.entries(character.attributes).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
     Skills:

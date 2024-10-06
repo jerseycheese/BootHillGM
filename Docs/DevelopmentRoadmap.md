@@ -44,17 +44,20 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 ## Phase 3: Game Mechanics Implementation
 
 3.1 Narrative Engine
-- [ ] Develop basic story generation system
-- [ ] Implement simple dialogue system
+- [x] Develop basic story generation system
+- [x] Implement simple dialogue system
 - [x] Ensure AI adapts to all player actions without censorship
 
 3.2 Combat System
-- [ ] Implement simplified Boot Hill combat rules
-- [ ] Create basic combat UI
+- [x] Implement simplified Boot Hill combat rules
+- [x] Create basic combat UI
+- [ ] Implement critical hits and misses
+- [ ] Add combat-specific inventory interactions (e.g., weapon switching, item usage)
 
 3.3 Inventory System
 - [ ] Implement basic item management
 - [ ] Create simple inventory UI
+- [ ] Integrate inventory with combat system
 
 3.4 Character Summary
 - [x] Implement character summary generation
@@ -89,6 +92,7 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 5.1 Testing
 - [ ] Conduct thorough playtesting
 - [ ] Fix critical bugs and issues
+- [ ] Test combat system extensively for balance and engagement
 
 5.2 Deployment
 - [ ] Set up deployment pipeline (e.g., Vercel)
@@ -107,5 +111,9 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - Add user authentication and profiles
 - Develop multi-campaign management
 - Consider implementing content warnings or age verification for uncensored content
+- Implement a more complex NPC system with relationships and factions
+- Add environmental factors to combat (weather, terrain)
+- Enhance combat system with more complex actions (e.g., dodging, using cover)
+- Enhance combat UI with animations and sound effects
 
 Note: This roadmap is designed to be flexible. Adjust timelines and priorities as you progress and gain more experience with React and Next.js. Regular review and revision of this roadmap is recommended as you better understand the development process and challenges.

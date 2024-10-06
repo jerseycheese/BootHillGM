@@ -4,15 +4,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGame } from '../utils/gameEngine';
 import { getAIResponse } from '../utils/aiService';
+import CombatSystem from '../components/CombatSystem';
+import { Character } from '../types/character';
 import '../styles/wireframe.css';
 
 export default function GameSession() {
   const router = useRouter();
-  const { state } = useGame();
+  const { state, updateCharacter } = useGame();
   const [narrative, setNarrative] = useState('');
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentLocation, setCurrentLocation] = useState('');
+  const [isCombatActive, setIsCombatActive] = useState(false);
+  const [opponent, setOpponent] = useState<Character | null>(null);
   const narrativeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,12 +48,18 @@ export default function GameSession() {
 
     setIsLoading(true);
     try {
-      // Get AI response for user input
-      const { narrative: aiResponse, location } = await getAIResponse(userInput);
+      const { narrative: aiResponse, location, combatInitiated, opponent } = await getAIResponse(userInput);
       
       // Update game narrative and location based on AI response
       setNarrative(prev => `${prev}\n\nPlayer: ${userInput}\n\nGame Master: ${aiResponse}`);
       if (location) setCurrentLocation(location);
+      
+      if (combatInitiated && opponent) {
+        setIsCombatActive(true);
+        setOpponent(opponent);
+        setNarrative(prev => `${prev}\n\nA combat situation has arisen! Prepare to face ${opponent.name}!`);
+      }
+      
       setUserInput('');
     } catch (error) {
       // Handle errors in AI response
@@ -60,11 +70,34 @@ export default function GameSession() {
     }
   };
 
+  const handleCombatEnd = (winner: 'player' | 'opponent') => {
+    setIsCombatActive(false);
+    const combatResult = winner === 'player' 
+      ? `You have defeated ${opponent?.name}!` 
+      : `You have been defeated by ${opponent?.name}...`;
+    
+    setNarrative(prev => `${prev}\n\n${combatResult}`);
+    
+    if (winner === 'opponent' && state.character) {
+      const newHealth = Math.max(0, state.character.health - 20); // Reduce health by 20 points
+      updateCharacter({ ...state.character, health: newHealth });
+    }
+    
+    setOpponent(null);
+  };
+
+  const updatePlayerHealth = (newHealth: number) => {
+    if (state.character) {
+      updateCharacter({ ...state.character, health: newHealth });
+    }
+  };
+
   const renderCharacterStatus = () => (
     <div className="wireframe-section">
       <h2 className="wireframe-subtitle">Character Status</h2>
       <p>Name: {state.character?.name}</p>
       <p>Location: {currentLocation}</p>
+      <p>Health: {state.character?.health}</p>
       <h3>Inventory (Placeholder):</h3>
       <ul>
         <li>Placeholder Item 1</li>
@@ -82,22 +115,33 @@ export default function GameSession() {
     <div className="wireframe-container">
       <h1 className="wireframe-title">Game Session</h1>
       {renderCharacterStatus()}
-      <div className="wireframe-section h-64 overflow-y-auto" ref={narrativeRef}>
-        <pre className="wireframe-text whitespace-pre-wrap">{narrative}</pre>
-      </div>
-      <form onSubmit={handleUserInput} className="wireframe-section">
-        <input
-          type="text"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          className="wireframe-input"
-          placeholder="What would you like to do? (You can do anything!)"
-          disabled={isLoading}
+      {isCombatActive && opponent ? (
+        <CombatSystem
+          playerCharacter={state.character}
+          opponent={opponent}
+          onCombatEnd={handleCombatEnd}
+          onPlayerHealthChange={updatePlayerHealth}
         />
-        <button type="submit" className="wireframe-button" disabled={isLoading}>
-          {isLoading ? 'Processing...' : 'Take Action'}
-        </button>
-      </form>
+      ) : (
+        <>
+          <div className="wireframe-section h-64 overflow-y-auto" ref={narrativeRef}>
+            <pre className="wireframe-text whitespace-pre-wrap">{narrative}</pre>
+          </div>
+          <form onSubmit={handleUserInput} className="wireframe-section">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              className="wireframe-input"
+              placeholder="What would you like to do? (You can do anything!)"
+              disabled={isLoading}
+            />
+            <button type="submit" className="wireframe-button" disabled={isLoading}>
+              {isLoading ? 'Processing...' : 'Take Action'}
+            </button>
+          </form>
+        </>
+      )}
     </div>
   );
 }

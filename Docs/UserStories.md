@@ -5,12 +5,12 @@
 ## MVP Features
 
 ### Character Creation
-- [ ] As a player, I want to create a character using AI-guided prompts so that I can quickly generate a unique persona for the game.
+- [x] As a player, I want to create a character using AI-guided prompts so that I can quickly generate a unique persona for the game.
   **Test Plan:**
   - Verify that AI prompts are generated and displayed to the user
   - Check that user input is correctly captured and processed
   - Ensure that a complete character is created based on user responses
-  **Status:** Partially implemented. AI-guided prompts are in place, but the full character creation flow needs completion.
+  **Status:** Implemented.
 
 - [ ] As a player, I want to view my character's attributes (Strength, Agility, Intelligence) so that I understand my character's capabilities.
   **Test Plan:**
@@ -41,20 +41,19 @@
   **Status:** Not yet implemented.
 
 ### Game Session
-- [ ] As a player, I want to start a new game session so that I can begin my adventure in the Old West.
+- [x] As a player, I want to start a new game session so that I can begin my adventure in the Old West.
   **Test Plan:**
   - Verify that a new game session initializes correctly
   - Ensure all necessary game state variables are set to their starting values
   - Check that the player's character data is loaded into the session
-  **Status:** Partially implemented. Basic game state management is in place, but full session initialization needs completion.
+  **Status:** Implemented.
 
-- [ ] As a player, I want to interact with the AI Game Master through text input so that I can make decisions and progress the story.
-
+- [x] As a player, I want to interact with the AI Game Master through text input so that I can make decisions and progress the story.
   **Test Plan:**
   - Test various types of player input (commands, dialogue choices, etc.)
   - Verify that the AI responds appropriately to different inputs
   - Ensure the game state updates correctly based on player decisions
-  **Status:** Not yet implemented.
+  **Status:** Implemented.
 
 - [ ] As a player, I want to view the game narrative and dialogue in a scrollable text display so that I can follow the story easily.
   **Test Plan:**
@@ -172,6 +171,8 @@
 - [ ] As a player, I want to use advanced combat tactics so that fights are more strategic and engaging.
 - [ ] As a player, I want to engage in duels with specific NPCs so that I can experience iconic Western showdowns.
 - [ ] As a player, I want to consider positioning and environmental factors in combat so that battles feel more realistic.
+- [ ] As a player, I want to experience critical hits and misses in combat to add more excitement and unpredictability to fights.
+- [ ] As a player, I want to use different weapons and items during combat to add more tactical depth to battles.
 
 ### NPC Interaction
 - [ ] As a player, I want to form relationships with NPCs so that the game world feels more dynamic and responsive to my actions.
@@ -213,6 +214,7 @@
 - [x] As a developer, I want to create a responsive layout for the main pages so that the app is usable on various devices.
 - [x] As a player, I want to view the main menu of the game so that I can navigate to different sections of the app.
 - [x] As a player, I want complete freedom of action without AI censorship or resistance, so that I can fully immerse myself in the game world and make any choices I desire.
+- [x] As a developer, I want to implement a basic combat system to allow players to engage in turn-based fights with AI-generated opponents.
 
 ## Bug Tracking
 
