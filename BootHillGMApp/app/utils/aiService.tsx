@@ -7,19 +7,27 @@ const apiKey = typeof window === 'undefined' ? process.env.GEMINI_API_KEY : proc
 const genAI = new GoogleGenerativeAI(apiKey || '');
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-export async function getAIResponse(prompt: string): Promise<string> {
+export async function getAIResponse(prompt: string): Promise<{ narrative: string; location?: string }> {
   try {
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    return response.text();
+    const text = response.text();
+    
+    // Parse the response to separate narrative and location
+    const parts = text.split('LOCATION:');
+    const narrative = parts[0].trim();
+    const location = parts[1] ? parts[1].trim() : undefined;
+
+    return { narrative, location };
   } catch (error) {
     console.error('Error getting AI response:', error);
+    // Handle specific error cases
     if (error instanceof Error) {
       if (error.message.includes('API key expired') || error.message.includes('API_KEY_INVALID')) {
-        return "Sorry, there's an issue with the AI service configuration. Please try again later.";
+        return { narrative: "Sorry, there's an issue with the AI service configuration. Please try again later." };
       }
     }
-    return "An unexpected error occurred. Please try again.";
+    return { narrative: "An unexpected error occurred. Please try again." };
   }
 }
 
@@ -35,7 +43,8 @@ export async function getCharacterCreationStep(step: number, currentField: strin
     Also, provide a brief description of what this ${currentField} represents in the context of a Western character.
   `;
 
-  return getAIResponse(prompt);
+  const response = await getAIResponse(prompt);
+  return response.narrative;
 }
 
 export async function getAttributeDescription(attribute: string): Promise<string> {
@@ -45,7 +54,8 @@ export async function getAttributeDescription(attribute: string): Promise<string
     Keep the description concise, around 2-3 sentences.
   `;
 
-  return getAIResponse(prompt);
+  const response = await getAIResponse(prompt);
+  return response.narrative;
 }
 
 export function validateAttributeValue(attribute: string, value: number): boolean {
@@ -91,7 +101,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
   const response = await getAIResponse(prompt);
   try {
     // Remove any markdown code block syntax from the AI response
-    const cleanedResponse = response.replace(/```json\n?|\n?```/g, '');
+    const cleanedResponse = response.narrative.replace(/```json\n?|\n?```/g, '');
     
     // Parse the cleaned response as JSON
     const characterData = JSON.parse(cleanedResponse);
@@ -162,21 +172,11 @@ export async function generateFieldValue(
   key: keyof Character['attributes'] | keyof Character['skills'] | 'name'
 ): Promise<string | number> {
   if (key === 'name') {
-    return generateCharacterName();
+    const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name, no additional text.";
+    const response = await getAIResponse(prompt);
+    return response.narrative.trim();
   } else {
     return generateRandomValue(key as keyof Character['attributes'] | keyof Character['skills']);
-  }
-}
-
-async function generateCharacterName(): Promise<string> {
-  try {
-    const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name, no additional text.";
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text().trim();
-  } catch (error) {
-    console.error('Error generating character name:', error);
-    throw new Error('Failed to generate character name');
   }
 }
 
@@ -210,5 +210,6 @@ export async function generateCharacterSummary(character: Character): Promise<st
     The summary should capture the essence of the character, their strengths, potential weaknesses, and how they might fit into a Western setting. Keep the tone consistent with a gritty, Wild West atmosphere.
   `;
 
-  return getAIResponse(prompt);
+  const response = await getAIResponse(prompt);
+  return response.narrative;
 }

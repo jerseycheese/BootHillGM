@@ -187,16 +187,36 @@ This section is for tracking bugs found during development and testing. Each bug
 
 ### Open Bugs
 
-1. [BUG-001] Example Bug Title
-   - Description: Brief description of the bug
+1. [BUG-002] Game Session State Reset
+   - Description: Game state resets when navigating away from and back to the Game Session page.
    - Steps to Reproduce: 
-     1. Step 1
-     2. Step 2
-     3. Step 3
-   - Expected Behavior: What should happen
-   - Actual Behavior: What actually happens
+     1. Start a game session and interact with the AI.
+     2. Navigate away from the Game Session page.
+     3. Return to the Game Session page.
+   - Expected Behavior: Game session should continue from where it left off.
+   - Actual Behavior: Game session resets to the initial message.
    - Status: Open
-   - Priority: High/Medium/Low
+   - Priority: High
+
+2. [BUG-003] AI Pacing Issues
+   - Description: AI advances the story too quickly, not adjusting for the current setting.
+   - Steps to Reproduce: 
+     1. Start a game session in different settings (e.g., busy saloon, desert travel).
+     2. Observe AI responses to player actions.
+   - Expected Behavior: Story progression should be slower in busy locations and faster in travel scenarios.
+   - Actual Behavior: Story progresses at the same pace regardless of setting.
+   - Status: Open
+   - Priority: Medium
+
+3. [BUG-004] Narrative Display UX Issue
+   - Description: New AI messages are not automatically visible to the user.
+   - Steps to Reproduce: 
+     1. Engage in a conversation with the AI that generates multiple messages.
+     2. Observe the scrollable area after each AI response.
+   - Expected Behavior: View should automatically scroll to show the latest AI message at the top.
+   - Actual Behavior: User must manually scroll to see new messages.
+   - Status: Open
+   - Priority: Medium
 
 ### Closed Bugs
 
