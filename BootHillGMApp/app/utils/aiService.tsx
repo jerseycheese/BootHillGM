@@ -201,7 +201,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
 
     try {
       characterData = JSON.parse(cleanedResponse);
-    } catch (parseError) {
+    } catch {
       console.error('JSON parsing failed, attempting to fix the response');
       // Attempt to fix common JSON issues
       const fixedResponse = cleanedResponse

@@ -55,9 +55,9 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [ ] Add combat-specific inventory interactions (e.g., weapon switching, item usage)
 
 3.3 Inventory System
-- [ ] Implement basic item management
-- [ ] Create simple inventory UI
-- [ ] Integrate inventory with combat system
+- [ ] Implement generation of 4-5 genre-appropriate, inexpensive (non-combat) starting items for new characters
+- [ ] Update character creation process to include starting items
+- [ ] Ensure starting items are displayed correctly in character inventory
 
 3.4 Character Summary
 - [x] Implement character summary generation

@@ -155,6 +155,21 @@
   - Ensure the game's atmosphere consistently reflects these Western themes
   **Status:** Not yet implemented.
 
+- [ ] As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
+  **Test Plan:**
+  - Verify that a loading indicator appears when generating a random character
+  - Check that the loading indicator is visible when transitioning between steps
+  - Ensure the loading indicator disappears once content is loaded
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want to start with 4-5 genre-appropriate, inexpensive (non-combat) items, so that I have a realistic and thematic starting inventory.
+  **Test Plan:**
+  - Verify that each new character starts with 4-5 items
+  - Check that the items are appropriate for the Western genre
+  - Ensure the items are non-combat and relatively inexpensive
+  - Confirm that the items are displayed correctly in the character's inventory
+  **Status:** Not yet implemented.
+
 ## Post-MVP Features
 
 ### Advanced Character Creation
@@ -263,6 +278,61 @@ This section is for tracking bugs found during development and testing. Each bug
    - Actual Behavior: Some state elements (e.g., NPC relationships, quest flags) are not correctly restored.
    - Status: Open
    - Priority: High
+
+5. [BUG-006] Delayed Content Update and Incorrect Step Information on Character Summary
+   - Description: When generating a random character, there's a delay in updating the UI, and outdated step information is briefly shown.
+   - Steps to Reproduce: 
+     1. Go to the Character Creation page
+     2. Click "Generate Random Character"
+     3. Observe the transition to the summary page
+   - Expected Behavior: Immediate update of step information and character description, with a loading indicator if there's a delay.
+   - Actual Behavior: 
+     - "Step 1: name" text remains visible for a few seconds before changing to "Step 11: summary"
+     - Character description takes several seconds to load without any loading indication
+   - Status: Open
+   - Priority: Medium (impacts user experience but doesn't prevent core functionality)
+
+6. [BUG-007] Generate Random Character Button Malfunction on Summary Page
+   - Description: The Generate Random Character button doesn't generate a new character when clicked on the summary page.
+   - Steps to Reproduce: 
+     1. Go to the Character Creation page
+     2. Click "Generate Random Character"
+     3. On the summary page, click "Generate Random Character" again
+   - Expected Behavior: A new random character should be generated and displayed
+   - Actual Behavior: Only the instruction text is reloaded, no new character is generated
+   - Status: Open
+   - Priority: Medium
+
+7. [BUG-008] Incorrect Location Display in Game Session
+   - Description: The location in the status area shows as "Unknown" despite being named in the AI's first message.
+   - Steps to Reproduce: 
+     1. Create a character
+     2. Click "Finish Character Creation"
+     3. Observe the Game Session screen
+   - Expected Behavior: The location in the status area should match the location named in the AI's first message
+   - Actual Behavior: Location is displayed as "Unknown"
+   - Status: Open
+   - Priority: Medium
+
+8. [BUG-09] API Error: Insufficient Resources
+    - Description: API calls to the Gemini model are failing due to insufficient resources.
+    - Steps to Reproduce: 
+      1. Interact with the AI in the Game Session
+      2. Observe console errors
+    - Expected Behavior: API calls should succeed and return content
+    - Actual Behavior: POST request fails with ERR_INSUFFICIENT_RESOURCES
+    - Status: Open
+    - Priority: Critical (prevents core functionality)
+
+9. [BUG-010] Infinite Rendering Loop in Combat System
+    - Description: The CombatSystem component is causing an infinite loop of updates.
+    - Steps to Reproduce: 
+      1. Enter a combat scenario in the Game Session
+      2. Observe console warnings and application behavior
+    - Expected Behavior: Combat system should render and update normally
+    - Actual Behavior: Maximum update depth is exceeded, causing continuous re-renders
+    - Status: Open
+    - Priority: Critical (causes application instability and poor performance)
 
 ### Closed Bugs
 
