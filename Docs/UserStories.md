@@ -49,6 +49,7 @@
   **Status:** Partially implemented. Basic game state management is in place, but full session initialization needs completion.
 
 - [ ] As a player, I want to interact with the AI Game Master through text input so that I can make decisions and progress the story.
+
   **Test Plan:**
   - Test various types of player input (commands, dialogue choices, etc.)
   - Verify that the AI responds appropriately to different inputs
@@ -180,6 +181,7 @@
 - [x] As a developer, I want to implement basic state management using React Context so that I can manage game state effectively.
 - [x] As a developer, I want to create a responsive layout for the main pages so that the app is usable on various devices.
 - [x] As a player, I want to view the main menu of the game so that I can navigate to different sections of the app.
+- [x] As a player, I want complete freedom of action without AI censorship or resistance, so that I can fully immerse myself in the game world and make any choices I desire.
 
 ## Bug Tracking
 

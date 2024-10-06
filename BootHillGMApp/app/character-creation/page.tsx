@@ -3,12 +3,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGame } from '../utils/gameEngine';
-import { getCharacterCreationStep, getAttributeDescription, validateAttributeValue, generateFieldValue, generateCompleteCharacter, generateCharacterSummary } from '../utils/aiService';
+import { getCharacterCreationStep, validateAttributeValue, generateFieldValue, generateCompleteCharacter, generateCharacterSummary } from '../utils/aiService';
 import { Character } from '../types/character';
-
-// TODO: Add a button to generate a complete character for quicker testing
-// TODO: Add a button to generate a value for the current field in each step
-// TODO: Remove all non-layout CSS rules while working out MVP functionality
 
 // Initial character state with default values
 const initialCharacter: Character = {
@@ -28,7 +24,7 @@ const initialCharacter: Character = {
   },
 };
 
-export default function CharacterCreation() {
+export default function GameSession() {
   const router = useRouter();
   const { dispatch } = useGame();
   const [character, setCharacter] = useState<Character>(initialCharacter);
@@ -36,7 +32,6 @@ export default function CharacterCreation() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [userResponse, setUserResponse] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [attributeDescription, setAttributeDescription] = useState('');
   const [error, setError] = useState('');
   const [characterSummary, setCharacterSummary] = useState('');
 
@@ -56,12 +51,6 @@ export default function CharacterCreation() {
       } else {
         const prompt = await getCharacterCreationStep(currentStep, steps[currentStep].key);
         setAiPrompt(prompt);
-        if (steps[currentStep].type === 'number') {
-          const description = await getAttributeDescription(steps[currentStep].key);
-          setAttributeDescription(description);
-        } else {
-          setAttributeDescription('');
-        }
       }
     } catch (error) {
       console.error('Error getting AI prompt:', error);
@@ -241,9 +230,6 @@ export default function CharacterCreation() {
             Generate
           </button>
         </div>
-        {attributeDescription && (
-          <p className="mt-2 text-sm text-gray-600">{attributeDescription}</p>
-        )}
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>
     );

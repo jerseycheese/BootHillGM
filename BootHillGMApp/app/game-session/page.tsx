@@ -1,4 +1,3 @@
-// app/game-session/page.tsx
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -21,11 +20,10 @@ export default function GameSession() {
       setIsLoading(true);
       // Request an initial narrative and location from the AI
       const { narrative: initialNarrative, location } = await getAIResponse(
-        `You are a Game Master for a Western-themed RPG. The player's character is named ${state.character?.name}. 
+        `Initialize a new game session for a character named ${state.character?.name}. 
         Provide a brief introduction to the game world and the character's current situation. 
         Include a description of their current location and some potential options for action. 
-        Make it clear that these are just suggestions and the player can choose to do anything they want. 
-        After your narrative, on a new line, write "LOCATION:" followed by a brief (2-5 words) description of the current location.`
+        Make it clear that the player can choose to do anything they want, without restrictions.`
       );
       setNarrative(initialNarrative);
       setCurrentLocation(location || 'Unknown');
@@ -45,19 +43,21 @@ export default function GameSession() {
     if (!userInput.trim()) return;
 
     setIsLoading(true);
-    const { narrative: aiResponse, location } = await getAIResponse(
-      `The player says: "${userInput}". Respond as the Game Master, describing the results of the player's action and advancing the story. 
-      Remember that the game is open-ended and can handle any action the player chooses. 
-      If the action involves using an item, pretend to update their inventory accordingly. 
-      If combat occurs, describe it narratively without using a separate combat system. 
-      If the location has changed, on a new line, write "LOCATION:" followed by a brief (2-5 words) description of the new location. 
-      If the location hasn't changed, don't include a LOCATION line.`
-    );
-    
-    setNarrative(prev => `${prev}\n\nPlayer: ${userInput}\n\nGame Master: ${aiResponse}`);
-    if (location) setCurrentLocation(location);
-    setUserInput('');
-    setIsLoading(false);
+    try {
+      // Get AI response for user input
+      const { narrative: aiResponse, location } = await getAIResponse(userInput);
+      
+      // Update game narrative and location based on AI response
+      setNarrative(prev => `${prev}\n\nPlayer: ${userInput}\n\nGame Master: ${aiResponse}`);
+      if (location) setCurrentLocation(location);
+      setUserInput('');
+    } catch (error) {
+      // Handle errors in AI response
+      console.error('Error processing user input:', error);
+      setNarrative(prev => `${prev}\n\nAn error occurred. Please try again.`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderCharacterStatus = () => (
@@ -91,7 +91,7 @@ export default function GameSession() {
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
           className="wireframe-input"
-          placeholder="What would you like to do? (The game is open-ended!)"
+          placeholder="What would you like to do? (You can do anything!)"
           disabled={isLoading}
         />
         <button type="submit" className="wireframe-button" disabled={isLoading}>

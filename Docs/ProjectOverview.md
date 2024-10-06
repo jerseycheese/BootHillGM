@@ -21,14 +21,15 @@ BootHillGM is a web-based application providing an AI-driven virtual Game Master
 
 ## 4. Key Features
 ### MVP
-- [ ] AI-driven Boot Hill Character Creation (basic)
-- [ ] AI-powered Game Mastering for Western settings (limited scope)
+- [x] AI-driven Boot Hill Character Creation (basic)
+- [x] AI-powered Game Mastering for Western settings (limited scope)
 - [ ] AI-powered NPCs with basic persistence
-- [ ] Simple Game Session and State Management
+- [x] Simple Game Session and State Management
 - [ ] Boot Hill's percentile dice system for chance-based outcomes
-- [ ] Basic Character Sheet View
+- [x] Basic Character Sheet View
 - [ ] Simple Inventory System
 - [ ] Linear Quest System
+- [x] Uncensored AI responses for unrestricted player agency
 
 ### Post-MVP
 - [ ] Advanced AI-driven Character Creation with more options
@@ -51,7 +52,7 @@ BootHillGM is a web-based application providing an AI-driven virtual Game Master
 - Historical Western setting and themes
 
 ## 6. App Architecture
-The BootHillGM app is built using Next.js 14.x with the App Router, featuring a modular component structure, including:
+The BootHillGMApp app is built using Next.js 14.x with the App Router, featuring a modular component structure, including:
 - Core Game Engine
 - AI Integration Service
 - Character Management System
@@ -81,6 +82,8 @@ The project has made significant progress:
   - User input processing
   - Structured AI responses for location tracking
   - Basic character status display
+- Implemented uncensored AI responses for unrestricted player agency
+- Updated AI service to handle player actions without censorship or moral judgment
 
 ## 8. MVP Development Focus
 - Implement core gameplay loop for personal/family/friends use
@@ -88,9 +91,11 @@ The project has made significant progress:
 - Develop essential UI components for game interaction
 - Implement basic data persistence for game sessions
 - Enhance character creation with AI-generated summaries and descriptions
+- Ensure uncensored and adaptable storytelling based on player actions
 
 ## 9. Post-MVP Considerations
 - Enhance AI capabilities for more dynamic and complex gameplay
 - Expand features for a broader audience
 - Implement advanced UI/UX improvements
 - Develop infrastructure for user accounts and online features
+- Consider content warnings or age verification for uncensored content

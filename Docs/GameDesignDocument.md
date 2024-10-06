@@ -74,6 +74,8 @@ BootHillGM is an AI-driven, text-based RPG set in the American Old West, based o
 ## 6. AI Game Master
 ### MVP
 #### 6.1 Narrative Generation
+- [x] Implement uncensored storytelling to allow full player agency
+- [x] AI adapts to all player actions without moral judgment
 - [ ] Linear story creation with minimal branching
 - [ ] Integration of basic Boot Hill RPG rules into narrative decisions
 - [ ] Simple text generation and display in web interface

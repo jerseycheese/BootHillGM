@@ -5,11 +5,52 @@ import { Character } from '../types/character';
 
 const apiKey = typeof window === 'undefined' ? process.env.GEMINI_API_KEY : process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey || '');
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+// Configuration for the AI model, including safety settings set to BLOCK_NONE
+const AI_CONFIG = {
+  modelName: "gemini-1.5-pro",
+  generationConfig: {
+    temperature: 0.7,
+    topP: 1.0,
+    topK: 40,
+    maxOutputTokens: 2048
+  },
+  safetySettings: [
+    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+  ]
+};
+
+const model = genAI.getGenerativeModel({ model: AI_CONFIG.modelName });
 
 export async function getAIResponse(prompt: string): Promise<{ narrative: string; location?: string }> {
   try {
-    const result = await model.generateContent(prompt);
+    // Construct a prompt that emphasizes player agency and uncensored storytelling
+    const fullPrompt = `
+      You are an AI Game Master for a Western-themed RPG. Your role is to facilitate an immersive and uncensored gaming experience. Always remember:
+
+      1. The player has complete free will. Never resist, censor, or discourage any player actions, no matter how unconventional or morally ambiguous they may be.
+      2. Immediately adjust the story or environment to accommodate whatever actions the player chooses, without judgment or hesitation.
+      3. Describe the outcomes of player actions realistically, considering the context of the Old West setting.
+      4. If the player's actions would have consequences in the game world, describe these consequences without moralizing.
+      5. Maintain a neutral tone and focus on narrating the events and environment as they unfold.
+      6. Do not break character or reference modern-day ethics or sensibilities.
+
+      Player input: "${prompt}"
+
+      Respond as the Game Master, describing the results of the player's action and advancing the story. 
+      If the action involves using an item, update their inventory accordingly. 
+      If combat occurs, describe it narratively without using a separate combat system. 
+      If the location has changed, on a new line, write "LOCATION:" followed by a brief (2-5 words) description of the new location. 
+      If the location hasn't changed, don't include a LOCATION line.
+
+      Game Master response:
+    `;
+
+    // Generate content using the AI model
+    const result = await model.generateContent(fullPrompt);
     const response = await result.response;
     const text = response.text();
     
@@ -20,8 +61,8 @@ export async function getAIResponse(prompt: string): Promise<{ narrative: string
 
     return { narrative, location };
   } catch (error) {
+    // Error handling for API issues
     console.error('Error getting AI response:', error);
-    // Handle specific error cases
     if (error instanceof Error) {
       if (error.message.includes('API key expired') || error.message.includes('API_KEY_INVALID')) {
         return { narrative: "Sorry, there's an issue with the AI service configuration. Please try again later." };
@@ -41,17 +82,6 @@ export async function getCharacterCreationStep(step: number, currentField: strin
     Keep your response concise and focused on this specific aspect of character creation.
 
     Also, provide a brief description of what this ${currentField} represents in the context of a Western character.
-  `;
-
-  const response = await getAIResponse(prompt);
-  return response.narrative;
-}
-
-export async function getAttributeDescription(attribute: string): Promise<string> {
-  const prompt = `
-    Provide a brief, engaging description of the '${attribute}' attribute or skill in the context of a Western character.
-    Explain its importance and how it might affect the character's actions in the game.
-    Keep the description concise, around 2-3 sentences.
   `;
 
   const response = await getAIResponse(prompt);

@@ -5,19 +5,19 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 ## Phase 1: Project Setup and Learning
 
 1.1 Environment Setup
-- [ ] Set up Next.js development environment
-- [ ] Configure TypeScript
-- [ ] Set up version control with Git
+- [x] Set up Next.js development environment
+- [x] Configure TypeScript
+- [x] Set up version control with Git
 
 1.2 Learning and Experimentation
-- [ ] Complete Next.js tutorial
-- [ ] Experiment with basic React concepts (components, props, state)
-- [ ] Learn about React Hooks (useState, useEffect, useContext)
+- [x] Complete Next.js tutorial
+- [x] Experiment with basic React concepts (components, props, state)
+- [x] Learn about React Hooks (useState, useEffect, useContext)
 
 1.3 Project Structure
-- [ ] Set up basic Next.js project structure
-- [ ] Create initial pages (Home, Character Creation, Game Session)
-- [ ] Experiment with API routes
+- [x] Set up basic Next.js project structure
+- [x] Create initial pages (Home, Character Creation, Game Session)
+- [x] Experiment with API routes
 
 ## Phase 2: Core Functionality Development
 
@@ -29,6 +29,7 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [x] Set up Gemini API integration
 - [x] Implement basic AI response generation using Next.js API routes
 - [x] Develop simple context management for game elements
+- [x] Implement uncensored AI responses for unrestricted player agency
 
 2.3 Character System
 - [x] Implement simplified character creation flow
@@ -45,6 +46,7 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 3.1 Narrative Engine
 - [ ] Develop basic story generation system
 - [ ] Implement simple dialogue system
+- [x] Ensure AI adapts to all player actions without censorship
 
 3.2 Combat System
 - [ ] Implement simplified Boot Hill combat rules
@@ -93,5 +95,6 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - Implement more advanced combat and inventory systems
 - Add user authentication and profiles
 - Develop multi-campaign management
+- Consider implementing content warnings or age verification for uncensored content
 
 Note: This roadmap is designed to be flexible. Adjust timelines and priorities as you progress and gain more experience with React and Next.js. Regular review and revision of this roadmap is recommended as you better understand the development process and challenges.
