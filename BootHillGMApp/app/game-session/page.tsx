@@ -1,4 +1,3 @@
-// BootHillGMApp/app/game-session/page.tsx
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -13,80 +12,83 @@ import '../styles/wireframe.css';
 export default function GameSession() {
   const router = useRouter();
   const { state, dispatch } = useGame();
-  const [narrative, setNarrative] = useState('');
   const [userInput, setUserInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [isCombatActive, setIsCombatActive] = useState(false);
   const [opponent, setOpponent] = useState<Character | null>(null);
   const narrativeRef = useRef<HTMLDivElement>(null);
 
+  // Initialize game session, including character and inventory setup
   useEffect(() => {
     const initializeGameSession = async () => {
       setIsLoading(true);
-      // Request an initial narrative and location from the AI
-      const { narrative: initialNarrative, location } = await getAIResponse(
-        `Initialize a new game session for a character named ${state.character?.name}. 
-        Provide a brief introduction to the game world and the character's current situation. 
-        Include a description of their current location and some potential options for action. 
-        Make it clear that the player can choose to do anything they want, without restrictions.`
-      );
-      setNarrative(initialNarrative);
-      setCurrentLocation(location || 'Unknown');
-      setIsLoading(false);
+      if (!state.character) {
+        router.push('/character-creation');
+        return;
+      }
 
-      // Add some initial items to the inventory
-      dispatch({ 
-        type: 'ADD_ITEM', 
-        payload: { 
-          id: '1', 
-          name: 'Health Potion', 
-          quantity: 2, 
-          description: 'Restores 20 health points' 
-        } 
-      });
-      dispatch({ 
-        type: 'ADD_ITEM', 
-        payload: { 
-          id: '2', 
-          name: 'Rope', 
-          quantity: 1, 
-          description: 'A sturdy rope, 50 feet long' 
-        } 
-      });
+      if (state.narrative === '') {
+        const { narrative: initialNarrative, location } = await getAIResponse(
+          `Initialize a new game session for a character named ${state.character.name}. 
+          Provide a brief introduction to the game world and the character's current situation. 
+          Include a description of their current location and some potential options for action.`
+        );
+        dispatch({ type: 'SET_NARRATIVE', payload: initialNarrative });
+        dispatch({ type: 'SET_LOCATION', payload: location || 'Unknown' });
+
+        // Add some initial items to the inventory
+        dispatch({ 
+          type: 'ADD_ITEM', 
+          payload: { 
+            id: '1', 
+            name: 'Health Potion', 
+            quantity: 2, 
+            description: 'Restores 20 health points' 
+          } 
+        });
+        dispatch({ 
+          type: 'ADD_ITEM', 
+          payload: { 
+            id: '2', 
+            name: 'Rope', 
+            quantity: 1, 
+            description: 'A sturdy rope, 50 feet long' 
+          } 
+        });
+      }
+      setIsLoading(false);
     };
   
-    // Initialize the game session if a character exists, otherwise redirect to character creation
-    if (!state.character) {
-      router.push('/character-creation');
-    } else {
-      initializeGameSession();
-    }
-  }, [state.character, router, dispatch]);
+    initializeGameSession();
+  }, [state.character, router, dispatch, state.narrative]);
 
+  // Handle user input and update game state accordingly
   const handleUserInput = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userInput.trim()) return;
 
     setIsLoading(true);
     try {
+      // Get AI response based on user input
       const { narrative: aiResponse, location, combatInitiated, opponent } = await getAIResponse(userInput);
       
-      // Update game narrative and location based on AI response
-      setNarrative(prev => `${prev}\n\nPlayer: ${userInput}\n\nGame Master: ${aiResponse}`);
-      if (location) setCurrentLocation(location);
+      // Update narrative with user input and AI response
+      dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative}\n\nPlayer: ${userInput}\n\nGame Master: ${aiResponse}` });
       
+      // Update location if provided
+      if (location) dispatch({ type: 'SET_LOCATION', payload: location });
+      
+      // Initiate combat if triggered
       if (combatInitiated && opponent) {
         setIsCombatActive(true);
         setOpponent(opponent);
-        setNarrative(prev => `${prev}\n\nA combat situation has arisen! Prepare to face ${opponent.name}!`);
+        dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative}\n\nA combat situation has arisen! Prepare to face ${opponent.name}!` });
       }
       
       setUserInput('');
     } catch (error) {
-      // Handle errors in AI response
       console.error('Error processing user input:', error);
-      setNarrative(prev => `${prev}\n\nAn error occurred. Please try again.`);
+      dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative}\n\nAn error occurred. Please try again.` });
     } finally {
       setIsLoading(false);
     }
@@ -98,12 +100,12 @@ export default function GameSession() {
       ? `You have defeated ${opponent?.name}!` 
       : `You have been defeated by ${opponent?.name}...`;
     
-    setNarrative(prev => `${prev}\n\n${combatResult}`);
+    dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative}\n\n${combatResult}` });
     
     if (winner === 'opponent' && state.character) {
-      const newHealth = Math.max(0, state.character.health - 20); // Reduce health by 20 points
+      const newHealth = Math.max(0, state.character.health - 20);
       dispatch({ 
-        type: 'UPDATE_CHARACTER', 
+        type: 'SET_CHARACTER', 
         payload: { ...state.character, health: newHealth }
       });
     }
@@ -114,7 +116,7 @@ export default function GameSession() {
   const updatePlayerHealth = (newHealth: number) => {
     if (state.character) {
       dispatch({ 
-        type: 'UPDATE_CHARACTER', 
+        type: 'SET_CHARACTER', 
         payload: { ...state.character, health: newHealth }
       });
     }
@@ -124,23 +126,25 @@ export default function GameSession() {
     <div className="wireframe-section">
       <h2 className="wireframe-subtitle">Character Status</h2>
       <p>Name: {state.character?.name}</p>
-      <p>Location: {currentLocation}</p>
+      <p>Location: {state.currentLocation}</p>
       <p>Health: {state.character?.health}</p>
     </div>
   );
 
-  if (!state.character) {
-    return <div>Loading...</div>;
+  // Render loading state if game is initializing
+  if (isLoading) {
+    return <div>Loading game session...</div>;
   }
 
+  // Render game session UI
   return (
     <div className="wireframe-container">
       <h1 className="wireframe-title">Game Session</h1>
       {renderCharacterStatus()}
       <div className="wireframe-section h-64 overflow-y-auto" ref={narrativeRef}>
-        <pre className="wireframe-text whitespace-pre-wrap">{narrative}</pre>
+        <pre className="wireframe-text whitespace-pre-wrap">{state.narrative}</pre>
       </div>
-      <Inventory />  {/* Add the Inventory component here */}
+      <Inventory />
       {isCombatActive && opponent ? (
         <CombatSystem
           playerCharacter={state.character}
@@ -155,7 +159,7 @@ export default function GameSession() {
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             className="wireframe-input"
-            placeholder="What would you like to do? (You can do anything!)"
+            placeholder="What would you like to do?"
             disabled={isLoading}
           />
           <button type="submit" className="wireframe-button" disabled={isLoading}>

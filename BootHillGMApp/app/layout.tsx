@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GameProviderWrapper } from './components/GameProviderWrapper';
+import { CampaignStateProvider } from './components/CampaignStateManager';
 import Navigation from './components/Navigation';
 import "./globals.css";
 import "./styles/wireframe.css";
@@ -17,12 +18,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <GameProviderWrapper>
-          <Navigation />
-          <main className="p-4">
-            {children}
-          </main>
-        </GameProviderWrapper>
+        <CampaignStateProvider>
+          <GameProviderWrapper>
+            <Navigation />
+            <main className="p-4">
+              {children}
+            </main>
+          </GameProviderWrapper>
+        </CampaignStateProvider>
       </body>
     </html>
   );
