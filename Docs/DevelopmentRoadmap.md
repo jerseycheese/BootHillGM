@@ -24,6 +24,7 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 2.1 State Management
 - [x] Implement basic game state using React Context
 - [x] Create reducers for state updates
+- [x] Implement dispatch function for all state updates
 
 2.2 AI Integration
 - [x] Set up Gemini API integration
@@ -58,9 +59,12 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [ ] Add combat-specific inventory interactions (e.g., weapon switching, item usage)
 
 3.3 Inventory System
-- [ ] Implement generation of 4-5 genre-appropriate, inexpensive (non-combat) starting items for new characters
-- [ ] Update character creation process to include starting items
-- [ ] Ensure starting items are displayed correctly in character inventory
+- [x] Implement basic inventory data structure
+- [x] Create Inventory component for displaying items
+- [x] Implement add and remove item functionality
+- [x] Add initial items to inventory during game session initialization
+- [ ] Implement item usage functionality
+- [ ] Integrate inventory with other game systems (e.g., combat)
 
 3.4 Character Summary
 - [x] Implement character summary generation

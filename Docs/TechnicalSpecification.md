@@ -8,7 +8,7 @@
 - [x] Development Environment: Visual Studio Code with ESLint and Prettier
 - [x] Version Control: Git
 - [x] UI Components: Custom React components
-- [x] State Management: React Context API (for MVP)
+- [x] State Management: React Context API with useReducer for more complex state updates
 - [x] Styling: CSS Modules and Tailwind CSS
 - [x] Data Persistence: localStorage for client-side storage (MVP phase)
 
@@ -30,19 +30,21 @@
 5. Character Management System: Manages character creation and stats
 6. Narrative Engine: Generates basic storylines and dialogues
 7. Combat System: Manages simplified combat mechanics
-8. UI Components: Basic reusable React components
-9. Campaign State Manager: Handles saving, loading, and managing campaign state
-10. Journal System: Manages the storage and retrieval of important story information
+8. Inventory System: Manages character inventory and item interactions
+9. UI Components: Basic reusable React components
+10. Campaign State Manager: Handles saving, loading, and managing campaign state
+11. Journal System: Manages the storage and retrieval of important story information
 
 ## 4. Data Flow
 1. User interacts with the UI
-2. Client-side components update local state or call API routes
-3. API routes handle server-side logic, including AI interactions
-4. Server responds with updated data
-5. Client-side components re-render based on new data
-6. Campaign state is saved after significant game events
-7. Journal entries are added based on important story developments
-8. AI responses are generated with context from the journal
+2. Client-side components dispatch actions to update state
+3. Reducer functions process actions and update the global state
+4. Components re-render based on state changes
+5. API routes handle server-side logic, including AI interactions
+6. Server responds with updated data
+7. Campaign state is saved after significant game events
+8. Journal entries are added based on important story developments
+9. AI responses are generated with context from the journal
 
 ## 5. AI Integration
 - [x] Implement interface for AI model interaction with uncensored responses
@@ -55,6 +57,7 @@
 ## 6. State Management
 - [x] Utilize React Context for global game state
 - [x] Implement reducers for state updates
+- [x] Use dispatch function for all state updates
 - [ ] Store game state in localStorage for persistence
 - [ ] Create a CampaignStateManager for handling save/load operations
 - [ ] Implement a Journal system as part of the campaign state
@@ -112,11 +115,19 @@ interface CampaignState {
   gameProgress: number;
   journal: JournalEntry[];
   narrative: string;
+  inventory: InventoryItem[];
 }
 
 interface JournalEntry {
   timestamp: number;
   content: string;
+}
+
+interface InventoryItem {
+  id: string;
+  name: string;
+  quantity: number;
+  description: string;
 }
 ```
 
@@ -125,8 +136,9 @@ interface JournalEntry {
 - `loadCampaignState(): CampaignState | null`
 - `updateJournal(entry: string): void`
 - `getJournalContext(): string`
+- `dispatch(action: Action): void`
 
-These functions will be implemented in the CampaignStateManager.
+These functions will be implemented in the CampaignStateManager and GameEngine components.
 
 ## 18. Combat System
 The combat system is implemented as a separate component (`CombatSystem.tsx`) that integrates with the main game flow. Key features include:
@@ -149,4 +161,23 @@ The combat system is implemented as a separate component (`CombatSystem.tsx`) th
 - Add combat-specific inventory interactions (e.g., weapon switching, item usage)
 - Enhance combat UI with more detailed statistics and options
 
-This technical specification outlines the essential requirements for the BootHillGM MVP, including the newly implemented combat system. It focuses on core functionality and maintainable architecture, suitable for implementation by a single developer new to React and Next.js. As development progresses and skills improve, this specification can be expanded to include more advanced features and optimizations.
+## 19. Inventory System
+The inventory system is implemented as a separate component (`Inventory.tsx`) that integrates with the main game flow. Key features include:
+
+- Display of player's current items
+- Add and remove items from inventory
+- Use items from inventory
+- Integration with the game state management system
+
+### Inventory Flow
+1. Initial items are added to the inventory during game session initialization
+2. Players can view their inventory at any time during the game session
+3. Items can be added or removed based on game events or player actions
+4. Using an item triggers appropriate effects in the game state
+
+### Future Enhancements
+- Implement item categories (e.g., weapons, consumables, quest items)
+- Add item rarity and value for economic interactions
+- Implement inventory capacity limits
+
+This technical specification outlines the essential requirements for the BootHillGM MVP, including the newly implemented combat system and inventory system. It focuses on core functionality and maintainable architecture, suitable for implementation by a single developer new to React and Next.js. As development progresses and skills improve, this specification can be expanded to include more advanced features and optimizations.

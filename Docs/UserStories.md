@@ -104,12 +104,12 @@
   **Status:** Not yet implemented.
 
 ### Inventory and Economy
-- [ ] As a player, I want to view my character's inventory so that I know what items I have available.
+- [x] As a player, I want to view my character's inventory so that I know what items I have available.
   **Test Plan:**
   - Verify that all items in the inventory are displayed correctly
   - Test adding and removing items from the inventory
   - Ensure the inventory display updates in real-time
-  **Status:** Not yet implemented.
+  **Status:** Implemented. Inventory component has been added to the game session.
 
 - [ ] As a player, I want to use items from my inventory so that I can interact with the game world.
   **Test Plan:**
@@ -169,6 +169,13 @@
   - Ensure the items are non-combat and relatively inexpensive
   - Confirm that the items are displayed correctly in the character's inventory
   **Status:** Not yet implemented.
+
+- [x] As a developer, I want to use a dispatch function for state updates so that I can manage game state more efficiently and consistently.
+  **Test Plan:**
+  - Verify that all state updates use the dispatch function
+  - Check that different types of state updates (character, inventory, etc.) work correctly
+  - Ensure that the state remains consistent across different components
+  **Status:** Implemented. The game session now uses a dispatch function for state updates.
 
 ## Post-MVP Features
 

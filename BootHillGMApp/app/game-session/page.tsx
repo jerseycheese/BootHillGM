@@ -1,3 +1,4 @@
+// BootHillGMApp/app/game-session/page.tsx
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -5,12 +6,13 @@ import { useRouter } from 'next/navigation';
 import { useGame } from '../utils/gameEngine';
 import { getAIResponse } from '../utils/aiService';
 import CombatSystem from '../components/CombatSystem';
+import Inventory from '../components/Inventory';
 import { Character } from '../types/character';
 import '../styles/wireframe.css';
 
 export default function GameSession() {
   const router = useRouter();
-  const { state, updateCharacter } = useGame();
+  const { state, dispatch } = useGame();
   const [narrative, setNarrative] = useState('');
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +34,26 @@ export default function GameSession() {
       setNarrative(initialNarrative);
       setCurrentLocation(location || 'Unknown');
       setIsLoading(false);
+
+      // Add some initial items to the inventory
+      dispatch({ 
+        type: 'ADD_ITEM', 
+        payload: { 
+          id: '1', 
+          name: 'Health Potion', 
+          quantity: 2, 
+          description: 'Restores 20 health points' 
+        } 
+      });
+      dispatch({ 
+        type: 'ADD_ITEM', 
+        payload: { 
+          id: '2', 
+          name: 'Rope', 
+          quantity: 1, 
+          description: 'A sturdy rope, 50 feet long' 
+        } 
+      });
     };
   
     // Initialize the game session if a character exists, otherwise redirect to character creation
@@ -40,7 +62,7 @@ export default function GameSession() {
     } else {
       initializeGameSession();
     }
-  }, [state.character, router]);
+  }, [state.character, router, dispatch]);
 
   const handleUserInput = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +102,10 @@ export default function GameSession() {
     
     if (winner === 'opponent' && state.character) {
       const newHealth = Math.max(0, state.character.health - 20); // Reduce health by 20 points
-      updateCharacter({ ...state.character, health: newHealth });
+      dispatch({ 
+        type: 'UPDATE_CHARACTER', 
+        payload: { ...state.character, health: newHealth }
+      });
     }
     
     setOpponent(null);
@@ -88,7 +113,10 @@ export default function GameSession() {
 
   const updatePlayerHealth = (newHealth: number) => {
     if (state.character) {
-      updateCharacter({ ...state.character, health: newHealth });
+      dispatch({ 
+        type: 'UPDATE_CHARACTER', 
+        payload: { ...state.character, health: newHealth }
+      });
     }
   };
 
@@ -112,6 +140,7 @@ export default function GameSession() {
       <div className="wireframe-section h-64 overflow-y-auto" ref={narrativeRef}>
         <pre className="wireframe-text whitespace-pre-wrap">{narrative}</pre>
       </div>
+      <Inventory />  {/* Add the Inventory component here */}
       {isCombatActive && opponent ? (
         <CombatSystem
           playerCharacter={state.character}
