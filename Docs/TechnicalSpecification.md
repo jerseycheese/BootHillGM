@@ -194,6 +194,8 @@ interface CampaignState {
   journal: JournalEntry[];
   narrative: string;
   inventory: InventoryItem[];
+  isCombatActive: boolean;
+  opponent: Character | null;
 }
 
 interface JournalEntry {

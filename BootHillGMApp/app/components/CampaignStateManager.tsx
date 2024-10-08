@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { CampaignState, Action } from '../types/campaign';
 
-// Define initial campaign state with default values
+// Define the initial state of the campaign
 const initialCampaignState: CampaignState = {
   character: null,
   currentLocation: '',
@@ -11,6 +11,8 @@ const initialCampaignState: CampaignState = {
   journal: [],
   narrative: '',
   inventory: [],
+  isCombatActive: false,
+  opponent: null,
 };
 
 // Reducer function to handle state updates based on dispatched actions
@@ -23,21 +25,15 @@ const campaignReducer = (state: CampaignState, action: Action): CampaignState =>
     case 'SET_GAME_PROGRESS':
       return { ...state, gameProgress: action.payload };
     case 'UPDATE_JOURNAL':
-      return { ...state, journal: Array.isArray(action.payload) ? action.payload : [...state.journal, action.payload] };
+      return { ...state, journal: action.payload };
     case 'SET_NARRATIVE':
       return { ...state, narrative: action.payload };
     case 'ADD_ITEM':
-      return { 
-        ...state, 
-        inventory: Array.isArray(action.payload) 
-          ? [...state.inventory, ...action.payload] 
-          : [...state.inventory, action.payload] 
-      };
+      return { ...state, inventory: [...state.inventory, action.payload] };
     case 'REMOVE_ITEM':
-      return {
-        ...state,
-        inventory: state.inventory.filter(item => item.id !== action.payload),
-      };
+        return { ...state, inventory: state.inventory.filter(item => item.id !== action.payload) };
+    case 'SET_INVENTORY':
+        return { ...state, inventory: action.payload };
     default:
       return state;
   }
@@ -55,13 +51,15 @@ export const CampaignStateProvider = ({ children }: { children: React.ReactNode 
     const savedState = localStorage.getItem('campaignState');
     if (savedState) {
       try {
-        const parsedState = JSON.parse(savedState) as CampaignState;
+        const parsedState = JSON.parse(savedState);
         dispatch({ type: 'SET_CHARACTER', payload: parsedState.character });
         dispatch({ type: 'SET_LOCATION', payload: parsedState.currentLocation });
         dispatch({ type: 'SET_GAME_PROGRESS', payload: parsedState.gameProgress });
         dispatch({ type: 'UPDATE_JOURNAL', payload: parsedState.journal });
         dispatch({ type: 'SET_NARRATIVE', payload: parsedState.narrative });
-        dispatch({ type: 'ADD_ITEM', payload: parsedState.inventory });
+        dispatch({ type: 'SET_INVENTORY', payload: parsedState.inventory });
+        dispatch({ type: 'SET_COMBAT_ACTIVE', payload: parsedState.isCombatActive });
+        dispatch({ type: 'SET_OPPONENT', payload: parsedState.opponent });
       } catch (error) {
         console.error('Error loading campaign state:', error);
       }

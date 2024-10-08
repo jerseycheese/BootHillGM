@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, ReactNode, Dispatch } from 'react';
 import { Character } from '../types/character';
-import { InventoryItem, JournalEntry } from '../types/campaign';
+import { InventoryItem } from '../types/inventory';
+import { JournalEntry } from '../types/journal';
 
 interface GameState {
   currentPlayer: string;

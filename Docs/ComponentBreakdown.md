@@ -87,8 +87,22 @@
 ### 9. DataPersistence
 - **Main Functionality:** Handles saving and loading game states
 - **Key Components:**
+  - [x] CampaignStateManager (app/components/CampaignStateManager.tsx)
+    - Implements a React Context for global state management
+    - Handles saving and loading state from localStorage
+    - Provides a custom hook (useCampaignState) for easy access to state and dispatch function
   - [ ] LocalStorageManager (utils/LocalStorageManager.ts)
-- **Potential Challenges:** Managing complex state serialization/deserialization
+- **Potential Challenges:** Managing complex state serialization/deserialization, ensuring data consistency across saves
+
+### 10. GameSession
+- **Main Functionality:** Manages the main game play experience
+- **Key Components:**
+  - [x] GameSession (app/game-session/page.tsx)
+    - Integrates with CampaignStateManager for state management
+    - Handles user input and AI responses
+    - Manages combat initiation and resolution
+    - Renders game UI including narrative, inventory, and user input
+- **Potential Challenges:** Balancing complexity with performance, managing asynchronous AI interactions
 
 ## Recommended Development Order (MVP Focus)
 
