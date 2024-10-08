@@ -1,6 +1,7 @@
+'use client';
+
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { CampaignState, Action } from '../types/campaign';
-import { Character } from '../types/character';
 
 // Define initial campaign state with default values
 const initialCampaignState: CampaignState = {
@@ -16,15 +17,15 @@ const initialCampaignState: CampaignState = {
 const campaignReducer = (state: CampaignState, action: Action): CampaignState => {
   switch (action.type) {
     case 'SET_CHARACTER':
-      return { ...state, character: action.payload as Character };
+      return { ...state, character: action.payload };
     case 'SET_LOCATION':
-      return { ...state, currentLocation: action.payload as string };
+      return { ...state, currentLocation: action.payload };
     case 'SET_GAME_PROGRESS':
-      return { ...state, gameProgress: action.payload as number };
+      return { ...state, gameProgress: action.payload };
     case 'UPDATE_JOURNAL':
       return { ...state, journal: Array.isArray(action.payload) ? action.payload : [...state.journal, action.payload] };
     case 'SET_NARRATIVE':
-      return { ...state, narrative: action.payload as string };
+      return { ...state, narrative: action.payload };
     case 'ADD_ITEM':
       return { 
         ...state, 
@@ -54,11 +55,11 @@ export const CampaignStateProvider = ({ children }: { children: React.ReactNode 
     const savedState = localStorage.getItem('campaignState');
     if (savedState) {
       try {
-        const parsedState = JSON.parse(savedState);
+        const parsedState = JSON.parse(savedState) as CampaignState;
         dispatch({ type: 'SET_CHARACTER', payload: parsedState.character });
         dispatch({ type: 'SET_LOCATION', payload: parsedState.currentLocation });
         dispatch({ type: 'SET_GAME_PROGRESS', payload: parsedState.gameProgress });
-        dispatch({ type: 'UPDATE_JOURNAL', payload: Array.isArray(parsedState.journal) ? parsedState.journal : [] });
+        dispatch({ type: 'UPDATE_JOURNAL', payload: parsedState.journal });
         dispatch({ type: 'SET_NARRATIVE', payload: parsedState.narrative });
         dispatch({ type: 'ADD_ITEM', payload: parsedState.inventory });
       } catch (error) {

@@ -28,7 +28,7 @@ describe('GameSession', () => {
     (useGame as jest.Mock).mockReturnValue({
       state: {
         character: { name: 'Test Character', health: 100 },
-        currentLocation: 'Test Town',
+        location: 'Test Town',
         narrative: 'Initial narrative',
         inventory: [],
       },
@@ -37,7 +37,7 @@ describe('GameSession', () => {
           (useGame as jest.Mock).mockReturnValue({
             state: {
               character: { name: 'Test Character', health: 100 },
-              currentLocation: 'Test Town',
+              location: 'Test Town',
               narrative: action.payload,
               inventory: [],
             },

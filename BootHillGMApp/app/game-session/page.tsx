@@ -126,7 +126,7 @@ export default function GameSession() {
     <div className="wireframe-section">
       <h2 className="wireframe-subtitle">Character Status</h2>
       <p>Name: {state.character?.name}</p>
-      <p>Location: {state.currentLocation}</p>
+      <p>Location: {state.location}</p>
       <p>Health: {state.character?.health}</p>
     </div>
   );
@@ -145,7 +145,7 @@ export default function GameSession() {
         <pre className="wireframe-text whitespace-pre-wrap">{state.narrative}</pre>
       </div>
       <Inventory />
-      {isCombatActive && opponent ? (
+      {isCombatActive && opponent && state.character ? (
         <CombatSystem
           playerCharacter={state.character}
           opponent={opponent}

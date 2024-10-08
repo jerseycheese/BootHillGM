@@ -1,12 +1,6 @@
 import React, { createContext, useContext, useReducer, ReactNode, Dispatch } from 'react';
 import { Character } from '../types/character';
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  quantity: number;
-  description: string;
-}
+import { InventoryItem, JournalEntry } from '../types/campaign';
 
 interface GameState {
   currentPlayer: string;
@@ -15,6 +9,9 @@ interface GameState {
   inventory: InventoryItem[];
   quests: string[];
   character: Character | null;
+  narrative: string;
+  gameProgress: number;
+  journal: JournalEntry[];
 }
 
 type GameAction =
@@ -26,7 +23,10 @@ type GameAction =
   | { type: 'USE_ITEM'; payload: string }
   | { type: 'ADD_QUEST'; payload: string }
   | { type: 'SET_CHARACTER'; payload: Character }
-  | { type: 'UPDATE_CHARACTER'; payload: Partial<Character> };
+  | { type: 'UPDATE_CHARACTER'; payload: Partial<Character> }
+  | { type: 'SET_NARRATIVE'; payload: string }
+  | { type: 'SET_GAME_PROGRESS'; payload: number }
+  | { type: 'UPDATE_JOURNAL'; payload: JournalEntry | JournalEntry[] };
 
 const initialState: GameState = {
   currentPlayer: '',
@@ -35,6 +35,9 @@ const initialState: GameState = {
   inventory: [],
   quests: [],
   character: null,
+  narrative: '',
+  gameProgress: 0,
+  journal: [],
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -46,16 +49,45 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_LOCATION':
       return { ...state, location: action.payload };
     case 'ADD_ITEM':
+      const existingItem = state.inventory.find(item => item.id === action.payload.id);
+      if (existingItem) {
+        return {
+          ...state,
+          inventory: state.inventory.map(item =>
+            item.id === action.payload.id
+              ? { ...item, quantity: item.quantity + action.payload.quantity }
+              : item
+          ),
+        };
+      }
       return { ...state, inventory: [...state.inventory, action.payload] };
+    case 'REMOVE_ITEM':
+      return {
+        ...state,
+        inventory: state.inventory.filter(item => item.id !== action.payload),
+      };
+    case 'USE_ITEM':
+      const itemToUse = state.inventory.find(item => item.id === action.payload);
+      if (!itemToUse) {
+        return state;
+      }
+      const updatedInventory = state.inventory.map(item => 
+        item.id === action.payload
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
+      ).filter(item => item.quantity > 0);
+      return {
+        ...state,
+        inventory: updatedInventory,
+      };
     case 'ADD_QUEST':
       return { ...state, quests: [...state.quests, action.payload] };
     case 'SET_CHARACTER':
       return { ...state, character: action.payload };
     case 'UPDATE_CHARACTER':
       if (!state.character) {
-        return state; // Don't update if there's no character
+        return state;
       }
-      // Only update if there are actual changes
       const updatedCharacter = {
         ...state.character,
         ...action.payload,
@@ -69,57 +101,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
       };
       if (JSON.stringify(updatedCharacter) === JSON.stringify(state.character)) {
-        return state; // No changes, return the current state
+        return state;
       }
       return {
         ...state,
         character: updatedCharacter
       };
-      case 'ADD_ITEM':
-        const existingItem = state.inventory.find(item => item.id === action.payload.id);
-        if (existingItem) {
-          return {
-            ...state,
-            inventory: state.inventory.map(item =>
-              item.id === action.payload.id
-                ? { ...item, quantity: item.quantity + action.payload.quantity }
-                : item
-            ),
-          };
-        }
-        return { ...state, inventory: [...state.inventory, action.payload] };
-      case 'REMOVE_ITEM':
-        return {
-          ...state,
-          inventory: state.inventory.filter(item => item.id !== action.payload),
-        };
-      case 'USE_ITEM':
-        // Find the item in the inventory
-        const itemToUse = state.inventory.find(item => item.id === action.payload);
-        if (!itemToUse) {
-          return state; // Item not found, return state unchanged
-        }
-        
-        // Update inventory: decrease item quantity or remove if quantity becomes 0
-        const updatedInventory = state.inventory.map(item => 
-          item.id === action.payload
-            ? { ...item, quantity: item.quantity - 1 }
-            : item
-        ).filter(item => item.quantity > 0); // Remove items with quantity 0
-  
-        // TODO: Add logic here to apply the item's effect (e.g., restore health for a health potion)
-  
-        return {
-          ...state,
-          inventory: updatedInventory,
-          // TODO: Update other state properties based on the item's effect
-        };
-      default:
-        return state;
+    case 'SET_NARRATIVE':
+      return { ...state, narrative: action.payload };
+    case 'SET_GAME_PROGRESS':
+      return { ...state, gameProgress: action.payload };
+    case 'UPDATE_JOURNAL':
+      return { ...state, journal: Array.isArray(action.payload) ? action.payload : [...state.journal, action.payload] };
+    default:
+      return state;
   }
 }
 
-// Create a context to provide game state and dispatch function to child components
 const GameContext = createContext<{
   state: GameState;
   dispatch: Dispatch<GameAction>;

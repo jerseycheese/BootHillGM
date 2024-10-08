@@ -80,8 +80,86 @@
 - [x] Use Next.js API routes to handle sensitive operations server-side
 
 ## 10. Testing Strategy
-- [ ] Implement basic unit tests for core logic components
+- [ ] Implement comprehensive unit tests for core logic components
 - [ ] Conduct manual testing for game scenarios and AI interactions
+- [ ] Implement integration tests for key user flows
+- [ ] Aim for at least 80% test coverage across the application
+
+### Unit Testing
+Unit tests should be implemented for all core logic components, including:
+
+1. Game Engine functions
+2. AI Integration Service methods
+3. Character Management System
+4. Narrative Engine
+5. Combat System
+6. Inventory System
+7. Campaign State Manager
+8. Journal System
+
+For each component, create a corresponding test file (e.g., `gameEngine.test.ts` for `gameEngine.ts`). Use Jest and React Testing Library for writing and running tests.
+
+Example unit test structure:
+
+```typescript
+import { functionToTest } from './componentToTest';
+
+describe('Component Name', () => {
+  test('should perform expected action', () => {
+    // Arrange
+    const input = // ...
+
+    // Act
+    const result = functionToTest(input);
+
+    // Assert
+    expect(result).toBe(/* expected output */);
+  });
+});
+```
+
+### Integration Testing
+Integration tests should cover key user flows and interactions between components. Focus on the following areas:
+
+1. Character Creation flow
+2. Game Session initialization
+3. Player input and AI response cycle
+4. Combat initiation and resolution
+5. Inventory management
+6. Saving and loading game state
+
+Example integration test structure:
+
+```typescript
+import { render, screen, fireEvent } from '@testing-library/react';
+import GameSession from './GameSession';
+
+describe('Game Session Integration', () => {
+  test('should handle player input and update game state', async () => {
+    render(<GameSession />);
+
+    // Simulate player input
+    const input = screen.getByPlaceholderText('Enter your action');
+    fireEvent.change(input, { target: { value: 'Look around' } });
+    fireEvent.click(screen.getByText('Submit'));
+
+    // Wait for AI response
+    await screen.findByText(/The AI responds/);
+
+    // Assert that game state has been updated
+    expect(screen.getByText(/Current location/)).toHaveTextContent('New location');
+  });
+});
+```
+
+### Test Coverage
+Use Jest's built-in coverage reporting to track test coverage. Aim for at least 80% coverage across the application. To run tests with coverage, use the following command:
+
+```
+npm test -- --coverage
+```
+
+Focus on increasing coverage for critical components and user flows first. Regularly review and update tests as new features are added or existing ones are modified.
 
 ## 11. Deployment
 - [ ] Deploy to Vercel (optimized for Next.js applications)

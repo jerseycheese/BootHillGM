@@ -97,6 +97,24 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 ## Phase 5: Testing and Deployment
 
 5.1 Testing
+- [ ] Implement comprehensive unit tests for core logic components
+  - [ ] Game Engine functions
+  - [ ] AI Integration Service methods
+  - [ ] Character Management System
+  - [ ] Narrative Engine
+  - [ ] Combat System
+  - [ ] Inventory System
+  - [ ] Campaign State Manager
+  - [ ] Journal System
+- [ ] Implement integration tests for key user flows
+  - [ ] Character Creation flow
+  - [ ] Game Session initialization
+  - [ ] Player input and AI response cycle
+  - [ ] Combat initiation and resolution
+  - [ ] Inventory management
+  - [ ] Saving and loading game state
+- [ ] Set up and run test coverage reporting
+- [ ] Aim for at least 80% test coverage across the application
 - [ ] Conduct thorough playtesting
 - [ ] Fix critical bugs and issues
 - [ ] Test combat system extensively for balance and engagement
