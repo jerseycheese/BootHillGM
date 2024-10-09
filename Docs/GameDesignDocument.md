@@ -76,6 +76,13 @@ BootHillGM is an AI-driven, text-based RPG set in the American Old West, based o
 - [ ] Basic journal system to track important story information
 - [ ] Use journal entries to provide context for AI storytelling
 
+#### 5.4 Item Usage
+- [ ] Implement logical restrictions on item usage
+- [ ] Prevent players from using items they don't own
+- [ ] Provide appropriate feedback when a player attempts to use an unavailable item
+- [ ] Ensure all player actions check for required items before execution
+- [ ] Maintain consistency between inventory and available actions
+
 ### Post-MVP
 - Advanced skill resolution with modifiers and circumstances
 - Detailed combat system with positioning and tactics

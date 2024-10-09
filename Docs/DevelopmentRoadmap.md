@@ -62,8 +62,14 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [x] Implement basic inventory data structure
 - [x] Create Inventory component for displaying items
 - [x] Implement add and remove item functionality
-- [x] Add initial items to inventory during game session initialization
 - [ ] Implement item usage functionality
+- [ ] Add item usage restrictions and logical checks
+  - Prevent usage of items not in inventory
+  - Provide feedback for attempted use of unavailable items
+- [ ] Integrate inventory with other game systems (e.g., combat)
+
+Prevent usage of items not in inventory
+Provide feedback for attempted use of unavailable items
 - [ ] Integrate inventory with other game systems (e.g., combat)
 
 3.4 Character Summary
