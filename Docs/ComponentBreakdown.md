@@ -44,7 +44,8 @@
     - Includes input validation and error handling
     - Provides a summary review step before finalizing character creation
     - Generates and displays an AI-created character summary
-  - [ ] CharacterSheet (components/CharacterSheet.tsx)
+  - [x] CharacterSheet (app/character-sheet/page.tsx)
+    - Displays character information
 - **Implemented Features:**
   - Dynamic generation of character creation steps based on character attributes and skills
   - AI-generated prompts and descriptions for each character attribute and skill
@@ -56,11 +57,6 @@
   - Balancing AI response time with user experience
   - Ensuring consistent and appropriate AI-generated content
   - Handling edge cases in character attribute values and combinations
-- **Next Steps:**
-  - Implement CharacterSheet component for displaying and potentially editing character information
-  - Add functionality for generating random character attributes for quicker testing
-  - Refine AI prompts and descriptions for more engaging and thematic responses
-  - Enhance character summary generation for more detailed and contextual descriptions
 
 ### 6. NarrativeEngine
 - **Main Functionality:** Generates and manages basic storylines and narrative elements
@@ -92,6 +88,10 @@
     - Handles saving and loading state from localStorage
     - Provides a custom hook (useCampaignState) for easy access to state and dispatch function
   - [ ] LocalStorageManager (utils/LocalStorageManager.ts)
+- **Implemented Features:**
+  - Global state management using React Context and useReducer
+  - Persistence of game state in localStorage
+  - Journal system integrated into campaign state
 - **Potential Challenges:** Managing complex state serialization/deserialization, ensuring data consistency across saves
 
 ### 10. GameSession
@@ -102,6 +102,10 @@
     - Handles user input and AI responses
     - Manages combat initiation and resolution
     - Renders game UI including narrative, inventory, and user input
+- **Implemented Features:**
+  - Integration with AI service for dynamic game narration
+  - Journal system for tracking important story elements
+  - Basic combat initiation based on AI responses
 - **Potential Challenges:** Balancing complexity with performance, managing asynchronous AI interactions
 
 ## Recommended Development Order (MVP Focus)

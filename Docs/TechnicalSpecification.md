@@ -189,7 +189,7 @@ Focus on increasing coverage for critical components and user flows first. Regul
 ```typescript
 interface CampaignState {
   character: Character;
-  currentLocation: string;
+  location: string;
   gameProgress: number;
   journal: JournalEntry[];
   narrative: string;

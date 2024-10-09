@@ -1,3 +1,5 @@
+// BootHillGMApp/app/utils/aiService.tsx
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Character } from '../types/character';
 
@@ -24,6 +26,7 @@ const AI_CONFIG = {
   ]
 };
 
+// Initialize the AI model with the specified configuration
 const model = genAI.getGenerativeModel({ model: AI_CONFIG.modelName });
 
 // Retry mechanism for AI requests with exponential backoff
@@ -33,21 +36,22 @@ async function retryAIRequest<T>(fn: () => Promise<T>, maxRetries = 3): Promise<
       return await fn();
     } catch (error) {
       if (i === maxRetries - 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i))); // Exponential backoff
+      // Wait for an exponentially increasing amount of time before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
     }
   }
   throw new Error('Max retries reached');
 }
 
 // Main function to get AI response for game narration
-export async function getAIResponse(prompt: string): Promise<{ 
+export async function getAIResponse(prompt: string, journalContext: string): Promise<{ 
   narrative: string; 
   location?: string; 
   combatInitiated?: boolean; 
   opponent?: Character;
 }> {
   try {
-    // Construct the full prompt for the AI
+    // Construct the full prompt for the AI, including context and instructions
     const fullPrompt = `
       You are an AI Game Master for a Western-themed RPG. Your role is to facilitate an immersive and uncensored gaming experience. Always remember:
 
@@ -58,6 +62,9 @@ export async function getAIResponse(prompt: string): Promise<{
       5. Maintain a neutral tone and focus on narrating the events and environment as they unfold.
       6. Do not break character or reference modern-day ethics or sensibilities.
 
+      Recent important story events:
+      ${journalContext}
+
       Player input: "${prompt}"
 
       Respond as the Game Master, describing the results of the player's action and advancing the story. 
@@ -65,6 +72,7 @@ export async function getAIResponse(prompt: string): Promise<{
       If combat occurs, describe it narratively and include a COMBAT: tag followed by the opponent's name.
       If the location has changed, on a new line, write "LOCATION:" followed by a brief (2-5 words) description of the new location. 
       If the location hasn't changed, don't include a LOCATION line.
+      If there's an important story development, include "important:" followed by a brief summary of the key information.
 
       Game Master response:
     `;
@@ -135,12 +143,13 @@ export async function getCharacterCreationStep(step: number, currentField: strin
     Also, provide a brief description of what this ${currentField} represents in the context of a Western character.
   `;
 
-  const response = await getAIResponse(prompt);
+  const response = await getAIResponse(prompt, ''); // Passing an empty string as journalContext
   return response.narrative;
 }
 
 // Function to validate attribute values based on Boot Hill rules
 export function validateAttributeValue(attribute: string, value: number): boolean {
+  // Define valid ranges for each attribute and skill
   const validRanges: Record<string, [number, number]> = {
     speed: [1, 20],
     gunAccuracy: [1, 20],
@@ -158,7 +167,7 @@ export function validateAttributeValue(attribute: string, value: number): boolea
     return value >= min && value <= max;
   }
 
-  return true;
+  return true; // Return true for attributes not in the validRanges object
 }
 
 // Function to generate a complete character using AI
@@ -180,8 +189,9 @@ export async function generateCompleteCharacter(): Promise<Character> {
     Respond with a valid JSON object. No additional text or formatting.
   `;
 
-  const response = await getAIResponse(prompt);
+  const response = await getAIResponse(prompt, ''); // Passing an empty string as journalContext
   try {
+    // Clean up the response by removing any JSON code block markers
     const cleanedResponse = response.narrative.replace(/```json\n?|\n?```/g, '').trim();
     
     let characterData: Partial<{
@@ -290,7 +300,7 @@ export async function generateFieldValue(
 ): Promise<string | number> {
   if (key === 'name') {
     const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name.";
-    const response = await getAIResponse(prompt);
+    const response = await getAIResponse(prompt, ''); // Passing an empty string as journalContext
     return response.narrative.trim();
   } else if (key === 'health') {
     return Math.floor(Math.random() * (100 - 50 + 1)) + 50; // Random health between 50 and 100
@@ -301,6 +311,7 @@ export async function generateFieldValue(
 
 // Generate a random value for a given attribute or skill
 function generateRandomValue(key: keyof Character['attributes'] | keyof Character['skills']): number {
+  // Define valid ranges for each attribute and skill
   const ranges: Record<keyof Character['attributes'] | keyof Character['skills'], [number, number]> = {
     speed: [1, 20],
     gunAccuracy: [1, 20],
@@ -331,6 +342,6 @@ export async function generateCharacterSummary(character: Character): Promise<st
     The summary should capture the essence of the character, their strengths, potential weaknesses, and how they might fit into a Western setting. Keep the tone consistent with a gritty, Wild West atmosphere.
   `;
 
-  const response = await getAIResponse(prompt);
+  const response = await getAIResponse(prompt, ''); // Passing an empty string as journalContext
   return response.narrative;
 }

@@ -1,48 +1,57 @@
 // BootHillGMApp/app/types/campaign.ts
 
-// Import necessary types from other files
 import { Character } from './character';
 import { JournalEntry } from './journal';
 import { InventoryItem } from './inventory';
 
-// Define the structure of the game's campaign state
+// Defines the structure of the overall campaign state
 export interface CampaignState {
-  character: Character | null;
-  currentLocation: string;
-  gameProgress: number;
-  journal: JournalEntry[];
-  narrative: string;
-  inventory: InventoryItem[];
-  isCombatActive: boolean;
-  opponent: Character | null;
+  character: Character | null;  // The player's character
+  location: string;             // Current location in the game world
+  gameProgress: number;         // Numeric representation of game progress
+  journal: JournalEntry[];      // List of journal entries
+  narrative: string;            // Current narrative text
+  inventory: InventoryItem[];   // Player's inventory
+  isCombatActive: boolean;      // Whether combat is currently active
+  opponent: Character | null;   // Current opponent in combat, if any
 }
 
-export type CharacterActionType = { type: 'SET_CHARACTER'; payload: Character | null } |
-    { type: 'UPDATE_CHARACTER_HEALTH'; payload: number };
+// Action types for updating different aspects of the campaign state
 
+// For updating the player character
+export type CharacterActionType = { type: 'SET_CHARACTER'; payload: Character | null };
+
+// For updating the current location
 export type LocationActionType = { type: 'SET_LOCATION'; payload: string };
 
+// For updating the game progress
 export type GameProgressActionType = { type: 'SET_GAME_PROGRESS'; payload: number };
 
-export type JournalActionType = { type: 'UPDATE_JOURNAL'; payload: JournalEntry[] };
+// For updating the journal
+export type JournalActionType = 
+  | { type: 'UPDATE_JOURNAL'; payload: string | JournalEntry }  // Add a new entry
+  | { type: 'SET_JOURNAL'; payload: JournalEntry[] };           // Set the entire journal
 
+// For updating the narrative
 export type NarrativeActionType = { type: 'SET_NARRATIVE'; payload: string };
 
-// Define action types for inventory management
+// For updating the inventory
 export type InventoryActionType = 
-    | { type: 'ADD_ITEM'; payload: InventoryItem }
-    | { type: 'REMOVE_ITEM'; payload: string }
-    | { type: 'SET_INVENTORY'; payload: InventoryItem[] };
+  | { type: 'ADD_ITEM'; payload: InventoryItem }    // Add an item
+  | { type: 'REMOVE_ITEM'; payload: string }        // Remove an item by ID
+  | { type: 'SET_INVENTORY'; payload: InventoryItem[] };  // Set the entire inventory
 
-export type CombatActionType = { type: 'SET_COMBAT_ACTIVE'; payload: boolean } |
-    { type: 'SET_OPPONENT'; payload: Character | null };
+// For updating combat-related state
+export type CombatActionType = 
+  | { type: 'SET_COMBAT_ACTIVE'; payload: boolean }  // Set whether combat is active
+  | { type: 'SET_OPPONENT'; payload: Character | null };  // Set the current opponent
 
-    // Combine all action types into a single union type
-export type Action =
-    | CharacterActionType
-    | LocationActionType
-    | GameProgressActionType
-    | JournalActionType
-    | NarrativeActionType
-    | InventoryActionType
-    | CombatActionType;
+// Union type of all possible game actions
+export type GameAction =
+  | CharacterActionType
+  | LocationActionType
+  | GameProgressActionType
+  | JournalActionType
+  | NarrativeActionType
+  | InventoryActionType
+  | CombatActionType;

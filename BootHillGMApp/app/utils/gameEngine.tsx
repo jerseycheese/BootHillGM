@@ -3,6 +3,7 @@ import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
 import { JournalEntry } from '../types/journal';
 
+// Define the structure of the game state
 interface GameState {
   currentPlayer: string;
   npcs: string[];
@@ -13,9 +14,12 @@ interface GameState {
   narrative: string;
   gameProgress: number;
   journal: JournalEntry[];
+  isCombatActive: boolean;
+  opponent: Character | null;
 }
 
-type GameAction =
+// Define all possible actions that can be dispatched to update the game state
+type GameEngineAction =
   | { type: 'SET_PLAYER'; payload: string }
   | { type: 'ADD_NPC'; payload: string }
   | { type: 'SET_LOCATION'; payload: string }
@@ -27,8 +31,11 @@ type GameAction =
   | { type: 'UPDATE_CHARACTER'; payload: Partial<Character> }
   | { type: 'SET_NARRATIVE'; payload: string }
   | { type: 'SET_GAME_PROGRESS'; payload: number }
-  | { type: 'UPDATE_JOURNAL'; payload: JournalEntry | JournalEntry[] };
+  | { type: 'UPDATE_JOURNAL'; payload: JournalEntry | JournalEntry[] }
+  | { type: 'SET_COMBAT_ACTIVE'; payload: boolean }
+  | { type: 'SET_OPPONENT'; payload: Character | null };
 
+// Initial state of the game
 const initialState: GameState = {
   currentPlayer: '',
   npcs: [],
@@ -39,9 +46,12 @@ const initialState: GameState = {
   narrative: '',
   gameProgress: 0,
   journal: [],
+  isCombatActive: false,
+  opponent: null,
 };
 
-function gameReducer(state: GameState, action: GameAction): GameState {
+// Reducer function to handle state updates based on dispatched actions
+function gameReducer(state: GameState, action: GameEngineAction): GameState {
   switch (action.type) {
     case 'SET_PLAYER':
       return { ...state, currentPlayer: action.payload };
@@ -50,8 +60,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_LOCATION':
       return { ...state, location: action.payload };
     case 'ADD_ITEM':
+      // Check if the item already exists in the inventory
       const existingItem = state.inventory.find(item => item.id === action.payload.id);
       if (existingItem) {
+        // If it exists, update the quantity
         return {
           ...state,
           inventory: state.inventory.map(item =>
@@ -61,6 +73,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ),
         };
       }
+      // If it's a new item, add it to the inventory
       return { ...state, inventory: [...state.inventory, action.payload] };
     case 'REMOVE_ITEM':
       return {
@@ -72,6 +85,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (!itemToUse) {
         return state;
       }
+      // Decrease the quantity of the used item and remove it if quantity becomes 0
       const updatedInventory = state.inventory.map(item => 
         item.id === action.payload
           ? { ...item, quantity: item.quantity - 1 }
@@ -89,6 +103,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.character) {
         return state;
       }
+      // Update character attributes and skills
       const updatedCharacter = {
         ...state.character,
         ...action.payload,
@@ -101,6 +116,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...(action.payload.skills || {})
         }
       };
+      // Only update if there are actual changes
       if (JSON.stringify(updatedCharacter) === JSON.stringify(state.character)) {
         return state;
       }
@@ -113,17 +129,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SET_GAME_PROGRESS':
       return { ...state, gameProgress: action.payload };
     case 'UPDATE_JOURNAL':
+      // Handle both single entry and array of entries
       return { ...state, journal: Array.isArray(action.payload) ? action.payload : [...state.journal, action.payload] };
+    case 'SET_COMBAT_ACTIVE':
+      return { ...state, isCombatActive: action.payload };
+    case 'SET_OPPONENT':
+      return { ...state, opponent: action.payload };
     default:
       return state;
   }
 }
 
+// Create a context for the game state and dispatch function
 const GameContext = createContext<{
   state: GameState;
-  dispatch: Dispatch<GameAction>;
+  dispatch: Dispatch<GameEngineAction>;
 } | undefined>(undefined);
 
+// Provider component to wrap the app and provide game state and dispatch function
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
   return (
@@ -133,6 +156,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Custom hook to use the game context
 export function useGame() {
   const context = useContext(GameContext);
   if (context === undefined) {
