@@ -35,23 +35,24 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
       const damage = Math.floor(Math.random() * 6) + 1; // Simple d6 damage
       if (isPlayer) {
         setOpponentHealth(prev => Math.max(0, prev - damage));
-        setCombatLog(prev => [...prev, `${attacker.name} hits ${defender.name} for ${damage} damage!`]);
       } else {
-        setPlayerHealth(prev => {
-          const newHealth = Math.max(0, prev - damage);
-          onPlayerHealthChange(newHealth);
-          return newHealth;
-        });
-        setCombatLog(prev => [...prev, `${attacker.name} hits ${playerCharacter.name} for ${damage} damage!`]);
+        // Update player health without calling the callback directly
+        setPlayerHealth(prev => Math.max(0, prev - damage));
       }
+      setCombatLog(prev => [...prev, `${attacker.name} hits ${isPlayer ? defender.name : playerCharacter.name} for ${damage} damage!`]);
     } else {
       setCombatLog(prev => [...prev, `${attacker.name} misses ${isPlayer ? defender.name : playerCharacter.name}!`]);
     }
 
     setCurrentTurn(isPlayer ? 'opponent' : 'player');
-  }, [rollD100, playerCharacter.name, onPlayerHealthChange]);
+  }, [rollD100, playerCharacter.name]);
 
-  // Check for combat end conditions
+  // Notify parent component of player health changes
+  useEffect(() => {
+    onPlayerHealthChange(playerHealth);
+  }, [playerHealth, onPlayerHealthChange]);
+
+  // Check for combat end conditions after health changes
   useEffect(() => {
     if (playerHealth <= 0) {
       onCombatEnd('opponent');

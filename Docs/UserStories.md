@@ -291,81 +291,81 @@ This section is for tracking bugs found during development and testing. Each bug
 ### Open Bugs
 
 [BUG-002] Game Session State Reset
-   - Description: Game state resets when navigating away from and back to the Game Session page.
-   - Steps to Reproduce: 
-     1. Start a game session and interact with the AI.
-     2. Navigate away from the Game Session page.
-     3. Return to the Game Session page.
-   - Expected Behavior: Game session should continue from where it left off.
-   - Actual Behavior: Game session resets to the initial message.
-   - Status: Open
-   - Priority: High
+  - Description: Game state resets when navigating away from and back to the Game Session page.
+  - Steps to Reproduce: 
+    1. Start a game session and interact with the AI.
+    2. Navigate away from the Game Session page.
+    3. Return to the Game Session page.
+  - Expected Behavior: Game session should continue from where it left off.
+  - Actual Behavior: Game session resets to the initial message.
+  - Status: Open
+  - Priority: High
 
 [BUG-003] AI Pacing Issues
-   - Description: AI advances the story too quickly, not adjusting for the current setting.
-   - Steps to Reproduce: 
-     1. Start a game session in different settings (e.g., busy saloon, desert travel).
-     2. Observe AI responses to player actions.
-   - Expected Behavior: Story progression should be slower in busy locations and faster in travel scenarios.
-   - Actual Behavior: Story progresses at the same pace regardless of setting.
-   - Status: Open
-   - Priority: Medium
+  - Description: AI advances the story too quickly, not adjusting for the current setting.
+  - Steps to Reproduce: 
+    1. Start a game session in different settings (e.g., busy saloon, desert travel).
+    2. Observe AI responses to player actions.
+  - Expected Behavior: Story progression should be slower in busy locations and faster in travel scenarios.
+  - Actual Behavior: Story progresses at the same pace regardless of setting.
+  - Status: Open
+  - Priority: Medium
 
 [BUG-004] Narrative Display UX Issue
-   - Description: New AI messages are not automatically visible to the user.
-   - Steps to Reproduce: 
-     1. Engage in a conversation with the AI that generates multiple messages.
-     2. Observe the scrollable area after each AI response.
-   - Expected Behavior: View should automatically scroll to show the latest AI message at the top.
-   - Actual Behavior: User must manually scroll to see new messages.
-   - Status: Open
-   - Priority: Medium
+  - Description: New AI messages are not automatically visible to the user.
+  - Steps to Reproduce: 
+    1. Engage in a conversation with the AI that generates multiple messages.
+    2. Observe the scrollable area after each AI response.
+  - Expected Behavior: View should automatically scroll to show the latest AI message at the top.
+  - Actual Behavior: User must manually scroll to see new messages.
+  - Status: Open
+  - Priority: Medium
 
 [BUG-005] Incomplete Game State Restoration
-   - Description: Some elements of the game state are not properly restored when loading a saved game.
-   - Steps to Reproduce: 
-     1. Play a game session and make various character and world state changes.
-     2. Save the game and exit.
-     3. Load the saved game and check all game state elements.
-   - Expected Behavior: All game state elements should be fully restored to their saved state.
-   - Actual Behavior: Some state elements (e.g., NPC relationships, quest flags) are not correctly restored.
-   - Status: Open
-   - Priority: High
+  - Description: Some elements of the game state are not properly restored when loading a saved game.
+  - Steps to Reproduce: 
+    1. Play a game session and make various character and world state changes.
+    2. Save the game and exit.
+    3. Load the saved game and check all game state elements.
+  - Expected Behavior: All game state elements should be fully restored to their saved state.
+  - Actual Behavior: Some state elements (e.g., NPC relationships, quest flags) are not correctly restored.
+  - Status: Open
+  - Priority: High
 
 [BUG-006] Delayed Content Update and Incorrect Step Information on Character Summary
-   - Description: When generating a random character, there's a delay in updating the UI, and outdated step information is briefly shown.
-   - Steps to Reproduce: 
-     1. Go to the Character Creation page
-     2. Click "Generate Random Character"
-     3. Observe the transition to the summary page
-   - Expected Behavior: Immediate update of step information and character description, with a loading indicator if there's a delay.
-   - Actual Behavior: 
-     - "Step 1: name" text remains visible for a few seconds before changing to "Step 11: summary"
-     - Character description takes several seconds to load without any loading indication
-   - Status: Open
-   - Priority: Medium (impacts user experience but doesn't prevent core functionality)
+  - Description: When generating a random character, there's a delay in updating the UI, and outdated step information is briefly shown.
+  - Steps to Reproduce: 
+    1. Go to the Character Creation page
+    2. Click "Generate Random Character"
+    3. Observe the transition to the summary page
+  - Expected Behavior: Immediate update of step information and character description, with a loading indicator if there's a delay.
+  - Actual Behavior: 
+    - "Step 1: name" text remains visible for a few seconds before changing to "Step 11: summary"
+    - Character description takes several seconds to load without any loading indication
+  - Status: Open
+  - Priority: Medium (impacts user experience but doesn't prevent core functionality)
 
 [BUG-007] Generate Random Character Button Malfunction on Summary Page
-   - Description: The Generate Random Character button doesn't generate a new character when clicked on the summary page.
-   - Steps to Reproduce: 
-     1. Go to the Character Creation page
-     2. Click "Generate Random Character"
-     3. On the summary page, click "Generate Random Character" again
-   - Expected Behavior: A new random character should be generated and displayed
-   - Actual Behavior: Only the instruction text is reloaded, no new character is generated
-   - Status: Open
-   - Priority: Medium
+  - Description: The Generate Random Character button doesn't generate a new character when clicked on the summary page.
+  - Steps to Reproduce: 
+    1. Go to the Character Creation page
+    2. Click "Generate Random Character"
+    3. On the summary page, click "Generate Random Character" again
+  - Expected Behavior: A new random character should be generated and displayed
+  - Actual Behavior: Only the instruction text is reloaded, no new character is generated
+  - Status: Open
+  - Priority: Medium
 
 [BUG-008] Incorrect Location Display in Game Session
-   - Description: The location in the status area shows as "Unknown" despite being named in the AI's first message.
-   - Steps to Reproduce: 
-     1. Create a character
-     2. Click "Finish Character Creation"
-     3. Observe the Game Session screen
-   - Expected Behavior: The location in the status area should match the location named in the AI's first message
-   - Actual Behavior: Location is displayed as "Unknown"
-   - Status: Open
-   - Priority: Medium
+  - Description: The location in the status area shows as "Unknown" despite being named in the AI's first message.
+  - Steps to Reproduce: 
+    1. Create a character
+    2. Click "Finish Character Creation"
+    3. Observe the Game Session screen
+  - Expected Behavior: The location in the status area should match the location named in the AI's first message
+  - Actual Behavior: Location is displayed as "Unknown"
+  - Status: Open
+  - Priority: Medium
 
 [BUG-011] Duplicate Inventory Items in Game Session
   - Description: Inventory items are loading twice in the Game Session.
@@ -376,7 +376,6 @@ This section is for tracking bugs found during development and testing. Each bug
   - Actual Behavior: Inventory items are displayed twice
   - Status: Open
   - Priority: Medium
-
 
 [BUG-012] Page Reload on Action Submission in Game Session
   - Description: Submitting an action in the text field causes the page to reload before showing the response.
@@ -409,40 +408,45 @@ This section is for tracking bugs found during development and testing. Each bug
   - Priority: Medium
 
 [BUG-015] Combat System State Update Error
-   - Description: After entering combat and attacking more than once, a React state update error occurs.
-   - Steps to Reproduce: 
-     1. Enter combat in the Game Session
-     2. Attack more than once
-   - Expected Behavior: Combat should proceed without errors
-   - Actual Behavior: Console shows a React error about updating a component while rendering a different component
-   - Error Message: "Cannot update a component (`GameProvider`) while rendering a different component (`CombatSystem`)..."
-   - Status: Open
-   - Priority: High
-   - Possible Fix: Review the `CombatSystem` component, especially the `updatePlayerHealth` function, to ensure state updates are not occurring during the render phase.
+  - Description: After entering combat and attacking more than once, a React state update error occurs.
+  - Steps to Reproduce: 
+    1. Enter combat in the Game Session
+    2. Attack more than once
+  - Expected Behavior: Combat should proceed without errors
+  - Actual Behavior: Console shows a React error about updating a component while rendering a different component
+  - Error Message: "Cannot update a component (`GameProvider`) while rendering a different component (`CombatSystem`)..."
+  - Status: Open
+  - Priority: High
+  - Possible Fix: Review the `CombatSystem` component, especially the `updatePlayerHealth` function, to ensure state updates are not occurring during the render phase.
 
 ### Closed Bugs
 
 [BUG-000] Example Resolved Bug
-   - Description: Brief description of the resolved bug
-   - Resolution: How the bug was fixed
-   - Closed Date: YYYY-MM-DD
+  - Description: Brief description of the resolved bug
+  - Resolution: How the bug was fixed
+  - Closed Date: YYYY-MM-DD
 
 [BUG-09] API Error: Insufficient Resources
-- Description: API calls to the Gemini model are failing due to insufficient resources.
-- Steps to Reproduce: 
-  1. Interact with the AI in the Game Session
-  2. Observe console errors
-- Expected Behavior: API calls should succeed and return content
-- Actual Behavior: POST request fails with ERR_INSUFFICIENT_RESOURCES
-- Status: Open
-- Priority: Critical (prevents core functionality)
+  - Description: API calls to the Gemini model are failing due to insufficient resources.
+  - Steps to Reproduce: 
+    1. Interact with the AI in the Game Session
+    2. Observe console errors
+  - Expected Behavior: API calls should succeed and return content
+  - Actual Behavior: POST request fails with ERR_INSUFFICIENT_RESOURCES
+  - Status: Open
+  - Priority: Critical (prevents core functionality)
 
 [BUG-010] Infinite Rendering Loop in Combat System
-    - Description: The CombatSystem component is causing an infinite loop of updates.
-    - Steps to Reproduce: 
-      1. Enter a combat scenario in the Game Session
-      2. Observe console warnings and application behavior
-    - Expected Behavior: Combat system should render and update normally
-    - Actual Behavior: Maximum update depth is exceeded, causing continuous re-renders
-    - Status: Open
-    - Priority: Critical (causes application instability and poor performance)
+  - Description: The CombatSystem component is causing an infinite loop of updates.
+  - Steps to Reproduce: 
+    1. Enter a combat scenario in the Game Session
+    2. Observe console warnings and application behavior
+  - Expected Behavior: Combat system should render and update normally
+  - Actual Behavior: Maximum update depth is exceeded, causing continuous re-renders
+  - Status: Open
+  - Priority: Critical (causes application instability and poor performance)
+
+[BUG-015] Combat System State Update Error
+   - Description: After entering combat and attacking more than once, a React state update error occurred.
+   - Resolution: Separated state updates from callback functions in the CombatSystem component to prevent updating state during render cycle.
+   - Closed Date: 2024-10-09
