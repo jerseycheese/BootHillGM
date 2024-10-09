@@ -1,6 +1,8 @@
+// BootHillGMApp/app/game-session/page.tsx
+
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGame } from '../utils/gameEngine';
 import { getAIResponse } from '../utils/aiService';
@@ -16,34 +18,27 @@ export default function GameSession() {
   const router = useRouter();
   const { state, dispatch } = useGame();
   const [userInput, setUserInput] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isCombatActive, setIsCombatActive] = useState(false);
   const [opponent, setOpponent] = useState<Character | null>(null);
-  const narrativeRef = useRef<HTMLDivElement>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
-  // Initialize the game session when the component mounts
-  useEffect(() => {
-    const initializeGameSession = async () => {
-      setIsLoading(true);
-      // Redirect to character creation if no character exists
-      if (!state.character) {
-        router.push('/character-creation');
-        return;
-      }
+  // Initialize the game session with AI-generated narrative and initial inventory
+  const initializeGameSession = useCallback(async () => {
+    setIsInitializing(true);
+    try {
+      const journalContext = getJournalContext(state.journal);
+      const { narrative: initialNarrative, location } = await getAIResponse(
+        `Initialize a new game session for a character named ${state.character?.name}. 
+        Provide a brief introduction to the game world and the character's current situation. 
+        Include a description of their current location and some potential options for action.`,
+        journalContext
+      );
+      dispatch({ type: 'SET_NARRATIVE', payload: initialNarrative });
+      if (location) dispatch({ type: 'SET_LOCATION', payload: location });
 
-      // Initialize the game narrative if it's empty
-      if (state.narrative === '') {
-        const journalContext = getJournalContext(state.journal);
-        const { narrative: initialNarrative, location } = await getAIResponse(
-          `Initialize a new game session for a character named ${state.character.name}. 
-          Provide a brief introduction to the game world and the character's current situation. 
-          Include a description of their current location and some potential options for action.`,
-          journalContext
-        );
-        dispatch({ type: 'SET_NARRATIVE', payload: initialNarrative });
-        dispatch({ type: 'SET_LOCATION', payload: location || 'Unknown' });
-
-        // Add some initial items to the inventory
+      // Add initial items to inventory if it's empty
+      if (state.inventory.length === 0) {
         dispatch({ 
           type: 'ADD_ITEM', 
           payload: { 
@@ -63,17 +58,30 @@ export default function GameSession() {
           } 
         });
       }
-      setIsLoading(false);
-    };
-  
-    initializeGameSession();
-  }, [state.character, router, dispatch, state.narrative, state.journal]);
+    } catch (error) {
+      console.error('Error initializing game session:', error);
+      dispatch({ type: 'SET_NARRATIVE', payload: 'An error occurred while starting the game. Please try again.' });
+    } finally {
+      setIsInitializing(false);
+    }
+  }, [state.character?.name, state.journal, state.inventory.length, dispatch]);
+
+  // Effect to initialize game session or redirect to character creation
+  useEffect(() => {
+    if (!state.character) {
+      router.push('/character-creation');
+    } else if (state.narrative === '') {
+      initializeGameSession();
+    } else {
+      setIsInitializing(false);
+    }
+  }, [state.character, state.narrative, router, initializeGameSession]);
 
   // Handle user input and process it through the AI
-  const handleUserInput = async (e: React.FormEvent) => {
+  const handleUserInput = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userInput.trim()) return;
-  
+    if (!userInput.trim() || isLoading) return;
+
     setIsLoading(true);
     try {
       // Get recent journal entries for context
@@ -81,13 +89,13 @@ export default function GameSession() {
       // Get AI response based on user input and journal context
       const { narrative: aiResponse, location, combatInitiated, opponent } = await getAIResponse(userInput, journalContext);
       
-      // Update the game narrative with user input and AI response
+      // Update game narrative with user input and AI response
       dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative}\n\nPlayer: ${userInput}\n\nGame Master: ${aiResponse}` });
       
       // Update location if it has changed
       if (location) dispatch({ type: 'SET_LOCATION', payload: location });
       
-      // Add a journal entry for every action (for testing purposes)
+      // Add a journal entry for the player's action
       const journalEntry: JournalEntry = {
         timestamp: Date.now(),
         content: `Player action: ${userInput}`
@@ -108,68 +116,44 @@ export default function GameSession() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userInput, isLoading, state.narrative, state.journal, dispatch]);
 
-  // Handle the end of a combat encounter
-  const handleCombatEnd = (winner: 'player' | 'opponent') => {
-    setIsCombatActive(false);
-    const combatResult = winner === 'player' 
-      ? `You have defeated ${opponent?.name}!` 
-      : `You have been defeated by ${opponent?.name}...`;
-    
-    dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative}\n\n${combatResult}` });
-    
-    // Update player health if they lost the combat
-    if (winner === 'opponent' && state.character) {
-      const newHealth = Math.max(0, state.character.health - 20);
-      dispatch({ 
-        type: 'SET_CHARACTER', 
-        payload: { ...state.character, health: newHealth }
-      });
-    }
-    
-    setOpponent(null);
-  };
-
-  // Update the player's health (used during combat)
-  const updatePlayerHealth = (newHealth: number) => {
-    if (state.character) {
-      dispatch({ 
-        type: 'SET_CHARACTER', 
-        payload: { ...state.character, health: newHealth }
-      });
-    }
-  };
-
-  // Render the character's current status
-  const renderCharacterStatus = () => (
-    <div className="wireframe-section">
-      <h2 className="wireframe-subtitle">Character Status</h2>
-      <p>Name: {state.character?.name}</p>
-      <p>Location: {state.location}</p>
-      <p>Health: {state.character?.health}</p>
-    </div>
-  );
-
-  // Render loading state if game is initializing
-  if (isLoading) {
-    return <div>Loading game session...</div>;
+  // Show loading state while initializing
+  if (!state.character || isInitializing) {
+    return <div className="wireframe-container">Loading game session...</div>;
   }
 
   // Render game session UI
   return (
     <div className="wireframe-container">
       <h1 className="wireframe-title">Game Session</h1>
-      {renderCharacterStatus()}
-      <div className="wireframe-section h-64 overflow-y-auto" ref={narrativeRef}>
+      {/* Character status display */}
+      <div className="wireframe-section">
+        <h2 className="wireframe-subtitle">Character Status</h2>
+        <p>Name: {state.character.name}</p>
+        <p>Location: {state.location}</p>
+        <p>Health: {state.character.health}</p>
+      </div>
+      {/* Game narrative display */}
+      <div className="wireframe-section h-64 overflow-y-auto">
         <pre className="wireframe-text whitespace-pre-wrap">{state.narrative}</pre>
       </div>
-      {isCombatActive && opponent && state.character ? (
+      {/* Conditional rendering of Combat System or User Input form */}
+      {isCombatActive ? (
         <CombatSystem
           playerCharacter={state.character}
-          opponent={opponent}
-          onCombatEnd={handleCombatEnd}
-          onPlayerHealthChange={updatePlayerHealth}
+          opponent={opponent!}
+          onCombatEnd={() => {
+            setIsCombatActive(false);
+            setOpponent(null);
+            // TODO: Handle combat end, e.g., update narrative, check for loot, etc.
+          }}
+          onPlayerHealthChange={(newHealth) => {
+            dispatch({
+              type: 'UPDATE_CHARACTER',
+              payload: { health: newHealth }
+            });
+          }}
         />
       ) : (
         <form onSubmit={handleUserInput} className="wireframe-section">
@@ -186,6 +170,7 @@ export default function GameSession() {
           </button>
         </form>
       )}
+      {/* Inventory and Journal components */}
       <Inventory />
       <JournalViewer entries={state.journal} />
     </div>

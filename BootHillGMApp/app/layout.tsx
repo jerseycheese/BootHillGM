@@ -1,3 +1,5 @@
+// BootHillGMApp/app/layout.tsx
+
 import type { Metadata } from "next";
 import { GameProviderWrapper } from './components/GameProviderWrapper';
 import { CampaignStateProvider } from './components/CampaignStateManager';

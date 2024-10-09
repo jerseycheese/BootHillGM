@@ -103,26 +103,20 @@ function gameReducer(state: GameState, action: GameEngineAction): GameState {
       if (!state.character) {
         return state;
       }
-      // Update character attributes and skills
-      const updatedCharacter = {
-        ...state.character,
-        ...action.payload,
-        attributes: {
-          ...state.character.attributes,
-          ...(action.payload.attributes || {})
-        },
-        skills: {
-          ...state.character.skills,
-          ...(action.payload.skills || {})
-        }
-      };
-      // Only update if there are actual changes
-      if (JSON.stringify(updatedCharacter) === JSON.stringify(state.character)) {
-        return state;
-      }
       return {
         ...state,
-        character: updatedCharacter
+        character: {
+          ...state.character,
+          ...action.payload,
+          attributes: {
+            ...state.character.attributes,
+            ...(action.payload.attributes || {})
+          },
+          skills: {
+            ...state.character.skills,
+            ...(action.payload.skills || {})
+          }
+        }
       };
     case 'SET_NARRATIVE':
       return { ...state, narrative: action.payload };
