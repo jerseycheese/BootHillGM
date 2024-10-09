@@ -7,6 +7,7 @@ import { getAIResponse } from '../utils/aiService';
 import { getJournalContext } from '../utils/JournalManager';
 import CombatSystem from '../components/CombatSystem';
 import Inventory from '../components/Inventory';
+import JournalViewer from '../components/JournalViewer';
 import { Character } from '../types/character';
 import { JournalEntry } from '../types/journal';
 import '../styles/wireframe.css';
@@ -72,10 +73,12 @@ export default function GameSession() {
   const handleUserInput = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userInput.trim()) return;
-
+  
     setIsLoading(true);
     try {
+      // Get recent journal entries for context
       const journalContext = getJournalContext(state.journal);
+      // Get AI response based on user input and journal context
       const { narrative: aiResponse, location, combatInitiated, opponent } = await getAIResponse(userInput, journalContext);
       
       // Update the game narrative with user input and AI response
@@ -84,17 +87,14 @@ export default function GameSession() {
       // Update location if it has changed
       if (location) dispatch({ type: 'SET_LOCATION', payload: location });
       
-      // Add important story elements to the journal
-      if (aiResponse.includes('important:')) {
-        const importantInfo = aiResponse.split('important:')[1].trim();
-        const journalEntry: JournalEntry = {
-          timestamp: Date.now(),
-          content: importantInfo
-        };
-        dispatch({ type: 'UPDATE_JOURNAL', payload: journalEntry });
-      }
+      // Add a journal entry for every action (for testing purposes)
+      const journalEntry: JournalEntry = {
+        timestamp: Date.now(),
+        content: `Player action: ${userInput}`
+      };
+      dispatch({ type: 'UPDATE_JOURNAL', payload: journalEntry });
       
-      // Initiate combat if the AI response indicates it
+      // Handle combat initiation if indicated by AI response
       if (combatInitiated && opponent) {
         setIsCombatActive(true);
         setOpponent(opponent);
@@ -164,7 +164,6 @@ export default function GameSession() {
       <div className="wireframe-section h-64 overflow-y-auto" ref={narrativeRef}>
         <pre className="wireframe-text whitespace-pre-wrap">{state.narrative}</pre>
       </div>
-      <Inventory />
       {isCombatActive && opponent && state.character ? (
         <CombatSystem
           playerCharacter={state.character}
@@ -187,6 +186,8 @@ export default function GameSession() {
           </button>
         </form>
       )}
+      <Inventory />
+      <JournalViewer entries={state.journal} />
     </div>
   );
 }

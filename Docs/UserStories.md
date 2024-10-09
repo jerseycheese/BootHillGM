@@ -119,6 +119,13 @@
   - Verify that the UI updates promptly to reflect combat outcomes
   **Status:** Not yet implemented.
 
+- [ ] As a player, I want to see a scrollable or collapsible combat log, so that I can review the entire combat history without it taking up too much screen space.
+  **Test Plan:**
+  - Verify that the combat log is scrollable or has a collapse/expand functionality
+  - Check that all combat actions are recorded in the log
+  - Ensure the log is readable and doesn't interfere with other UI elements
+  **Status:** Not yet implemented.
+
 ### Inventory and Economy
 - [x] As a player, I want to view my character's inventory so that I know what items I have available.
   **Test Plan:**
@@ -139,6 +146,22 @@
   - Verify that buying items deducts the correct amount of money
   - Test selling items adds the correct amount of money
   - Ensure inventory and money totals update correctly after transactions
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want items mentioned in the narrative to be automatically added to my inventory, so that my inventory reflects my character's acquisitions during the story.
+  **Test Plan:**
+  - Test various narrative scenarios where items are acquired
+  - Verify that mentioned items appear in the inventory after the relevant narrative
+  - Check that the UI provides feedback when new items are added (e.g., a notification)
+  - Ensure that the inventory update doesn't interrupt the game flow
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want to see a visual notification when new items are added to my inventory, so that I'm aware of my character's changing possessions without constantly checking the inventory.
+  **Test Plan:**
+  - Implement and test a notification system for inventory updates
+  - Verify that notifications are visible but not intrusive
+  - Check that notifications accurately reflect inventory changes
+  - Ensure that multiple rapid inventory changes are handled appropriately
   **Status:** Not yet implemented.
 
 ### Game State
@@ -245,6 +268,13 @@
   - Implement a basic UI for viewing journal entries
   - Verify that journal entries are displayed in chronological order
   - Ensure that the journal UI is accessible during gameplay without disrupting the game flow
+
+- [ ] As a player, I want combat results to be automatically added to my journal, so that I can keep track of significant battles and their outcomes.
+  **Test Plan:**
+  - Confirm that a summary of each combat is added to the journal upon completion
+  - Verify that the combat entry includes relevant details (opponent, outcome, any significant events)
+  - Check that the journal entry is formatted consistently with other entries
+  **Status:** Not yet implemented.
 
 ## Completed Tasks
 - [x] As a developer, I want to set up the Next.js project structure so that I have a solid foundation for the app.
@@ -377,6 +407,18 @@ This section is for tracking bugs found during development and testing. Each bug
   - Actual Behavior: All AI messages on the page are reloaded
   - Status: Open
   - Priority: Medium
+
+[BUG-015] Combat System State Update Error
+   - Description: After entering combat and attacking more than once, a React state update error occurs.
+   - Steps to Reproduce: 
+     1. Enter combat in the Game Session
+     2. Attack more than once
+   - Expected Behavior: Combat should proceed without errors
+   - Actual Behavior: Console shows a React error about updating a component while rendering a different component
+   - Error Message: "Cannot update a component (`GameProvider`) while rendering a different component (`CombatSystem`)..."
+   - Status: Open
+   - Priority: High
+   - Possible Fix: Review the `CombatSystem` component, especially the `updatePlayerHealth` function, to ensure state updates are not occurring during the render phase.
 
 ### Closed Bugs
 

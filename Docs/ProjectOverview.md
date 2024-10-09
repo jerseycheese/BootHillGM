@@ -1,4 +1,4 @@
-# BootHillGM Project Overview (Updated)
+# BootHillGM Project Overview
 
 ## 1. Project Description
 BootHillGM is a web-based application providing an AI-driven virtual Game Master for the Boot Hill tabletop RPG, offering an engaging, user-friendly experience for solo players in the Western genre. The app is built with Next.js, a React-based framework, allowing for a responsive web experience accessible from various devices.
@@ -84,6 +84,8 @@ The project has made significant progress:
   - Basic character status display
 - Implemented uncensored AI responses for unrestricted player agency
 - Updated AI service to handle player actions without censorship or moral judgment
+- Implemented a basic Journal Viewer component and integrated it into the Game Session page
+- Added functionality to automatically create journal entries based on player actions
 
 ## 8. MVP Development Focus
 - Implement core gameplay loop for personal/family/friends use
