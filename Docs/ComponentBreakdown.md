@@ -68,8 +68,14 @@
 ### 7. CombatSystem
 - **Main Functionality:** Manages simplified combat mechanics
 - **Key Components:**
-  - [ ] CombatManager (components/CombatManager.tsx)
+  - [x] CombatSystem (components/CombatSystem.tsx)
   - [ ] ActionResolver (utils/ActionResolver.ts)
+- **Implemented Features:**
+  - Handles optional opponents (Character | null)
+  - Implements null checks before performing opponent-related actions
+  - Uses useEffect to update opponent health when the opponent changes
+  - Enhances error handling and edge case management
+  - Comprehensive test coverage including rendering with/without opponent, player attacks, and combat end scenarios
 - **Potential Challenges:** Implementing turn-based logic, integrating with game state
 
 ### 8. UIComponents

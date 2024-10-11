@@ -120,6 +120,27 @@ export default function GameSession() {
     }
   }, [userInput, isLoading, state.narrative, state.journal, dispatch]);
 
+  const handleCombatEnd = (winner: 'player' | 'opponent') => {
+    setIsCombatActive(false);
+    setOpponent(null);
+    
+    const endMessage = winner === 'player' 
+      ? "You have emerged victorious from the combat!" 
+      : "You have been defeated in combat.";
+    
+    dispatch({ 
+      type: 'SET_NARRATIVE', 
+      payload: `${state.narrative}\n\n${endMessage}\n\nWhat would you like to do now?` 
+    });
+  };
+
+  const handlePlayerHealthChange = (newHealth: number) => {
+    dispatch({
+      type: 'UPDATE_CHARACTER',
+      payload: { health: newHealth }
+    });
+  };
+
   // Show loading state while initializing
   if (!state.character || isInitializing) {
     return <div className="wireframe-container">Loading game session...</div>;
@@ -145,17 +166,8 @@ export default function GameSession() {
         <CombatSystem
           playerCharacter={state.character}
           opponent={opponent!}
-          onCombatEnd={() => {
-            setIsCombatActive(false);
-            setOpponent(null);
-            // TODO: Handle combat end, e.g., update narrative, check for loot, etc.
-          }}
-          onPlayerHealthChange={(newHealth) => {
-            dispatch({
-              type: 'UPDATE_CHARACTER',
-              payload: { health: newHealth }
-            });
-          }}
+          onCombatEnd={handleCombatEnd}
+          onPlayerHealthChange={handlePlayerHealthChange}
         />
       ) : (
         <form onSubmit={handleUserInput} className="wireframe-section">

@@ -42,7 +42,7 @@ export type InventoryActionType =
   | { type: 'SET_INVENTORY'; payload: InventoryItem[] };  // Set the entire inventory
 
 // For updating combat-related state
-export type CombatActionType = 
+export type CombatActionType =
   | { type: 'SET_COMBAT_ACTIVE'; payload: boolean }  // Set whether combat is active
   | { type: 'SET_OPPONENT'; payload: Character | null };  // Set the current opponent
 

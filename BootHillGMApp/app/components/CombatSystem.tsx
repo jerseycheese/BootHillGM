@@ -6,7 +6,7 @@ import { Character } from '../types/character';
 // Props for the CombatSystem component
 interface CombatSystemProps {
   playerCharacter: Character;
-  opponent: Character;
+  opponent: Character | null; // Opponent is now optional to handle cases where combat hasn't started
   onCombatEnd: (winner: 'player' | 'opponent') => void;
   onPlayerHealthChange: (newHealth: number) => void;
 }
@@ -19,11 +19,17 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
 }) => {
   // State for managing combat
   const [playerHealth, setPlayerHealth] = useState(playerCharacter.health);
-  const [opponentHealth, setOpponentHealth] = useState(opponent.health);
+  const [opponentHealth, setOpponentHealth] = useState(opponent?.health ?? 0);
   const [combatLog, setCombatLog] = useState<string[]>([]);
   const [currentTurn, setCurrentTurn] = useState<'player' | 'opponent'>('player');
 
-  // Function to simulate rolling a d100
+  // Update opponent health when the opponent changes
+  useEffect(() => {
+    if (opponent) {
+      setOpponentHealth(opponent.health);
+    }
+  }, [opponent]);
+
   const rollD100 = useCallback(() => Math.floor(Math.random() * 100) + 1, []);
 
   // Function to handle attack logic
@@ -34,50 +40,49 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
     if (attackRoll <= hitChance) {
       const damage = Math.floor(Math.random() * 6) + 1; // Simple d6 damage
       if (isPlayer) {
-        setOpponentHealth(prev => Math.max(0, prev - damage));
+        const newHealth = Math.max(0, opponentHealth - damage);
+        setOpponentHealth(newHealth);
+        if (newHealth <= 0) onCombatEnd('player');
       } else {
-        // Update player health without calling the callback directly
-        setPlayerHealth(prev => Math.max(0, prev - damage));
+        const newHealth = Math.max(0, playerHealth - damage);
+        setPlayerHealth(newHealth);
+        onPlayerHealthChange(newHealth);
+        if (newHealth <= 0) onCombatEnd('opponent');
       }
-      setCombatLog(prev => [...prev, `${attacker.name} hits ${isPlayer ? defender.name : playerCharacter.name} for ${damage} damage!`]);
+      setCombatLog(prev => [...prev, `${attacker.name} hits ${defender.name} for ${damage} damage!`]);
     } else {
-      setCombatLog(prev => [...prev, `${attacker.name} misses ${isPlayer ? defender.name : playerCharacter.name}!`]);
+      setCombatLog(prev => [...prev, `${attacker.name} misses ${defender.name}!`]);
     }
 
     setCurrentTurn(isPlayer ? 'opponent' : 'player');
-  }, [rollD100, playerCharacter.name]);
-
-  // Notify parent component of player health changes
-  useEffect(() => {
-    onPlayerHealthChange(playerHealth);
-  }, [playerHealth, onPlayerHealthChange]);
-
-  // Check for combat end conditions after health changes
-  useEffect(() => {
-    if (playerHealth <= 0) {
-      onCombatEnd('opponent');
-    } else if (opponentHealth <= 0) {
-      onCombatEnd('player');
-    }
-  }, [playerHealth, opponentHealth, onCombatEnd]);
+  }, [rollD100, opponentHealth, playerHealth, onPlayerHealthChange, onCombatEnd]);
 
   // Handle player's attack action
   const handlePlayerAction = useCallback(() => {
-    performAttack(playerCharacter, opponent, true);
+    if (opponent) {
+      performAttack(playerCharacter, opponent, true);
+    }
   }, [playerCharacter, opponent, performAttack]);
 
-  // Handle opponent's turn
+  // Handle opponent's attack action
   const handleOpponentTurn = useCallback(() => {
-    performAttack(opponent, playerCharacter, false);
+    if (opponent) {
+      performAttack(opponent, playerCharacter, false);
+    }
   }, [opponent, playerCharacter, performAttack]);
 
-  // Automatically trigger opponent's turn after a delay
+  // Handle opponent's turn after a delay
   useEffect(() => {
-    if (currentTurn === 'opponent') {
+    if (currentTurn === 'opponent' && opponent) {
       const timer = setTimeout(handleOpponentTurn, 1000);
       return () => clearTimeout(timer);
     }
-  }, [currentTurn, handleOpponentTurn]);
+  }, [currentTurn, handleOpponentTurn, opponent]);
+
+  // Don't render anything if there's no opponent
+  if (!opponent) {
+    return null; // or return some UI indicating no active combat
+  }
 
   return (
     <div className="combat-system wireframe-section">

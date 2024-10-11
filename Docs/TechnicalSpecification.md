@@ -152,6 +152,45 @@ describe('Game Session Integration', () => {
 });
 ```
 
+### CombatSystem Testing
+The CombatSystem component now has comprehensive test coverage, including:
+
+- Rendering with and without an opponent
+- Handling player attacks
+- Managing combat end scenarios (player or opponent defeat)
+- Proper initialization and updates of opponent health
+
+Example CombatSystem test structure:
+
+```typescript
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import CombatSystem from './CombatSystem';
+
+describe('CombatSystem', () => {
+  test('renders combat interface when opponent is present', () => {
+    render(<CombatSystem playerCharacter={mockPlayer} opponent={mockOpponent} />);
+    expect(screen.getByText('Combat')).toBeInTheDocument();
+  });
+
+  test('handles player attack', async () => {
+    render(<CombatSystem playerCharacter={mockPlayer} opponent={mockOpponent} />);
+    fireEvent.click(screen.getByText('Attack'));
+    await waitFor(() => {
+      expect(screen.getByText(/Player hits Opponent for \d+ damage!/)).toBeInTheDocument();
+    });
+  });
+
+  test('ends combat when opponent health reaches 0', async () => {
+    const mockOnCombatEnd = jest.fn();
+    render(<CombatSystem playerCharacter={mockPlayer} opponent={lowHealthOpponent} onCombatEnd={mockOnCombatEnd} />);
+    fireEvent.click(screen.getByText('Attack'));
+    await waitFor(() => {
+      expect(mockOnCombatEnd).toHaveBeenCalledWith('player');
+    });
+  });
+});
+```
+
 ### Test Coverage
 Use Jest's built-in coverage reporting to track test coverage. Aim for at least 80% coverage across the application. To run tests with coverage, use the following command:
 
