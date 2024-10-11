@@ -2,11 +2,15 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import CombatSystem from './CombatSystem';
 import { Character } from '../types/character';
+import { CampaignStateContext } from './CampaignStateManager';
+import { CampaignState } from '../types/campaign';
 
 // Mock the AI service
 jest.mock('../utils/aiService', () => ({
   getAIResponse: jest.fn(),
 }));
+
+const mockDispatch = jest.fn();
 
 describe('CombatSystem', () => {
   const mockPlayer: Character = {
@@ -26,6 +30,25 @@ describe('CombatSystem', () => {
   const mockOnCombatEnd = jest.fn();
   const mockOnPlayerHealthChange = jest.fn();
 
+  const mockState: CampaignState = {
+    character: mockPlayer,
+    location: 'Test Location',
+    gameProgress: 0,
+    journal: [],
+    narrative: '',
+    inventory: [],
+    isCombatActive: false,
+    opponent: null,
+  };
+  
+  const renderWithContext = (ui: React.ReactElement) => {
+    return render(
+      <CampaignStateContext.Provider value={{ state: mockState, dispatch: mockDispatch }}>
+        {ui}
+      </CampaignStateContext.Provider>
+    );
+  };
+
   beforeEach(() => {
     jest.useFakeTimers();
     jest.spyOn(global.Math, 'random').mockReturnValue(0.25); // Ensure hit (0.25 < 0.5)
@@ -38,7 +61,7 @@ describe('CombatSystem', () => {
   });
 
   test('renders combat interface when opponent is present', () => {
-    render(
+    renderWithContext(
       <CombatSystem
         playerCharacter={mockPlayer}
         opponent={mockOpponent}
@@ -54,7 +77,7 @@ describe('CombatSystem', () => {
   });
 
   test('does not render combat interface when opponent is null', () => {
-    render(
+    renderWithContext(
       <CombatSystem
         playerCharacter={mockPlayer}
         opponent={null}
@@ -67,7 +90,7 @@ describe('CombatSystem', () => {
   });
 
   test('handles player attack', async () => {
-    render(
+    renderWithContext(
       <CombatSystem
         playerCharacter={mockPlayer}
         opponent={mockOpponent}
@@ -86,7 +109,7 @@ describe('CombatSystem', () => {
 
   test('ends combat when opponent health reaches 0', async () => {
     const lowHealthOpponent = { ...mockOpponent, health: 1 };
-    render(
+    renderWithContext(
       <CombatSystem
         playerCharacter={mockPlayer}
         opponent={lowHealthOpponent}
@@ -98,13 +121,14 @@ describe('CombatSystem', () => {
     fireEvent.click(screen.getByText('Attack'));
 
     await waitFor(() => {
-      expect(mockOnCombatEnd).toHaveBeenCalledWith('player');
+      expect(mockOnCombatEnd).toHaveBeenCalledWith('player', expect.any(String));
+      expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'UPDATE_JOURNAL' }));
     });
   });
 
   test('ends combat when player health reaches 0', async () => {
     const lowHealthPlayer = { ...mockPlayer, health: 1 };
-    render(
+    renderWithContext(
       <CombatSystem
         playerCharacter={lowHealthPlayer}
         opponent={mockOpponent}
@@ -117,13 +141,14 @@ describe('CombatSystem', () => {
     jest.runOnlyPendingTimers();
 
     await waitFor(() => {
-      expect(mockOnCombatEnd).toHaveBeenCalledWith('opponent');
+      expect(mockOnCombatEnd).toHaveBeenCalledWith('opponent', expect.any(String));
       expect(mockOnPlayerHealthChange).toHaveBeenCalledWith(0);
+      expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'UPDATE_JOURNAL' }));
     });
   });
 
   test('initiates combat when opponent is provided', async () => {
-    const { rerender } = render(
+    const { rerender } = renderWithContext(
       <CombatSystem
         playerCharacter={mockPlayer}
         opponent={null}
@@ -135,12 +160,14 @@ describe('CombatSystem', () => {
     expect(screen.queryByText('Combat')).not.toBeInTheDocument();
 
     rerender(
-      <CombatSystem
-        playerCharacter={mockPlayer}
-        opponent={mockOpponent}
-        onCombatEnd={mockOnCombatEnd}
-        onPlayerHealthChange={mockOnPlayerHealthChange}
-      />
+      <CampaignStateContext.Provider value={{ state: mockState, dispatch: mockDispatch }}>
+        <CombatSystem
+          playerCharacter={mockPlayer}
+          opponent={mockOpponent}
+          onCombatEnd={mockOnCombatEnd}
+          onPlayerHealthChange={mockOnPlayerHealthChange}
+        />
+      </CampaignStateContext.Provider>
     );
 
     await waitFor(() => {
@@ -151,7 +178,7 @@ describe('CombatSystem', () => {
   });
 
   test('ends combat and returns to normal gameplay', async () => {
-    const { rerender } = render(
+    const { rerender } = renderWithContext(
       <CombatSystem
         playerCharacter={mockPlayer}
         opponent={mockOpponent}
@@ -166,12 +193,14 @@ describe('CombatSystem', () => {
     
     // Simulate combat ending (opponent defeated)
     rerender(
-      <CombatSystem
-        playerCharacter={mockPlayer}
-        opponent={null}
-        onCombatEnd={mockOnCombatEnd}
-        onPlayerHealthChange={mockOnPlayerHealthChange}
-      />
+      <CampaignStateContext.Provider value={{ state: mockState, dispatch: mockDispatch }}>
+        <CombatSystem
+          playerCharacter={mockPlayer}
+          opponent={null}
+          onCombatEnd={mockOnCombatEnd}
+          onPlayerHealthChange={mockOnPlayerHealthChange}
+        />
+      </CampaignStateContext.Provider>
     );
 
     await waitFor(() => {

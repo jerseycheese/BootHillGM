@@ -54,7 +54,7 @@ const campaignReducer = (state: CampaignState, action: GameAction): CampaignStat
 };
 
 // Create a context for the campaign state
-const CampaignStateContext = createContext<{
+export const CampaignStateContext = createContext<{
   state: CampaignState;
   dispatch: React.Dispatch<GameAction>;
 } | null>(null);

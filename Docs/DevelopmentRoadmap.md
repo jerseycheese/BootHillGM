@@ -82,6 +82,13 @@ Provide feedback for attempted use of unavailable items
 - [ ] Implement basic journal system for tracking important story information
 - [ ] Update AI service to use journal context in prompts
 
+3.6 Combat Journal Integration
+- [x] Implement automatic journal entry creation for combat results
+- [x] Update CombatSystem to trigger journal updates
+- [x] Modify GameSession to handle combat journal entries
+- [x] Enhance JournalManager with combat-specific entry creation
+- [x] Update unit tests for new combat journal functionality
+
 ## Phase 4: Data Persistence and Refinement
 
 4.1 Save/Load Functionality

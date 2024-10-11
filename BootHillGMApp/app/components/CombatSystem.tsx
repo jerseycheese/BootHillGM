@@ -1,13 +1,15 @@
 // File: BootHillGMApp/app/components/CombatSystem.tsx
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { Character } from '../types/character';
+import { CampaignStateContext } from './CampaignStateManager';
+import { addCombatJournalEntry } from '../utils/JournalManager';
 
 // Props for the CombatSystem component
 interface CombatSystemProps {
   playerCharacter: Character;
-  opponent: Character | null; // Opponent is now optional to handle cases where combat hasn't started
-  onCombatEnd: (winner: 'player' | 'opponent') => void;
+  opponent: Character | null;
+  onCombatEnd: (winner: 'player' | 'opponent', combatSummary: string) => void;
   onPlayerHealthChange: (newHealth: number) => void;
 }
 
@@ -17,7 +19,9 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
   onCombatEnd, 
   onPlayerHealthChange 
 }) => {
-  // State for managing combat
+  const context = useContext(CampaignStateContext);
+  const { dispatch } = context || {};
+
   const [playerHealth, setPlayerHealth] = useState(playerCharacter.health);
   const [opponentHealth, setOpponentHealth] = useState(opponent?.health ?? 0);
   const [combatLog, setCombatLog] = useState<string[]>([]);
@@ -42,12 +46,24 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
       if (isPlayer) {
         const newHealth = Math.max(0, opponentHealth - damage);
         setOpponentHealth(newHealth);
-        if (newHealth <= 0) onCombatEnd('player');
+        if (newHealth <= 0) {
+          // Add combat result to journal when combat ends
+          const summary = `${playerCharacter.name} defeated ${opponent?.name ?? 'the opponent'} in combat.`;
+          onCombatEnd('player', summary);
+          // Dispatch action to update journal with combat result
+          dispatch?.({ type: 'UPDATE_JOURNAL', payload: addCombatJournalEntry(summary) });
+        }
       } else {
         const newHealth = Math.max(0, playerHealth - damage);
         setPlayerHealth(newHealth);
         onPlayerHealthChange(newHealth);
-        if (newHealth <= 0) onCombatEnd('opponent');
+        if (newHealth <= 0) {
+          // Add combat result to journal when combat ends
+          const summary = `${playerCharacter.name} was defeated by ${opponent?.name ?? 'the opponent'} in combat.`;
+          onCombatEnd('opponent', summary);
+          // Dispatch action to update journal with combat result
+          dispatch?.({ type: 'UPDATE_JOURNAL', payload: addCombatJournalEntry(summary) });
+        }
       }
       setCombatLog(prev => [...prev, `${attacker.name} hits ${defender.name} for ${damage} damage!`]);
     } else {
@@ -55,7 +71,7 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
     }
 
     setCurrentTurn(isPlayer ? 'opponent' : 'player');
-  }, [rollD100, opponentHealth, playerHealth, onPlayerHealthChange, onCombatEnd]);
+  }, [rollD100, opponentHealth, playerHealth, onPlayerHealthChange, onCombatEnd, dispatch, playerCharacter.name, opponent]);
 
   // Handle player's attack action
   const handlePlayerAction = useCallback(() => {
@@ -78,6 +94,10 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
       return () => clearTimeout(timer);
     }
   }, [currentTurn, handleOpponentTurn, opponent]);
+
+  if (!context) {
+    return <div>Error: CombatSystem must be used within a CampaignStateProvider</div>;
+  }
 
   // Don't render anything if there's no opponent
   if (!opponent) {

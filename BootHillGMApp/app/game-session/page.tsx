@@ -120,7 +120,7 @@ export default function GameSession() {
     }
   }, [userInput, isLoading, state.narrative, state.journal, dispatch]);
 
-  const handleCombatEnd = (winner: 'player' | 'opponent') => {
+  const handleCombatEnd = (winner: 'player' | 'opponent', combatSummary: string) => {
     setIsCombatActive(false);
     setOpponent(null);
     
@@ -130,8 +130,15 @@ export default function GameSession() {
     
     dispatch({ 
       type: 'SET_NARRATIVE', 
-      payload: `${state.narrative}\n\n${endMessage}\n\nWhat would you like to do now?` 
+      payload: `${state.narrative}\n\n${endMessage}\n\n${combatSummary}\n\nWhat would you like to do now?` 
     });
+
+    // Update journal with combat summary when combat ends
+    const journalEntry: JournalEntry = {
+      timestamp: Date.now(),
+      content: `Combat: ${combatSummary}`
+    };
+    dispatch({ type: 'UPDATE_JOURNAL', payload: journalEntry });
   };
 
   const handlePlayerHealthChange = (newHealth: number) => {

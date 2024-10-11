@@ -1,6 +1,6 @@
 // BootHillGMApp/app/__tests__/utils/journalManager.test.ts
 
-import { addJournalEntry, getJournalEntries, getRecentJournalEntries, getJournalContext } from '../../utils/JournalManager';
+import { addJournalEntry, getJournalEntries, getRecentJournalEntries, getJournalContext, addCombatJournalEntry } from '../../utils/JournalManager';
 import { JournalEntry } from '../../types/journal';
 
 describe('Journal Manager', () => {
@@ -52,5 +52,38 @@ describe('Journal Manager', () => {
     expect(context).toContain('Third entry');
     expect(context).toContain('Second entry');
     expect(context).toContain('First entry');
+  });
+});
+
+describe('addCombatJournalEntry', () => {
+  it('should create a correctly formatted combat journal entry', () => {
+    const summary = 'Player defeated Outlaw in a shootout.';
+    const entry = addCombatJournalEntry(summary);
+
+    expect(entry).toHaveProperty('timestamp');
+    expect(typeof entry.timestamp).toBe('number');
+    expect(entry.content).toBe(`Combat: ${summary}`);
+  });
+
+  it('should be included in recent journal entries', () => {
+    const summary = 'Player was ambushed by Bandits.';
+    const combatEntry = addCombatJournalEntry(summary);
+    const journal: JournalEntry[] = [
+      { timestamp: Date.now() - 3000, content: 'Entered the saloon.' },
+      combatEntry,
+      { timestamp: Date.now() - 1000, content: 'Found a treasure map.' }
+    ];
+
+    const recentEntries = getRecentJournalEntries(journal, 2);
+    expect(recentEntries).toContainEqual(combatEntry);
+  });
+
+  it('should be included in journal context', () => {
+    const summary = 'Player won a duel against the Sheriff.';
+    const combatEntry = addCombatJournalEntry(summary);
+    const journal: JournalEntry[] = [combatEntry];
+
+    const context = getJournalContext(journal);
+    expect(context).toContain(summary);
   });
 });

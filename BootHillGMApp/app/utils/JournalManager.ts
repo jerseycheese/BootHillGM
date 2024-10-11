@@ -40,3 +40,11 @@ export const getJournalContext = (journal: JournalEntry[]): string => {
   // Combine the content of recent entries into a single string
   return recentEntries.map(entry => entry.content).join(' ');
 };
+
+// Create a formatted journal entry for combat results
+export const addCombatJournalEntry = (summary: string): JournalEntry => {
+  return {
+    timestamp: Date.now(),
+    content: `Combat: ${summary}` // Prefix combat entries for easy identification
+  };
+};
