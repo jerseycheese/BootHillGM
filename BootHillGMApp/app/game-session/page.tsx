@@ -31,11 +31,12 @@ export default function GameSession() {
       const { narrative: initialNarrative, location } = await getAIResponse(
         `Initialize a new game session for a character named ${state.character?.name}. 
         Provide a brief introduction to the game world and the character's current situation. 
-        Include a description of their current location and some potential options for action.`,
+        Include a detailed description of their current location and some potential options for action.
+        Ensure to explicitly state the name of the current location.`,
         journalContext
       );
       dispatch({ type: 'SET_NARRATIVE', payload: initialNarrative });
-      if (location) dispatch({ type: 'SET_LOCATION', payload: location });
+      dispatch({ type: 'SET_LOCATION', payload: location || 'Unknown Location' });
 
       // Add initial items to inventory if it's empty
       if (state.inventory.length === 0) {
@@ -61,6 +62,7 @@ export default function GameSession() {
     } catch (error) {
       console.error('Error initializing game session:', error);
       dispatch({ type: 'SET_NARRATIVE', payload: 'An error occurred while starting the game. Please try again.' });
+      dispatch({ type: 'SET_LOCATION', payload: 'Unknown Location' });
     } finally {
       setIsInitializing(false);
     }
@@ -131,7 +133,7 @@ export default function GameSession() {
       <div className="wireframe-section">
         <h2 className="wireframe-subtitle">Character Status</h2>
         <p>Name: {state.character.name}</p>
-        <p>Location: {state.location}</p>
+        <p>Location: {state.location || 'Unknown'}</p>
         <p>Health: {state.character.health}</p>
       </div>
       {/* Game narrative display */}

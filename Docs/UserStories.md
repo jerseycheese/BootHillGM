@@ -283,6 +283,8 @@
 - [x] As a player, I want to view the main menu of the game so that I can navigate to different sections of the app.
 - [x] As a player, I want complete freedom of action without AI censorship or resistance, so that I can fully immerse myself in the game world and make any choices I desire.
 - [x] As a developer, I want to implement a basic combat system to allow players to engage in turn-based fights with AI-generated opponents.
+- [x] As a developer, I want to implement proper state management in the GameSession component to prevent unnecessary page reloads and improve user experience.
+- [x] As a developer, I want to update the CombatSystem integration in the GameSession component to ensure smooth transitions between normal gameplay and combat scenarios.
 
 ## Bug Tracking
 
@@ -356,17 +358,6 @@ This section is for tracking bugs found during development and testing. Each bug
   - Status: Open
   - Priority: Medium
 
-[BUG-008] Incorrect Location Display in Game Session
-  - Description: The location in the status area shows as "Unknown" despite being named in the AI's first message.
-  - Steps to Reproduce: 
-    1. Create a character
-    2. Click "Finish Character Creation"
-    3. Observe the Game Session screen
-  - Expected Behavior: The location in the status area should match the location named in the AI's first message
-  - Actual Behavior: Location is displayed as "Unknown"
-  - Status: Open
-  - Priority: Medium
-
 [BUG-011] Duplicate Inventory Items in Game Session
   - Description: Inventory items are loading twice in the Game Session.
   - Steps to Reproduce: 
@@ -421,32 +412,33 @@ This section is for tracking bugs found during development and testing. Each bug
 
 ### Closed Bugs
 
-[BUG-000] Example Resolved Bug
-  - Description: Brief description of the resolved bug
-  - Resolution: How the bug was fixed
-  - Closed Date: YYYY-MM-DD
-
 [BUG-09] API Error: Insufficient Resources
   - Description: API calls to the Gemini model are failing due to insufficient resources.
-  - Steps to Reproduce: 
-    1. Interact with the AI in the Game Session
-    2. Observe console errors
-  - Expected Behavior: API calls should succeed and return content
-  - Actual Behavior: POST request fails with ERR_INSUFFICIENT_RESOURCES
-  - Status: Open
-  - Priority: Critical (prevents core functionality)
+  - Resolution: Updated API key and adjusted rate limiting to prevent resource exhaustion.
+  - Closed Date: 2024-10-08
 
 [BUG-010] Infinite Rendering Loop in Combat System
   - Description: The CombatSystem component is causing an infinite loop of updates.
-  - Steps to Reproduce: 
-    1. Enter a combat scenario in the Game Session
-    2. Observe console warnings and application behavior
-  - Expected Behavior: Combat system should render and update normally
-  - Actual Behavior: Maximum update depth is exceeded, causing continuous re-renders
-  - Status: Open
-  - Priority: Critical (causes application instability and poor performance)
+  - Resolution: Fixed dependency array in useEffect hook to prevent unnecessary re-renders.
+  - Closed Date: 2024-10-09
+
+[BUG-012] Page Reload on Action Submission in Game Session
+  - Description: Submitting an action in the text field causes the page to reload before showing the response.
+  - Resolution: Updated GameSession component to handle form submission asynchronously and prevent default form behavior. Implemented proper state management to update the UI without page reload.
+  - Closed Date: 2024-10-09
 
 [BUG-015] Combat System State Update Error
    - Description: After entering combat and attacking more than once, a React state update error occurred.
    - Resolution: Separated state updates from callback functions in the CombatSystem component to prevent updating state during render cycle.
    - Closed Date: 2024-10-09
+
+[BUG-008] Incorrect Location Display in Game Session
+  - Description: The location in the status area shows as "Unknown" despite being named in the AI's first message.
+  - Steps to Reproduce: 
+    1. Create a character
+    2. Click "Finish Character Creation"
+    3. Observe the Game Session screen
+  - Expected Behavior: The location in the status area should match the location named in the AI's first message
+  - Actual Behavior: Location is displayed as "Unknown"
+  - Resolution: Updated the GameSession component to explicitly request a location from the AI and set a default "Unknown Location" if not provided. Modified the Character Status section to display the correct location.
+  - Closed Date: 2024-10-10
