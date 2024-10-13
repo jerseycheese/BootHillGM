@@ -216,6 +216,48 @@
   - Ensure that the state remains consistent across different components
   **Status:** Implemented. The game session now uses a dispatch function for state updates.
 
+- [ ] As a developer, I want to add identifying IDs/classes to page markup to make debugging and testing easier.
+  **Test Plan:**
+  - Review all components and add appropriate IDs and classes
+  - Verify that added IDs and classes are unique and descriptive
+  - Test that added identifiers don't break existing styles or functionality
+
+- [ ] As a user, I want to see character attributes and skills in title case for better readability.
+  **Test Plan:**
+  - Check all instances where character attributes and skills are displayed
+  - Verify that attributes and skills are consistently displayed in title case
+
+- [ ] As a user, I want the journal to be on its own separate page, so that it doesn't take up too much space on the Game Session page.
+  **Test Plan:**
+  - Create a new page for the journal
+  - Add navigation to the journal page from the Game Session page
+  - Verify that the journal displays correctly on its own page
+  - Ensure that the Game Session page layout improves with the journal removed
+
+- [ ] As a user, I want to see a more condensed combat log, so that I can quickly review the combat history without excessive scrolling.
+  **Test Plan:**
+  - Redesign the combat log to display information more concisely
+  - Ensure that all important combat information is still visible
+  - Verify that the condensed log is easy to read and understand
+
+- [ ] As a user, I want to see weapon information in each combat turn, so that I know what weapons are being used.
+  **Test Plan:**
+  - Update the combat system to include weapon information in each turn
+  - Verify that weapon names are displayed correctly for both player and opponent
+  - Ensure that weapon changes during combat are reflected in the log
+
+- [ ] As a user, I want to see the dice rolls for each combat turn, so that I understand how the results are determined.
+  **Test Plan:**
+  - Implement dice roll display in the combat system
+  - Verify that displayed rolls align with Boot Hill rules
+  - Ensure that the relationship between rolls and outcomes is clear
+
+- [ ] As a user, I want to see my actions emphasized in the narrative, so that I can easily distinguish them from the rest of the text.
+  **Test Plan:**
+  - Implement visual distinction for player actions in the narrative
+  - Verify that player actions are easily identifiable
+  - Ensure that the emphasis doesn't disrupt the overall readability of the narrative
+
 ## Post-MVP Features
 
 ### Advanced Character Creation
@@ -368,16 +410,6 @@ This section is for tracking bugs found during development and testing. Each bug
   - Status: Open
   - Priority: Medium
 
-[BUG-012] Page Reload on Action Submission in Game Session
-  - Description: Submitting an action in the text field causes the page to reload before showing the response.
-  - Steps to Reproduce: 
-    1. Start a game session
-    2. Enter an action in the text field and submit
-  - Expected Behavior: The action should be processed without a full page reload
-  - Actual Behavior: The page reloads ("Loading Game Session" appears) before showing the response
-  - Status: Open
-  - Priority: High (impacts user experience significantly)
-
 [BUG-013] Duplicate AI Text Generation in Character Creation
   - Description: The AI text for "Step 1" is generated twice, with the second version replacing the first.
   - Steps to Reproduce: 
@@ -398,17 +430,26 @@ This section is for tracking bugs found during development and testing. Each bug
   - Status: Open
   - Priority: Medium
 
-[BUG-015] Combat System State Update Error
-  - Description: After entering combat and attacking more than once, a React state update error occurs.
+[BUG-016] Incorrect Location Display in Game Session
+  - Description: The location display sometimes includes more information than just the location name.
   - Steps to Reproduce: 
-    1. Enter combat in the Game Session
-    2. Attack more than once
-  - Expected Behavior: Combat should proceed without errors
-  - Actual Behavior: Console shows a React error about updating a component while rendering a different component
-  - Error Message: "Cannot update a component (`GameProvider`) while rendering a different component (`CombatSystem`)..."
+    1. Start a new game session
+    2. Observe the location display in the status area
+  - Expected Behavior: Only the location name should be displayed (e.g., "Dusty Crossroads")
+  - Actual Behavior: Additional narrative text is included in the location display
   - Status: Open
-  - Priority: High
-  - Possible Fix: Review the `CombatSystem` component, especially the `updatePlayerHealth` function, to ensure state updates are not occurring during the render phase.
+  - Priority: Medium
+
+[BUG-017] Player Actions Not Visually Distinct in Narrative
+  - Description: Player actions are not visually emphasized in the game narrative.
+  - Steps to Reproduce: 
+    1. Start a game session
+    2. Perform several actions
+    3. Review the narrative text
+  - Expected Behavior: Player actions should be visually distinct from the rest of the narrative
+  - Actual Behavior: Player actions blend in with the rest of the narrative text
+  - Status: Open
+  - Priority: Medium
 
 ### Closed Bugs
 

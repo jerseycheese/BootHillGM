@@ -53,6 +53,7 @@
 - [x] Maintain minimal context for the current game session
 - [x] Generate combat scenarios and opponent details
 - [ ] Integrate journal context into AI prompts for story continuity
+- [ ] Optimize AI text generation to prevent duplicate content
 
 ## 6. State Management
 - [x] Utilize React Context for global game state
@@ -66,6 +67,8 @@
 - [x] Develop responsive layouts using CSS Modules
 - [x] Create basic UI components (buttons, inputs, cards)
 - [ ] Implement simple animations for transitions (optional)
+- [ ] Add identifying IDs and classes to all components for easier debugging and testing
+- [ ] Implement title casing for character attributes and skills in the UI
 
 ## 8. Performance Considerations
 - [x] Utilize Next.js built-in performance optimizations
