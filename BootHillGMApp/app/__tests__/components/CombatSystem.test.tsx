@@ -1,9 +1,9 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import CombatSystem from './CombatSystem';
-import { Character } from '../types/character';
-import { CampaignStateContext } from './CampaignStateManager';
-import { CampaignState } from '../types/campaign';
+import CombatSystem from '../../components/CombatSystem';
+import { Character } from '../../types/character';
+import { CampaignStateContext } from '../../components/CampaignStateManager';
+import { CampaignState } from '../../types/campaign';
 
 // Mock the AI service
 jest.mock('../utils/aiService', () => ({

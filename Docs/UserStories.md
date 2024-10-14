@@ -131,12 +131,19 @@
   **Test Plan:**
   - Verify that all items in the inventory are displayed correctly
   - Test adding and removing items from the inventory
-  - Ensure the inventory display updates in real-time
+  - Ensure the inventory display updates in real-time based on narrative actions
   **Status:** Implemented. Inventory component has been added to the game session.
 
 - [ ] As a player, I want to use items from my inventory so that I can interact with the game world.
   **Test Plan:**
-  - Test using different types of items (consumables, equipment, etc.)
+  - Test using different types of items through narrative actions
+  - Verify that items are removed from inventory when used, thrown, or discarded in the narrative
+  - Ensure that items can't be used if they're not in the inventory
+  **Status:** Partially implemented. Item usage is now handled through narrative actions.
+
+- [ ] As a player, I want to see short descriptions of items in my inventory, so I can understand their purpose and any gameplay-relevant stats.
+  **Test Plan:**
+  - Verify that each item in the inventory has a short description
   - Verify that item effects are applied correctly
   - Ensure used items are removed from the inventory when appropriate
   **Status:** Not yet implemented.
@@ -148,20 +155,19 @@
   - Ensure inventory and money totals update correctly after transactions
   **Status:** Not yet implemented.
 
-- [ ] As a player, I want items mentioned in the narrative to be automatically added to my inventory, so that my inventory reflects my character's acquisitions during the story.
-  **Test Plan:**
-  - Test various narrative scenarios where items are acquired
-  - Verify that mentioned items appear in the inventory after the relevant narrative
-  - Check that the UI provides feedback when new items are added (e.g., a notification)
-  - Ensure that the inventory update doesn't interrupt the game flow
-  **Status:** Not yet implemented.
-
 - [ ] As a player, I want to see a visual notification when new items are added to my inventory, so that I'm aware of my character's changing possessions without constantly checking the inventory.
   **Test Plan:**
   - Implement and test a notification system for inventory updates
   - Verify that notifications are visible but not intrusive
   - Check that notifications accurately reflect inventory changes
   - Ensure that multiple rapid inventory changes are handled appropriately
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want to have the option to end combat early if my opponent agrees, so that I can resolve conflicts peacefully when possible.
+  **Test Plan:**
+  - Implement a "Call Truce" button in the combat interface
+  - Verify that using this option prompts the AI to consider ending the combat
+  - Ensure that combat can end early if the AI agrees to the truce
   **Status:** Not yet implemented.
 
 ### Game State
@@ -448,6 +454,28 @@ This section is for tracking bugs found during development and testing. Each bug
     3. Review the narrative text
   - Expected Behavior: Player actions should be visually distinct from the rest of the narrative
   - Actual Behavior: Player actions blend in with the rest of the narrative text
+  - Status: Open
+  - Priority: Medium
+
+[BUG-018] Game State Persistence After Page Refresh
+  - Description: The game state is not persisted after refreshing the page, causing the user to be redirected to Character Creation.
+  - Steps to Reproduce:
+    1. Create a character and start a game session
+    2. Refresh the page during the game session
+    3. Attempt to navigate back to the Game Session page
+  - Expected Behavior: The game session should persist, allowing the user to continue from where they left off
+  - Actual Behavior: The user is redirected to Character Creation, losing all progress
+  - Status: Open
+  - Priority: High
+
+[BUG-019] Combat State Not Persisting After Page Navigation
+  - Description: When leaving the Game Session page during combat and returning, the combat state is not maintained.
+  - Steps to Reproduce:
+    1. Start a game session and enter combat
+    2. Navigate to the homepage
+    3. Return to the Game Session page
+  - Expected Behavior: Combat should resume from where it left off
+  - Actual Behavior: Combat state is lost, and the game resumes as if combat never occurred
   - Status: Open
   - Priority: Medium
 

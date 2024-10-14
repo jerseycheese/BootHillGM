@@ -12,6 +12,7 @@ import Inventory from '../components/Inventory';
 import JournalViewer from '../components/JournalViewer';
 import { Character } from '../types/character';
 import { JournalEntry } from '../types/journal';
+import { InventoryItem } from '../types/inventory';
 import '../styles/wireframe.css';
 
 export default function GameSession() {
@@ -33,7 +34,8 @@ export default function GameSession() {
         Provide a brief introduction to the game world and the character's current situation. 
         Include a detailed description of their current location and some potential options for action.
         Ensure to explicitly state the name of the current location.`,
-        journalContext
+        journalContext,
+        state.inventory
       );
       dispatch({ type: 'SET_NARRATIVE', payload: initialNarrative });
       dispatch({ type: 'SET_LOCATION', payload: location || 'Unknown Location' });
@@ -66,7 +68,7 @@ export default function GameSession() {
     } finally {
       setIsInitializing(false);
     }
-  }, [state.character?.name, state.journal, state.inventory.length, dispatch]);
+  }, [state.character?.name, state.journal, state.inventory, dispatch]);
 
   // Effect to initialize game session or redirect to character creation
   useEffect(() => {
@@ -88,14 +90,42 @@ export default function GameSession() {
     try {
       // Get recent journal entries for context
       const journalContext = getJournalContext(state.journal);
-      // Get AI response based on user input and journal context
-      const { narrative: aiResponse, location, combatInitiated, opponent } = await getAIResponse(userInput, journalContext);
+      // Get AI response based on user input, journal context, inventory, and extract acquired items
+      const { narrative: aiResponse, location, combatInitiated, opponent, acquiredItems, removedItems } = await getAIResponse(userInput, journalContext, state.inventory);
       
       // Update game narrative with user input and AI response
       dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative}\n\nPlayer: ${userInput}\n\nGame Master: ${aiResponse}` });
       
       // Update location if it has changed
       if (location) dispatch({ type: 'SET_LOCATION', payload: location });
+      
+      console.log('Acquired items from AI:', acquiredItems);
+      acquiredItems.forEach(itemName => {
+        if (itemName && itemName.trim() !== '') {
+          const itemId = `${itemName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
+          console.log(`Dispatching ADD_ITEM for ${itemName} with id ${itemId}`);
+          dispatch({ 
+            type: 'ADD_ITEM', 
+            payload: { 
+              id: itemId,
+              name: itemName,
+              quantity: 1,
+              description: `An item you acquired during your adventure.`
+            }
+          });
+        }
+      });
+      
+      console.log('Removed items from AI:', removedItems);
+      removedItems.forEach(itemName => {
+        const itemToRemove = state.inventory.find(item => item.name.toLowerCase() === itemName.toLowerCase() || item.name.toLowerCase() === `removed_items: ${itemName.toLowerCase()}`);
+        if (itemToRemove) {      
+          dispatch({ type: 'REMOVE_ITEM', payload: itemToRemove.id });
+        }
+      });
+
+      // Clean up inventory periodically
+      dispatch({ type: 'CLEAN_INVENTORY' });
       
       // Add a journal entry for the player's action
       const journalEntry: JournalEntry = {
@@ -111,6 +141,7 @@ export default function GameSession() {
         dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative}\n\nA combat situation has arisen! Prepare to face ${opponent.name}!` });
       }
       
+      logInventory(state.inventory);
       setUserInput('');
     } catch (error) {
       console.error('Error processing user input:', error);
@@ -118,7 +149,7 @@ export default function GameSession() {
     } finally {
       setIsLoading(false);
     }
-  }, [userInput, isLoading, state.narrative, state.journal, dispatch]);
+  }, [userInput, isLoading, state.narrative, state.journal, state.inventory, dispatch, state.location]);
 
   const handleCombatEnd = (winner: 'player' | 'opponent', combatSummary: string) => {
     setIsCombatActive(false);
@@ -192,8 +223,33 @@ export default function GameSession() {
         </form>
       )}
       {/* Inventory and Journal components */}
-      <Inventory />
+      <div className="wireframe-section">
+        <h2 className="wireframe-subtitle">Inventory</h2>
+        {state.inventory.length === 0 ? (
+          <p className="wireframe-text">Your inventory is empty.</p>
+        ) : (
+          <ul className="wireframe-list">
+            {state.inventory.map((item) => (
+              <li key={item.id} className="wireframe-text">
+                {item.name && item.quantity > 0 ? `${item.name} (x${item.quantity})` : null}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       <JournalViewer entries={state.journal} />
     </div>
   );
+}
+
+// Debugging function to log the current inventory state
+function logInventory(inventory: InventoryItem[]) {
+  console.log("Current Inventory:");
+  if (inventory && inventory.length > 0) {
+    inventory.forEach(item => {
+      console.log(`${item.name}: ${item.quantity}`);
+    });
+  } else {
+    console.log("Inventory is empty");
+  }
 }

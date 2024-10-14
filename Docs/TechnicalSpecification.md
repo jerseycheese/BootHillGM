@@ -28,23 +28,25 @@
 3. Game Engine: Manages game state, turns, and basic game flow
 4. AI Integration Service: Handles communication with the Gemini API
 5. Character Management System: Manages character creation and stats
-6. Narrative Engine: Generates basic storylines and dialogues
-7. Combat System: Manages simplified combat mechanics
-8. Inventory System: Manages character inventory and item interactions
-9. UI Components: Basic reusable React components
-10. Campaign State Manager: Handles saving, loading, and managing campaign state
-11. Journal System: Manages the storage and retrieval of important story information
+6. Inventory System: Manages character inventory and item interactions
+  - Handles adding and removing items dynamically
+  - Supports multiple instances of the same item
+  - Implements advanced error checking and cleaning for item operations
+7. UI Components: Basic reusable React components
+8. Campaign State Manager: Handles saving, loading, and managing campaign state
+9. Journal System: Manages the storage and retrieval of important story information
 
 ## 4. Data Flow
 1. User interacts with the UI
 2. Client-side components dispatch actions to update state
 3. Reducer functions process actions and update the global state
-4. Components re-render based on state changes
-5. API routes handle server-side logic, including AI interactions
-6. Server responds with updated data
-7. Campaign state is saved after significant game events
-8. Journal entries are added based on important story developments
-9. AI responses are generated with context from the journal
+4. Inventory is cleaned and updated based on AI responses
+5. Components re-render based on state changes
+6. API routes handle server-side logic, including AI interactions
+7. Server responds with updated data
+8. Campaign state is saved after significant game events
+9. Journal entries are added based on important story developments
+10. AI responses are generated with context from the journal
 
 ## 5. AI Integration
 - [x] Implement interface for AI model interaction with uncensored responses

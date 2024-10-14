@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGame } from '../utils/gameEngine';
 
 const Inventory: React.FC = () => {
-  const { state, dispatch } = useGame();
+  const { state } = useGame();
   const { inventory } = state;
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
     <div className="wireframe-section">
@@ -13,14 +14,14 @@ const Inventory: React.FC = () => {
       ) : (
         <ul className="wireframe-list">
           {inventory && inventory.map((item) => (
-            <li key={item.id} className="wireframe-text">
-              {item.name} (x{item.quantity})
-              <button 
-                onClick={() => dispatch({ type: 'USE_ITEM', payload: item.id })}
-                className="wireframe-button ml-2"
-              >
-                Use
-              </button>
+            <li 
+              key={item.id} 
+              className="wireframe-text relative"
+              onMouseEnter={() => setHoveredItem(item.id)}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              <span>{item.name} (x{item.quantity})</span>
+              {hoveredItem === item.id && <div className="item-description">{item.description}</div>}
             </li>
           ))}
         </ul>

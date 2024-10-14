@@ -2,6 +2,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Character } from '../types/character';
+import { InventoryItem } from '../types/inventory';
 
 // TODO: Improve formatting of AI messages for better readability and engagement
 
@@ -44,11 +45,13 @@ async function retryAIRequest<T>(fn: () => Promise<T>, maxRetries = 3): Promise<
 }
 
 // Main function to get AI response for game narration
-export async function getAIResponse(prompt: string, journalContext: string): Promise<{ 
+export async function getAIResponse(prompt: string, journalContext: string, inventory: InventoryItem[]): Promise<{ 
   narrative: string; 
   location?: string; 
   combatInitiated?: boolean; 
   opponent?: Character;
+  acquiredItems: string[];
+  removedItems: string[];
 }> {
   try {
     // Construct the full prompt for the AI, including context and instructions
@@ -65,9 +68,18 @@ export async function getAIResponse(prompt: string, journalContext: string): Pro
       Recent important story events:
       ${journalContext}
 
+      Player's current inventory (Do not mention this directly in your response):
+      ${inventory.map(item => `- ${item.name} (x${item.quantity})`).join('\n')}
+
       Player input: "${prompt}"
 
       Respond as the Game Master, describing the results of the player's action and advancing the story. 
+      If the player attempts to take or acquire an item, describe the process of obtaining it.
+      If the player uses, throws, or discards an item, describe the result.
+      Only allow the player to use items that are actually in their inventory.
+      After your narrative response, on a new line, add:
+      ACQUIRED_ITEMS: [List any items the player acquired, separated by commas. If no items were acquired, leave this empty]
+      REMOVED_ITEMS: [List any items the player used, discarded, or lost, separated by commas. If no items were removed, leave this empty]
       If the action involves using an item, update their inventory accordingly. 
       If combat occurs, describe it narratively and include a COMBAT: tag followed by the opponent's name.
       If the location has changed, on a new line, write "LOCATION:" followed by a brief (2-5 words) description of the new location. 
@@ -86,6 +98,24 @@ export async function getAIResponse(prompt: string, journalContext: string): Pro
     const parts = text.split('LOCATION:');
     let narrative = parts[0].trim();
     const location = parts[1] ? parts[1].trim() : undefined;
+
+    const acquiredItemsMatch = text.match(/ACQUIRED_ITEMS:\s*(.*?)(?=\n|$)/);
+    const removedItemsMatch = text.match(/REMOVED_ITEMS:\s*(.*?)(?=\n|$)/);
+
+    const acquiredItems = acquiredItemsMatch 
+      ? acquiredItemsMatch[1].split(',').map(item => item.trim()).filter(Boolean).map(item => item.replace(/^\[|\]$/g, ''))
+      : [];
+    const removedItems = removedItemsMatch
+      ? removedItemsMatch[1].split(',').map(item => item.trim()).filter(Boolean).map(item => item.replace(/^\[|\]$/g, ''))
+      : [];
+
+    // Filter out any items that start with "REMOVED_ITEMS:" from acquiredItems
+    // This prevents incorrectly adding items that should be removed
+    const filteredAcquiredItems = acquiredItems.filter(item => !item.startsWith("REMOVED_ITEMS:"));
+
+    console.log('Parsed acquired items:', filteredAcquiredItems);
+    console.log('Parsed removed items:', removedItems);
+    console.log('Full AI response:', text);
 
     let combatInitiated = false;
     let opponent: Character | undefined;
@@ -116,17 +146,26 @@ export async function getAIResponse(prompt: string, journalContext: string): Pro
         }
       };
     }
+    
+    // Remove the ACQUIRED_ITEMS and REMOVED_ITEMS lines from the narrative
+    narrative = narrative.replace(/ACQUIRED_ITEMS: \[.*?\]\n?/, '').replace(/REMOVED_ITEMS: \[.*?\]\n?/, '').trim();
 
-    return { narrative, location, combatInitiated, opponent };
+    // Return filtered acquired items and remove any "REMOVED_ITEMS: " prefix from removed items
+    // This ensures clean data for inventory management
+    return { narrative, location, combatInitiated, opponent, acquiredItems: filteredAcquiredItems, removedItems: removedItems.map(item => item.replace("REMOVED_ITEMS: ", "")) };
   } catch (error) {
     // Error handling for API issues
     console.error('Error getting AI response:', error);
     if (error instanceof Error) {
       if (error.message.includes('API key expired') || error.message.includes('API_KEY_INVALID')) {
-        return { narrative: "Sorry, there's an issue with the AI service configuration. Please try again later." };
+        return { 
+          narrative: "Sorry, there's an issue with the AI service configuration. Please try again later.",
+          acquiredItems: [],
+          removedItems: []
+        };
       }
     }
-    return { narrative: "An unexpected error occurred. Please try again." };
+    return { narrative: "An unexpected error occurred. Please try again.", acquiredItems: [], removedItems: [] };
   }
 }
 
@@ -143,7 +182,7 @@ export async function getCharacterCreationStep(step: number, currentField: strin
     Also, provide a brief description of what this ${currentField} represents in the context of a Western character.
   `;
 
-  const response = await getAIResponse(prompt, ''); // Passing an empty string as journalContext
+  const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
   return response.narrative;
 }
 
@@ -189,7 +228,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
     Respond with a valid JSON object. No additional text or formatting.
   `;
 
-  const response = await getAIResponse(prompt, ''); // Passing an empty string as journalContext
+  const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
   try {
     // Clean up the response by removing any JSON code block markers
     const cleanedResponse = response.narrative.replace(/```json\n?|\n?```/g, '').trim();
@@ -300,7 +339,7 @@ export async function generateFieldValue(
 ): Promise<string | number> {
   if (key === 'name') {
     const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name.";
-    const response = await getAIResponse(prompt, ''); // Passing an empty string as journalContext
+    const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
     return response.narrative.trim();
   } else if (key === 'health') {
     return Math.floor(Math.random() * (100 - 50 + 1)) + 50; // Random health between 50 and 100
@@ -342,6 +381,6 @@ export async function generateCharacterSummary(character: Character): Promise<st
     The summary should capture the essence of the character, their strengths, potential weaknesses, and how they might fit into a Western setting. Keep the tone consistent with a gritty, Wild West atmosphere.
   `;
 
-  const response = await getAIResponse(prompt, ''); // Passing an empty string as journalContext
+  const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
   return response.narrative;
 }

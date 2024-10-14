@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import { CampaignStateProvider, useCampaignState } from './CampaignStateManager';
-import { Character } from '../types/character';
+import { CampaignStateProvider, useCampaignState } from '../../components/CampaignStateManager';
+import { Character } from '../../types/character';
 
 // Mock localStorage for testing purposes
 const localStorageMock = (() => {
