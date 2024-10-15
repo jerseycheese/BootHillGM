@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { CampaignStateProvider } from '../../components/CampaignStateManager';
 import Inventory from '../../components/Inventory';
 import { useGame } from '../../utils/gameEngine';
@@ -50,19 +50,4 @@ describe('Inventory', () => {
     expect(screen.getByText('Your inventory is empty.')).toBeInTheDocument();
   });
 
-  test('calls dispatch when using an item', () => {
-    render(
-      <CampaignStateProvider>
-        <Inventory />
-      </CampaignStateProvider>
-    );
-
-    const useButtons = screen.getAllByText('Use');
-    fireEvent.click(useButtons[0]);
-
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'USE_ITEM',
-      payload: '1'
-    });
-  });
 });

@@ -6,7 +6,7 @@ import { CampaignStateContext } from '../../components/CampaignStateManager';
 import { CampaignState } from '../../types/campaign';
 
 // Mock the AI service
-jest.mock('../utils/aiService', () => ({
+jest.mock('../../utils/aiService', () => ({
   getAIResponse: jest.fn(),
 }));
 

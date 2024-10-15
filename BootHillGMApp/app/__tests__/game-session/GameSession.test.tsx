@@ -2,13 +2,13 @@
 
 import React, { ReactElement } from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import GameSession from './page';
-import { getAIResponse } from '../utils/aiService';
-import { useGame } from '../utils/gameEngine';
-import * as JournalManager from '../utils/JournalManager';
-import { CampaignStateContext } from '../components/CampaignStateManager';
-import { Character } from '../types/character';
-import { CampaignState } from '../types/campaign';
+import GameSession from '../../game-session/page';
+import { getAIResponse } from '../../utils/aiService';
+import { useGame } from '../../utils/gameEngine';
+import * as JournalManager from '../../utils/JournalManager';
+import { CampaignStateContext } from '../../components/CampaignStateManager';
+import { Character } from '../../types/character';
+import { CampaignState } from '../../types/campaign';
 
 // Mock the Next.js router
 jest.mock('next/navigation', () => ({
@@ -18,17 +18,17 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Mock the AI service
-jest.mock('../utils/aiService', () => ({
+jest.mock('../../utils/aiService', () => ({
   getAIResponse: jest.fn(),
 }));
 
 // Mock the game engine hook
-jest.mock('../utils/gameEngine', () => ({
+jest.mock('../../utils/gameEngine', () => ({
   useGame: jest.fn(),
 }));
 
 // Mock the JournalManager
-jest.mock('../utils/JournalManager', () => ({
+jest.mock('../../utils/JournalManager', () => ({
   getJournalContext: jest.fn(),
 }));
 
@@ -77,6 +77,8 @@ describe('GameSession', () => {
     (getAIResponse as jest.Mock).mockResolvedValue({
       narrative: 'AI response',
       location: 'Test Town',
+      acquiredItems: [],
+      removedItems: [],
     });
     
     // Set up mock return values for the game state
@@ -118,7 +120,7 @@ describe('GameSession', () => {
     // Wait for and check if the necessary functions were called
     await waitFor(() => {
       expect(JournalManager.getJournalContext).toHaveBeenCalled();
-      expect(getAIResponse).toHaveBeenCalledWith('Look around', 'Journal context');
+      expect(getAIResponse).toHaveBeenCalledWith('Look around', 'Journal context', []);
     });
   
     // Check if the dispatch function was called with the expected action
@@ -152,7 +154,7 @@ describe('GameSession', () => {
 
     await waitFor(() => {
       expect(JournalManager.getJournalContext).toHaveBeenCalled();
-      expect(getAIResponse).toHaveBeenCalledWith('Look around', 'Journal context');
+      expect(getAIResponse).toHaveBeenCalledWith('Look around', 'Journal context', []);
     });
 
     // Simulate combat initiation
@@ -160,6 +162,8 @@ describe('GameSession', () => {
       narrative: 'A bandit appears!',
       combatInitiated: true,
       opponent: { name: 'Bandit', health: 50 },
+      acquiredItems: [],
+      removedItems: [],
     });
 
     await act(async () => {

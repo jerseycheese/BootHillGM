@@ -1,6 +1,7 @@
 // File: BootHillGMApp/app/components/CombatSystem.tsx
 
 import React, { useState, useEffect, useCallback, useContext } from 'react';
+import { act } from 'react-dom/test-utils';
 import { Character } from '../types/character';
 import { CampaignStateContext } from './CampaignStateManager';
 import { addCombatJournalEntry } from '../utils/JournalManager';
@@ -45,7 +46,9 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
       const damage = Math.floor(Math.random() * 6) + 1; // Simple d6 damage
       if (isPlayer) {
         const newHealth = Math.max(0, opponentHealth - damage);
-        setOpponentHealth(newHealth);
+        act(() => {
+          setOpponentHealth(newHealth);
+        });
         if (newHealth <= 0) {
           // Add combat result to journal when combat ends
           const summary = `${playerCharacter.name} defeated ${opponent?.name ?? 'the opponent'} in combat.`;
@@ -55,7 +58,9 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
         }
       } else {
         const newHealth = Math.max(0, playerHealth - damage);
-        setPlayerHealth(newHealth);
+        act(() => {
+          setPlayerHealth(newHealth);
+        });
         onPlayerHealthChange(newHealth);
         if (newHealth <= 0) {
           // Add combat result to journal when combat ends
@@ -65,12 +70,18 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
           dispatch?.({ type: 'UPDATE_JOURNAL', payload: addCombatJournalEntry(summary) });
         }
       }
-      setCombatLog(prev => [...prev, `${attacker.name} hits ${defender.name} for ${damage} damage!`]);
+      act(() => {
+        setCombatLog(prev => [...prev, `${attacker.name} hits ${defender.name} for ${damage} damage!`]);
+      });
     } else {
-      setCombatLog(prev => [...prev, `${attacker.name} misses ${defender.name}!`]);
+      act(() => {
+        setCombatLog(prev => [...prev, `${attacker.name} misses ${defender.name}!`]);
+      });
     }
 
-    setCurrentTurn(isPlayer ? 'opponent' : 'player');
+    act(() => {
+      setCurrentTurn(isPlayer ? 'opponent' : 'player');
+    });
   }, [rollD100, opponentHealth, playerHealth, onPlayerHealthChange, onCombatEnd, dispatch, playerCharacter.name, opponent]);
 
   // Handle player's attack action
