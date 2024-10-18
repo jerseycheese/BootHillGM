@@ -4,10 +4,11 @@ import { Character } from './character';
 import { JournalEntry } from './journal';
 import { InventoryItem } from './inventory';
 
-// Defines the structure of the overall campaign state
+// Define the structure of the campaign state
 export interface CampaignState {
   character: Character | null;  // The player's character
   location: string;             // Current location in the game world
+  savedTimestamp: number | null; // Timestamp of the last save
   gameProgress: number;         // Numeric representation of game progress
   journal: JournalEntry[];      // List of journal entries
   narrative: string;            // Current narrative text
@@ -32,6 +33,9 @@ export type JournalActionType =
   | { type: 'UPDATE_JOURNAL'; payload: string | JournalEntry }  // Add a new entry
   | { type: 'SET_JOURNAL'; payload: JournalEntry[] };           // Set the entire journal
 
+// For updating the saved timestamp
+export type SavedTimestampActionType = { type: 'SET_SAVED_TIMESTAMP'; payload: number | null };
+
 // For updating the narrative
 export type NarrativeActionType = { type: 'SET_NARRATIVE'; payload: string };
 
@@ -41,17 +45,19 @@ export type InventoryActionType =
   | { type: 'REMOVE_ITEM'; payload: string }        // Remove an item by ID
   | { type: 'SET_INVENTORY'; payload: InventoryItem[] };  // Set the entire inventory
 
-// For updating combat-related state
-export type CombatActionType =
+// For managing combat state
+export type CombatActionType = 
   | { type: 'SET_COMBAT_ACTIVE'; payload: boolean }  // Set whether combat is active
   | { type: 'SET_OPPONENT'; payload: Character | null };  // Set the current opponent
 
-// Union type of all possible game actions
-export type GameAction =
+// Union type of all possible actions
+export type GameAction = 
   | CharacterActionType
   | LocationActionType
   | GameProgressActionType
   | JournalActionType
   | NarrativeActionType
   | InventoryActionType
-  | CombatActionType;
+  | CombatActionType
+  | SavedTimestampActionType
+  | { type: 'SET_STATE'; payload: CampaignState };

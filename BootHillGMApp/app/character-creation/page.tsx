@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGame } from '../utils/gameEngine';
 import { getCharacterCreationStep, validateAttributeValue, generateFieldValue, generateCompleteCharacter, generateCharacterSummary } from '../utils/aiService';
+import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from '../types/character';
 
 // Initial character state with default values
@@ -28,6 +29,7 @@ const initialCharacter: Character = {
 export default function GameSession() {
   const router = useRouter();
   const { dispatch } = useGame();
+  const { state, saveGame } = useCampaignState();
   const [character, setCharacter] = useState<Character>(initialCharacter);
   const [currentStep, setCurrentStep] = useState(0);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -158,7 +160,11 @@ export default function GameSession() {
 
   // Finalize character creation and navigate to game session
   const finishCharacterCreation = () => {
-    dispatch({ type: 'SET_CHARACTER', payload: character });
+    console.log('Character created:', character); // Add this line for debugging
+    const updatedState = { ...state, character };
+    console.log('State after dispatch:', updatedState);
+    saveGame(updatedState);
+    localStorage.setItem('lastCreatedCharacter', JSON.stringify(character));
     router.push('/game-session');
   };
 

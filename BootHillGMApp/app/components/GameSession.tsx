@@ -4,7 +4,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useGame } from '../utils/gameEngine';
 import { getAIResponse } from '../utils/aiService';
 import { getJournalContext } from '../utils/JournalManager';
 import CombatSystem from './CombatSystem';
@@ -13,16 +12,19 @@ import { Character } from '../types/character';
 import { JournalEntry } from '../types/journal';
 import { InventoryItem } from '../types/inventory';
 import '../styles/wireframe.css';
+import { useCampaignState } from './CampaignStateManager';
 
 export default function GameSession() {
   const router = useRouter();
-  const { state, dispatch } = useGame();
+  const { state, dispatch, saveGame } = useCampaignState();
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isCombatActive, setIsCombatActive] = useState(false);
   const [opponent, setOpponent] = useState<Character | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [isClient, setIsClient] = useState(false);
+  const [isClient, setIsClient] = useState(false);console.log('GameSession render - Current game state:', state);
+
+  console.log('GameSession render - Current game state:', state);
 
   useEffect(() => {
     setIsClient(true);
@@ -78,15 +80,30 @@ export default function GameSession() {
   // Effect to initialize game session or redirect to character creation
   useEffect(() => {
     if (isClient && state) {
+      console.log('GameSession useEffect - Checking character:', state.character);
+      const lastCreatedCharacter = localStorage.getItem('lastCreatedCharacter');
       if (!state.character) {
-        router.push('/character-creation');
+        if (lastCreatedCharacter) {
+          const character = JSON.parse(lastCreatedCharacter);
+          console.log('Loading last created character:', character);
+          dispatch({ type: 'SET_CHARACTER', payload: character });
+          localStorage.removeItem('lastCreatedCharacter');
+        } else {
+          console.log('No character found, redirecting to character creation');
+          router.push('/character-creation');
+        }
       } else if (!state.narrative) {
+        console.log('Character found, initializing game session');
+        saveGame(state);
         initializeGameSession();
       } else {
+        console.log('Game session already initialized');
         setIsInitializing(false);
       }
     }
-  }, [isClient, state, router, initializeGameSession]);
+    console.log('Current game state:', state); // Add this line for debugging
+  }, [isClient, state, router, initializeGameSession, dispatch, saveGame]);
+
 
   // Handle user input and process it through the AI
   const handleUserInput = useCallback(async (e: React.FormEvent) => {
@@ -99,7 +116,7 @@ export default function GameSession() {
       const journalContext = getJournalContext(state.journal || []);
       // Get AI response based on user input, journal context, inventory, and extract acquired items
       const { narrative: aiResponse, location, combatInitiated, opponent, acquiredItems, removedItems } = await getAIResponse(userInput, journalContext, state.inventory || []);
-      
+
       // Update game narrative with user input and AI response
       dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative || ''}\n\nPlayer: ${userInput}\n\nGame Master: ${aiResponse}` });
       
@@ -120,7 +137,7 @@ export default function GameSession() {
               description: `An item you acquired during your adventure.`
             }
           });
-        }
+      }
       });
       
       console.log('Removed items from AI:', removedItems);
@@ -132,7 +149,7 @@ export default function GameSession() {
       });
 
       // Clean up inventory periodically
-      dispatch({ type: 'CLEAN_INVENTORY' });
+      // Note: We've removed the 'CLEAN_INVENTORY' action as it's not defined in our reducer
       
       // Add a journal entry for the player's action
       const journalEntry: JournalEntry = {
@@ -147,7 +164,7 @@ export default function GameSession() {
         setOpponent(opponent);
         dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative || ''}\n\nA combat situation has arisen! Prepare to face ${opponent.name}!` });
       }
-      
+
       logInventory(state.inventory || []);
       setUserInput('');
     } catch (error) {
@@ -177,17 +194,22 @@ export default function GameSession() {
       timestamp: Date.now(),
       content: `Combat: ${combatSummary}`
     };
-    dispatch({ type: 'UPDATE_JOURNAL', payload: journalEntry });
+      dispatch({ type: 'UPDATE_JOURNAL', payload: journalEntry });
   }, [state, dispatch]);
 
   const handlePlayerHealthChange = useCallback((newHealth: number) => {
-    if (!dispatch) return;
-    dispatch({
-      type: 'UPDATE_CHARACTER',
-      payload: { health: newHealth }
+    if (!dispatch || !state.character) return;
+      dispatch({
+        type: 'SET_CHARACTER',
+        payload: { ...state.character, health: newHealth }
     });
-  }, [dispatch]);
+  }, [dispatch, state.character]);
 
+  const handleManualSave = () => {
+    saveGame(state);
+    console.log('Manual save triggered');
+  };
+    
   // Show loading state while initializing or if state is not properly loaded
   if (!isClient || !state || !state.character || isInitializing) {
     return <div className="wireframe-container">Loading game session...</div>;
@@ -203,6 +225,7 @@ export default function GameSession() {
         <p>Name: {state.character.name}</p>
         <p>Location: {state.location || 'Unknown'}</p>
         <p>Health: {state.character.health}</p>
+        <button onClick={handleManualSave} className="wireframe-button">Save Game</button>
       </div>
       {/* Game narrative display */}
       <div className="wireframe-section h-64 overflow-y-auto">
@@ -220,16 +243,16 @@ export default function GameSession() {
         <form onSubmit={handleUserInput} className="wireframe-section">
           <input
             type="text"
-            value={userInput}
+          value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             className="wireframe-input"
             placeholder="What would you like to do?"
             disabled={isLoading}
-          />
+        />
           <button type="submit" className="wireframe-button" disabled={isLoading}>
             {isLoading ? 'Processing...' : 'Take Action'}
-          </button>
-        </form>
+        </button>
+      </form>
       )}
       {/* Inventory and Journal components */}
       <div className="wireframe-section">

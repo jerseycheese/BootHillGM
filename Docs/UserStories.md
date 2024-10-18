@@ -171,19 +171,19 @@
   **Status:** Not yet implemented.
 
 ### Game State
-- [ ] As a player, I want to save my game progress so that I can continue my adventure later.
+- [x] As a player, I want to save my game progress so that I can continue my adventure later.
   **Test Plan:**
   - Verify that all relevant game state data is included in the save
   - Test saving at different points in the game
   - Ensure saved games are stored correctly and can be accessed later
-  **Status:** Not yet implemented.
+  **Status:** Implemented. Automatic saving occurs 10 seconds after state changes, and manual saving is available.
 
-- [ ] As a player, I want to load a saved game so that I can resume my previous adventure.
+- [x] As a player, I want to load a saved game so that I can resume my previous adventure.
   **Test Plan:**
   - Verify that loading a saved game restores all game state correctly
   - Test loading games from different points in the story
   - Ensure the game continues seamlessly from the loaded state
-  **Status:** Not yet implemented.
+  **Status:** Implemented. Game state is loaded automatically when returning to the game session.
 
 ### Setting and Atmosphere
 - [ ] As a player, I want to explore one frontier town and its immediate surroundings so that I can immerse myself in a focused Western setting.
@@ -340,17 +340,6 @@ This section is for tracking bugs found during development and testing. Each bug
 
 ### Open Bugs
 
-[BUG-002] Game Session State Reset
-  - Description: Game state resets when navigating away from and back to the Game Session page.
-  - Steps to Reproduce: 
-    1. Start a game session and interact with the AI.
-    2. Navigate away from the Game Session page.
-    3. Return to the Game Session page.
-  - Expected Behavior: Game session should continue from where it left off.
-  - Actual Behavior: Game session resets to the initial message.
-  - Status: Open
-  - Priority: High
-
 [BUG-003] AI Pacing Issues
   - Description: AI advances the story too quickly, not adjusting for the current setting.
   - Steps to Reproduce: 
@@ -479,6 +468,17 @@ This section is for tracking bugs found during development and testing. Each bug
   - Status: Open
   - Priority: Medium
 
+[BUG-020] Combat State Not Persisting During Navigation
+- Description: Combat state is not maintained when navigating away from and back to the Game Session page.
+- Steps to Reproduce:
+  1. Start a game session and enter combat.
+  2. Navigate away from the Game Session page.
+  3. Return to the Game Session page.
+- Expected Behavior: Combat should resume from where it left off.
+- Actual Behavior: Combat state is lost, and the game resumes as if combat never occurred.
+- Status: Open
+- Priority: Medium
+
 ### Closed Bugs
 
 [BUG-09] API Error: Insufficient Resources
@@ -511,3 +511,15 @@ This section is for tracking bugs found during development and testing. Each bug
   - Actual Behavior: Location is displayed as "Unknown"
   - Resolution: Updated the GameSession component to explicitly request a location from the AI and set a default "Unknown Location" if not provided. Modified the Character Status section to display the correct location.
   - Closed Date: 2024-10-10
+
+[BUG-002] Game Session State Reset
+- Description: Game state resets when navigating away from and back to the Game Session page.
+- Steps to Reproduce:
+  1. Start a game session and interact with the AI.
+  2. Navigate away from the Game Session page.
+  3. Return to the Game Session page.
+- Expected Behavior: Game session should continue from where it left off.
+- Actual Behavior: Game session resets to the initial message.
+- Status: Closed
+- Resolution: Implemented robust game state persistence using localStorage and added fallback mechanism for character data.
+- Closed Date: 2024-10-18

@@ -77,9 +77,9 @@ Provide feedback for attempted use of unavailable items
 - [x] Integrate summary display in character creation process
 
 3.5 Campaign Persistence
-- [ ] Design and implement CampaignStateManager
-- [ ] Integrate campaign state saving/loading into GameSession component
-- [ ] Implement basic journal system for tracking important story information
+- [x] Design and implement CampaignStateManager
+- [x] Integrate campaign state saving/loading into GameSession component
+- [x] Implement basic journal system for tracking important story information
 - [ ] Update AI service to use journal context in prompts
 
 3.6 Combat Journal Integration
@@ -92,10 +92,11 @@ Provide feedback for attempted use of unavailable items
 ## Phase 4: Data Persistence and Refinement
 
 4.1 Save/Load Functionality
-- [ ] Implement campaign state serialization
-- [ ] Create save/load system using localStorage
-- [ ] Add error handling for save/load operations
-- [ ] Test save/load functionality across different scenarios
+- [x] Implement campaign state serialization
+- [x] Create save/load system using localStorage
+- [x] Add error handling for save/load operations
+- [x] Test save/load functionality across different scenarios
+- [ ] Implement combat state persistence during navigation
 
 4.2 Bug Fixes and Optimizations
 - [ ] Address any bugs or issues discovered during development

@@ -1,7 +1,7 @@
 // File: BootHillGMApp/app/components/CombatSystem.tsx
 
 import React, { useState, useEffect, useCallback, useContext } from 'react';
-import { act } from 'react-dom/test-utils';
+import { act } from '@testing-library/react';
 import { Character } from '../types/character';
 import { CampaignStateContext } from './CampaignStateManager';
 import { addCombatJournalEntry } from '../utils/JournalManager';
