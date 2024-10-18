@@ -28,7 +28,7 @@ const initialCharacter: Character = {
 
 export default function GameSession() {
   const router = useRouter();
-  const { dispatch } = useGame();
+  useGame(); // Keep the hook call without destructuring
   const { state, saveGame } = useCampaignState();
   const [character, setCharacter] = useState<Character>(initialCharacter);
   const [currentStep, setCurrentStep] = useState(0);

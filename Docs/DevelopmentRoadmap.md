@@ -68,10 +68,6 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
   - Provide feedback for attempted use of unavailable items
 - [ ] Integrate inventory with other game systems (e.g., combat)
 
-Prevent usage of items not in inventory
-Provide feedback for attempted use of unavailable items
-- [ ] Integrate inventory with other game systems (e.g., combat)
-
 3.4 Character Summary
 - [x] Implement character summary generation
 - [x] Integrate summary display in character creation process
@@ -80,6 +76,11 @@ Provide feedback for attempted use of unavailable items
 - [x] Design and implement CampaignStateManager
 - [x] Integrate campaign state saving/loading into GameSession component
 - [x] Implement basic journal system for tracking important story information
+- [x] Save and load campaign state using client-side storage
+- [x] Automatically save progress after significant game events
+- [x] Resume gameplay from the last saved point
+- [x] Basic journal system to track important story information
+- [x] Use journal entries to provide context for AI storytelling
 - [ ] Update AI service to use journal context in prompts
 
 3.6 Combat Journal Integration

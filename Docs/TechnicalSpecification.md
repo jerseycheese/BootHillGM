@@ -34,6 +34,10 @@
   - Implements advanced error checking and cleaning for item operations
 7. UI Components: Basic reusable React components
 8. Campaign State Manager: Handles saving, loading, and managing campaign state
+   - Implements React Context for global state management
+   - Uses localStorage for client-side persistence
+   - Provides saveGame and loadGame functions
+   - Handles automatic saving of game state
 9. Journal System: Manages the storage and retrieval of important story information
 
 ## 4. Data Flow

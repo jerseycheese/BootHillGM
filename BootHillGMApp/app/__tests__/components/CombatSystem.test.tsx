@@ -11,6 +11,8 @@ jest.mock('../../utils/aiService', () => ({
 }));
 
 const mockDispatch = jest.fn();
+const mockSaveGame = jest.fn();
+const mockLoadGame = jest.fn();
 
 describe('CombatSystem', () => {
   const mockPlayer: Character = {
@@ -39,11 +41,12 @@ describe('CombatSystem', () => {
     inventory: [],
     isCombatActive: false,
     opponent: null,
+    savedTimestamp: null,
   };
   
   const renderWithContext = (ui: React.ReactElement) => {
     return render(
-      <CampaignStateContext.Provider value={{ state: mockState, dispatch: mockDispatch }}>
+      <CampaignStateContext.Provider value={{ state: mockState, dispatch: mockDispatch, saveGame: mockSaveGame, loadGame: mockLoadGame }}>
         {ui}
       </CampaignStateContext.Provider>
     );
@@ -160,7 +163,7 @@ describe('CombatSystem', () => {
     expect(screen.queryByText('Combat')).not.toBeInTheDocument();
 
     rerender(
-      <CampaignStateContext.Provider value={{ state: mockState, dispatch: mockDispatch }}>
+      <CampaignStateContext.Provider value={{ state: mockState, dispatch: mockDispatch, saveGame: mockSaveGame, loadGame: mockLoadGame }}>
         <CombatSystem
           playerCharacter={mockPlayer}
           opponent={mockOpponent}
@@ -193,7 +196,7 @@ describe('CombatSystem', () => {
     
     // Simulate combat ending (opponent defeated)
     rerender(
-      <CampaignStateContext.Provider value={{ state: mockState, dispatch: mockDispatch }}>
+      <CampaignStateContext.Provider value={{ state: mockState, dispatch: mockDispatch, saveGame: mockSaveGame, loadGame: mockLoadGame }}>
         <CombatSystem
           playerCharacter={mockPlayer}
           opponent={null}

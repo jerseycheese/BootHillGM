@@ -51,6 +51,9 @@ const campaignReducer = (state: CampaignState, action: GameAction): CampaignStat
       return { ...state, savedTimestamp: action.payload };
     case 'SET_OPPONENT':
       return { ...state, opponent: action.payload };
+    case 'SET_STATE':
+      // Replace the entire state with the provided payload
+      return { ...action.payload };
     default:
       return state;
   }
@@ -66,43 +69,49 @@ export const CampaignStateContext = createContext<{
 
 // Provider component to wrap the application and provide campaign state
 export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [state, dispatch] = useReducer(campaignReducer, initialCampaignState);
+  const [state, dispatch] = useReducer(campaignReducer, initialCampaignState);
   
-    const saveGame = useCallback((stateToSave: CampaignState) => {
+  // Function to save the current game state
+  const saveGame = useCallback((stateToSave: CampaignState) => {
     try {
-      const serializedState = JSON.stringify(stateToSave);
+      // Add a timestamp to the state before saving
+      const stateWithTimestamp = {
+        ...stateToSave,
+        savedTimestamp: Date.now()
+      };
+      const serializedState = JSON.stringify(stateWithTimestamp);
       localStorage.setItem('campaignState', serializedState);
-      const newTimestamp = Date.now();
-      stateToSave.savedTimestamp = newTimestamp;
-      dispatch({ type: 'SET_STATE', payload: stateToSave });
+      // Update the state with the new timestamp
+      dispatch({ type: 'SET_STATE', payload: stateWithTimestamp });
       console.log('Game state saved successfully');
     } catch (error) {
       console.error('Failed to save game state:', error);
     }
   }, []);
 
-  const loadGame = (): CampaignState | null => {
+  // Function to load the saved game state
+  const loadGame = useCallback((): CampaignState | null => {
     try {
       const serializedState = localStorage.getItem('campaignState');
       if (serializedState === null) {
+        console.log('No saved state found');
         return null;
       }
       const loadedState: CampaignState = JSON.parse(serializedState);
+      // Update the state with the loaded data
+      dispatch({ type: 'SET_STATE', payload: loadedState });
       console.log('Game state loaded successfully');
       return loadedState;
     } catch (error) {
       console.error('Failed to load game state:', error);
       return null;
     }
-  };
+  }, []);
 
   // Load initial state
   useEffect(() => {
-    const loadedState = loadGame();
-    if (loadedState) {
-      dispatch({ type: 'SET_STATE', payload: loadedState });
-    }
-  }, []);
+    loadGame();
+  }, [loadGame]);
 
   // Auto-save on state changes
   useEffect(() => {

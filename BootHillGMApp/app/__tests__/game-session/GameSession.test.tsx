@@ -1,14 +1,13 @@
-// BootHillGMApp/app/game-session/GameSession.test.tsx
+// BootHillGMApp/app/__tests__/game-session/GameSession.test.tsx
 
 import React, { ReactElement } from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import GameSession from '../../game-session/page';
+import GameSession from '../../components/GameSession';
 import { getAIResponse } from '../../utils/aiService';
-import { useGame } from '../../utils/gameEngine';
 import * as JournalManager from '../../utils/JournalManager';
-import { CampaignStateContext } from '../../components/CampaignStateManager';
 import { Character } from '../../types/character';
 import { CampaignState } from '../../types/campaign';
+import { CampaignStateContext, useCampaignState } from '../../components/CampaignStateManager';
 
 // Mock the Next.js router
 jest.mock('next/navigation', () => ({
@@ -22,10 +21,14 @@ jest.mock('../../utils/aiService', () => ({
   getAIResponse: jest.fn(),
 }));
 
-// Mock the game engine hook
-jest.mock('../../utils/gameEngine', () => ({
-  useGame: jest.fn(),
-}));
+// Mock the CampaignStateManager
+jest.mock('../../components/CampaignStateManager', () => {
+  const actual = jest.requireActual('../../components/CampaignStateManager');
+  return {
+    ...actual,
+    useCampaignState: jest.fn(),
+  };
+});
 
 // Mock the JournalManager
 jest.mock('../../utils/JournalManager', () => ({
@@ -34,6 +37,7 @@ jest.mock('../../utils/JournalManager', () => ({
 
 const renderWithProviders = (ui: ReactElement) => {
   const mockDispatch = jest.fn();
+  const mockSaveGame = jest.fn();
   const mockCharacter: Character = {
     name: 'Test Character',
     health: 100,
@@ -60,9 +64,20 @@ const renderWithProviders = (ui: ReactElement) => {
     gameProgress: 0,
     isCombatActive: false,
     opponent: null,
+    savedTimestamp: null,
   };
+  
+  const mockContextValue = {
+    state: mockState,
+    dispatch: mockDispatch,
+    saveGame: mockSaveGame,
+    loadGame: jest.fn(),
+  };
+  
+  (useCampaignState as jest.Mock).mockReturnValue(mockContextValue);
+  
   return render(
-    <CampaignStateContext.Provider value={{ state: mockState, dispatch: mockDispatch }}>
+    <CampaignStateContext.Provider value={mockContextValue}>
       {ui}
     </CampaignStateContext.Provider>
   );
@@ -79,18 +94,6 @@ describe('GameSession', () => {
       location: 'Test Town',
       acquiredItems: [],
       removedItems: [],
-    });
-    
-    // Set up mock return values for the game state
-    (useGame as jest.Mock).mockReturnValue({
-      state: {
-        character: { name: 'Test Character', health: 100 },
-        location: 'Test Town',
-        narrative: 'Initial narrative',
-        inventory: [],
-        journal: [],
-      },
-      dispatch: jest.fn(),
     });
     
     // Set up mock return value for the journal context
@@ -125,7 +128,8 @@ describe('GameSession', () => {
   
     // Check if the dispatch function was called with the expected action
     await waitFor(() => {
-      expect(useGame().dispatch).toHaveBeenCalledWith(
+      const { dispatch } = useCampaignState();
+      expect(dispatch).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'SET_NARRATIVE',
           payload: expect.stringContaining('AI response')
@@ -172,7 +176,8 @@ describe('GameSession', () => {
     });
 
     await waitFor(() => {
-      expect(useGame().dispatch).toHaveBeenCalledWith(
+      const { dispatch } = useCampaignState();
+      expect(dispatch).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'SET_NARRATIVE',
           payload: expect.stringContaining('A combat situation has arisen! Prepare to face Bandit!')
