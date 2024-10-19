@@ -27,7 +27,7 @@ export type GameEngineAction =
   | { type: 'REMOVE_ITEM'; payload: string }
   | { type: 'USE_ITEM'; payload: string }
   | { type: 'ADD_QUEST'; payload: string }
-  | { type: 'SET_CHARACTER'; payload: Character }
+  | { type: 'SET_CHARACTER'; payload: Character | null }
   | { type: 'UPDATE_CHARACTER'; payload: Partial<Character> }
   | { type: 'SET_NARRATIVE'; payload: string }
   | { type: 'SET_GAME_PROGRESS'; payload: number }
@@ -76,7 +76,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
             item.id === action.payload.id
               ? { ...item, quantity: item.quantity + action.payload.quantity }
               : item
-          ),
+          )
         };
       } else {
         // If it's a new item, add it to the inventory
@@ -88,26 +88,27 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       return newState;
     }
     case 'REMOVE_ITEM':
-      console.log('REMOVE_ITEM action received:', action.payload);
-      newState = {
+      return {
         ...state,
         inventory: state.inventory.filter(item => item.id !== action.payload)
       };
-      console.log('Updated inventory:', newState.inventory.map(item => `${item.name}: ${item.quantity}`));
-      return newState;
     case 'USE_ITEM':
       const itemToUse = state.inventory.find(item => item.id === action.payload);
       if (!itemToUse) {
+        console.log(`Attempted to use non-existent item: ${action.payload}`);
         return state;
       }
-      // Decrease the quantity of the used item and remove it if quantity becomes 0
+      // Decrease the quantity of the used item
+      const updatedItem = { ...itemToUse, quantity: itemToUse.quantity - 1 };
+      const updatedInventory = state.inventory.map(item =>
+        item.id === action.payload ? updatedItem : item // Access payload directly
+      ).filter(item => item.quantity > 0);  // Remove items with quantity 0
+
+      console.log(`Item used: ${itemToUse.name}, Remaining: ${updatedItem.quantity}`);
+
       newState = {
         ...state,
-        inventory: state.inventory.map(item => 
-          item.id === action.payload
-            ? { ...item, quantity: item.quantity - 1 }
-            : item
-        ).filter(item => item.quantity > 0)  // Remove items with quantity 0
+        inventory: updatedInventory
       };
       console.log('Updated inventory:', newState.inventory.map(item => `${item.name}: ${item.quantity}`));
       return newState;
@@ -146,32 +147,27 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'SET_OPPONENT':
       return { ...state, opponent: action.payload };
     case 'UPDATE_ITEM_QUANTITY':
-      newState = {
+      return {
         ...state,
-        inventory: state.inventory
-          .map(item =>
-            item.id === action.payload.id
-              ? { ...item, quantity: action.payload.quantity }
-              : item
-          )
-          .filter(item => item.quantity > 0), // Remove items with quantity 0
+        inventory: state.inventory.map(item =>
+          item.id === action.payload.id ? { ...item, quantity: action.payload.quantity } : item
+        )
       };
-      console.log('Updated inventory:', newState.inventory.map(item => `${item.name}: ${item.quantity}`));
-      return newState;
     case 'CLEAN_INVENTORY':
       newState = {
         ...state,
         inventory: state.inventory.filter(item => 
+          item.id &&
           item.name && 
           item.quantity > 0 && 
           !item.name.startsWith('REMOVED_ITEMS:')
         ),
       };
-      console.log('Updated inventory:', newState.inventory.map(item => `${item.name}: ${item.quantity}`));
+      console.log('Cleaned inventory:', newState.inventory.map(item => `${item.name}: ${item.quantity}`));
       return newState;
     case 'SET_INVENTORY':
       console.log("SET_INVENTORY action received:", action.payload);
-      newState = { ...state, inventory: action.payload as InventoryItem[] };
+      newState = { ...state, inventory: action.payload };
       console.log('Updated inventory:', newState.inventory.map(item => `${item.name}: ${item.quantity}`));
       return newState;
     default:

@@ -43,6 +43,13 @@ const campaignReducer = (state: CampaignState, action: GameAction): CampaignStat
       return { ...state, inventory: [...state.inventory, action.payload] };
     case 'REMOVE_ITEM':
       return { ...state, inventory: state.inventory.filter(item => item.id !== action.payload) };
+    case 'UPDATE_ITEM_QUANTITY':
+      return {
+        ...state,
+        inventory: state.inventory.map((item) =>
+          item.id === action.payload.id ? { ...item, quantity: action.payload.quantity } : item
+        ),
+      };
     case 'SET_INVENTORY':
       return { ...state, inventory: action.payload };
     case 'SET_COMBAT_ACTIVE':
@@ -53,7 +60,7 @@ const campaignReducer = (state: CampaignState, action: GameAction): CampaignStat
       return { ...state, opponent: action.payload };
     case 'SET_STATE':
       // Replace the entire state with the provided payload
-      return { ...action.payload };
+      return action.payload;
     default:
       return state;
   }
@@ -108,17 +115,13 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // Load initial state
-  useEffect(() => {
-    loadGame();
-  }, [loadGame]);
 
   // Auto-save on state changes
   useEffect(() => {
     const saveTimeout = setTimeout(() => {
-      console.log('Saving state:', state);
+      console.log('Auto-saving state:', state);
       saveGame(state);
-    }, 10000);  // Save game state 10 seconds after last state change
+    }, 300000);  // Save game state 5 minutes after last state change
 
     return () => {
       clearTimeout(saveTimeout);

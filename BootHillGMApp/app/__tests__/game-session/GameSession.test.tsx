@@ -35,7 +35,7 @@ jest.mock('../../utils/JournalManager', () => ({
   getJournalContext: jest.fn(),
 }));
 
-const renderWithProviders = (ui: ReactElement) => {
+const renderWithProviders = (ui: ReactElement, initialState?: Partial<CampaignState>) => {
   const mockDispatch = jest.fn();
   const mockSaveGame = jest.fn();
   const mockCharacter: Character = {
@@ -65,6 +65,7 @@ const renderWithProviders = (ui: ReactElement) => {
     isCombatActive: false,
     opponent: null,
     savedTimestamp: null,
+    ...initialState
   };
   
   const mockContextValue = {
@@ -184,5 +185,87 @@ describe('GameSession', () => {
         })
       );
     });
+  });
+
+  // New test case: Handling inventory updates
+  test('handles inventory updates correctly', async () => {
+    renderWithProviders(<GameSession />, {
+      inventory: [
+        { id: 'potion-1', name: 'Health Potion', quantity: 1, description: 'Restores health' },
+      ]
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Loading game session...')).not.toBeInTheDocument();
+    });
+
+    const input = screen.getByPlaceholderText('What would you like to do?');
+    const submitButton = screen.getByText('Take Action');
+
+    // Simulate acquiring an item
+    (getAIResponse as jest.Mock).mockResolvedValueOnce({
+      narrative: 'You found a sword!',
+      acquiredItems: ['Sword'],
+      removedItems: [],
+    });
+
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'Search for items' } });
+      fireEvent.click(submitButton);
+    });
+
+    await waitFor(() => {
+      const { dispatch } = useCampaignState();
+      expect(dispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'ADD_ITEM',
+          payload: expect.objectContaining({
+            name: 'Sword',
+            quantity: 1,
+          })
+        })
+      );
+    });
+
+    // Simulate using an item
+    (getAIResponse as jest.Mock).mockResolvedValueOnce({
+      narrative: 'You used a health potion.',
+      acquiredItems: [],
+      removedItems: ['Health Potion'],
+    });
+
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'Use health potion' } });
+      fireEvent.click(submitButton);
+    });
+
+    await waitFor(() => {
+      const { dispatch } = useCampaignState();
+      expect(dispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'REMOVE_ITEM',
+          payload: 'potion-1'
+        })
+      );
+    });
+  });
+
+  // New test case: Handling invalid inventory items
+  test('does not render invalid inventory items', async () => {
+    renderWithProviders(<GameSession />, {
+      inventory: [
+        { id: 'potion-1', name: 'Health Potion', quantity: 1, description: 'Restores health' },
+        { id: 'invalid-1', name: 'Invalid Item', quantity: 0, description: 'Should not be rendered' },
+        { id: 'invalid-2', name: 'Incomplete Item', quantity: 1, description: 'Missing other properties' },
+      ]
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Loading game session...')).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Health Potion (x1)')).toBeInTheDocument();
+    expect(screen.queryByText('Invalid Item (x0)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Incomplete Item (x1)')).not.toBeInTheDocument();
   });
 });

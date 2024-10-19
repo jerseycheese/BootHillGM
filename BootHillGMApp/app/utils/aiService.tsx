@@ -76,7 +76,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       Respond as the Game Master, describing the results of the player's action and advancing the story. 
       If the player attempts to take or acquire an item, describe the process of obtaining it.
       If the player uses, throws, or discards an item, describe the result.
-      Only allow the player to use items that are actually in their inventory.
+      Only allow the player to use items that are actually in their inventory. If the player tries to use an item they don't have, explain that they don't possess the item.
       After your narrative response, on a new line, add:
       ACQUIRED_ITEMS: [List any items the player acquired, separated by commas. If no items were acquired, leave this empty]
       REMOVED_ITEMS: [List any items the player used, discarded, or lost, separated by commas. If no items were removed, leave this empty]
@@ -163,7 +163,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
           acquiredItems: [],
           removedItems: []
         };
-      }
+  }
     }
     return { narrative: "An unexpected error occurred. Please try again.", acquiredItems: [], removedItems: [] };
   }
