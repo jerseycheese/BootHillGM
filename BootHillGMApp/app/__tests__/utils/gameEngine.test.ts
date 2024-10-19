@@ -143,4 +143,32 @@ describe('gameReducer', () => {
     const newState = gameReducer(stateWithItem, action);
     expect(newState.inventory).toHaveLength(0);
   });
+
+  it('should handle UPDATE_ITEM_QUANTITY action', () => {
+    const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health' };
+    const stateWithItem: GameState = { ...initialState, inventory: [item] };
+    const action: GameEngineAction = { type: 'UPDATE_ITEM_QUANTITY', payload: { id: '1', quantity: 5 } };
+    const newState = gameReducer(stateWithItem, action);
+    expect(newState.inventory[0].quantity).toBe(5);
+  });
+
+  it('should handle CLEAN_INVENTORY action', () => {
+    const validItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health' };
+    const invalidItem: InventoryItem = { id: '2', name: 'REMOVED_ITEMS: Invalid Item', quantity: 0, description: 'Should be removed' };
+    const stateWithItems: GameState = { ...initialState, inventory: [validItem, invalidItem] };
+    const action: GameEngineAction = { type: 'CLEAN_INVENTORY' };
+    const newState = gameReducer(stateWithItems, action);
+    expect(newState.inventory).toHaveLength(1);
+    expect(newState.inventory[0]).toEqual(validItem);
+  });
+
+  it('should handle SET_INVENTORY action', () => {
+    const newInventory: InventoryItem[] = [
+      { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health' },
+      { id: '2', name: 'Sword', quantity: 1, description: 'Sharp weapon' }
+    ];
+    const action: GameEngineAction = { type: 'SET_INVENTORY', payload: newInventory };
+    const newState = gameReducer(initialState, action);
+    expect(newState.inventory).toEqual(newInventory);
+  });
 });
