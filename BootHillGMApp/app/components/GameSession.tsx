@@ -8,6 +8,7 @@ import CombatSystem from './CombatSystem';
 import JournalViewer from './JournalViewer';
 import { Character } from '../types/character';
 import { JournalEntry } from '../types/journal';
+import { addJournalEntry } from '../utils/JournalManager';
 import { useCampaignState } from './CampaignStateManager';
 import { debounce } from 'lodash';
 import '../styles/wireframe.css';
@@ -164,9 +165,18 @@ export default function GameSession() {
         removedItems: rawRemovedItems,
       } = await getAIResponse(userInput, journalContext, state.inventory || []);
 
+      // Update narrative
+      const updatedNarrative = `${state.narrative || ''}\n\nPlayer: ${userInput}\n\nGame Master: ${aiResponse}`;
       dispatch({
         type: 'SET_NARRATIVE',
-        payload: `${state.narrative || ''}\n\nPlayer: ${userInput}\n\nGame Master: ${aiResponse}`,
+        payload: updatedNarrative,
+      });
+
+      // Add new journal entry with player's action
+      const newJournalEntry = addJournalEntry(state.journal, userInput);
+      dispatch({
+        type: 'UPDATE_JOURNAL',
+        payload: newJournalEntry,
       });
 
       // Clean up acquired and removed items
@@ -183,7 +193,7 @@ export default function GameSession() {
       setIsLoading(false);
       setUserInput('');
     }
-  }, [userInput, isLoading, state, dispatch, debouncedHandleInventoryChanges]);
+  }, [userInput, isLoading, state, dispatch]);
 
   const handleCombatEnd = useCallback((winner: 'player' | 'opponent', combatSummary: string) => {
     if (!state || !dispatch) return;

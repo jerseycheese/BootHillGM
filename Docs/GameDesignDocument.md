@@ -74,6 +74,7 @@ BootHillGM is an AI-driven, text-based RPG set in the American Old West, based o
 - [ ] Automatically save progress after significant game events
 - [ ] Resume gameplay from the last saved point
 - [ ] Basic journal system to track important story information
+- [ ] Generate narrative summaries for journal entries (e.g., "CHARACTER_NAME drank his last health potion")
 - [ ] Use journal entries to provide context for AI storytelling
 
 #### 5.4 Item Usage
@@ -97,6 +98,7 @@ BootHillGM is an AI-driven, text-based RPG set in the American Old West, based o
 #### 6.1 Narrative Generation
 - [x] Implement uncensored storytelling to allow full player agency
 - [x] AI adapts to all player actions without moral judgment
+- [ ] Generate concise, narrative-style journal entries based on player actions
 - [ ] Linear story creation with minimal branching
 - [ ] Integration of basic Boot Hill RPG rules into narrative decisions
 - [ ] Simple text generation and display in web interface

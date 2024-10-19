@@ -67,6 +67,7 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
   - Prevent usage of items not in inventory
   - Provide feedback for attempted use of unavailable items
 - [ ] Integrate inventory with other game systems (e.g., combat)
+- [ ] Implement handling of incomplete or invalid inventory items
 
 3.4 Character Summary
 - [x] Implement character summary generation
@@ -87,8 +88,11 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [x] Implement automatic journal entry creation for combat results
 - [x] Update CombatSystem to trigger journal updates
 - [x] Modify GameSession to handle combat journal entries
-- [x] Enhance JournalManager with combat-specific entry creation
-- [x] Update unit tests for new combat journal functionality
+- [ ] Enhance journal system with narrative summaries
+  - [ ] Modify AIService to generate narrative summaries for player actions
+  - [ ] Update GameSession component to use narrative summaries for journal entries
+  - [ ] Adjust JournalViewer component to display narrative summaries
+  - [ ] Implement testing for narrative summary generation
 
 ## Phase 4: Data Persistence and Refinement
 

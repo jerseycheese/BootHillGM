@@ -24,6 +24,14 @@ The AI Game Master (GM) is the core component of BootHillGM, responsible for cre
 - [ ] Maintain a small-scale world state (one town and immediate surroundings)
 - [ ] Manage simple time progression (day/night cycle)
 
+### 2.5 Journal Management
+- [ ] Generate narrative summaries for player actions
+  - Input: Raw player action (e.g., "drink health potion")
+  - Output: Narrative summary (e.g., "CHARACTER_NAME drank his last health potion")
+- [ ] Ensure summaries are concise (1-2 sentences)
+- [ ] Include relevant context (e.g., "last health potion" if it's the last one)
+- [ ] Use character name and appropriate pronouns
+
 ## 3. AI Model Integration
 
 ### 3.1 Prompt Engineering

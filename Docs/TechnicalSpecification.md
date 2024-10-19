@@ -31,11 +31,15 @@
 6. Inventory System: Manages character inventory and item interactions
   - Handles adding and removing items dynamically
   - Supports multiple instances of the same item
-  - Implements advanced error checking and cleaning for item operations
+  - Implements debounced inventory change handler for improved performance
+  - Handles item quantity updates and removals
+  - Filters out invalid items and handles edge cases
+  - Uses lodash for debounce functionality
 7. UI Components: Basic reusable React components
 8. Campaign State Manager: Handles saving, loading, and managing campaign state
    - Implements React Context for global state management
    - Uses localStorage for client-side persistence
+   - Includes UPDATE_ITEM_QUANTITY action for granular inventory control
    - Provides saveGame and loadGame functions
    - Handles automatic saving of game state
 9. Journal System: Manages the storage and retrieval of important story information
@@ -46,11 +50,12 @@
 3. Reducer functions process actions and update the global state
 4. Inventory is cleaned and updated based on AI responses
 5. Components re-render based on state changes
-6. API routes handle server-side logic, including AI interactions
-7. Server responds with updated data
-8. Campaign state is saved after significant game events
-9. Journal entries are added based on important story developments
-10. AI responses are generated with context from the journal
+6. Debounced inventory changes are processed to prevent duplicate additions
+7. API routes handle server-side logic, including AI interactions
+8. Server responds with updated data
+9. Campaign state is saved after significant game events
+10. Journal entries are added based on important story developments
+11. AI responses are generated with context from the journal
 
 ## 5. AI Integration
 - [x] Implement interface for AI model interaction with uncensored responses
@@ -264,6 +269,7 @@ interface InventoryItem {
 - `loadCampaignState(): CampaignState | null`
 - `updateJournal(entry: string): void`
 - `getJournalContext(): string`
+- `debouncedHandleInventoryChanges(acquiredItems: string[], removedItems: string[]): void`
 - `dispatch(action: Action): void`
 
 These functions will be implemented in the CampaignStateManager and GameEngine components.
