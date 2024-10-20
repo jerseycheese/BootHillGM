@@ -97,7 +97,7 @@ export default function GameSession() {
         initializationRef.current = true;
       }
     }
-  }, [isClient, state.character, state.narrative, router, initializeGameSession, dispatch, saveGame]);
+  }, [isClient, state, router, initializeGameSession, dispatch, saveGame]);
 
   const debouncedHandleInventoryChanges = useMemo(
     () => debounce((acquiredItems: string[], removedItems: string[]) => {
@@ -173,10 +173,15 @@ export default function GameSession() {
       });
 
       // Add new journal entry with player's action
-      const newJournalEntry = addJournalEntry(state.journal, userInput);
+      const newJournalEntries = await addJournalEntry(
+        state.journal,
+        userInput,
+        journalContext,
+        state.character?.name || 'Unknown'
+      );
       dispatch({
         type: 'UPDATE_JOURNAL',
-        payload: newJournalEntry,
+        payload: newJournalEntries[newJournalEntries.length - 1],
       });
 
       // Clean up acquired and removed items
@@ -193,7 +198,7 @@ export default function GameSession() {
       setIsLoading(false);
       setUserInput('');
     }
-  }, [userInput, isLoading, state, dispatch]);
+  }, [userInput, isLoading, state, dispatch, debouncedHandleInventoryChanges]);
 
   const handleCombatEnd = useCallback((winner: 'player' | 'opponent', combatSummary: string) => {
     if (!state || !dispatch) return;

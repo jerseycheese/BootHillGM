@@ -4,4 +4,6 @@ export interface JournalEntry {
   timestamp: number;
   // The content of the journal entry
   content: string;
+  // The narrative summary of the journal entry
+  narrativeSummary?: string;
 }

@@ -6,6 +6,13 @@ interface JournalViewerProps {
 }
 
 const JournalViewer: React.FC<JournalViewerProps> = ({ entries }) => {
+  const formatDate = (date: Date) => {
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+  };
+
   return (
     <div className="wireframe-section">
       <h2 className="wireframe-subtitle">Journal</h2>
@@ -16,7 +23,7 @@ const JournalViewer: React.FC<JournalViewerProps> = ({ entries }) => {
           {/* Display entries in reverse chronological order */}
           {entries.slice().reverse().map((entry, index) => (
             <li key={index} className="wireframe-text mb-2">
-              <strong>{new Date(entry.timestamp).toLocaleDateString()}</strong>: {entry.content}
+              <strong>{formatDate(new Date(entry.timestamp))}</strong>: {entry.narrativeSummary || entry.content}
             </li>
           ))}
         </ul>

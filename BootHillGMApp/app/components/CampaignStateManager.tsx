@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { CampaignState, GameAction } from '../types/campaign';
 import { addJournalEntry } from '../utils/JournalManager';
+import { JournalEntry } from '../types/journal';
 
 // Define the initial state of the campaign
 const initialCampaignState: CampaignState = {
@@ -27,14 +28,8 @@ const campaignReducer = (state: CampaignState, action: GameAction): CampaignStat
     case 'SET_GAME_PROGRESS':
       return { ...state, gameProgress: action.payload };
     case 'UPDATE_JOURNAL':
-      // Handle different types of journal updates
-      if (typeof action.payload === 'string') {
-        return { ...state, journal: addJournalEntry(state.journal, action.payload) };
-      } else if (Array.isArray(action.payload)) {
-        return { ...state, journal: [...state.journal, ...action.payload] };
-      } else {
-        return { ...state, journal: [...state.journal, action.payload] };
-      }
+      // This case now only triggers the async operation
+      return state; // Return the current state, it will be updated when the async operation completes
     case 'SET_JOURNAL':
       return { ...state, journal: action.payload };
     case 'SET_NARRATIVE':
@@ -76,7 +71,32 @@ export const CampaignStateContext = createContext<{
 
 // Provider component to wrap the application and provide campaign state
 export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(campaignReducer, initialCampaignState);
+  const [state, baseDispatch] = useReducer(campaignReducer, initialCampaignState);
+
+  // Wrap dispatch to handle async actions
+  const dispatch: React.Dispatch<GameAction> = useCallback((action) => {
+    if (action.type === 'UPDATE_JOURNAL') {
+      const updateJournal = async () => {
+        let updatedJournal: JournalEntry[];
+        const context = ''; // You may want to provide a more meaningful context
+        const characterName = state.character?.name || 'Unknown'; // Use 'Unknown' if no character name is available
+        if (Array.isArray(action.payload)) {
+          // If payload is an array, add each entry individually
+          updatedJournal = state.journal;
+          for (const entry of action.payload) {
+            updatedJournal = await addJournalEntry(updatedJournal, entry, context, characterName);
+          }
+        } else {
+          // If payload is a string or single JournalEntry
+          updatedJournal = await addJournalEntry(state.journal, action.payload, context, characterName);
+        }
+        baseDispatch({ type: 'SET_JOURNAL', payload: updatedJournal });
+      };
+      updateJournal();
+    } else {
+      baseDispatch(action);
+    }
+  }, [state.journal, state.character]);
   
   // Function to save the current game state
   const saveGame = useCallback((stateToSave: CampaignState) => {
@@ -94,7 +114,7 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error) {
       console.error('Failed to save game state:', error);
     }
-  }, []);
+  }, [dispatch]);
 
   // Function to load the saved game state
   const loadGame = useCallback((): CampaignState | null => {
@@ -113,8 +133,7 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
       console.error('Failed to load game state:', error);
       return null;
     }
-  }, []);
-
+  }, [dispatch]);
 
   // Auto-save on state changes
   useEffect(() => {

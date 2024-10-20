@@ -384,3 +384,22 @@ export async function generateCharacterSummary(character: Character): Promise<st
   const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
   return response.narrative;
 }
+
+export async function generateNarrativeSummary(action: string, context: string): Promise<string> {
+  const prompt = `
+    Generate a brief, narrative summary (1-2 sentences) of the following player action in a Western RPG:
+    Player action: ${action}
+    Context: ${context}
+    
+    Use the character's name and appropriate pronouns. Include relevant context if applicable.
+    Respond with only the narrative summary, no additional text.
+  `;
+
+  try {
+    const response = await getAIResponse(prompt, '', []);
+    return response.narrative.trim();
+  } catch (error) {
+    console.error('Error generating narrative summary:', error);
+    return `${action}`;  // Fallback to original action if generation fails
+  }
+}
