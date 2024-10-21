@@ -83,12 +83,20 @@
 
 ### Journal and Campaign Persistence
 
-- [ ] As a player, I want to view my journal entries during a game session, so that I can keep track of important story events.
+- [x] As a player, I want to view my journal entries during a game session, so that I can keep track of important story events.
   **Test Plan:**
   - Implement a basic UI for viewing journal entries
   - Verify that journal entries are displayed in chronological order
   - Ensure that the journal UI is accessible during gameplay without disrupting the game flow
-  **Status:** Not yet implemented.
+  **Status:** Implemented. Journal entries now include narrative summaries.
+
+- [x] As a player, I want to see narrative summaries of my actions in the journal, so that I can better recall and understand the story progression.
+  **Test Plan:**
+  - Verify that the AI service generates appropriate narrative summaries for different types of player actions
+  - Ensure that generated summaries are concise (1-2 sentences) and informative
+  - Check that narrative summaries are correctly added to journal entries
+  - Verify that the JournalViewer displays narrative summaries clearly
+  **Status:** Implemented. AI-generated narrative summaries are now included in journal entries.
 
 - [ ] As a player, I want my game progress and journal entries to persist when I navigate away from the game session, so that I can resume my game where I left off.
   **Test Plan:**

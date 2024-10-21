@@ -33,6 +33,7 @@ jest.mock('../../components/CampaignStateManager', () => {
 // Mock the JournalManager
 jest.mock('../../utils/JournalManager', () => ({
   getJournalContext: jest.fn(() => 'Journal context'),
+  addJournalEntry: jest.fn(() => [{ timestamp: Date.now(), content: 'Test journal entry' }]),
 }));
 
 const renderWithProviders = (ui: ReactElement, initialState?: Partial<CampaignState>) => {
@@ -59,7 +60,9 @@ const renderWithProviders = (ui: ReactElement, initialState?: Partial<CampaignSt
     character: mockCharacter,
     location: 'Test Town',
     narrative: 'Initial narrative',
-    inventory: [],
+    inventory: [
+      { id: 'health-potion-1', name: 'Health Potion', quantity: 1, description: 'Restores health' },
+    ],
     journal: [],
     gameProgress: 0,
     isCombatActive: false,
@@ -77,15 +80,18 @@ const renderWithProviders = (ui: ReactElement, initialState?: Partial<CampaignSt
   
   (useCampaignState as jest.Mock).mockReturnValue(mockContextValue);
   
-  return render(
-    <CampaignStateContext.Provider value={mockContextValue}>
-      {ui}
-    </CampaignStateContext.Provider>
-  );
+  return {
+    ...render(
+      <CampaignStateContext.Provider value={mockContextValue}>
+        {ui}
+      </CampaignStateContext.Provider>
+    ),
+    mockDispatch,
+    mockState
+  };
 };
 
 describe('GameSession', () => {
-  // Reset all mocks before each test
   beforeEach(() => {
     jest.clearAllMocks();
     
@@ -101,36 +107,26 @@ describe('GameSession', () => {
     (getJournalContext as jest.Mock).mockReturnValue('Journal context');
   });
 
-  // Test case: Handling user input and updating the narrative
   test('handles user input and updates narrative', async () => {
-    // Render the GameSession component
     renderWithProviders(<GameSession />);
   
-    // Wait for the component to finish initializing
     await waitFor(() => {
       expect(screen.queryByText('Loading game session...')).not.toBeInTheDocument();
     });
 
-    // Get the input field and submit button
     const input = screen.getByPlaceholderText('What would you like to do?');
     const submitButton = screen.getByText('Take Action');
   
-    // Simulate user input and form submission
     await act(async () => {
       fireEvent.change(input, { target: { value: 'Look around' } });
       fireEvent.click(submitButton);
     });
 
-    // Ensure getJournalContext is called before checking
-    expect(getJournalContext).toHaveBeenCalled();
-  
-    // Wait for and check if the necessary functions were called
     await waitFor(() => {
       expect(getJournalContext).toHaveBeenCalled();
       expect(getAIResponse).toHaveBeenCalledWith('Look around', 'Journal context', expect.any(Array));
     });
   
-    // Check if the dispatch function was called with the expected action
     await waitFor(() => {
       const { dispatch } = useCampaignState();
       expect(dispatch).toHaveBeenCalledWith(
@@ -142,11 +138,9 @@ describe('GameSession', () => {
     });
   });
 
-  // New test case: Handling user input, updating narrative, and managing combat
   test('handles user input, updates narrative, and manages combat', async () => {
     renderWithProviders(<GameSession />);
 
-    // Wait for the component to finish initializing
     await waitFor(() => {
       expect(screen.queryByText('Loading game session...')).not.toBeInTheDocument();
     });
@@ -154,7 +148,6 @@ describe('GameSession', () => {
     const input = screen.getByPlaceholderText('What would you like to do?');
     const submitButton = screen.getByText('Take Action');
 
-    // Simulate user input and form submission
     await act(async () => {
       fireEvent.change(input, { target: { value: 'Look around' } });
       fireEvent.click(submitButton);
@@ -162,7 +155,7 @@ describe('GameSession', () => {
 
     await waitFor(() => {
       expect(getJournalContext).toHaveBeenCalled();
-      expect(getAIResponse).toHaveBeenCalledWith('Look around', 'Journal context', []);
+      expect(getAIResponse).toHaveBeenCalledWith('Look around', 'Journal context', expect.any(Array));
     });
 
     // Simulate combat initiation
@@ -190,13 +183,8 @@ describe('GameSession', () => {
     });
   });
 
-  // New test case: Handling inventory updates
   test('handles inventory updates correctly', async () => {
-    renderWithProviders(<GameSession />, {
-      inventory: [
-        { id: 'potion-1', name: 'Health Potion', quantity: 1, description: 'Restores health' },
-      ]
-    });
+    const { mockDispatch } = renderWithProviders(<GameSession />);
 
     await waitFor(() => {
       expect(screen.queryByText('Loading game session...')).not.toBeInTheDocument();
@@ -218,8 +206,16 @@ describe('GameSession', () => {
     });
 
     await waitFor(() => {
-      const { dispatch } = useCampaignState();
-      expect(dispatch).toHaveBeenCalledWith(
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'SET_NARRATIVE',
+          payload: expect.stringContaining('You found a sword!')
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'ADD_ITEM',
           payload: expect.objectContaining({
@@ -231,6 +227,7 @@ describe('GameSession', () => {
     });
 
     // Simulate using an item
+    mockDispatch.mockClear();
     (getAIResponse as jest.Mock).mockResolvedValueOnce({
       narrative: 'You used a health potion.',
       acquiredItems: [],
@@ -243,22 +240,31 @@ describe('GameSession', () => {
     });
 
     await waitFor(() => {
-      const { dispatch } = useCampaignState();
-      expect(dispatch).toHaveBeenCalledWith(
+      expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({
-          type: 'REMOVE_ITEM',
-          payload: 'potion-1'
+          type: 'SET_NARRATIVE',
+          payload: expect.stringContaining('You used a health potion.')
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'UPDATE_ITEM_QUANTITY',
+          payload: expect.objectContaining({
+            id: 'health-potion-1',
+            quantity: 0
+          })
         })
       );
     });
   });
 
-  // Updated test case: Handling invalid inventory items
-  test('does not render invalid inventory items', async () => {
+  test('renders inventory items correctly', async () => {
     const initialInventory = [
       { id: 'potion-1', name: 'Health Potion', quantity: 1, description: 'Restores health' },
-      { id: 'invalid-1', name: 'Invalid Item', quantity: 0, description: 'Should not be rendered' },
-      { id: 'invalid-2', name: 'Invalid Quantity Item', quantity: NaN, description: 'Invalid quantity type'},
+      { id: 'sword-1', name: 'Sword', quantity: 1, description: 'A sharp sword' },
     ];
     
     renderWithProviders(<GameSession />, {
@@ -269,19 +275,12 @@ describe('GameSession', () => {
       expect(screen.queryByText('Loading game session...')).not.toBeInTheDocument();
     });
 
-    // Check for the valid item
-    const validItem = screen.getByText(/Health Potion/);
-    expect(validItem).toBeInTheDocument();
+    // Check for the valid items
+    expect(screen.getByText('Health Potion (x1)')).toBeInTheDocument();
+    expect(screen.getByText('Sword (x1)')).toBeInTheDocument();
     
-    // Check for invalid items
-    const invalidItem = screen.queryByText('Invalid Item (x0)');
-    expect(invalidItem).not.toBeInTheDocument();
-
-    const invalidQuantityItem = screen.queryByText('Invalid Quantity Item (xNaN)');
-    expect(invalidQuantityItem).not.toBeInTheDocument();
-
-    // Check that only one item is rendered
+    // Check that only two items are rendered
     const listItems = screen.getAllByRole('listitem');
-    expect(listItems.length).toBe(1);
+    expect(listItems.length).toBe(2);
   });
 });

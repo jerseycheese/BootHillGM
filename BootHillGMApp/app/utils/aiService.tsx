@@ -6,10 +6,6 @@ import { InventoryItem } from '../types/inventory';
 
 // TODO: Improve formatting of AI messages for better readability and engagement
 
-// Set up the API key for the Google Generative AI
-const apiKey = typeof window === 'undefined' ? process.env.GEMINI_API_KEY : process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(apiKey || '');
-
 // Configuration for the AI model, including safety settings set to BLOCK_NONE
 const AI_CONFIG = {
   modelName: "gemini-1.5-pro",
@@ -27,9 +23,6 @@ const AI_CONFIG = {
   ]
 };
 
-// Initialize the AI model with the specified configuration
-const model = genAI.getGenerativeModel({ model: AI_CONFIG.modelName });
-
 // Retry mechanism for AI requests with exponential backoff
 async function retryAIRequest<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
   for (let i = 0; i < maxRetries; i++) {
@@ -44,6 +37,13 @@ async function retryAIRequest<T>(fn: () => Promise<T>, maxRetries = 3): Promise<
   throw new Error('Max retries reached');
 }
 
+// Function to get the AI model
+function getAIModel() {
+  const apiKey = typeof window === 'undefined' ? process.env.GEMINI_API_KEY : process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const genAI = new GoogleGenerativeAI(apiKey || '');
+  return genAI.getGenerativeModel({ model: AI_CONFIG.modelName });
+}
+
 // Main function to get AI response for game narration
 export async function getAIResponse(prompt: string, journalContext: string, inventory: InventoryItem[]): Promise<{ 
   narrative: string; 
@@ -54,6 +54,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
   removedItems: string[];
 }> {
   try {
+    const model = getAIModel();
     // Construct the full prompt for the AI, including context and instructions
     const fullPrompt = `
       You are an AI Game Master for a Western-themed RPG. Your role is to facilitate an immersive and uncensored gaming experience. Always remember:
@@ -111,7 +112,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
 
     // Filter out any items that start with "REMOVED_ITEMS:" from acquiredItems
     // This prevents incorrectly adding items that should be removed
-    const filteredAcquiredItems = acquiredItems.filter(item => !item.startsWith("REMOVED_ITEMS:"));
+    const filteredAcquiredItems = acquiredItems.filter(item => !item.startsWith("REMOVED_ITEMS:") && item !== "");
 
     console.log('Parsed acquired items:', filteredAcquiredItems);
     console.log('Parsed removed items:', removedItems);
@@ -152,20 +153,23 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
 
     // Return filtered acquired items and remove any "REMOVED_ITEMS: " prefix from removed items
     // This ensures clean data for inventory management
-    return { narrative, location, combatInitiated, opponent, acquiredItems: filteredAcquiredItems, removedItems: removedItems.map(item => item.replace("REMOVED_ITEMS: ", "")) };
+    return { 
+      narrative, 
+      location, 
+      combatInitiated, 
+      opponent, 
+      acquiredItems: filteredAcquiredItems, 
+      removedItems: removedItems.map(item => item.replace("REMOVED_ITEMS: ", "").trim()).filter(Boolean)
+    };
   } catch (error) {
     // Error handling for API issues
     console.error('Error getting AI response:', error);
     if (error instanceof Error) {
       if (error.message.includes('API key expired') || error.message.includes('API_KEY_INVALID')) {
-        return { 
-          narrative: "Sorry, there's an issue with the AI service configuration. Please try again later.",
-          acquiredItems: [],
-          removedItems: []
-        };
-  }
+        throw new Error("AI service configuration error");
+      }
     }
-    return { narrative: "An unexpected error occurred. Please try again.", acquiredItems: [], removedItems: [] };
+    throw new Error("Unexpected AI response error");
   }
 }
 
@@ -397,9 +401,10 @@ export async function generateNarrativeSummary(action: string, context: string):
 
   try {
     const response = await getAIResponse(prompt, '', []);
-    return response.narrative.trim();
+    const generatedSummary = response.narrative.trim();
+    return generatedSummary || action;  // Return the original action if the response is empty
   } catch (error) {
     console.error('Error generating narrative summary:', error);
-    return `${action}`;  // Fallback to original action if generation fails
+    return action;  // Always return the original action if any error occurs
   }
 }

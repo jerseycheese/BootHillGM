@@ -3,6 +3,10 @@
 import { addJournalEntry, getJournalEntries, getRecentJournalEntries, getJournalContext, addCombatJournalEntry } from '../../utils/JournalManager';
 import { JournalEntry } from '../../types/journal';
 
+jest.mock('../../utils/aiService', () => ({
+  generateNarrativeSummary: jest.fn().mockResolvedValue('Mocked narrative summary'),
+}));
+
 describe('Journal Manager', () => {
   let journal: JournalEntry[];
 
@@ -16,11 +20,12 @@ describe('Journal Manager', () => {
   });
 
   // Test case: Adding a new journal entry
-  test('addJournalEntry adds a new entry with current timestamp', () => {
-    const newJournal = addJournalEntry(journal, 'New entry');
+  test('addJournalEntry adds a new entry with current timestamp', async () => {
+    const newJournal = await addJournalEntry(journal, 'New entry', 'Test context', 'Test Character');
     expect(newJournal).toHaveLength(4);
     expect(newJournal[3].content).toBe('New entry');
     expect(newJournal[3].timestamp).toBeGreaterThan(3000);
+    expect(newJournal[3].narrativeSummary).toBe('Mocked narrative summary');
   });
 
   // Test case: Getting journal entries sorted by timestamp

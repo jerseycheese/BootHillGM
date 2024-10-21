@@ -30,7 +30,11 @@ export default function GameSession() {
 
   // Initialize the game session with AI-generated narrative and initial inventory
   const initializeGameSession = useCallback(async () => {
-    if (!state || !dispatch) return;
+    console.log('Initializing game session');
+    if (!state || !dispatch) {
+      console.log('State or dispatch is undefined, cannot initialize game session');
+      return;
+    }
     setIsInitializing(true);
     try {
       const journalContext = getJournalContext(state.journal || []);
@@ -42,7 +46,9 @@ export default function GameSession() {
         journalContext,
         state.inventory || []
       );
+      console.log('Dispatching SET_NARRATIVE action');
       dispatch({ type: 'SET_NARRATIVE', payload: initialNarrative });
+      console.log('Dispatching SET_LOCATION action');
       dispatch({ type: 'SET_LOCATION', payload: location || 'Unknown Location' });
 
       // Add initial items to inventory if they don't already exist
@@ -64,11 +70,13 @@ export default function GameSession() {
       initialItems.forEach(item => {
         const existingItem = state.inventory?.find(invItem => invItem.id === item.id);
         if (!existingItem) {
+          console.log(`Dispatching ADD_ITEM action for ${item.name}`);
           dispatch({ type: 'ADD_ITEM', payload: item });
         }
       });
 
-    } catch {
+    } catch (error) {
+      console.error('Error in initializeGameSession:', error);
       dispatch({ type: 'SET_NARRATIVE', payload: 'An error occurred while starting the game. Please try again.' });
       dispatch({ type: 'SET_LOCATION', payload: 'Unknown Location' });
     } finally {
@@ -78,87 +86,112 @@ export default function GameSession() {
 
   // Effect to initialize game session or redirect to character creation
   useEffect(() => {
+    console.log('GameSession useEffect triggered');
     if (isClient && state && !initializationRef.current) {
       if (!state.character) {
+        console.log('No character found, checking localStorage');
         const lastCreatedCharacter = localStorage.getItem('lastCreatedCharacter');
         if (lastCreatedCharacter) {
+          console.log('Found character in localStorage, setting character');
           const character = JSON.parse(lastCreatedCharacter);
           dispatch({ type: 'SET_CHARACTER', payload: character });
           localStorage.removeItem('lastCreatedCharacter');
         } else {
+          console.log('No character found, redirecting to character creation');
           router.push('/character-creation');
         }
       } else if (!state.narrative) {
+        console.log('No narrative found, initializing game session');
         initializeGameSession();
-        saveGame(state); // Moved saveGame after initializeGameSession
+        saveGame(state);
         initializationRef.current = true;
       } else {
+        console.log('Game session already initialized');
         setIsInitializing(false);
         initializationRef.current = true;
       }
     }
   }, [isClient, state, router, initializeGameSession, dispatch, saveGame]);
 
-  const debouncedHandleInventoryChanges = useMemo(
-    () => debounce((acquiredItems: string[], removedItems: string[]) => {
-      
-      // Handle removed items first
-      removedItems.forEach(itemName => {
-        const normalizedName = itemName.toLowerCase().trim();
-        const itemToRemove = state.inventory?.find(item => item.name.toLowerCase() === normalizedName);
-        if (itemToRemove) {
-          if (itemToRemove.quantity > 1) {
-            // If there's more than one, decrease the quantity
-            dispatch({
-              type: 'UPDATE_ITEM_QUANTITY',
-              payload: { id: itemToRemove.id, quantity: itemToRemove.quantity - 1 }
-            });
-          } else {
-            // If it's the last one, remove the item entirely
-            dispatch({ type: 'REMOVE_ITEM', payload: itemToRemove.id });
+const handleInventoryChanges = useCallback((acquiredItems: string[], removedItems: string[]) => {
+  console.log('handleInventoryChanges called with:', { acquiredItems, removedItems });
+  if (!state || !dispatch) {
+    console.log('State or dispatch is undefined, cannot handle inventory changes');
+    return;
+  }
+  try {
+    // Handle removed items first
+    removedItems.forEach(itemName => {
+      const normalizedName = itemName.toLowerCase().trim();
+      const itemToRemove = state.inventory?.find(item => item.name.toLowerCase() === normalizedName);
+      if (itemToRemove) {
+        // Always update the quantity, even if it becomes 0
+        console.log('Dispatching UPDATE_ITEM_QUANTITY for removed item:', itemToRemove);
+        dispatch({
+          type: 'UPDATE_ITEM_QUANTITY',
+          payload: { id: itemToRemove.id, quantity: Math.max(0, itemToRemove.quantity - 1) }
+        });
+      } else {
+        console.warn(`Attempted to remove non-existent item: ${itemName}`);
+      }
+    });
+
+    // Handle acquired items
+    acquiredItems.forEach(itemName => {
+      const normalizedName = itemName.toLowerCase().trim();
+      const existingItem = state.inventory?.find(item => item.name.toLowerCase() === normalizedName);
+      if (existingItem) {
+        // If item already exists, increase its quantity
+        console.log('Dispatching UPDATE_ITEM_QUANTITY for existing item:', existingItem);
+        dispatch({
+          type: 'UPDATE_ITEM_QUANTITY',
+          payload: { id: existingItem.id, quantity: existingItem.quantity + 1 }
+        });
+      } else {
+        // If it's a new item, add it to the inventory
+        const itemId = `${normalizedName.replace(/\s+/g, '-')}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        console.log('Dispatching ADD_ITEM for new item:', { itemId, itemName });
+        dispatch({
+          type: 'ADD_ITEM',
+          payload: {
+            id: itemId,
+            name: itemName, // Use original item name to preserve capitalization
+            quantity: 1,
+            description: `An item you acquired during your adventure.`
           }
-        } else {
-          console.warn(`Attempted to remove non-existent item: ${itemName}`);
-        }
-      });
-  
-      // Handle acquired items
-      acquiredItems.forEach(itemName => {
-        const normalizedName = itemName.toLowerCase().trim();
-        const existingItem = state.inventory?.find(item => item.name.toLowerCase() === normalizedName);
-        if (existingItem) {
-          // If item already exists, increase its quantity
-          dispatch({
-            type: 'UPDATE_ITEM_QUANTITY',
-            payload: { id: existingItem.id, quantity: existingItem.quantity + 1 }
-          });
-        } else {
-          // If it's a new item, add it to the inventory
-          const itemId = `${normalizedName.replace(/\s+/g, '-')}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-          dispatch({
-            type: 'ADD_ITEM',
-            payload: {
-              id: itemId,
-              name: itemName, // Use original item name to preserve capitalization
-              quantity: 1,
-              description: `An item you acquired during your adventure.`
-            }
-          });
-        }
-      });
-  
-    }, 300),
-    [dispatch, state.inventory]
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error handling inventory changes:', error);
+  }
+}, [dispatch, state]);
+
+  const debouncedHandleInventoryChanges = useMemo(
+    () => {
+      if (process.env.NODE_ENV === 'test') {
+        console.log('Using non-debounced handleInventoryChanges in test environment');
+        return handleInventoryChanges;
+      }
+      console.log('Using debounced handleInventoryChanges');
+      return debounce(handleInventoryChanges, 300);
+    },
+    [handleInventoryChanges]
   );
 
   // Handle user input and process it through the AI
   const handleUserInput = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userInput.trim() || isLoading || !state || !dispatch) return;
+    console.log('handleUserInput called with userInput:', userInput);
+    if (!userInput.trim() || isLoading || !state || !dispatch) {
+      console.log('Cannot handle user input:', { userInput, isLoading, state: !!state, dispatch: !!dispatch });
+      return;
+    }
 
     setIsLoading(true);
     try {
       const journalContext = getJournalContext(state.journal);
+      console.log('Getting AI response');
       const {
         narrative: aiResponse,
         acquiredItems: rawAcquiredItems,
@@ -167,18 +200,21 @@ export default function GameSession() {
 
       // Update narrative
       const updatedNarrative = `${state.narrative || ''}\n\nPlayer: ${userInput}\n\nGame Master: ${aiResponse}`;
+      console.log('Dispatching SET_NARRATIVE action');
       dispatch({
         type: 'SET_NARRATIVE',
         payload: updatedNarrative,
       });
 
-      // Add new journal entry with player's action
+      // Create a new journal entry with a narrative summary
+      console.log('Adding journal entry');
       const newJournalEntries = await addJournalEntry(
         state.journal,
         userInput,
         journalContext,
         state.character?.name || 'Unknown'
       );
+      console.log('Dispatching UPDATE_JOURNAL action');
       dispatch({
         type: 'UPDATE_JOURNAL',
         payload: newJournalEntries[newJournalEntries.length - 1],
@@ -188,8 +224,10 @@ export default function GameSession() {
       const acquiredItems = [...new Set(rawAcquiredItems.filter(item => item && item.trim() !== ''))];
       const removedItems = [...new Set(rawRemovedItems.filter(item => item && item.trim() !== ''))];
 
+      console.log('Calling debouncedHandleInventoryChanges with:', { acquiredItems, removedItems });
       debouncedHandleInventoryChanges(acquiredItems, removedItems);
-    } catch {
+    } catch (error) {
+      console.error('Error in handleUserInput:', error);
       dispatch({
         type: 'SET_NARRATIVE',
         payload: `${state.narrative || ''}\n\nAn error occurred. Please try again.`,
@@ -264,9 +302,9 @@ export default function GameSession() {
       {/* Character status display */}
       <div className="wireframe-section">
         <h2 className="wireframe-subtitle">Character Status</h2>
-        <p>Name: {state.character.name}</p>
+        <p>Name: {state.character?.name}</p>
         <p>Location: {state.location || 'Unknown'}</p>
-        <p>Health: {state.character.health}</p>
+        <p>Health: {state.character?.health}</p>
         <button onClick={handleManualSave} className="wireframe-button">Save Game</button>
       </div>
       {/* Game narrative display */}

@@ -78,6 +78,7 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
     if (action.type === 'UPDATE_JOURNAL') {
       const updateJournal = async () => {
         let updatedJournal: JournalEntry[];
+        // Add new journal entry with player's action
         const context = ''; // You may want to provide a more meaningful context
         const characterName = state.character?.name || 'Unknown'; // Use 'Unknown' if no character name is available
         if (Array.isArray(action.payload)) {
