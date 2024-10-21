@@ -28,8 +28,13 @@ const campaignReducer = (state: CampaignState, action: GameAction): CampaignStat
     case 'SET_GAME_PROGRESS':
       return { ...state, gameProgress: action.payload };
     case 'UPDATE_JOURNAL':
-      // This case now only triggers the async operation
-      return state; // Return the current state, it will be updated when the async operation completes
+      const newEntry: JournalEntry = typeof action.payload === 'string' 
+        ? { timestamp: Date.now(), content: action.payload }
+        : action.payload as JournalEntry;
+      return { 
+        ...state, 
+        journal: [...state.journal, newEntry]
+      };
     case 'SET_JOURNAL':
       return { ...state, journal: action.payload };
     case 'SET_NARRATIVE':
@@ -76,28 +81,12 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   // Wrap dispatch to handle async actions
   const dispatch: React.Dispatch<GameAction> = useCallback((action) => {
     if (action.type === 'UPDATE_JOURNAL') {
-      const updateJournal = async () => {
-        let updatedJournal: JournalEntry[];
-        // Add new journal entry with player's action
-        const context = ''; // You may want to provide a more meaningful context
-        const characterName = state.character?.name || 'Unknown'; // Use 'Unknown' if no character name is available
-        if (Array.isArray(action.payload)) {
-          // If payload is an array, add each entry individually
-          updatedJournal = state.journal;
-          for (const entry of action.payload) {
-            updatedJournal = await addJournalEntry(updatedJournal, entry, context, characterName);
-          }
-        } else {
-          // If payload is a string or single JournalEntry
-          updatedJournal = await addJournalEntry(state.journal, action.payload, context, characterName);
-        }
-        baseDispatch({ type: 'SET_JOURNAL', payload: updatedJournal });
-      };
-      updateJournal();
+      baseDispatch(action); // Dispatch the action directly
+      // The actual journal update will be handled in the reducer
     } else {
       baseDispatch(action);
     }
-  }, [state.journal, state.character]);
+  }, [baseDispatch]); // Only depend on baseDispatch
   
   // Function to save the current game state
   const saveGame = useCallback((stateToSave: CampaignState) => {
