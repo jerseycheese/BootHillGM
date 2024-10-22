@@ -49,9 +49,24 @@ const campaignReducer = (state: CampaignState, action: GameAction): CampaignStat
     case 'SET_NARRATIVE':
       return { ...state, narrative: action.payload };
     case 'ADD_ITEM':
-      return { ...state, inventory: [...state.inventory, action.payload] };
+      const existingItemIndex = state.inventory.findIndex(item => item.name === action.payload.name);
+      if (existingItemIndex !== -1) {
+        // Item already exists, update quantity
+        const updatedInventory = [...state.inventory];
+        updatedInventory[existingItemIndex] = {
+          ...updatedInventory[existingItemIndex],
+          quantity: updatedInventory[existingItemIndex].quantity + action.payload.quantity
+        };
+        return { ...state, inventory: updatedInventory };
+      } else {
+        // New item, add to inventory
+        return { ...state, inventory: [...state.inventory, action.payload] };
+      }
     case 'REMOVE_ITEM':
-      return { ...state, inventory: state.inventory.filter(item => item.id !== action.payload) };
+      return { 
+        ...state, 
+        inventory: state.inventory.filter(item => item.name !== action.payload)
+      };
     case 'UPDATE_ITEM_QUANTITY':
       return {
         ...state,

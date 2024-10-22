@@ -1,184 +1,76 @@
-'use client';
-
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import AIService from '../services/AIService';
 import CombatSystem from './CombatSystem';
 import JournalViewer from './JournalViewer';
 import UserInputHandler from './UserInputHandler';
-import { Character } from '../types/character';
-import { JournalEntry } from '../types/journal';
-import { getJournalContext } from '../utils/JournalManager';
-import { useCampaignState } from './CampaignStateManager';
-import { debounce } from 'lodash';
 import { useAIInteractions } from '../hooks/useAIInteractions';
 import '../styles/wireframe.css';
+import { useGameInitialization } from '../hooks/useGameInitialization';
+import { useCampaignState } from './CampaignStateManager';
+import { Character } from '../types/character';
+import { JournalEntry } from '../types/journal';
+import { InventoryItem } from '../types/inventory';
 
+/**
+ * Main game session component that orchestrates:
+ * - Game initialization via useGameInitialization hook
+ * - Combat system integration
+ * - Inventory management
+ * - User input processing
+ * - Journal entries
+ */
 export default function GameSession() {
   const router = useRouter();
   const { state, dispatch, saveGame } = useCampaignState();
   const [isCombatActive, setIsCombatActive] = useState(false);
   const [opponent, setOpponent] = useState<Character | null>(null);
-  const [isInitializing, setIsInitializing] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-  const initializationRef = useRef(false);
+  const { isInitializing, isClient, initializationRef, initializeGameSession } = useGameInitialization();
 
-  const handleInventoryChanges = useCallback((acquiredItems: string[], removedItems: string[]) => {
-    console.log('handleInventoryChanges called with:', { acquiredItems, removedItems });
-    if (!state || !dispatch) {
-      console.log('State or dispatch is undefined, cannot handle inventory changes');
-      return;
-    }
-    try {
-      // Handle removed items first
-      removedItems.forEach(itemName => {
-        const normalizedName = itemName.toLowerCase().trim();
-        const itemToRemove = state.inventory?.find(item => item.name.toLowerCase() === normalizedName);
-        if (itemToRemove) {
-          // Always update the quantity, even if it becomes 0
-          console.log('Dispatching UPDATE_ITEM_QUANTITY for removed item:', itemToRemove);
-          dispatch({
-            type: 'UPDATE_ITEM_QUANTITY',
-            payload: { id: itemToRemove.id, quantity: Math.max(0, itemToRemove.quantity - 1) }
-          });
-        } else {
-          console.warn(`Attempted to remove non-existent item: ${itemName}`);
-        }
-      });
+  const handleInventoryChange = useCallback((acquired: string[], removed: string[]) => {
+    if (!dispatch) return;
 
-      // Handle acquired items
-      acquiredItems.forEach(itemName => {
-        const normalizedName = itemName.toLowerCase().trim();
-        const existingItem = state.inventory?.find(item => item.name.toLowerCase() === normalizedName);
-        if (existingItem) {
-          // If item already exists, increase its quantity
-          console.log('Dispatching UPDATE_ITEM_QUANTITY for existing item:', existingItem);
-          dispatch({
-            type: 'UPDATE_ITEM_QUANTITY',
-            payload: { id: existingItem.id, quantity: existingItem.quantity + 1 }
-          });
-        } else {
-          // If it's a new item, add it to the inventory
-          const itemId = `${normalizedName.replace(/\s+/g, '-')}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-          console.log('Dispatching ADD_ITEM for new item:', { itemId, itemName });
-          dispatch({
-            type: 'ADD_ITEM',
-            payload: {
-              id: itemId,
-              name: itemName, // Use original item name to preserve capitalization
-              quantity: 1,
-              description: `An item you acquired during your adventure.`
-            }
-          });
-        }
-      });
-    } catch (error) {
-      console.error('Error handling inventory changes:', error);
-    }
-  }, [dispatch, state]);
+    acquired.forEach(itemName => {
+      const newItem: InventoryItem = {
+        id: `${itemName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+        name: itemName,
+        quantity: 1, // Default quantity is 1, but this could be changed if needed
+        description: `A ${itemName.toLowerCase()} acquired during your adventure.`
+      };
+      dispatch({ type: 'ADD_ITEM', payload: newItem });
+    });
 
-  const debouncedHandleInventoryChanges = useMemo(
-    () => {
-      if (process.env.NODE_ENV === 'test') {
-        console.log('Using non-debounced handleInventoryChanges in test environment');
-        return handleInventoryChanges;
-      }
-      console.log('Using debounced handleInventoryChanges');
-      return debounce(handleInventoryChanges, 300);
-    },
-    [handleInventoryChanges]
-  );
+    removed.forEach(itemName => {
+      dispatch({ type: 'REMOVE_ITEM', payload: itemName });
+    });
+  }, [dispatch]);
 
-  const { isLoading, handleUserInput } = useAIInteractions(
-    state, 
-    dispatch, 
-    debouncedHandleInventoryChanges
-  );
+  const { handleUserInput, isLoading } = useAIInteractions(state, dispatch, handleInventoryChange);
 
-  // Initialize the game session with AI-generated narrative and initial inventory
-  const initializeGameSession = useCallback(async () => {
-    console.log('Initializing game session');
-    if (!state || !dispatch) {
-      console.log('State or dispatch is undefined, cannot initialize game session');
-      return;
-    }
-    setIsInitializing(true);
-    try {
-      const journalContext = getJournalContext(state.journal || []);
-      const { narrative: initialNarrative, location } = await AIService.getAIResponse(
-        `Initialize a new game session for a character named ${state.character?.name || 'Unknown'}. 
-        Provide a brief introduction to the game world and the character's current situation. 
-        Include a detailed description of their current location and some potential options for action.
-        Ensure to explicitly state the name of the current location.`,
-        journalContext,
-        state.inventory || []
-      );
-      console.log('Dispatching SET_NARRATIVE action');
-      dispatch({ type: 'SET_NARRATIVE', payload: initialNarrative });
-      console.log('Dispatching SET_LOCATION action');
-      dispatch({ type: 'SET_LOCATION', payload: location || 'Unknown Location' });
-
-      // Add initial items to inventory if they don't already exist
-      const initialItems = [
-        { 
-          id: 'health-potion-initial', 
-          name: 'Health Potion', 
-          quantity: 2, 
-          description: 'Restores 20 health points' 
-        },
-        { 
-          id: 'rope-initial', 
-          name: 'Rope', 
-          quantity: 1, 
-          description: 'A sturdy rope, 50 feet long' 
-        }
-      ];
-
-      initialItems.forEach(item => {
-        const existingItem = state.inventory?.find(invItem => invItem.id === item.id);
-        if (!existingItem) {
-          console.log(`Dispatching ADD_ITEM action for ${item.name}`);
-          dispatch({ type: 'ADD_ITEM', payload: item });
-        }
-      });
-
-    } catch (error) {
-      console.error('Error in initializeGameSession:', error);
-      dispatch({ type: 'SET_NARRATIVE', payload: 'An error occurred while starting the game. Please try again.' });
-      dispatch({ type: 'SET_LOCATION', payload: 'Unknown Location' });
-    } finally {
-      setIsInitializing(false);
-    }
-  }, [state, dispatch]);
-
-  // Effect to initialize game session or redirect to character creation
   useEffect(() => {
     console.log('GameSession useEffect triggered');
-    if (isClient && state && !initializationRef.current) {
-      if (!state.character) {
-        console.log('No character found, checking localStorage');
-        const lastCreatedCharacter = localStorage.getItem('lastCreatedCharacter');
-        if (lastCreatedCharacter) {
-          console.log('Found character in localStorage, setting character');
-          const character = JSON.parse(lastCreatedCharacter);
-          dispatch({ type: 'SET_CHARACTER', payload: character });
-          localStorage.removeItem('lastCreatedCharacter');
-        } else {
-          console.log('No character found, redirecting to character creation');
-          router.push('/character-creation');
-        }
-      } else if (!state.narrative) {
-        console.log('No narrative found, initializing game session');
-        initializeGameSession().then(() => setIsInitializing(false)); // Set isInitializing to false after initialization
-        saveGame(state);
-        initializationRef.current = true;
-      } else {
-        console.log('Game session already initialized');
-        setIsInitializing(false);
-        initializationRef.current = true;
-      }
+    if (!isClient) {
+      console.log('Not client-side, skipping initialization');
+      return;
     }
-  }, [isClient, state, router, initializeGameSession, dispatch, saveGame]);
+
+    if (!state || !dispatch) {
+      console.log('State or dispatch is undefined, redirecting to home');
+      router.push('/');
+      return;
+    }
+
+    if (!initializationRef.current && !state.narrative) {
+      console.log('No narrative found, initializing game session');
+      initializeGameSession().then(() => {
+        console.log('Game session initialized');
+      });
+      saveGame(state);
+      initializationRef.current = true;
+    } else {
+      console.log('Game session already initialized');
+      initializationRef.current = true;
+    }
+  }, [isClient, state, router, initializationRef, initializeGameSession, dispatch, saveGame]);
 
   const handleCombatEnd = useCallback((winner: 'player' | 'opponent', combatSummary: string) => {
     if (!state || !dispatch) return;
@@ -232,11 +124,6 @@ export default function GameSession() {
       );
     }
   }, [state.inventory]);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
 
   // Show loading state while initializing or if state is not properly loaded
   if (!isClient || !state || !state.character || isInitializing) {
