@@ -11,6 +11,7 @@ import { JournalEntry } from '../types/journal';
 import { addJournalEntry, getJournalContext } from '../utils/JournalManager';
 import { useCampaignState } from './CampaignStateManager';
 import { debounce } from 'lodash';
+import { generateNarrativeSummary } from '../utils/aiService';
 import '../styles/wireframe.css';
 
 export default function GameSession() {
@@ -177,26 +178,57 @@ export default function GameSession() {
   const handleUserInput = useCallback(async (input: string) => {
     setIsLoading(true);
     try {
-      const journalContext = getJournalContext(state.journal);
-      const { narrative: aiResponse, acquiredItems, removedItems } = await AIService.getAIResponse(input, journalContext, state.inventory || []);
-
-      dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative || ''}\n\nPlayer: ${input}\n\nGame Master: ${aiResponse}` });
-
-      const newJournalEntry = await addJournalEntry(state.journal, input, journalContext, state.character?.name || 'Unknown');
-
-      dispatch({
-        type: 'UPDATE_JOURNAL',
-        payload: newJournalEntry,
+      const journalContext = getJournalContext(state.journal || []);
+      const { narrative: aiResponse, acquiredItems, removedItems } = await AIService.getAIResponse(
+        input, 
+        journalContext, 
+        state.inventory || []
+      );
+  
+      // Clean up AI response by removing metadata tags before displaying
+      const cleanNarrative = aiResponse.split('\n').filter(line => 
+        !line.startsWith('ACQUIRED_ITEMS:') && !line.startsWith('REMOVED_ITEMS:')
+      ).join('\n').trim();
+  
+      // Update narrative with full response
+      dispatch({ 
+        type: 'SET_NARRATIVE', 
+        payload: `${state.narrative || ''}\n\nPlayer: ${input}\n\nGame Master: ${cleanNarrative}` 
       });
-
+  
+      // Generate a condensed narrative summary for better journal readability
+      const narrativeSummary = await generateNarrativeSummary(
+        input,
+        `${state.character?.name || 'You'} ${input}`
+      );
+  
+      // Create a new journal entry with the condensed summary
+      const newEntries = await addJournalEntry(
+        state.journal || [], 
+        {
+          timestamp: Date.now(),
+          content: input,
+          narrativeSummary
+        }
+      );
+  
+      // Update journal
+      dispatch({
+        type: 'SET_JOURNAL',
+        payload: newEntries
+      });
+  
+      // Handle inventory changes
       const cleanedAcquiredItems = [...new Set(acquiredItems.filter(item => item && item.trim() !== ''))];
       const cleanedRemovedItems = [...new Set(removedItems.filter(item => item && item.trim() !== ''))];
       debouncedHandleInventoryChanges(cleanedAcquiredItems, cleanedRemovedItems);
-
-
+  
     } catch (error) {
       console.error('Error in handleUserInput:', error);
-      dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative || ''}\n\nAn error occurred. Please try again.` });
+      dispatch({ 
+        type: 'SET_NARRATIVE', 
+        payload: `${state.narrative || ''}\n\nAn error occurred. Please try again.` 
+      });
     } finally {
       setIsLoading(false);
     }

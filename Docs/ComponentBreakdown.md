@@ -98,6 +98,8 @@
   - Global state management using React Context and useReducer
   - Persistence of game state in localStorage
   - Journal system integrated into campaign state
+  - Journal entries include narrative summaries of player actions
+  - Robust date formatting and entry organization
 - **Potential Challenges:** Managing complex state serialization/deserialization, ensuring data consistency across saves
 
 ### 10. GameSession

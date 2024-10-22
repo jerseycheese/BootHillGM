@@ -371,7 +371,52 @@ function generateRandomValue(key: keyof Character['attributes'] | keyof Characte
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Generate a character summary based on the provided character data
+export async function generateNarrativeSummary(action: string, context: string): Promise<string> {
+  const prompt = `
+    Create a very brief (1 sentence) journal-style summary of this player action in a Western RPG:
+    Action: ${action}
+    Context: ${context}
+
+    Guidelines:
+    - Use past tense
+    - Focus on the key action/outcome
+    - Keep it under 15 words if possible
+    - Don't include game mechanics or metadata
+    - Start with the character's action
+
+    Example format:
+    Input: "go to the saloon"
+    Output: "Entered the dusty saloon and approached the bar."
+
+    Respond with ONLY the summary sentence, no additional text or formatting.
+  `;
+
+  try {
+    const model = getAIModel();
+    const result = await retryAIRequest(() => model.generateContent(prompt));
+    const response = await result.response;
+    const summary = response.text().trim();
+    
+    // Remove any metadata that might have been included
+    const cleanSummary = summary.split('\n')
+      .filter(line => !line.startsWith('ACQUIRED_ITEMS:') && !line.startsWith('REMOVED_ITEMS:') && !line.startsWith('LOCATION:'))
+      .join(' ')
+      .trim();
+    
+    // If we got a valid response, return it
+    if (cleanSummary && typeof cleanSummary === 'string') {
+      return cleanSummary;
+    }
+    
+    // If something went wrong, return a simple action summary
+    return `${context} ${action}.`;
+  } catch (error) {
+    console.error('Error generating narrative summary:', error);
+    // Return a simple action summary as fallback
+    return `${context} ${action}.`;
+  }
+}
+
 export async function generateCharacterSummary(character: Character): Promise<string> {
   const prompt = `
     Generate a brief, engaging summary for a character in a Western-themed RPG based on the following attributes:
@@ -383,28 +428,17 @@ export async function generateCharacterSummary(character: Character): Promise<st
     ${Object.entries(character.skills).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
     
     The summary should capture the essence of the character, their strengths, potential weaknesses, and how they might fit into a Western setting. Keep the tone consistent with a gritty, Wild West atmosphere.
-  `;
-
-  const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
-  return response.narrative;
-}
-
-export async function generateNarrativeSummary(action: string, context: string): Promise<string> {
-  const prompt = `
-    Generate a brief, narrative summary (1-2 sentences) of the following player action in a Western RPG:
-    Player action: ${action}
-    Context: ${context}
     
-    Use the character's name and appropriate pronouns. Include relevant context if applicable.
-    Respond with only the narrative summary, no additional text.
+    Respond with only the narrative summary, no additional text or formatting.
   `;
 
   try {
-    const response = await getAIResponse(prompt, '', []);
-    const generatedSummary = response.narrative.trim();
-    return generatedSummary || action;  // Return the original action if the response is empty
+    const model = getAIModel();
+    const result = await retryAIRequest(() => model.generateContent(prompt));
+    const response = await result.response;
+    return response.text().trim();
   } catch (error) {
-    console.error('Error generating narrative summary:', error);
-    return action;  // Always return the original action if any error occurs
+    console.error('Error generating character summary:', error);
+    return `A ${character.name} is a character in the Old West.`;
   }
 }

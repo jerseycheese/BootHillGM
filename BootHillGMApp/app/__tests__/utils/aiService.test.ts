@@ -114,6 +114,7 @@ describe('generateNarrativeSummary', () => {
     mockGenerateContent.mockRejectedValue(new Error('AI service error'));
 
     const summary = await generateNarrativeSummary('Player action', 'Recent context');
-    expect(summary).toBe('Player action');
+    // Updated expectation to match actual fallback format
+    expect(summary).toBe('Recent context Player action.');
   });
 });

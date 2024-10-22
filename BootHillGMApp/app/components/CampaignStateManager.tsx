@@ -28,15 +28,24 @@ const campaignReducer = (state: CampaignState, action: GameAction): CampaignStat
     case 'SET_GAME_PROGRESS':
       return { ...state, gameProgress: action.payload };
     case 'UPDATE_JOURNAL':
-      const newEntry: JournalEntry = typeof action.payload === 'string' 
-        ? { timestamp: Date.now(), content: action.payload }
-        : action.payload as JournalEntry;
+      const newEntries: JournalEntry[] = Array.isArray(action.payload)
+        ? action.payload
+        : [typeof action.payload === 'string'
+            ? { 
+                timestamp: Date.now(), 
+                content: action.payload,
+                narrativeSummary: action.payload 
+              }
+            : action.payload];
       return { 
         ...state, 
-        journal: [...state.journal, newEntry]
+        journal: [...(state.journal || []), ...newEntries]
       };
     case 'SET_JOURNAL':
-      return { ...state, journal: action.payload };
+      return {
+        ...state,
+        journal: Array.isArray(action.payload) ? action.payload : state.journal
+      };
     case 'SET_NARRATIVE':
       return { ...state, narrative: action.payload };
     case 'ADD_ITEM':
