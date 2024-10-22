@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAIResponse } from '../utils/aiService';
-import { getJournalContext } from '../utils/JournalManager';
+import AIService from '../services/AIService';
 import CombatSystem from './CombatSystem';
 import JournalViewer from './JournalViewer';
+import UserInputHandler from './UserInputHandler';
 import { Character } from '../types/character';
 import { JournalEntry } from '../types/journal';
-import { addJournalEntry } from '../utils/JournalManager';
+import { addJournalEntry, getJournalContext } from '../utils/JournalManager';
 import { useCampaignState } from './CampaignStateManager';
 import { debounce } from 'lodash';
 import '../styles/wireframe.css';
@@ -16,17 +16,12 @@ import '../styles/wireframe.css';
 export default function GameSession() {
   const router = useRouter();
   const { state, dispatch, saveGame } = useCampaignState();
-  const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isCombatActive, setIsCombatActive] = useState(false);
   const [opponent, setOpponent] = useState<Character | null>(null);
-  const [isInitializing, setIsInitializing] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const initializationRef = useRef(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   // Initialize the game session with AI-generated narrative and initial inventory
   const initializeGameSession = useCallback(async () => {
@@ -38,7 +33,7 @@ export default function GameSession() {
     setIsInitializing(true);
     try {
       const journalContext = getJournalContext(state.journal || []);
-      const { narrative: initialNarrative, location } = await getAIResponse(
+      const { narrative: initialNarrative, location } = await AIService.getAIResponse(
         `Initialize a new game session for a character named ${state.character?.name || 'Unknown'}. 
         Provide a brief introduction to the game world and the character's current situation. 
         Include a detailed description of their current location and some potential options for action.
@@ -102,7 +97,7 @@ export default function GameSession() {
         }
       } else if (!state.narrative) {
         console.log('No narrative found, initializing game session');
-        initializeGameSession();
+        initializeGameSession().then(() => setIsInitializing(false)); // Set isInitializing to false after initialization
         saveGame(state);
         initializationRef.current = true;
       } else {
@@ -113,59 +108,59 @@ export default function GameSession() {
     }
   }, [isClient, state, router, initializeGameSession, dispatch, saveGame]);
 
-const handleInventoryChanges = useCallback((acquiredItems: string[], removedItems: string[]) => {
-  console.log('handleInventoryChanges called with:', { acquiredItems, removedItems });
-  if (!state || !dispatch) {
-    console.log('State or dispatch is undefined, cannot handle inventory changes');
-    return;
-  }
-  try {
-    // Handle removed items first
-    removedItems.forEach(itemName => {
-      const normalizedName = itemName.toLowerCase().trim();
-      const itemToRemove = state.inventory?.find(item => item.name.toLowerCase() === normalizedName);
-      if (itemToRemove) {
-        // Always update the quantity, even if it becomes 0
-        console.log('Dispatching UPDATE_ITEM_QUANTITY for removed item:', itemToRemove);
-        dispatch({
-          type: 'UPDATE_ITEM_QUANTITY',
-          payload: { id: itemToRemove.id, quantity: Math.max(0, itemToRemove.quantity - 1) }
-        });
-      } else {
-        console.warn(`Attempted to remove non-existent item: ${itemName}`);
-      }
-    });
+  const handleInventoryChanges = useCallback((acquiredItems: string[], removedItems: string[]) => {
+    console.log('handleInventoryChanges called with:', { acquiredItems, removedItems });
+    if (!state || !dispatch) {
+      console.log('State or dispatch is undefined, cannot handle inventory changes');
+      return;
+    }
+    try {
+      // Handle removed items first
+      removedItems.forEach(itemName => {
+        const normalizedName = itemName.toLowerCase().trim();
+        const itemToRemove = state.inventory?.find(item => item.name.toLowerCase() === normalizedName);
+        if (itemToRemove) {
+          // Always update the quantity, even if it becomes 0
+          console.log('Dispatching UPDATE_ITEM_QUANTITY for removed item:', itemToRemove);
+          dispatch({
+            type: 'UPDATE_ITEM_QUANTITY',
+            payload: { id: itemToRemove.id, quantity: Math.max(0, itemToRemove.quantity - 1) }
+          });
+        } else {
+          console.warn(`Attempted to remove non-existent item: ${itemName}`);
+        }
+      });
 
-    // Handle acquired items
-    acquiredItems.forEach(itemName => {
-      const normalizedName = itemName.toLowerCase().trim();
-      const existingItem = state.inventory?.find(item => item.name.toLowerCase() === normalizedName);
-      if (existingItem) {
-        // If item already exists, increase its quantity
-        console.log('Dispatching UPDATE_ITEM_QUANTITY for existing item:', existingItem);
-        dispatch({
-          type: 'UPDATE_ITEM_QUANTITY',
-          payload: { id: existingItem.id, quantity: existingItem.quantity + 1 }
-        });
-      } else {
-        // If it's a new item, add it to the inventory
-        const itemId = `${normalizedName.replace(/\s+/g, '-')}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        console.log('Dispatching ADD_ITEM for new item:', { itemId, itemName });
-        dispatch({
-          type: 'ADD_ITEM',
-          payload: {
-            id: itemId,
-            name: itemName, // Use original item name to preserve capitalization
-            quantity: 1,
-            description: `An item you acquired during your adventure.`
-          }
-        });
-      }
-    });
-  } catch (error) {
-    console.error('Error handling inventory changes:', error);
-  }
-}, [dispatch, state]);
+      // Handle acquired items
+      acquiredItems.forEach(itemName => {
+        const normalizedName = itemName.toLowerCase().trim();
+        const existingItem = state.inventory?.find(item => item.name.toLowerCase() === normalizedName);
+        if (existingItem) {
+          // If item already exists, increase its quantity
+          console.log('Dispatching UPDATE_ITEM_QUANTITY for existing item:', existingItem);
+          dispatch({
+            type: 'UPDATE_ITEM_QUANTITY',
+            payload: { id: existingItem.id, quantity: existingItem.quantity + 1 }
+          });
+        } else {
+          // If it's a new item, add it to the inventory
+          const itemId = `${normalizedName.replace(/\s+/g, '-')}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          console.log('Dispatching ADD_ITEM for new item:', { itemId, itemName });
+          dispatch({
+            type: 'ADD_ITEM',
+            payload: {
+              id: itemId,
+              name: itemName, // Use original item name to preserve capitalization
+              quantity: 1,
+              description: `An item you acquired during your adventure.`
+            }
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error handling inventory changes:', error);
+    }
+  }, [dispatch, state]);
 
   const debouncedHandleInventoryChanges = useMemo(
     () => {
@@ -179,64 +174,33 @@ const handleInventoryChanges = useCallback((acquiredItems: string[], removedItem
     [handleInventoryChanges]
   );
 
-  // Handle user input and process it through the AI
-  const handleUserInput = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('handleUserInput called with userInput:', userInput);
-    if (!userInput.trim() || isLoading || !state || !dispatch) {
-      console.log('Cannot handle user input:', { userInput, isLoading, state: !!state, dispatch: !!dispatch });
-      return;
-    }
-
+  const handleUserInput = useCallback(async (input: string) => {
     setIsLoading(true);
     try {
       const journalContext = getJournalContext(state.journal);
-      console.log('Getting AI response');
-      const {
-        narrative: aiResponse,
-        acquiredItems: rawAcquiredItems,
-        removedItems: rawRemovedItems,
-      } = await getAIResponse(userInput, journalContext, state.inventory || []);
+      const { narrative: aiResponse, acquiredItems, removedItems } = await AIService.getAIResponse(input, journalContext, state.inventory || []);
 
-      // Update narrative
-      const updatedNarrative = `${state.narrative || ''}\n\nPlayer: ${userInput}\n\nGame Master: ${aiResponse}`;
-      console.log('Dispatching SET_NARRATIVE action');
-      dispatch({
-        type: 'SET_NARRATIVE',
-        payload: updatedNarrative,
-      });
+      dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative || ''}\n\nPlayer: ${input}\n\nGame Master: ${aiResponse}` });
 
-      // Create a new journal entry with a narrative summary
-      console.log('Adding journal entry');
-      const newJournalEntries = await addJournalEntry(
-        state.journal,
-        userInput,
-        journalContext,
-        state.character?.name || 'Unknown'
-      );
-      console.log('Dispatching UPDATE_JOURNAL action');
+      const newJournalEntry = await addJournalEntry(state.journal, input, journalContext, state.character?.name || 'Unknown');
+
       dispatch({
         type: 'UPDATE_JOURNAL',
-        payload: newJournalEntries[newJournalEntries.length - 1],
+        payload: newJournalEntry,
       });
 
-      // Clean up acquired and removed items
-      const acquiredItems = [...new Set(rawAcquiredItems.filter(item => item && item.trim() !== ''))];
-      const removedItems = [...new Set(rawRemovedItems.filter(item => item && item.trim() !== ''))];
+      const cleanedAcquiredItems = [...new Set(acquiredItems.filter(item => item && item.trim() !== ''))];
+      const cleanedRemovedItems = [...new Set(removedItems.filter(item => item && item.trim() !== ''))];
+      debouncedHandleInventoryChanges(cleanedAcquiredItems, cleanedRemovedItems);
 
-      console.log('Calling debouncedHandleInventoryChanges with:', { acquiredItems, removedItems });
-      debouncedHandleInventoryChanges(acquiredItems, removedItems);
+
     } catch (error) {
       console.error('Error in handleUserInput:', error);
-      dispatch({
-        type: 'SET_NARRATIVE',
-        payload: `${state.narrative || ''}\n\nAn error occurred. Please try again.`,
-      });
+      dispatch({ type: 'SET_NARRATIVE', payload: `${state.narrative || ''}\n\nAn error occurred. Please try again.` });
     } finally {
       setIsLoading(false);
-      setUserInput('');
     }
-  }, [userInput, isLoading, state, dispatch, debouncedHandleInventoryChanges]);
+  }, [state, dispatch, debouncedHandleInventoryChanges]);
 
   const handleCombatEnd = useCallback((winner: 'player' | 'opponent', combatSummary: string) => {
     if (!state || !dispatch) return;
@@ -246,9 +210,9 @@ const handleInventoryChanges = useCallback((acquiredItems: string[], removedItem
     const endMessage = winner === 'player' 
       ? "You have emerged victorious from the combat!" 
       : "You have been defeated in combat.";
-    
-    dispatch({ 
-      type: 'SET_NARRATIVE', 
+
+    dispatch({
+      type: 'SET_NARRATIVE',
       payload: `${state.narrative || ''}\n\n${endMessage}\n\n${combatSummary}\n\nWhat would you like to do now?` 
     });
 
@@ -258,13 +222,14 @@ const handleInventoryChanges = useCallback((acquiredItems: string[], removedItem
       content: `Combat: ${combatSummary}`
     };
     dispatch({ type: 'UPDATE_JOURNAL', payload: journalEntry });
+
   }, [state, dispatch]);
 
   const handlePlayerHealthChange = useCallback((newHealth: number) => {
     if (!dispatch || !state.character) return;
-      dispatch({
-        type: 'SET_CHARACTER',
-        payload: { ...state.character, health: newHealth }
+    dispatch({
+      type: 'SET_CHARACTER',
+      payload: { ...state.character, health: newHealth }
     });
   }, [dispatch, state.character]);
 
@@ -289,6 +254,11 @@ const handleInventoryChanges = useCallback((acquiredItems: string[], removedItem
       );
     }
   }, [state.inventory]);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   // Show loading state while initializing or if state is not properly loaded
   if (!isClient || !state || !state.character || isInitializing) {
@@ -320,19 +290,7 @@ const handleInventoryChanges = useCallback((acquiredItems: string[], removedItem
           onPlayerHealthChange={handlePlayerHealthChange}
         />
       ) : (
-        <form onSubmit={handleUserInput} className="wireframe-section">
-          <input
-            type="text"
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            className="wireframe-input"
-            placeholder="What would you like to do?"
-            disabled={isLoading}
-          />
-          <button type="submit" className="wireframe-button" disabled={isLoading}>
-            {isLoading ? 'Processing...' : 'Take Action'}
-          </button>
-        </form>
+        <UserInputHandler onSubmit={handleUserInput} isLoading={isLoading} />
       )}
       {/* Inventory and Journal components */}
       <div className="wireframe-section">

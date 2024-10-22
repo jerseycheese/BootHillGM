@@ -68,7 +68,8 @@ const renderWithProviders = (ui: ReactElement, initialState?: Partial<CampaignSt
     isCombatActive: false,
     opponent: null,
     savedTimestamp: null,
-    ...initialState
+    isClient: true, // Set isClient to true
+    ...initialState, // Allow overriding the default value
   };
   
   const mockContextValue = {
@@ -79,7 +80,7 @@ const renderWithProviders = (ui: ReactElement, initialState?: Partial<CampaignSt
   };
   
   (useCampaignState as jest.Mock).mockReturnValue(mockContextValue);
-  
+
   return {
     ...render(
       <CampaignStateContext.Provider value={mockContextValue}>
@@ -268,7 +269,7 @@ describe('GameSession', () => {
     ];
     
     renderWithProviders(<GameSession />, {
-      inventory: initialInventory
+      inventory: initialInventory,
     });
 
     await waitFor(() => {

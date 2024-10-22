@@ -63,6 +63,7 @@ describe('CampaignStateManager', () => {
     expect(initialState.isCombatActive).toBe(false);
     expect(initialState.opponent).toBeNull();
     expect(initialState.savedTimestamp).toBeNull();
+    expect(initialState.isClient).toBe(false); // Check isClient
   });
 
   // Test case: Verify that the state updates correctly when actions are dispatched
@@ -129,6 +130,7 @@ describe('CampaignStateManager', () => {
     expect(updatedState.narrative).toBe('Test narrative');
     expect(updatedState.inventory).toHaveLength(1);
     expect(updatedState.inventory[0]).toEqual({ id: '1', name: 'Test Item', quantity: 1, description: 'A test item' });
+    expect(updatedState.isClient).toBe(false); // Check isClient
   });
 
   test('saves state to localStorage', async () => {
@@ -170,8 +172,10 @@ describe('CampaignStateManager', () => {
     console.log('Saved state:', savedState);
     expect(savedState.character).toEqual(savedCharacter);
     expect(savedState.savedTimestamp).toBeDefined();
+    expect(savedState.isClient).toBe(false); // Check isClient
     expect(result.current.state.character).toEqual(savedCharacter);
     expect(result.current.state.savedTimestamp).toBeDefined();
+    expect(result.current.state.isClient).toBe(false); // Check isClient
   });
 
   test('loads state from localStorage', async () => {
@@ -200,7 +204,8 @@ describe('CampaignStateManager', () => {
       inventory: [{ id: '1', name: 'Loaded Item', quantity: 1, description: 'A loaded item' }],
       isCombatActive: false,
       opponent: null,
-      savedTimestamp: Date.now()
+      savedTimestamp: Date.now(),
+      isClient: false, // Add isClient
     };
     
     localStorage.setItem('campaignState', JSON.stringify(testState));
@@ -231,6 +236,7 @@ describe('CampaignStateManager', () => {
       isCombatActive: false,
       opponent: null,
       savedTimestamp: null,
+      isClient: false, // Add isClient
     };
   
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -287,7 +293,8 @@ describe('CampaignStateManager', () => {
       inventory: [{ id: '1', name: 'Test Item', quantity: 1, description: 'A test item' }],
       isCombatActive: false,
       opponent: null,
-      savedTimestamp: Date.now()
+      savedTimestamp: Date.now(),
+      isClient: false, // Add isClient
     };
 
     localStorage.setItem('campaignState', JSON.stringify(testState));

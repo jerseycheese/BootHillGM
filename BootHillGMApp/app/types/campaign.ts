@@ -15,6 +15,7 @@ export interface CampaignState {
   inventory: InventoryItem[];   // Player's inventory
   isCombatActive: boolean;      // Whether combat is currently active
   opponent: Character | null;   // Current opponent in combat, if any
+  isClient: boolean; // Flag to indicate if the component is rendered on the client-side
 }
 
 // Union type of all possible actions

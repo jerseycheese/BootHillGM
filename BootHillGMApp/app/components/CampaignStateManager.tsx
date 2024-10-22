@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { CampaignState, GameAction } from '../types/campaign';
-import { addJournalEntry } from '../utils/JournalManager';
 import { JournalEntry } from '../types/journal';
 
 // Define the initial state of the campaign
@@ -16,6 +15,7 @@ const initialCampaignState: CampaignState = {
   inventory: [],
   isCombatActive: false,
   opponent: null,
+  isClient: false,
 };
 
 // Reducer function to handle state updates
