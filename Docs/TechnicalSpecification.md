@@ -26,7 +26,13 @@
    - Character Sheet (app/character-sheet/page.tsx)
 2. Layout (app/layout.tsx): Defines the main layout for the application
 3. Game Engine: Manages game state, turns, and basic game flow
-4. AI Integration Service: Handles communication with the Gemini API
+4. Custom Hooks:
+   - useAIInteractions: Manages AI interaction logic including:
+     - User input processing
+     - AI response handling
+     - Journal updates
+     - Inventory changes
+     - Combat initiation
 5. Character Management System: Manages character creation and stats
 6. Inventory System: Manages character inventory and item interactions
   - Handles adding and removing items dynamically
