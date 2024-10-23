@@ -91,7 +91,7 @@ export const useAIInteractions = (
       const cleanedRemovedItems = [...new Set(removedItems.filter(item => item && item.trim() !== ''))];
       onInventoryChange(cleanedAcquiredItems, cleanedRemovedItems);
 
-    } catch (error) {
+    } catch {
       dispatch({
         type: 'SET_NARRATIVE',
         payload: `${state.narrative || ''}\n\nAn error occurred. Please try again.`

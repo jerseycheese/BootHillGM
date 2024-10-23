@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import CombatSystem from './CombatSystem';
 import JournalViewer from './JournalViewer';
@@ -23,10 +23,11 @@ import { InventoryItem } from '../types/inventory';
  */
 export default function GameSession() {
   const router = useRouter();
-  const { state, dispatch, saveGame } = useCampaignState();
+  const { state, dispatch, saveGame, loadGame } = useCampaignState();
   const [isCombatActive, setIsCombatActive] = useState(false);
   const [opponent, setOpponent] = useState<Character | null>(null);
-  const { isInitializing, isClient, initializationRef, initializeGameSession } = useGameInitialization();
+  const hasAttemptedLoad = useRef(false);
+  const { isInitializing, isClient, initializeGameSession } = useGameInitialization();
 
   const handleInventoryChange = useCallback((acquired: string[], removed: string[]) => {
     if (!dispatch) return;
@@ -104,43 +105,77 @@ export default function GameSession() {
       </ul>
     );
   }, [state?.inventory]);
-
+  
   useEffect(() => {
     const initGame = async () => {
-      // Only initialize once client-side and with valid state
+      // Skip initialization if not client-side yet
       if (!isClient) {
         return;
       }
   
+      // Ensure we have required context before proceeding
       if (!state || !dispatch) {
         router.push('/');
         return;
       }
   
-      if (!state.character) {
-        router.push('/character-creation');
-        return;
-      }
+      // Use ref to prevent duplicate initialization attempts
+      if (!hasAttemptedLoad.current) {
+        hasAttemptedLoad.current = true;
+        
+        if (!state.character) {
+          const savedStateJSON = localStorage.getItem('campaignState');
+          const lastCharacterJSON = localStorage.getItem('lastCreatedCharacter');
+          
+          if (savedStateJSON) {
+            const savedState = JSON.parse(savedStateJSON);
+            
+            // Initialize new game state if current state lacks narrative/inventory
+            if (!savedState.narrative || savedState.narrative.length === 0) {
+              const initializedState = await initializeGameSession();
+              
+              if (initializedState) {
+                // Merge initialized state with saved character data
+                const characterData = lastCharacterJSON ? JSON.parse(lastCharacterJSON) : null;
+                
+                const updatedState = {
+                  ...initializedState,
+                  character: characterData,
+                  isClient: true,
+                  savedTimestamp: Date.now()
+                };
   
-      // Prevent duplicate initialization and ensure narrative exists
-      if (!initializationRef.current && !state.narrative) {
-  
-        try {
-          // Initialize and immediately save complete state
-          const updatedState = await initializeGameSession();
-          if (updatedState) {
-            saveGame(updatedState);
-            console.log('Game saved with updated state:', updatedState);
+                dispatch({ type: 'SET_STATE', payload: updatedState });
+                saveGame(updatedState);
+              }
+            } else {
+              // Use existing saved state, just update character if needed
+              const characterData = lastCharacterJSON ? JSON.parse(lastCharacterJSON) : null;
+              const updatedState = {
+                ...savedState,
+                character: characterData,
+                isClient: true,
+                savedTimestamp: Date.now()
+              };
+              
+              dispatch({ type: 'SET_STATE', payload: updatedState });
+              saveGame(updatedState);
+            }
+          } else {
+            // No saved state exists, start fresh game
+            const initializedState = await initializeGameSession();
+            if (initializedState) {
+              dispatch({ type: 'SET_STATE', payload: initializedState });
+              saveGame(initializedState);
+            }
           }
-        } catch (error) {
-          console.error('Initialization error:', error);
         }
       }
     };
   
     initGame();
-  }, [isClient, state, dispatch, router, initializationRef, initializeGameSession, saveGame]);
-
+  }, [isClient, state, dispatch, router, loadGame, saveGame, initializeGameSession]);
+  
   if (!isClient || !state || !state.character || isInitializing) {
     return <div className="wireframe-container">Loading game session...</div>;
   }

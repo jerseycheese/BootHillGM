@@ -32,8 +32,6 @@ export const useGameInitialization = () => {
 
     setIsInitializing(true);
 
-    // Perform atomic state update to ensure consistency
-    // This prevents race conditions and partial state updates
     try {
       // Generate initial narrative and game state via AI
       const response = await getAIResponse(
@@ -66,21 +64,15 @@ export const useGameInitialization = () => {
         ]
       };
 
-      // Single dispatch to ensure atomic update
-      dispatch({ type: 'SET_STATE', payload: updatedState });
-
-      // Return the updated state
       return updatedState;
 
     } catch (error) {
-      // Handle errors gracefully with fallback state
-      const errorState = {
+      console.error('Error initializing game session:', error);
+      return {
         ...state,
         narrative: 'An error occurred while starting the game. Please try again.',
         location: 'Unknown Location'
       };
-      dispatch({ type: 'SET_STATE', payload: errorState });
-      return errorState;
     } finally {
       setIsInitializing(false);
     }

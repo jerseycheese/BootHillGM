@@ -124,7 +124,6 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
       localStorage.setItem('campaignState', serializedState);
       // Update the state with the new timestamp
       dispatch({ type: 'SET_STATE', payload: stateWithTimestamp });
-      console.log('Game state saved successfully');
     } catch (error) {
       console.error('Failed to save game state:', error);
     }

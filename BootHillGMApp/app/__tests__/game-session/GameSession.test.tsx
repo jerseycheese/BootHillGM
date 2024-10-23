@@ -109,6 +109,8 @@ const renderWithProviders = (ui: React.ReactElement, initialState?: Partial<Camp
 describe('GameSession', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Set up mock return values for the AI response
     (getAIResponse as jest.Mock).mockResolvedValue({
       narrative: 'AI response',
       location: 'Test Town',
