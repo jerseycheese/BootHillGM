@@ -159,7 +159,6 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
     };
   } catch (error) {
     // Error handling for API issues
-    console.error('Error getting AI response:', error);
     if (error instanceof Error) {
       if (error.message.includes('API key expired') || error.message.includes('API_KEY_INVALID')) {
         throw new Error("AI service configuration error");
@@ -230,9 +229,11 @@ export async function generateCompleteCharacter(): Promise<Character> {
 
   const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
   try {
-    // Clean up the response by removing any JSON code block markers
-    const cleanedResponse = response.narrative.replace(/```json\n?|\n?```/g, '').trim();
-    
+    // The AI returns both JSON data and narrative text together
+    // Extract only the JSON portion between markdown code blocks to ensure clean parsing
+    const jsonMatch = response.narrative.match(/```json\n([\s\S]*?)\n```/);
+    const cleanedResponse = jsonMatch ? jsonMatch[1].trim() : response.narrative.trim();
+
     let characterData: Partial<{
       Name: string;
       name: string;
@@ -250,8 +251,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
 
     try {
       characterData = JSON.parse(cleanedResponse);
-    } catch {
-      console.error('JSON parsing failed, attempting to fix the response');
+    } catch (parseError) {
       // Attempt to fix common JSON issues
       const fixedResponse = cleanedResponse
         .replace(/'/g, '"')
@@ -263,7 +263,6 @@ export async function generateCompleteCharacter(): Promise<Character> {
       try {
         characterData = JSON.parse(fixedResponse);
       } catch (secondParseError) {
-        console.error('Failed to parse JSON even after attempting fixes:', secondParseError);
         throw new Error('Unable to parse character data');
       }
     }
@@ -308,7 +307,6 @@ export async function generateCompleteCharacter(): Promise<Character> {
     
     return character;
   } catch (error) {
-    console.error('Error parsing AI response:', error);
     
     // Return a default character if parsing fails
     return {
@@ -406,7 +404,6 @@ export async function generateNarrativeSummary(action: string, context: string):
     // If something went wrong, return a simple action summary
     return `${context} ${action}.`;
   } catch (error) {
-    console.error('Error generating narrative summary:', error);
     // Return a simple action summary as fallback
     return `${context} ${action}.`;
   }
@@ -433,7 +430,6 @@ export async function generateCharacterSummary(character: Character): Promise<st
     const response = await result.response;
     return response.text().trim();
   } catch (error) {
-    console.error('Error generating character summary:', error);
     return `A ${character.name} is a character in the Old West.`;
   }
 }
