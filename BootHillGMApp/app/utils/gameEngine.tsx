@@ -64,12 +64,10 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'SET_LOCATION':
       return { ...state, location: action.payload };
     case 'ADD_ITEM': {
-      console.log("ADD_ITEM action received:", action.payload);
       // Check if the item already exists in the inventory
       const existingItem = state.inventory.find(item => item.id === action.payload.id);
       if (existingItem) {
         // If it exists, update the quantity
-        console.log(`Updating quantity for existing item: ${existingItem.name}`);
         newState = {
           ...state,
           inventory: state.inventory.map(item =>
@@ -80,11 +78,8 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         };
       } else {
         // If it's a new item, add it to the inventory
-        console.log(`Adding new item to inventory: ${action.payload.name}`);
         newState = { ...state, inventory: [...state.inventory, action.payload] };
       }
-      console.log('New state after adding item:', newState);
-      console.log('Updated inventory:', newState.inventory.map(item => `${item.name}: ${item.quantity}`));
       return newState;
     }
     case 'REMOVE_ITEM':
@@ -95,7 +90,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'USE_ITEM':
       const itemToUse = state.inventory.find(item => item.id === action.payload);
       if (!itemToUse) {
-        console.log(`Attempted to use non-existent item: ${action.payload}`);
         return state;
       }
       // Decrease the quantity of the used item
@@ -104,13 +98,10 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         item.id === action.payload ? updatedItem : item // Access payload directly
       ).filter(item => item.quantity > 0);  // Remove items with quantity 0
 
-      console.log(`Item used: ${itemToUse.name}, Remaining: ${updatedItem.quantity}`);
-
       newState = {
         ...state,
         inventory: updatedInventory
       };
-      console.log('Updated inventory:', newState.inventory.map(item => `${item.name}: ${item.quantity}`));
       return newState;
     case 'ADD_QUEST':
       return { ...state, quests: [...state.quests, action.payload] };
@@ -163,12 +154,9 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           !item.name.startsWith('REMOVED_ITEMS:')
         ),
       };
-      console.log('Cleaned inventory:', newState.inventory.map(item => `${item.name}: ${item.quantity}`));
       return newState;
     case 'SET_INVENTORY':
-      console.log("SET_INVENTORY action received:", action.payload);
       newState = { ...state, inventory: action.payload };
-      console.log('Updated inventory:', newState.inventory.map(item => `${item.name}: ${item.quantity}`));
       return newState;
     default:
       return state;

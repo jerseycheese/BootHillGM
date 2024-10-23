@@ -169,7 +169,6 @@ describe('CampaignStateManager', () => {
     });
   
     const savedState = JSON.parse(localStorage.getItem('campaignState') || '{}');
-    console.log('Saved state:', savedState);
     expect(savedState.character).toEqual(savedCharacter);
     expect(savedState.savedTimestamp).toBeDefined();
     expect(savedState.isClient).toBe(false); // Check isClient
@@ -221,7 +220,6 @@ describe('CampaignStateManager', () => {
       await waitForStateUpdate();
     });
 
-    console.log('Loaded state:', result.current.state);
     expect(result.current.state).toEqual(testState);
   });
 
@@ -256,7 +254,6 @@ describe('CampaignStateManager', () => {
     });
   
     const savedState = JSON.parse(localStorage.getItem('campaignState') || '{}');
-    console.log('Saved state:', savedState);
     expect(savedState).toMatchObject({
       ...initialState,
       savedTimestamp: expect.any(Number)
@@ -310,7 +307,6 @@ describe('CampaignStateManager', () => {
       await waitForStateUpdate();
     });
 
-    console.log('Loaded state:', result.current.state);
     expect(result.current.state).toEqual(testState);
   });
 });

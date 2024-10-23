@@ -114,10 +114,6 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
     // This prevents incorrectly adding items that should be removed
     const filteredAcquiredItems = acquiredItems.filter(item => !item.startsWith("REMOVED_ITEMS:") && item !== "");
 
-    console.log('Parsed acquired items:', filteredAcquiredItems);
-    console.log('Parsed removed items:', removedItems);
-    console.log('Full AI response:', text);
-
     let combatInitiated = false;
     let opponent: Character | undefined;
 
@@ -313,7 +309,6 @@ export async function generateCompleteCharacter(): Promise<Character> {
     return character;
   } catch (error) {
     console.error('Error parsing AI response:', error);
-    console.log('Raw AI response:', response.narrative);
     
     // Return a default character if parsing fails
     return {

@@ -160,9 +160,7 @@ export default function GameSession() {
 
   // Finalize character creation and navigate to game session
   const finishCharacterCreation = () => {
-    console.log('Character created:', character); // Add this line for debugging
     const updatedState = { ...state, character };
-    console.log('State after dispatch:', updatedState);
     saveGame(updatedState);
     localStorage.setItem('lastCreatedCharacter', JSON.stringify(character));
     router.push('/game-session');

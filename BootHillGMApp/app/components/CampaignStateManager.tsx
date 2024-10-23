@@ -134,13 +134,11 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const serializedState = localStorage.getItem('campaignState');
       if (serializedState === null) {
-        console.log('No saved state found');
         return null;
       }
       const loadedState: CampaignState = JSON.parse(serializedState);
       // Update the state with the loaded data
       dispatch({ type: 'SET_STATE', payload: loadedState });
-      console.log('Game state loaded successfully');
       return loadedState;
     } catch (error) {
       console.error('Failed to load game state:', error);
@@ -151,7 +149,6 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   // Auto-save on state changes
   useEffect(() => {
     const saveTimeout = setTimeout(() => {
-      console.log('Auto-saving state:', state);
       saveGame(state);
     }, 300000);  // Save game state 5 minutes after last state change
 
