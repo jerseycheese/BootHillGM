@@ -341,6 +341,10 @@
 - [x] As a developer, I want to implement a basic combat system to allow players to engage in turn-based fights with AI-generated opponents.
 - [x] As a developer, I want to implement proper state management in the GameSession component to prevent unnecessary page reloads and improve user experience.
 - [x] As a developer, I want to update the CombatSystem integration in the GameSession component to ensure smooth transitions between normal gameplay and combat scenarios.
+- [x] As a developer, I want to implement proper journal narrative summaries for player actions.
+- [x] As a developer, I want to implement proper state management in the GameSession component to prevent unnecessary page reloads and improve user experience.
+- [x] As a developer, I want to ensure reliable game state initialization to provide a consistent starting experience for players.
+- [x] As a player, I want my initial game state (narrative, inventory) to be properly set up when starting a new game.
 
 ## Bug Tracking
 

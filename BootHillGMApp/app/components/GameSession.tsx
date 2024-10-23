@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CombatSystem from './CombatSystem';
@@ -33,7 +35,7 @@ export default function GameSession() {
       const newItem: InventoryItem = {
         id: `${itemName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
         name: itemName,
-        quantity: 1, // Default quantity is 1, but this could be changed if needed
+        quantity: 1,
         description: `A ${itemName.toLowerCase()} acquired during your adventure.`
       };
       dispatch({ type: 'ADD_ITEM', payload: newItem });
@@ -44,33 +46,11 @@ export default function GameSession() {
     });
   }, [dispatch]);
 
-  const { handleUserInput, isLoading } = useAIInteractions(state, dispatch, handleInventoryChange);
-
-  useEffect(() => {
-    console.log('GameSession useEffect triggered');
-    if (!isClient) {
-      console.log('Not client-side, skipping initialization');
-      return;
-    }
-
-    if (!state || !dispatch) {
-      console.log('State or dispatch is undefined, redirecting to home');
-      router.push('/');
-      return;
-    }
-
-    if (!initializationRef.current && !state.narrative) {
-      console.log('No narrative found, initializing game session');
-      initializeGameSession().then(() => {
-        console.log('Game session initialized');
-      });
-      saveGame(state);
-      initializationRef.current = true;
-    } else {
-      console.log('Game session already initialized');
-      initializationRef.current = true;
-    }
-  }, [isClient, state, router, initializationRef, initializeGameSession, dispatch, saveGame]);
+  const { handleUserInput, isLoading } = useAIInteractions(
+    state,
+    dispatch,
+    handleInventoryChange
+  );
 
   const handleCombatEnd = useCallback((winner: 'player' | 'opponent', combatSummary: string) => {
     if (!state || !dispatch) return;
@@ -92,40 +72,75 @@ export default function GameSession() {
       content: `Combat: ${combatSummary}`
     };
     dispatch({ type: 'UPDATE_JOURNAL', payload: journalEntry });
-
   }, [state, dispatch]);
 
   const handlePlayerHealthChange = useCallback((newHealth: number) => {
-    if (!dispatch || !state.character) return;
+    if (!dispatch || !state?.character) return;
     dispatch({
       type: 'SET_CHARACTER',
       payload: { ...state.character, health: newHealth }
     });
-  }, [dispatch, state.character]);
+  }, [dispatch, state?.character]);
 
-  const handleManualSave = () => {
-    saveGame(state);
-  };
+  const handleManualSave = useCallback(() => {
+    if (state) {
+      saveGame(state);
+    }
+  }, [state, saveGame]);
 
   const memoizedInventory = useMemo(() => {
-    if (!state.inventory || state.inventory.length === 0) {
+    if (!state?.inventory || state.inventory.length === 0) {
       return <p className="wireframe-text">Your inventory is empty.</p>;
-    } else {
-      return (
-        <ul className="wireframe-list">
-          {state.inventory.map((item) => (
-            item && item.id && item.name && item.quantity > 0 ? (
-              <li key={item.id} className="wireframe-text">
-                {`${item.name} (x${item.quantity})`}
-              </li>
-            ) : null
-          ))}
-        </ul>
-      );
     }
-  }, [state.inventory]);
+    return (
+      <ul className="wireframe-list">
+        {state.inventory.map((item) => (
+          item && item.id && item.name && item.quantity > 0 ? (
+            <li key={item.id} className="wireframe-text">
+              {`${item.name} (x${item.quantity})`}
+            </li>
+          ) : null
+        ))}
+      </ul>
+    );
+  }, [state?.inventory]);
 
-  // Show loading state while initializing or if state is not properly loaded
+  useEffect(() => {
+    const initGame = async () => {
+      // Only initialize once client-side and with valid state
+      if (!isClient) {
+        return;
+      }
+  
+      if (!state || !dispatch) {
+        router.push('/');
+        return;
+      }
+  
+      if (!state.character) {
+        router.push('/character-creation');
+        return;
+      }
+  
+      // Prevent duplicate initialization and ensure narrative exists
+      if (!initializationRef.current && !state.narrative) {
+  
+        try {
+          // Initialize and immediately save complete state
+          const updatedState = await initializeGameSession();
+          if (updatedState) {
+            saveGame(updatedState);
+            console.log('Game saved with updated state:', updatedState);
+          }
+        } catch (error) {
+          console.error('Initialization error:', error);
+        }
+      }
+    };
+  
+    initGame();
+  }, [isClient, state, dispatch, router, initializationRef, initializeGameSession, saveGame]);
+
   if (!isClient || !state || !state.character || isInitializing) {
     return <div className="wireframe-container">Loading game session...</div>;
   }

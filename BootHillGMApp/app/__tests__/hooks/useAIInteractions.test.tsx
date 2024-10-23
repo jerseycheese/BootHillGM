@@ -1,11 +1,11 @@
 import { renderHook, act } from '@testing-library/react';
 import { useAIInteractions } from '../../hooks/useAIInteractions';
-import AIService from '../../services/AIService';
+import { getAIResponse } from '../../services/ai';
 import { generateNarrativeSummary } from '../../utils/aiService';
 import { getJournalContext } from '../../utils/JournalManager';
 
 // Mock dependencies
-jest.mock('../../services/AIService');
+jest.mock('../../services/ai');
 jest.mock('../../utils/aiService');
 jest.mock('../../utils/JournalManager');
 
@@ -43,7 +43,7 @@ describe('useAIInteractions', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (AIService.getAIResponse as jest.Mock).mockResolvedValue({
+    (getAIResponse as jest.Mock).mockResolvedValue({
       narrative: 'AI response',
       acquiredItems: [],
       removedItems: [],
@@ -63,7 +63,7 @@ describe('useAIInteractions', () => {
     });
 
     // Verify AI service was called
-    expect(AIService.getAIResponse).toHaveBeenCalledWith(
+    expect(getAIResponse).toHaveBeenCalledWith(
       'test input',
       'Test context',
       []
@@ -90,7 +90,7 @@ describe('useAIInteractions', () => {
   });
 
   it('handles errors gracefully', async () => {
-    (AIService.getAIResponse as jest.Mock).mockRejectedValue(new Error('Test error'));
+    (getAIResponse as jest.Mock).mockRejectedValue(new Error('Test error'));
 
     const { result } = renderHook(() => 
       useAIInteractions(mockInitialState, mockDispatch, mockOnInventoryChange)

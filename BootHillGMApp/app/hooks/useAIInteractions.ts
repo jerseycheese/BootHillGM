@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import AIService from '../services/AIService';
+import { getAIResponse } from '../services/ai';
 import { generateNarrativeSummary } from '../utils/aiService';
 import { getJournalContext } from '../utils/JournalManager';
 import { CampaignState } from '../types/campaign';
@@ -40,7 +40,7 @@ export const useAIInteractions = (
         location,
         combatInitiated,
         opponent
-      } = await AIService.getAIResponse(
+      } = await getAIResponse(
         input,
         journalContext,
         state.inventory || []
@@ -92,7 +92,6 @@ export const useAIInteractions = (
       onInventoryChange(cleanedAcquiredItems, cleanedRemovedItems);
 
     } catch (error) {
-      console.error('Error in handleUserInput:', error);
       dispatch({
         type: 'SET_NARRATIVE',
         payload: `${state.narrative || ''}\n\nAn error occurred. Please try again.`

@@ -104,3 +104,35 @@ We have decided to transition the BootHillGM project to use the Next.js App Rout
 - Ensure all team members are familiar with App Router concepts and best practices.
 
 This ADR will be reviewed and updated as the project progresses beyond the MVP phase.
+
+## ADR 3: Game State Initialization Pattern
+
+### Date: 10/23/2024
+
+### Status: Accepted
+
+## Context and Problem Statement
+We needed to establish a reliable pattern for initializing game state, particularly handling the async nature of AI-driven content generation while maintaining state consistency.
+
+## Decision
+Implemented a centralized state initialization approach using:
+- Single `SET_STATE` dispatch for atomic state updates
+- Dedicated initialization hook (useGameInitialization)
+- Clear separation between state updates and persistence
+
+## Consequences
+
+### Positive
+- More predictable state initialization
+- Reduced race conditions
+- Better error handling
+- Clearer separation of concerns
+
+### Negative
+- Slightly more complex initialization logic
+- Need to ensure state shape consistency
+
+### Implementation Notes
+- Uses React's useRef to prevent duplicate initialization
+- Implements proper client-side hydration checks
+- Maintains atomic state updates
