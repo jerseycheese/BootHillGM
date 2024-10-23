@@ -30,50 +30,73 @@ const campaignReducer = (state: CampaignState, action: GameAction): CampaignStat
     case 'UPDATE_JOURNAL':
       const newEntries: JournalEntry[] = Array.isArray(action.payload)
         ? action.payload
-        : [typeof action.payload === 'string'
-            ? { 
-                timestamp: Date.now(), 
-                content: action.payload,
-                narrativeSummary: action.payload 
-              }
-            : action.payload];
-      return { 
-        ...state, 
-        journal: [...(state.journal || []), ...newEntries]
+        : [
+            typeof action.payload === 'string'
+              ? {
+                  timestamp: Date.now(),
+                  content: action.payload,
+                  narrativeSummary: action.payload,
+                }
+              : action.payload,
+          ];
+      return {
+        ...state,
+        journal: [...(state.journal || []), ...newEntries],
       };
     case 'SET_JOURNAL':
       return {
         ...state,
-        journal: Array.isArray(action.payload) ? action.payload : state.journal
+        journal: Array.isArray(action.payload) ? action.payload : state.journal,
       };
     case 'SET_NARRATIVE':
       return { ...state, narrative: action.payload };
     case 'ADD_ITEM':
-      const existingItemIndex = state.inventory.findIndex(item => item.name === action.payload.name);
+      const existingItemIndex = state.inventory.findIndex((item) => item.name === action.payload.name);
       if (existingItemIndex !== -1) {
         // Item already exists, update quantity
         const updatedInventory = [...state.inventory];
         updatedInventory[existingItemIndex] = {
           ...updatedInventory[existingItemIndex],
-          quantity: updatedInventory[existingItemIndex].quantity + action.payload.quantity
+          quantity: updatedInventory[existingItemIndex].quantity + action.payload.quantity,
         };
         return { ...state, inventory: updatedInventory };
       } else {
         // New item, add to inventory
         return { ...state, inventory: [...state.inventory, action.payload] };
       }
-    case 'REMOVE_ITEM':
-      return { 
-        ...state, 
-        inventory: state.inventory.filter(item => item.name !== action.payload)
-      };
-    case 'UPDATE_ITEM_QUANTITY':
+    case 'REMOVE_ITEM': {
       return {
         ...state,
-        inventory: state.inventory.map((item) =>
-          item.id === action.payload.id ? { ...item, quantity: action.payload.quantity } : item
-        ),
+        inventory: state.inventory.filter((item) => item.name !== action.payload),
       };
+    }
+    case 'UPDATE_ITEM_QUANTITY': {
+      /**
+       * Handles inventory item quantity updates:
+       * - Updates specific item quantities
+       * - Removes items when quantity reaches 0
+       * - Maintains inventory state consistency
+       * - Triggers state persistence after updates
+       */
+      const { id, quantity } = action.payload;
+
+      // Create a new inventory array with the updated quantity
+      const updatedInventory = state.inventory.map((item) => {
+        if (item.id === id) {
+          return { ...item, quantity };
+        }
+        return item;
+      });
+
+      // Filter out any items with quantity 0
+      const filteredInventory = updatedInventory.filter((item) => item.quantity > 0);
+
+      const newState = {
+        ...state,
+        inventory: filteredInventory,
+      };
+      return newState;
+    }
     case 'SET_INVENTORY':
       return { ...state, inventory: action.payload };
     case 'SET_COMBAT_ACTIVE':
@@ -82,9 +105,16 @@ const campaignReducer = (state: CampaignState, action: GameAction): CampaignStat
       return { ...state, savedTimestamp: action.payload };
     case 'SET_OPPONENT':
       return { ...state, opponent: action.payload };
-    case 'SET_STATE':
-      // Replace the entire state with the provided payload
-      return action.payload;
+    case 'SET_STATE': {
+      // Ensure we're not accidentally reverting inventory changes and preserve isClient
+      const newState = {
+        ...action.payload,
+        inventory: action.payload.inventory.map((item) => ({ ...item })),
+        isClient: state.isClient, // Preserve the current isClient value
+      };
+
+      return newState;
+    }
     default:
       return state;
   }
@@ -111,19 +141,24 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
       baseDispatch(action);
     }
   }, [baseDispatch]); // Only depend on baseDispatch
-  
+
+
   // Function to save the current game state
+  // Update saveGame function to preserve current inventory state and isClient
   const saveGame = useCallback((stateToSave: CampaignState) => {
     try {
-      // Add a timestamp to the state before saving
-      const stateWithTimestamp = {
+      // Create a clean copy of the state
+      const cleanState = {
         ...stateToSave,
-        savedTimestamp: Date.now()
+        inventory: stateToSave.inventory.map((item) => ({ ...item })),
+        savedTimestamp: Date.now(),
+        isClient: stateToSave.isClient, // Ensure isClient is preserved
       };
-      const serializedState = JSON.stringify(stateWithTimestamp);
+      const serializedState = JSON.stringify(cleanState);
       localStorage.setItem('campaignState', serializedState);
-      // Update the state with the new timestamp
-      dispatch({ type: 'SET_STATE', payload: stateWithTimestamp });
+
+      // Update the state with the new savedTimestamp
+      dispatch({ type: 'SET_SAVED_TIMESTAMP', payload: cleanState.savedTimestamp });
     } catch (error) {
       console.error('Failed to save game state:', error);
     }
@@ -133,15 +168,30 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   const loadGame = useCallback((): CampaignState | null => {
     try {
       const serializedState = localStorage.getItem('campaignState');
-      if (serializedState === null) {
+      if (!serializedState) {
         return null;
       }
-      const loadedState: CampaignState = JSON.parse(serializedState);
-      // Update the state with the loaded data
+
+      let loadedState: CampaignState;
+      try {
+        loadedState = JSON.parse(serializedState);
+      } catch (parseError) {
+        console.error('Failed to parse game state:', parseError);
+        if (parseError instanceof Error) {
+          console.error('Error type:', parseError.name);
+          console.error('Error message:', parseError.message);
+        }
+        return null;
+      }
+
       dispatch({ type: 'SET_STATE', payload: loadedState });
       return loadedState;
     } catch (error) {
       console.error('Failed to load game state:', error);
+      if (error instanceof Error) {
+        console.error('Error type:', error.name);
+        console.error('Error message:', error.message);
+      }
       return null;
     }
   }, [dispatch]);
@@ -150,7 +200,7 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const saveTimeout = setTimeout(() => {
       saveGame(state);
-    }, 300000);  // Save game state 5 minutes after last state change
+    }, 300000); // Save game state 5 minutes after last state change
 
     return () => {
       clearTimeout(saveTimeout);

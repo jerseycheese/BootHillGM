@@ -7,7 +7,7 @@ import { CampaignState } from '../../types/campaign';
 jest.setTimeout(15000);
 
 // Helper function to wait for state updates
-const waitForStateUpdate = () => new Promise(resolve => setTimeout(resolve, 0));
+const waitForStateUpdate = () => new Promise(resolve => setTimeout(resolve, 100));
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -35,6 +35,13 @@ describe('CampaignStateManager', () => {
   // Clear localStorage before each test
   beforeEach(() => {
     localStorage.clear();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   // Test case: Check if the CampaignStateManager initializes with the default state
@@ -163,6 +170,13 @@ describe('CampaignStateManager', () => {
       await waitForStateUpdate();
     });
   
+    let savedTimestamp: number;
+    await act(async () => {
+      savedTimestamp = Date.now();
+      result.current.dispatch({ type: 'SET_SAVED_TIMESTAMP', payload: savedTimestamp });
+    });
+  
+    // Force a save
     await act(async () => {
       result.current.saveGame(result.current.state);
       await waitForStateUpdate();
@@ -224,17 +238,25 @@ describe('CampaignStateManager', () => {
   });
 
   test('saveGame function saves state correctly', async () => {
-    const initialState: CampaignState = {
-      character: { name: 'Test Character', health: 100 } as Character,
-      location: 'Test Town',
-      gameProgress: 0,
-      journal: [],
-      narrative: '',
-      inventory: [],
-      isCombatActive: false,
-      opponent: null,
-      savedTimestamp: null,
-      isClient: false, // Add isClient
+    // Unmock console.log for this test
+    jest.spyOn(console, 'log').mockRestore();
+
+    const savedCharacter: Character = {
+      name: 'Saved Character',
+      health: 100,
+      attributes: {
+        speed: 10,
+        gunAccuracy: 10,
+        throwingAccuracy: 10,
+        strength: 10,
+        bravery: 10,
+        experience: 5
+      },
+      skills: {
+        shooting: 50,
+        riding: 50,
+        brawling: 50
+      }
     };
   
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -243,25 +265,50 @@ describe('CampaignStateManager', () => {
   
     const { result } = renderHook(() => useCampaignState(), { wrapper });
   
+    // First, set the character
     await act(async () => {
-      result.current.dispatch({ type: 'SET_STATE', payload: initialState });
+      result.current.dispatch({ type: 'SET_CHARACTER', payload: savedCharacter });
       await waitForStateUpdate();
     });
   
+    // Then save the game
     await act(async () => {
       result.current.saveGame(result.current.state);
       await waitForStateUpdate();
     });
   
+    // Add a small delay to allow for state updates
+    await new Promise(resolve => setTimeout(resolve, 100));
+  
+    // Get the saved state from localStorage
     const savedState = JSON.parse(localStorage.getItem('campaignState') || '{}');
+    
+    // Check that the state was saved to localStorage correctly
     expect(savedState).toMatchObject({
-      ...initialState,
-      savedTimestamp: expect.any(Number)
+      character: savedCharacter,
+      savedTimestamp: expect.any(Number),
     });
+    
+    expect(result.current.state.savedTimestamp).toBeDefined();
+    expect(typeof result.current.state.savedTimestamp).toBe('number');
+    expect(result.current.state.character).toEqual(savedCharacter);
+  
+    // Additional check for complete state match
     expect(result.current.state).toMatchObject({
-      ...initialState,
-      savedTimestamp: expect.any(Number)
+      character: savedCharacter,
+      location: '',
+      narrative: '',
+      inventory: [],
+      journal: [],
+      gameProgress: 0,
+      isCombatActive: false,
+      opponent: null,
+      savedTimestamp: expect.any(Number),
+      isClient: false
     });
+
+    // Ensure the savedTimestamp in the state matches the one in localStorage
+    expect(result.current.state.savedTimestamp).toBe(savedState.savedTimestamp);
   });
 
   test('loadGame function loads state correctly', async () => {
@@ -308,5 +355,82 @@ describe('CampaignStateManager', () => {
     });
 
     expect(result.current.state).toEqual(testState);
+  });
+
+  test('loadGame handles minimal state correctly', async () => {
+    // Test with minimal state (no character, just basic game state)
+    const minimalState: CampaignState = {
+      character: null,
+      location: 'Test Town',
+      narrative: 'Test narrative',
+      inventory: [],
+      journal: [],
+      gameProgress: 0,
+      isCombatActive: false,
+      opponent: null,
+      savedTimestamp: Date.now(),
+      isClient: false
+    };
+
+    localStorage.setItem('campaignState', JSON.stringify(minimalState));
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <CampaignStateProvider>{children}</CampaignStateProvider>
+    );
+
+    const { result } = renderHook(() => useCampaignState(), { wrapper });
+
+    await act(async () => {
+      result.current.loadGame();
+      await waitForStateUpdate();
+  });
+
+    // Verify loaded state matches saved state
+    expect(result.current.state).toMatchObject(minimalState);
+    // Specifically verify null character is preserved
+    expect(result.current.state.character).toBeNull();
+  });
+
+  // Modify existing test for handling corrupted saved state
+  test('loadGame handles corrupted state gracefully', async () => {
+    // Set invalid JSON in localStorage
+    localStorage.setItem('campaignState', 'invalid json');
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <CampaignStateProvider>{children}</CampaignStateProvider>
+    );
+
+    const { result } = renderHook(() => useCampaignState(), { wrapper });
+
+    await act(async () => {
+      const loadedState = result.current.loadGame();
+      await waitForStateUpdate();
+      // Should return null for invalid state
+      expect(loadedState).toBeNull();
+      // Should maintain initial state
+      expect(result.current.state.character).toBeNull();
+      // Should log an error
+      expect(console.error).toHaveBeenCalledWith('Failed to parse game state:', expect.any(Error));
+      expect(console.error).toHaveBeenCalledWith('Error type:', 'SyntaxError');
+      expect(console.error).toHaveBeenCalledWith('Error message:', expect.stringContaining('Unexpected token'));
+    });
+  });
+
+  // Add new test for handling no saved state
+  test('loadGame handles no saved state gracefully', async () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <CampaignStateProvider>{children}</CampaignStateProvider>
+    );
+
+    const { result } = renderHook(() => useCampaignState(), { wrapper });
+
+    await act(async () => {
+      const loadedState = result.current.loadGame();
+      await waitForStateUpdate();
+      // Should return null when no state is saved
+      expect(loadedState).toBeNull();
+      // Should log a message
+      expect(console.log).toHaveBeenCalledWith('No saved game state found in localStorage');
+    });
   });
 });

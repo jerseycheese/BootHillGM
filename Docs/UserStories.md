@@ -142,12 +142,12 @@
   - Ensure the inventory display updates in real-time based on narrative actions
   **Status:** Implemented. Inventory component has been added to the game session.
 
-- [ ] As a player, I want to use items from my inventory so that I can interact with the game world.
+- [x] As a player, I want to use items from my inventory so that I can interact with the game world.
   **Test Plan:**
-  - Test using different types of items through narrative actions
-  - Verify that items are removed from inventory when used, thrown, or discarded in the narrative
+  - Test using different types of items through the Use button
+  - Verify that items are removed from inventory when used
   - Ensure that items can't be used if they're not in the inventory
-  **Status:** Partially implemented. Item usage is now handled through narrative actions.
+  **Status:** Implemented. Item usage is now handled through dedicated Use buttons with proper state management.
 
 - [ ] As a player, I want to see short descriptions of items in my inventory, so I can understand their purpose and any gameplay-relevant stats.
   **Test Plan:**

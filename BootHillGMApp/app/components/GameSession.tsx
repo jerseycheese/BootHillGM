@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import CombatSystem from './CombatSystem';
 import JournalViewer from './JournalViewer';
@@ -11,7 +11,8 @@ import { useGameInitialization } from '../hooks/useGameInitialization';
 import { useCampaignState } from './CampaignStateManager';
 import { Character } from '../types/character';
 import { JournalEntry } from '../types/journal';
-import { InventoryItem } from '../types/inventory';
+import { CampaignState } from '../types/campaign';
+import Inventory from './Inventory';
 
 /**
  * Main game session component that orchestrates:
@@ -29,28 +30,47 @@ export default function GameSession() {
   const hasAttemptedLoad = useRef(false);
   const { isInitializing, isClient, initializeGameSession } = useGameInitialization();
 
-  const handleInventoryChange = useCallback((acquired: string[], removed: string[]) => {
+  const handleInventoryChange = useCallback(async (acquiredItems: string[], removedItems: string[]) => {
     if (!dispatch) return;
-
-    acquired.forEach(itemName => {
-      const newItem: InventoryItem = {
-        id: `${itemName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
-        name: itemName,
-        quantity: 1,
-        description: `A ${itemName.toLowerCase()} acquired during your adventure.`
-      };
-      dispatch({ type: 'ADD_ITEM', payload: newItem });
-    });
-
-    removed.forEach(itemName => {
-      dispatch({ type: 'REMOVE_ITEM', payload: itemName });
-    });
-  }, [dispatch]);
+  
+    // Process removals first
+    for (const itemName of removedItems) {
+      const existingItem = state?.inventory?.find(item => item.name === itemName);
+      if (existingItem) {
+        
+        if (existingItem.quantity > 1) {
+          // Dispatch the quantity update
+          dispatch({
+            type: 'UPDATE_ITEM_QUANTITY',
+            payload: {
+              id: existingItem.id,
+              quantity: existingItem.quantity - 1
+            }
+          });
+  
+          // Give React time to process the update
+          await new Promise(resolve => setTimeout(resolve, 50));
+        } else {
+          dispatch({ type: 'REMOVE_ITEM', payload: itemName });
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+      }
+    }
+  
+    // After all updates are complete, save the game state
+    if (saveGame) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      saveGame(state);
+    }
+  }, [dispatch, state, saveGame]);
 
   const { handleUserInput, isLoading } = useAIInteractions(
     state,
     dispatch,
-    handleInventoryChange
+    handleInventoryChange,
+    (updatedState: CampaignState) => {
+      saveGame(updatedState);
+    }
   );
 
   const handleCombatEnd = useCallback((winner: 'player' | 'opponent', combatSummary: string) => {
@@ -89,22 +109,15 @@ export default function GameSession() {
     }
   }, [state, saveGame]);
 
-  const memoizedInventory = useMemo(() => {
-    if (!state?.inventory || state.inventory.length === 0) {
-      return <p className="wireframe-text">Your inventory is empty.</p>;
+  const handleUseItem = async (itemName: string) => {
+    if (!state?.character) {
+      console.warn('No character in state, aborting item use');
+      return;
     }
-    return (
-      <ul className="wireframe-list">
-        {state.inventory.map((item) => (
-          item && item.id && item.name && item.quantity > 0 ? (
-            <li key={item.id} className="wireframe-text">
-              {`${item.name} (x${item.quantity})`}
-            </li>
-          ) : null
-        ))}
-      </ul>
-    );
-  }, [state?.inventory]);
+    // Create the action text
+    const actionText = `use ${itemName}`;
+    await handleUserInput(actionText);
+  };
   
   useEffect(() => {
     const initGame = async () => {
@@ -208,10 +221,7 @@ export default function GameSession() {
         <UserInputHandler onSubmit={handleUserInput} isLoading={isLoading} />
       )}
       {/* Inventory and Journal components */}
-      <div className="wireframe-section">
-        <h2 className="wireframe-subtitle">Inventory</h2>
-        {memoizedInventory}
-      </div>
+      <Inventory onUseItem={handleUseItem} />
       <JournalViewer entries={state.journal || []} />
     </div>
   );

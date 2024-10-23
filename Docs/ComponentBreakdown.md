@@ -58,14 +58,28 @@
   - Ensuring consistent and appropriate AI-generated content
   - Handling edge cases in character attribute values and combinations
 
-### 6. NarrativeEngine
+### 6. Inventory Component
+- **Main Functionality:** Manages character inventory display and item usage
+- **Key Components:**
+  - [x] Inventory (components/Inventory.tsx)
+    - Displays current inventory items with quantities
+    - Provides Use buttons for direct item interaction
+    - Shows item descriptions on hover
+    - Integrates with CampaignStateManager for state persistence
+  - [x] State Management Integration
+    - Uses CampaignStateManager for inventory state
+    - Handles item quantity updates
+    - Maintains inventory state across sessions
+
+
+### 7. NarrativeEngine
 - **Main Functionality:** Generates and manages basic storylines and narrative elements
 - **Key Components:**
   - [ ] StoryGenerator (utils/StoryGenerator.ts)
   - [ ] NarrativeDisplay (components/NarrativeDisplay.tsx)
 - **Potential Challenges:** Integrating AI-generated content, maintaining narrative consistency
 
-### 7. CombatSystem
+### 8. CombatSystem
 - **Main Functionality:** Manages simplified combat mechanics
 - **Key Components:**
   - [x] CombatSystem (components/CombatSystem.tsx)
@@ -78,7 +92,7 @@
   - Comprehensive test coverage including rendering with/without opponent, player attacks, and combat end scenarios
 - **Potential Challenges:** Implementing turn-based logic, integrating with game state
 
-### 8. UIComponents
+### 9. UIComponents
 - **Main Functionality:** Reusable UI elements for consistent look and feel
 - **Key Components:**
   - [ ] Button (components/ui/Button.tsx)
@@ -86,7 +100,7 @@
   - [ ] Card (components/ui/Card.tsx)
 - **Potential Challenges:** Creating reusable components, styling with CSS Modules
 
-### 9. DataPersistence
+### 10. DataPersistence
 - **Main Functionality:** Handles saving and loading game states
 - **Key Components:**
   - [x] CampaignStateManager (app/components/CampaignStateManager.tsx)
@@ -102,7 +116,7 @@
   - Robust date formatting and entry organization
 - **Potential Challenges:** Managing complex state serialization/deserialization, ensuring data consistency across saves
 
-### 10. GameSession
+### 11. GameSession
 - **Main Functionality:** Manages the main game play experience
 - **Key Components:**
   - GameSession (app/game-session/page.tsx)

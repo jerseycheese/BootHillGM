@@ -1,35 +1,56 @@
 import React, { useState } from 'react';
-import { useGame } from '../utils/gameEngine';
+import { useCampaignState } from '../components/CampaignStateManager';
 
-const Inventory: React.FC = () => {
-  const { state } = useGame();
-  const { inventory } = state;
+const Inventory: React.FC<{
+  onUseItem?: (itemName: string) => void;
+}> = ({ onUseItem }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const { state } = useCampaignState();
+  const { inventory } = state;
+
+  const handleUseItem = (itemName: string) => {
+    if (onUseItem) {
+      onUseItem(itemName);
+    }
+  };
 
   return (
     <div className="wireframe-section">
-      <h2 className="wireframe-subtitle">Inventory</h2>
-      {!inventory || inventory.length === 0 ? (
-        <p className="wireframe-text">Your inventory is empty.</p>
-      ) : (
-        <ul className="wireframe-list">
-          {inventory.map((item) => (
-            item && item.id && item.name && item.quantity > 0 ? (
-              <li 
-                key={item.id} 
-                className="wireframe-text relative"
-                onMouseEnter={() => setHoveredItem(item.id)}
-                onMouseLeave={() => setHoveredItem(null)}
-              >
-                <span>{item.name} (x{item.quantity})</span>
-                {hoveredItem === item.id && item.description && (
-                  <div className="item-description">{item.description}</div>
-                )}
-              </li>
-            ) : null
-          ))}
-        </ul>
-      )}
+      <div data-debug="inventory-component-root">
+        <h2 className="wireframe-subtitle">Inventory</h2>
+        {!inventory || inventory.length === 0 ? (
+          <p className="wireframe-text">Your inventory is empty.</p>
+        ) : (
+          <ul className="wireframe-list">
+            {inventory?.map((item) => (
+              item && item.id && item.name && item.quantity > 0 ? (
+                <li 
+                  key={item.id} 
+                  className="wireframe-text relative flex justify-between items-center p-2"
+                  onMouseEnter={() => setHoveredItem(item.id)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  <div className="flex-grow">
+                    <span>{item.name} (x{item.quantity})</span>
+                    {hoveredItem === item.id && item.description && (
+                      <div className="absolute z-10 bg-black text-white p-2 rounded shadow-lg mt-1 text-sm">
+                        {item.description}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleUseItem(item.name)}
+                    className="ml-4 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                    aria-label={`Use ${item.name}`}
+                  >
+                    Use
+                  </button>
+                </li>
+              ) : null
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };

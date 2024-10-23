@@ -12,13 +12,17 @@ interface UseAIInteractionsResult {
 }
 
 /**
- * Hook that manages AI interactions for the game session.
- * Processes user input, handles AI responses, and updates game state accordingly.
+ * Processes user actions including inventory usage:
+ * - Handles direct item usage through Use buttons
+ * - Integrates with AI for narrative generation
+ * - Manages state updates and persistence
+ * - Coordinates inventory changes with narrative flow
  */
 export const useAIInteractions = (
   state: CampaignState,
   dispatch: React.Dispatch<GameAction>,
-  onInventoryChange: (acquired: string[], removed: string[]) => void
+  onInventoryChange: (acquired: string[], removed: string[]) => void,
+  saveGame?: (state: CampaignState) => void  // Add this parameter
 ): UseAIInteractionsResult => {
   // Tracks when AI is processing a response
   const [isLoading, setIsLoading] = useState(false);
@@ -31,52 +35,39 @@ export const useAIInteractions = (
     setIsLoading(true);
     try {
       const journalContext = getJournalContext(state.journal || []);
-
-      // Get AI response with all possible game state changes
-      const {
-        narrative: aiResponse,
-        acquiredItems,
-        removedItems,
-        location,
-        combatInitiated,
-        opponent
-      } = await getAIResponse(
-        input,
-        journalContext,
-        state.inventory || []
-      );
-
-      // Remove metadata tags from AI response for clean narrative
-      const cleanNarrative = aiResponse.split('\n')
+      const response = await getAIResponse(input, journalContext, state.inventory || []);
+  
+      // Clean narrative
+      const cleanNarrative = response.narrative.split('\n')
         .filter(line =>
           !line.startsWith('ACQUIRED_ITEMS:') &&
           !line.startsWith('REMOVED_ITEMS:'))
         .join('\n')
         .trim();
-
-      // Build and update game narrative with user input and AI response
+  
+      // Update narrative first
       dispatch({
         type: 'SET_NARRATIVE',
         payload: `${state.narrative || ''}\n\nPlayer: ${input}\n\nGame Master: ${cleanNarrative}`
       });
-
-      // Update player location if movement occurred
-      if (location) {
-        dispatch({ type: 'SET_LOCATION', payload: location });
+  
+      // Update location if needed
+      if (response.location) {
+        dispatch({ type: 'SET_LOCATION', payload: response.location });
       }
-
-      // Initialize combat if the AI response triggered it
-      if (combatInitiated && opponent) {
+  
+      // Handle combat initiation if needed
+      if (response.combatInitiated && response.opponent) {
         dispatch({ type: 'SET_COMBAT_ACTIVE', payload: true });
-        dispatch({ type: 'SET_OPPONENT', payload: opponent });
+        dispatch({ type: 'SET_OPPONENT', payload: response.opponent });
       }
-
-      // Create and add new journal entry with narrative summary
+  
+      // Create and add journal entry
       const narrativeSummary = await generateNarrativeSummary(
         input,
         `${state.character?.name || 'You'} ${input}`
       );
-
+  
       dispatch({
         type: 'UPDATE_JOURNAL',
         payload: {
@@ -85,13 +76,32 @@ export const useAIInteractions = (
           narrativeSummary
         }
       });
-
-      // Process inventory updates, removing duplicates and empty items
-      const cleanedAcquiredItems = [...new Set(acquiredItems.filter(item => item && item.trim() !== ''))];
-      const cleanedRemovedItems = [...new Set(removedItems.filter(item => item && item.trim() !== ''))];
-      onInventoryChange(cleanedAcquiredItems, cleanedRemovedItems);
-
-    } catch {
+  
+      // Process inventory changes
+      const cleanedAcquiredItems = [...new Set(response.acquiredItems.filter(item => item && item.trim() !== ''))];
+      const cleanedRemovedItems = [...new Set(response.removedItems.filter(item => item && item.trim() !== ''))];
+  
+      if (cleanedAcquiredItems.length > 0 || cleanedRemovedItems.length > 0) {
+        // Wait for inventory changes to be processed
+        await onInventoryChange(cleanedAcquiredItems, cleanedRemovedItems);
+  
+        // Give React a chance to update state
+        await new Promise(resolve => setTimeout(resolve, 100));
+  
+        // Get the current state after all updates
+        if (saveGame) {
+          // Get the latest state after all updates
+          const updatedState: CampaignState = {
+            ...state,
+            inventory: state.inventory?.map(item => ({ ...item })) || []
+          };
+  
+          saveGame(updatedState);
+        }
+      }
+  
+    } catch (error) {
+      console.error('Error in handleUserInput:', error);
       dispatch({
         type: 'SET_NARRATIVE',
         payload: `${state.narrative || ''}\n\nAn error occurred. Please try again.`
@@ -99,7 +109,7 @@ export const useAIInteractions = (
     } finally {
       setIsLoading(false);
     }
-  }, [state, dispatch, onInventoryChange]);
+  }, [state, dispatch, onInventoryChange, saveGame]);
 
   return {
     isLoading,

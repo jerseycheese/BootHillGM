@@ -251,7 +251,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
 
     try {
       characterData = JSON.parse(cleanedResponse);
-    } catch (parseError) {
+    } catch {
       // Attempt to fix common JSON issues
       const fixedResponse = cleanedResponse
         .replace(/'/g, '"')
@@ -262,7 +262,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
         .trim();
       try {
         characterData = JSON.parse(fixedResponse);
-      } catch (secondParseError) {
+      } catch {
         throw new Error('Unable to parse character data');
       }
     }
@@ -306,7 +306,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
     }
     
     return character;
-  } catch (error) {
+  } catch {
     
     // Return a default character if parsing fails
     return {
@@ -403,7 +403,7 @@ export async function generateNarrativeSummary(action: string, context: string):
     
     // If something went wrong, return a simple action summary
     return `${context} ${action}.`;
-  } catch (error) {
+  } catch {
     // Return a simple action summary as fallback
     return `${context} ${action}.`;
   }
@@ -429,7 +429,7 @@ export async function generateCharacterSummary(character: Character): Promise<st
     const result = await retryAIRequest(() => model.generateContent(prompt));
     const response = await result.response;
     return response.text().trim();
-  } catch (error) {
+  } catch {
     return `A ${character.name} is a character in the Old West.`;
   }
 }
