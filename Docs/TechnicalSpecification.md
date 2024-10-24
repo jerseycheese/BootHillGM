@@ -43,11 +43,14 @@
   - Uses lodash for debounce functionality
 7. UI Components: Basic reusable React components
 8. Campaign State Manager: Handles saving, loading, and managing campaign state
+   - Handles saving, loading, and managing campaign state
    - Implements React Context for global state management
    - Uses localStorage for client-side persistence
-   - Includes UPDATE_ITEM_QUANTITY action for granular inventory control
+   - Properly manages state cleanup during character creation
    - Provides saveGame and loadGame functions
+   - Includes state validation and hydration checks
    - Handles automatic saving of game state
+   - Manages clean state initialization for new characters
 9. Journal System: Manages the storage and retrieval of important story information
 
 ## 4. Data Flow

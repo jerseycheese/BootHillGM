@@ -14,9 +14,11 @@ interface InventoryItem {
 describe('Inventory', () => {
   // Mock campaign state with test data
   const mockState: CampaignState = {
+    currentPlayer: '',
+    npcs: [],
     character: null,
     location: '',
-    savedTimestamp: null,
+    savedTimestamp: undefined,
     gameProgress: 0,
     journal: [],
     narrative: '',
@@ -24,9 +26,10 @@ describe('Inventory', () => {
       { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores 20 health points' },
       { id: '2', name: 'Rope', quantity: 1, description: 'A sturdy rope, 50 feet long' }
     ],
+    quests: [],
     isCombatActive: false,
     opponent: null,
-    isClient: false, // Add isClient property
+    isClient: false,
   };
 
   const mockDispatch = jest.fn();
@@ -41,7 +44,8 @@ describe('Inventory', () => {
           state, 
           dispatch: mockDispatch,
           saveGame: mockSaveGame,
-          loadGame: mockLoadGame
+          loadGame: mockLoadGame,
+          cleanupState: jest.fn()
         }}
       >
         {ui}

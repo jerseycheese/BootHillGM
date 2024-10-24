@@ -16,6 +16,8 @@ export interface GameState {
   journal: JournalEntry[];
   isCombatActive: boolean;
   opponent: Character | null;
+  savedTimestamp?: number;
+  isClient?: boolean;
 }
 
 // Define all possible actions that can be dispatched to update the game state
@@ -36,10 +38,12 @@ export type GameEngineAction =
   | { type: 'SET_OPPONENT'; payload: Character | null }
   | { type: 'UPDATE_ITEM_QUANTITY'; payload: { id: string; quantity: number } }
   | { type: 'CLEAN_INVENTORY' }
-  | { type: 'SET_INVENTORY'; payload: InventoryItem[] };
+  | { type: 'SET_INVENTORY'; payload: InventoryItem[] }
+  | { type: 'SET_SAVED_TIMESTAMP'; payload: number }
+  | { type: 'SET_STATE'; payload: Partial<GameState> };
 
 // Initial state of the game
-const initialState: GameState = {
+export const initialState: GameState = {
   currentPlayer: '',
   npcs: [],
   location: '',
@@ -51,6 +55,8 @@ const initialState: GameState = {
   journal: [],
   isCombatActive: false,
   opponent: null,
+  savedTimestamp: undefined,
+  isClient: false,
 };
 
 // Reducer function to handle state updates based on dispatched actions
@@ -158,6 +164,10 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'SET_INVENTORY':
       newState = { ...state, inventory: action.payload };
       return newState;
+    case 'SET_SAVED_TIMESTAMP':
+      return { ...state, savedTimestamp: action.payload };
+    case 'SET_STATE':
+      return { ...state, ...action.payload };
     default:
       return state;
   }

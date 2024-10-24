@@ -6,6 +6,7 @@ import { useGame } from '../utils/gameEngine';
 import { getCharacterCreationStep, validateAttributeValue, generateFieldValue, generateCompleteCharacter, generateCharacterSummary } from '../utils/aiService';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from '../types/character';
+import { initialGameState } from '../types/campaign';
 
 // Initial character state with default values
 const initialCharacter: Character = {
@@ -29,7 +30,7 @@ const initialCharacter: Character = {
 export default function GameSession() {
   const router = useRouter();
   useGame(); // Keep the hook call without destructuring
-  const { state, saveGame } = useCampaignState();
+  const { saveGame, cleanupState } = useCampaignState();
   const [character, setCharacter] = useState<Character>(initialCharacter);
   const [currentStep, setCurrentStep] = useState(0);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -160,9 +161,37 @@ export default function GameSession() {
 
   // Finalize character creation and navigate to game session
   const finishCharacterCreation = () => {
-    const updatedState = { ...state, character };
-    saveGame(updatedState);
-    localStorage.setItem('lastCreatedCharacter', JSON.stringify(character));
+    console.group('Character Creation Completion');
+    console.log('Starting character creation completion');
+    console.log('Current localStorage state:', localStorage.getItem('campaignState'));
+    
+    // Clean up existing state first
+    cleanupState();
+    
+    console.log('After cleanup - localStorage state:', localStorage.getItem('campaignState'));
+    console.log('After cleanup - sessionStorage state:', sessionStorage.getItem('initializing_new_character'));
+    
+    // Save the new character
+    const newCharacterData = JSON.stringify(character);
+    localStorage.setItem('lastCreatedCharacter', newCharacterData);
+    console.log('Saved new character:', character.name);
+    
+    // Create clean initial state with new character
+    const initialState = {
+      ...initialGameState,
+      character,
+      savedTimestamp: Date.now(),
+      isClient: true
+    };
+    
+    console.log('Saving initial state:', {
+      characterName: character.name,
+      timestamp: initialState.savedTimestamp
+    });
+    
+    saveGame(initialState);
+    console.groupEnd();
+    
     router.push('/game-session');
   };
 

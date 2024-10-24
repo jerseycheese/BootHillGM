@@ -13,6 +13,8 @@ describe('useAIInteractions', () => {
   const mockDispatch = jest.fn();
   const mockOnInventoryChange = jest.fn();
   const mockInitialState = {
+    currentPlayer: 'Test Player',
+    npcs: [],
     character: {
       name: 'Test Character',
       health: 100,
@@ -37,8 +39,9 @@ describe('useAIInteractions', () => {
     gameProgress: 0,
     isCombatActive: false,
     opponent: null,
-    savedTimestamp: null,
+    savedTimestamp: undefined,
     isClient: true,
+    quests: [],
   };
 
   beforeEach(() => {
@@ -51,6 +54,14 @@ describe('useAIInteractions', () => {
     });
     (generateNarrativeSummary as jest.Mock).mockResolvedValue('Test summary');
     (getJournalContext as jest.Mock).mockReturnValue('Test context');
+    // Mock console methods to prevent noise in test output
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    // Restore console methods
+    jest.restoreAllMocks();
   });
 
   it('handles user input successfully', async () => {
@@ -69,11 +80,13 @@ describe('useAIInteractions', () => {
       []
     );
 
-    // Verify narrative was updated
+    // Verify state was updated with new narrative
     expect(mockDispatch).toHaveBeenCalledWith(
       expect.objectContaining({
-        type: 'SET_NARRATIVE',
-        payload: expect.stringContaining('AI response')
+        type: 'SET_STATE',
+        payload: expect.objectContaining({
+          narrative: expect.stringContaining('AI response')
+        })
       })
     );
 
@@ -90,7 +103,8 @@ describe('useAIInteractions', () => {
   });
 
   it('handles errors gracefully', async () => {
-    (getAIResponse as jest.Mock).mockRejectedValue(new Error('Test error'));
+    const testError = new Error('Test error');
+    (getAIResponse as jest.Mock).mockRejectedValue(testError);
 
     const { result } = renderHook(() => 
       useAIInteractions(mockInitialState, mockDispatch, mockOnInventoryChange)
@@ -100,6 +114,13 @@ describe('useAIInteractions', () => {
       await result.current.handleUserInput('test input');
     });
 
+    // Verify error state
+    expect(result.current.error).toBe('Test error');
+    
+    // Verify error was logged
+    expect(console.error).toHaveBeenCalledWith('Error in handleUserInput:', testError);
+
+    // Verify narrative update with error message
     expect(mockDispatch).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'SET_NARRATIVE',

@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { useCampaignState } from '../components/CampaignStateManager';
 
+/**
+ * Inventory component displays and manages the player's inventory.
+ * Provides direct item usage through Use buttons and item descriptions on hover.
+ * Integrates with CampaignStateManager for state persistence.
+ */
 const Inventory: React.FC<{
   onUseItem?: (itemName: string) => void;
 }> = ({ onUseItem }) => {
@@ -8,6 +13,11 @@ const Inventory: React.FC<{
   const { state } = useCampaignState();
   const { inventory } = state;
 
+  /**
+   * Processes item usage by dispatching the action through the AI system.
+   * Creates a "use [item]" action that gets processed like a player command.
+   * Ensures state persistence after item usage.
+   */
   const handleUseItem = (itemName: string) => {
     if (onUseItem) {
       onUseItem(itemName);

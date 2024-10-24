@@ -374,6 +374,22 @@
 - [ ] As a player, I want to hear ambient sounds and music so that I feel more immersed in the Western setting.
 
 ### Campaign Persistence
+- [x] As a player, I want my game progress to persist when I navigate away from the game session, so that I can resume my game where I left off.
+  **Test Plan:**
+  - Start a game session and make several interactions
+  - Navigate away from the game session and then return
+  - Verify that the game state, including journal entries, is restored correctly
+  **Status:** Implemented. State properly persists and restores after navigation.
+
+- [x] As a player, I want to see a clean state when creating a new character, so that my previous game doesn't interfere with my new character.
+  **Test Plan:**
+  - Clear all storage
+  - Create new character
+  - Verify game session starts fresh
+  - Create another character
+  - Verify previous state is not restored
+  **Status:** Implemented. State cleanup works correctly during character creation.
+
 - [ ] As a player, I want important story information to be recorded in a journal, so that I can keep track of the game's narrative.
   **Test Plan:**
   - Verify that significant story events are automatically added to the journal
@@ -604,4 +620,4 @@ This section is for tracking bugs found during development and testing. Each bug
 - Actual Behavior: Game session resets to the initial message.
 - Status: Closed
 - Resolution: Implemented robust game state persistence using localStorage and added fallback mechanism for character data.
-- Closed Date: 2024-10-18
+- Closed Date: 2024-10-24

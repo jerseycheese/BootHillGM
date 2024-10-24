@@ -40,11 +40,13 @@ jest.mock('../../components/CampaignStateManager', () => {
   return {
     ...actual,
     useCampaignState: jest.fn(),
+    cleanupState: jest.fn(),
   };
 });
 
 const mockHandleUserInput = jest.fn();
 const mockDispatch = jest.fn();
+const mockCleanupState = jest.fn();
 
 interface RenderWithProvidersResult extends RenderResult {
   mockDispatch: jest.Mock;
@@ -70,16 +72,19 @@ const renderWithProviders = (ui: React.ReactElement, initialState?: Partial<Camp
   };
 
   const mockState: CampaignState = {
+    currentPlayer: 'Test Player',
+    npcs: [],
     character: mockCharacter,
     location: 'Test Town',
     narrative: 'Initial narrative',
     inventory: [{ id: 'health-potion-1', name: 'Health Potion', quantity: 1, description: 'Restores health' }],
     journal: [],
     isClient: true,
-    savedTimestamp: null,
+    savedTimestamp: undefined,
     gameProgress: 0,
     isCombatActive: false,
     opponent: null,
+    quests: [],
     ...initialState,
   };
 
@@ -88,6 +93,7 @@ const renderWithProviders = (ui: React.ReactElement, initialState?: Partial<Camp
     dispatch: mockDispatch,
     saveGame: jest.fn(),
     loadGame: jest.fn(),
+    cleanupState: mockCleanupState,
   };
 
   (useCampaignState as jest.Mock).mockReturnValue(mockContextValue);
