@@ -21,7 +21,7 @@ export default function CharacterSheet() {
         <ul className="wireframe-list">
           {Object.entries(character.attributes).map(([key, value]) => (
             <li key={key} className="wireframe-text">
-              {key}: {value}
+              {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
             </li>
           ))}
         </ul>
@@ -31,7 +31,7 @@ export default function CharacterSheet() {
         <ul className="wireframe-list">
           {Object.entries(character.skills).map(([key, value]) => (
             <li key={key} className="wireframe-text">
-              {key}: {value}
+              {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
             </li>
           ))}
         </ul>

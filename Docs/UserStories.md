@@ -40,6 +40,21 @@
   - Ensure the background is displayed clearly in the character sheet
   **Status:** Not yet implemented.
 
+- [ ] As a player, I want to see a reference table showing Boot Hill rulebook ratings during character creation, so that I understand the meaning of numerical values without AI explanation.
+  **Test Plan:**
+  - Verify that appropriate rating tables from Boot Hill rules are displayed for each step
+  - Ensure tables are clearly formatted and readable
+  - Check that tables match the current attribute/skill being set
+  - Test table display on different screen sizes
+
+- [ ] As a player, I want to see "Roll Dice" instead of "Generate" for numerical values, with an explanation of the dice roll result.
+  **Test Plan:**
+  - Verify button text is changed to "Roll Dice"
+  - Ensure dice roll results are displayed with clear explanation
+  - Check that rolls follow Boot Hill rules
+  - Verify dice roll explanation appears before the Next Step button
+
+
 ### Game Session
 - [x] As a player, I want to start a new game session so that I can begin my adventure in the Old West.
   **Test Plan:**
@@ -81,6 +96,28 @@
   - Verify that the game resumes with the correct character, location, and narrative context
   - Ensure that all relevant game state (inventory, quest progress, etc.) is correctly restored
 
+- [ ] As a player, I want to see three contextual action buttons suggested by the AI, alongside the free text input option, so that I have quick access to logical choices while maintaining freedom of action.
+  **Test Plan:**
+  - Verify that three contextual actions are displayed as buttons
+  - Ensure buttons update based on current game context
+  - Check that free text input remains available
+  - Verify suggested actions are not duplicated in the narrative text
+
+- [ ] As a player, I want the narrative to focus on describing the scene and events, without including suggested actions in the text itself, so that the narrative flow is cleaner and more immersive.
+  **Test Plan:**
+  - Verify that narrative text doesn't include explicit action suggestions
+  - Ensure narrative remains descriptive and engaging
+  - Check that suggested actions appear only as UI buttons
+  - Test that narrative and action buttons work together cohesively
+
+- [ ] As a player, I want to see my character's health displayed as "current/total" format, so that I can better understand my character's health status.
+  **Test Plan:**
+  - Verify health is displayed in "current/total" format
+  - Ensure health updates are reflected correctly in both numbers
+  - Check that the format remains consistent after taking damage or healing
+  - Test that the display handles edge cases (0 health, max health, etc.)
+
+
 ### Journal and Campaign Persistence
 
 - [x] As a player, I want to view my journal entries during a game session, so that I can keep track of important story events.
@@ -104,6 +141,7 @@
   - Navigate away from the game session and then return
   - Verify that the game state, including journal entries, is restored correctly
   **Status:** Partially implemented, needs testing.
+
 
 ### Combat System
 - [ ] As a player, I want to engage in simple turn-based combat so that I can experience the dangers of the Old West.
@@ -133,6 +171,7 @@
   - Check that all combat actions are recorded in the log
   - Ensure the log is readable and doesn't interfere with other UI elements
   **Status:** Not yet implemented.
+
 
 ### Inventory and Economy
 - [x] As a player, I want to view my character's inventory so that I know what items I have available.
@@ -178,6 +217,7 @@
   - Ensure that combat can end early if the AI agrees to the truce
   **Status:** Not yet implemented.
 
+
 ### Game State
 - [x] As a player, I want to save my game progress so that I can continue my adventure later.
   **Test Plan:**
@@ -192,6 +232,7 @@
   - Test loading games from different points in the story
   - Ensure the game continues seamlessly from the loaded state
   **Status:** Implemented. Game state is loaded automatically when returning to the game session.
+
 
 ### Setting and Atmosphere
 - [ ] As a player, I want to explore one frontier town and its immediate surroundings so that I can immerse myself in a focused Western setting.
@@ -223,6 +264,31 @@
   - Confirm that the items are displayed correctly in the character's inventory
   **Status:** Not yet implemented.
 
+
+### UI/UX Improvements
+- [ ] As a developer, I want to add identifying IDs/classes to page markup, including specific classes for Boot Hill rules tables and dice roll results.
+  **Test Plan:**
+  - Review all components and add appropriate IDs and classes
+  - Verify that added IDs and classes are unique and descriptive
+  - Test that added identifiers don't break existing styles or functionality
+  - Ensure Boot Hill rules tables and dice roll results have clear identifying classes
+
+- [ ] As a player, I want my character creation progress to be saved automatically after each step, so that I don't lose progress if I need to refresh or encounter an error.
+  **Test Plan:**
+  - Verify that progress is saved after each step completion
+  - Test recovery of progress after page refresh
+  - Ensure partial character data is properly stored and retrieved
+
+- [ ] As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
+  **Test Plan:**
+  - Verify that a loading indicator appears when generating a random character
+  - Check that the loading indicator is visible when transitioning between steps
+  - Ensure the loading indicator disappears once content is loaded
+
+
+
+
+### Technical Improvements
 - [x] As a developer, I want to use a dispatch function for state updates so that I can manage game state more efficiently and consistently.
   **Test Plan:**
   - Verify that all state updates use the dispatch function
@@ -271,6 +337,7 @@
   - Implement visual distinction for player actions in the narrative
   - Verify that player actions are easily identifiable
   - Ensure that the emphasis doesn't disrupt the overall readability of the narrative
+
 
 ## Post-MVP Features
 
@@ -332,6 +399,7 @@
   - Check that the journal entry is formatted consistently with other entries
   **Status:** Not yet implemented.
 
+
 ## Completed Tasks
 - [x] As a developer, I want to set up the Next.js project structure so that I have a solid foundation for the app.
 - [x] As a developer, I want to implement basic state management using React Context so that I can manage game state effectively.
@@ -383,7 +451,7 @@ This section is for tracking bugs found during development and testing. Each bug
   - Status: Open
   - Priority: High
 
-[BUG-006] Delayed Content Update and Incorrect Step Information on Character Summary
+[BUG-021] Delayed Content Update and Incorrect Step Information on Character Summary
   - Description: When generating a random character, there's a delay in updating the UI, and outdated step information is briefly shown.
   - Steps to Reproduce: 
     1. Go to the Character Creation page
@@ -394,9 +462,9 @@ This section is for tracking bugs found during development and testing. Each bug
     - "Step 1: name" text remains visible for a few seconds before changing to "Step 11: summary"
     - Character description takes several seconds to load without any loading indication
   - Status: Open
-  - Priority: Medium (impacts user experience but doesn't prevent core functionality)
+  - Priority: Medium
 
-[BUG-007] Generate Random Character Button Malfunction on Summary Page
+[BUG-022] Generate Random Character Button Malfunction on Summary Page
   - Description: The Generate Random Character button doesn't generate a new character when clicked on the summary page.
   - Steps to Reproduce: 
     1. Go to the Character Creation page
@@ -407,7 +475,7 @@ This section is for tracking bugs found during development and testing. Each bug
   - Status: Open
   - Priority: Medium
 
-[BUG-011] Duplicate Inventory Items in Game Session
+[BUG-023] Duplicate Inventory Items in Game Session
   - Description: Inventory items are loading twice in the Game Session.
   - Steps to Reproduce: 
     1. Start a game session
@@ -417,7 +485,7 @@ This section is for tracking bugs found during development and testing. Each bug
   - Status: Open
   - Priority: Medium
 
-[BUG-013] Duplicate AI Text Generation in Character Creation
+[BUG-024] Duplicate AI Text Generation in Character Creation
   - Description: The AI text for "Step 1" is generated twice, with the second version replacing the first.
   - Steps to Reproduce: 
     1. Go to the Create Character page
@@ -427,17 +495,29 @@ This section is for tracking bugs found during development and testing. Each bug
   - Status: Open
   - Priority: Medium
 
-[BUG-014] Unnecessary Reload of AI Messages on Generate Button Click
-  - Description: Clicking the "Generate" button reloads all AI messages on the character creation page.
+[BUG-025] Unnecessary Reload of AI Messages on Generate Button Click
+  - Description: Clicking the "Generate" button reloads all AI messages on the character creation page, including the step description.
   - Steps to Reproduce: 
     1. Go to the Create Character page
     2. Click the "Generate" button for any field
-  - Expected Behavior: Only the relevant field should be updated
-  - Actual Behavior: All AI messages on the page are reloaded
+  - Expected Behavior: Only the field value should be generated, leaving the step description unchanged
+  - Actual Behavior: Both the field value and step description are regenerated
+  - Impact: Wastes API calls and creates unnecessary visual changes
   - Status: Open
   - Priority: Medium
 
-[BUG-016] Incorrect Location Display in Game Session
+[BUG-026] Character Creation Progress Not Saved During Process
+  - Description: Character creation progress is not saved incrementally, risking loss of progress if page is refreshed
+  - Steps to Reproduce: 
+    1. Begin character creation
+    2. Complete several steps
+    3. Encounter an error or refresh the page
+  - Expected Behavior: Progress should be saved after each step completion
+  - Actual Behavior: Progress is lost on page refresh
+  - Status: Open
+  - Priority: High
+
+[BUG-027] Incorrect Location Display in Game Session
   - Description: The location display sometimes includes more information than just the location name.
   - Steps to Reproduce: 
     1. Start a new game session
@@ -447,7 +527,7 @@ This section is for tracking bugs found during development and testing. Each bug
   - Status: Open
   - Priority: Medium
 
-[BUG-017] Player Actions Not Visually Distinct in Narrative
+[BUG-028] Player Actions Not Visually Distinct in Narrative
   - Description: Player actions are not visually emphasized in the game narrative.
   - Steps to Reproduce: 
     1. Start a game session
@@ -458,18 +538,18 @@ This section is for tracking bugs found during development and testing. Each bug
   - Status: Open
   - Priority: Medium
 
-[BUG-018] Game State Persistence After Page Refresh
-  - Description: The game state is not persisted after refreshing the page, causing the user to be redirected to Character Creation.
+[BUG-029] Game State Not Persisting Across Pages
+  - Description: Character Sheet page shows "No character found" message despite having an active character in the game session.
   - Steps to Reproduce:
-    1. Create a character and start a game session
-    2. Refresh the page during the game session
-    3. Attempt to navigate back to the Game Session page
-  - Expected Behavior: The game session should persist, allowing the user to continue from where they left off
-  - Actual Behavior: The user is redirected to Character Creation, losing all progress
+    1. Generate a character and start a game session
+    2. Navigate to the Character Sheet page
+  - Expected Behavior: Character Sheet should display the current character's information
+  - Actual Behavior: Page shows "No character found" message
+  - Root Cause: Likely issue with state persistence between pages
   - Status: Open
   - Priority: High
 
-[BUG-019] Combat State Not Persisting After Page Navigation
+[BUG-030] Combat State Not Persisting After Page Navigation
   - Description: When leaving the Game Session page during combat and returning, the combat state is not maintained.
   - Steps to Reproduce:
     1. Start a game session and enter combat
@@ -480,16 +560,6 @@ This section is for tracking bugs found during development and testing. Each bug
   - Status: Open
   - Priority: Medium
 
-[BUG-020] Combat State Not Persisting During Navigation
-- Description: Combat state is not maintained when navigating away from and back to the Game Session page.
-- Steps to Reproduce:
-  1. Start a game session and enter combat.
-  2. Navigate away from the Game Session page.
-  3. Return to the Game Session page.
-- Expected Behavior: Combat should resume from where it left off.
-- Actual Behavior: Combat state is lost, and the game resumes as if combat never occurred.
-- Status: Open
-- Priority: Medium
 
 ### Closed Bugs
 

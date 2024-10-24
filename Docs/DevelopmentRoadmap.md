@@ -41,6 +41,20 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [x] Design and implement essential UI components
 - [x] Develop responsive layout for game session page
 - [x] Implement wireframe styling across all pages
+- [ ] Implement dual-mode input system
+- [ ] Add dialogue-specific formatting
+- [ ] Create seamless mode switching
+- [ ] Update journal system to handle dialogue entries
+
+2.5 Status Display Improvements
+- [ ] Enhance health display format
+- [ ] Ensure consistent state persistence
+- [ ] Implement cross-page state management
+
+2.6 Boot Hill Integration
+- [ ] Add rulebook reference tables
+- [ ] Implement dice rolling system
+- [ ] Create roll result explanations
 
 ## Phase 3: Game Mechanics Implementation
 
@@ -49,7 +63,18 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [x] Implement simple dialogue system
 - [x] Ensure AI adapts to all player actions without censorship
 
-3.2 Combat System
+3.1 Game Session Enhancement
+- [ ] Implement contextual action buttons
+- [ ] Separate action suggestions from narrative
+- [ ] Improve narrative formatting
+- [ ] Add visual distinction for player actions
+
+3.2 State Management Improvements
+- [ ] Implement progressive state saving
+- [ ] Add state persistence across navigation
+- [ ] Create error recovery system
+
+3.3 Combat System
 - [x] Implement simplified Boot Hill combat rules
 - [x] Create basic combat UI
 - [x] Implement turn-based combat flow
@@ -58,7 +83,7 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [ ] Implement critical hits and misses
 - [ ] Add combat-specific inventory interactions (e.g., weapon switching, item usage)
 
-3.3 Inventory System
+3.4 Inventory System
 - [x] Implement basic inventory data structure
 - [x] Create Inventory component for displaying items
 - [x] Implement add and remove item functionality
@@ -69,11 +94,11 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [ ] Integrate inventory with other game systems (e.g., combat)
 - [ ] Implement handling of incomplete or invalid inventory items
 
-3.4 Character Summary
+3.5 Character Summary
 - [x] Implement character summary generation
 - [x] Integrate summary display in character creation process
 
-3.5 Campaign Persistence
+3.6 Campaign Persistence
 - [x] Design and implement CampaignStateManager
 - [x] Integrate campaign state saving/loading into GameSession component
 - [x] Implement basic journal system for tracking important story information
@@ -84,7 +109,7 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [x] Use journal entries to provide context for AI storytelling
 - [ ] Update AI service to use journal context in prompts
 
-3.6 Combat Journal Integration
+3.7 Combat Journal Integration
 - [x] Implement automatic journal entry creation for combat results
 - [x] Update CombatSystem to trigger journal updates
 - [x] Modify GameSession to handle combat journal entries

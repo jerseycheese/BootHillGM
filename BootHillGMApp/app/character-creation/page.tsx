@@ -200,11 +200,15 @@ export default function GameSession() {
           <p><strong>Name:</strong> {character.name}</p>
           <h3 className="text-lg font-bold">Attributes</h3>
           {Object.entries(character.attributes).map(([attr, value]) => (
-            <p key={attr}><strong>{attr}:</strong> {value}</p>
+            <p key={attr}>
+              <strong>{attr.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (str: string) => str.toUpperCase())}:</strong> {value}
+            </p>
           ))}
           <h3 className="text-lg font-bold">Skills</h3>
           {Object.entries(character.skills).map(([skill, value]) => (
-            <p key={skill}><strong>{skill}:</strong> {value}</p>
+            <p key={skill}>
+              <strong>{skill.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (str: string) => str.toUpperCase())}:</strong> {value}
+            </p>
           ))}
         </div>
       );
@@ -241,7 +245,7 @@ export default function GameSession() {
     <div className="wireframe-container">
       <h1 className="wireframe-title">Create Your Character</h1>
       <div className="wireframe-section">
-        <p className="wireframe-text mb-4">Step {currentStep + 1}: {steps[currentStep].key}</p>
+        <p className="wireframe-text mb-4">Step {currentStep + 1}: {steps[currentStep].key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, str => str.toUpperCase())}</p>
         {isLoading ? <p>Loading...</p> : <p className="wireframe-text">{aiPrompt}</p>}
       </div>
       <button
