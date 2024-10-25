@@ -7,7 +7,7 @@ import { Character } from '../types/character';
 
 interface StatusPanelProps {
   character: Character;
-  location: string;
+  location: string | null;
   onSave: () => void;
 }
 

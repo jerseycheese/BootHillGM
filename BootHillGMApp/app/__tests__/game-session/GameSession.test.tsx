@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act, RenderResult } from '@testing-library/react';
 import GameSession from '../../components/GameSession';
+import NarrativeDisplay from '../../components/NarrativeDisplay';
 import { CampaignStateContext, useCampaignState } from '../../components/CampaignStateManager';
 import { useAIInteractions } from '../../hooks/useAIInteractions';
 import { getAIResponse } from '../../services/ai';
@@ -15,6 +16,22 @@ jest.mock('next/navigation', () => ({
     push: jest.fn(),
   }),
 }));
+
+// Mock NarrativeDisplay component
+jest.mock('../../components/NarrativeDisplay', () => {
+  const MockNarrativeDisplay: React.FC<{
+    narrative: string;
+    error?: string;
+    onRetry?: () => void;
+  }> = ({ narrative, error, onRetry }) => (
+    <div data-testid="narrative-display">
+      <div>{narrative}</div>
+      {error && <div>{error}</div>}
+      {onRetry && <button onClick={onRetry}>Retry</button>}
+    </div>
+  );
+  return jest.fn(props => <MockNarrativeDisplay {...props} />);
+});
 
 // Mock the AI service and related functions
 jest.mock('../../services/ai', () => ({
@@ -52,7 +69,11 @@ interface RenderWithProvidersResult extends RenderResult {
   mockDispatch: jest.Mock;
 }
 
-const renderWithProviders = (ui: React.ReactElement, initialState?: Partial<CampaignState>): RenderWithProvidersResult => {
+const renderWithProviders = (
+  ui: React.ReactElement, 
+  initialState?: Partial<CampaignState>,
+  aiInteractionsState?: Partial<ReturnType<typeof useAIInteractions>>
+): RenderWithProvidersResult => {
   const mockCharacter: Character = {
     name: 'Test Character',
     health: 100,
@@ -96,10 +117,17 @@ const renderWithProviders = (ui: React.ReactElement, initialState?: Partial<Camp
     cleanupState: mockCleanupState,
   };
 
-  (useCampaignState as jest.Mock).mockReturnValue(mockContextValue);
-  (useAIInteractions as jest.Mock).mockReturnValue({
+  const defaultAIInteractions = {
     isLoading: false,
     handleUserInput: mockHandleUserInput,
+    error: undefined,
+    retryLastAction: undefined,
+  };
+
+  (useCampaignState as jest.Mock).mockReturnValue(mockContextValue);
+  (useAIInteractions as jest.Mock).mockReturnValue({
+    ...defaultAIInteractions,
+    ...aiInteractionsState,
   });
 
   return {
@@ -127,7 +155,79 @@ describe('GameSession', () => {
     (getJournalContext as jest.Mock).mockReturnValue('Journal context');
   });
 
-  test('handles user input and updates narrative', async () => {
+  describe('NarrativeDisplay integration', () => {
+    beforeEach(() => {
+      (NarrativeDisplay as jest.Mock).mockClear();
+    });
+
+    test('passes correct props to NarrativeDisplay when no error', () => {
+      const mockState = {
+        narrative: 'Test narrative',
+      };
+
+      renderWithProviders(<GameSession />, mockState);
+
+      expect(NarrativeDisplay).toHaveBeenCalledWith(
+        expect.objectContaining({
+          narrative: 'Test narrative',
+          error: undefined,
+          onRetry: undefined,
+        }),
+        expect.any(Object)
+      );
+    });
+
+    test('passes correct props to NarrativeDisplay when there is an error', () => {
+      const mockState = {
+        narrative: 'Test narrative',
+      };
+
+      const mockRetryLastAction = jest.fn();
+      renderWithProviders(
+        <GameSession />, 
+        mockState,
+        {
+          error: 'Test error',
+          retryLastAction: mockRetryLastAction,
+        }
+      );
+
+      expect(NarrativeDisplay).toHaveBeenCalledWith(
+        expect.objectContaining({
+          narrative: 'Test narrative',
+          error: 'Test error',
+          onRetry: expect.any(Function),
+        }),
+        expect.any(Object)
+      );
+    });
+
+    test('retry function triggers retryLastAction', async () => {
+      const mockState = {
+        narrative: 'Test narrative',
+      };
+
+      const mockRetryLastAction = jest.fn();
+      renderWithProviders(
+        <GameSession />, 
+        mockState,
+        {
+          error: 'Test error',
+          retryLastAction: mockRetryLastAction,
+        }
+      );
+
+      const narrativeDisplay = screen.getByTestId('narrative-display');
+      const button = narrativeDisplay.querySelector('button');
+      if (button) {
+        fireEvent.click(button);
+      }
+
+      expect(mockRetryLastAction).toHaveBeenCalled();
+    });
+  });
+
+  test('handles user input and AI response correctly', async () => {
     renderWithProviders(<GameSession />);
 
     await waitFor(() => {
@@ -162,7 +262,7 @@ describe('GameSession', () => {
       expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'SET_NARRATIVE',
-          payload: expect.stringContaining('You see a bustling town square.')
+          payload: mockAIResponse.narrative
         })
       );
     });
@@ -196,7 +296,7 @@ describe('GameSession', () => {
       expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'SET_NARRATIVE',
-          payload: expect.stringContaining('You found a sword!')
+          payload: mockAIResponse.narrative
         })
       );
     });
@@ -236,5 +336,27 @@ describe('GameSession', () => {
     // Check that only two items are rendered
     const listItems = screen.getAllByRole('listitem');
     expect(listItems.length).toBe(2);
+  });
+
+  test('handles errors in NarrativeDisplay', async () => {
+    const mockError = 'Test error message';
+    const mockRetryLastAction = jest.fn();
+    
+    renderWithProviders(
+      <GameSession />,
+      undefined,
+      {
+        error: mockError,
+        retryLastAction: mockRetryLastAction,
+      }
+    );
+
+    expect(NarrativeDisplay).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: mockError,
+        onRetry: expect.any(Function),
+      }),
+      expect.any(Object)
+    );
   });
 });

@@ -36,6 +36,12 @@ describe('StatusPanel', () => {
     expect(screen.getByText(/Health: 100/)).toBeInTheDocument();
   });
 
+  test('displays "Unknown" when location is null', () => {
+    render(<StatusPanel character={mockCharacter} location={null} onSave={mockSave} />);
+    
+    expect(screen.getByText(/Location: Unknown/)).toBeInTheDocument();
+  });
+
   test('calls onSave when save button is clicked', () => {
     render(<StatusPanel character={mockCharacter} location="Test Town" onSave={mockSave} />);
     

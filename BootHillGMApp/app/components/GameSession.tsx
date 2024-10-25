@@ -8,6 +8,7 @@ import StatusPanel from './StatusPanel';
 import { useGameSession } from '../hooks/useGameSession';
 import '../styles/wireframe.css';
 import { useGameInitialization } from '../hooks/useGameInitialization';
+import NarrativeDisplay from './NarrativeDisplay';
 import Inventory from './Inventory';
 
 export default function GameSession() {
@@ -31,33 +32,26 @@ export default function GameSession() {
     return <div className="wireframe-container">Loading game session...</div>;
   }
 
-  // Render component
+  // Game narrative is now handled by NarrativeDisplay component for better separation of concerns
   return (
     <div className="wireframe-container">
       <h1 className="wireframe-title">Game Session</h1>
       
       {/* StatusPanel handles character status display and game saving */}
       <StatusPanel 
-        character={state.character!} 
-        location={state.location} 
+        character={state.character} 
+        location={state.location}
         onSave={handleManualSave}
       />
-      
-      {/* Game narrative display */}
-      <div className="wireframe-section h-64 overflow-y-auto">
-        <pre className="wireframe-text whitespace-pre-wrap">{state.narrative}</pre>
+
+      <div>
+        <NarrativeDisplay
+          narrative={state.narrative}
+          error={error}
+          onRetry={retryLastAction}
+        />
       </div>
-      {error && (
-        <div className="text-red-500 flex items-center gap-2">
-          <span>{error}</span>
-          <button
-            onClick={retryLastAction}
-            className="px-2 py-1 text-sm bg-red-100 hover:bg-red-200 rounded"
-          >
-            Retry
-          </button>
-        </div>
-      )}
+
       {/* Conditional rendering of Combat System or User Input form */}
       {isCombatActive && opponent ? (
         <CombatSystem

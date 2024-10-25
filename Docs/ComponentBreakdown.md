@@ -141,6 +141,19 @@
   - Robust state initialization handling saved games and new sessions
   - Proper preservation of narrative and inventory between sessions
 - **Potential Challenges:** Balancing complexity with performance, managing asynchronous AI interactions
+### 13. NarrativeDisplay Component
+- **Main Functionality:** Handles the display of game narrative text and error states
+- **Key Components:**
+  - NarrativeDisplay (components/NarrativeDisplay.tsx)
+    - Displays scrollable narrative content
+    - Handles error display with retry functionality
+    - Manages text formatting and whitespace
+- **Implemented Features:**
+  - Scrollable narrative display
+  - Error state handling with retry option
+  - Proper text formatting preservation
+  - Full test coverage including accessibility tests
+- **Status:** Implemented and tested
 
 ## Recommended Development Order (MVP Focus)
 
