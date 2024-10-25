@@ -104,12 +104,6 @@ export const useAIInteractions = (
       const journalContext = getJournalContext(state.journal || []);
       const response = await getAIResponse(input, journalContext, state.inventory || []);
       await processAIResponse(input, response);
-
-      // Double-check state was saved
-      if (saveGame) {
-        const currentState = JSON.parse(localStorage.getItem('campaignState') || '{}');
-      }
-
     } catch (err) {
       console.error('Error in handleUserInput:', err);
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -120,7 +114,7 @@ export const useAIInteractions = (
     } finally {
       setIsLoading(false);
     }
-  }, [state, dispatch, processAIResponse, saveGame]);
+  }, [state, dispatch, processAIResponse]);
 
   return {
     isLoading,

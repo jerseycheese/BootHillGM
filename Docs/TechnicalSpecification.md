@@ -1,5 +1,3 @@
-# BootHillGM Technical Specification (MVP)
-
 ## 1. Technical Stack
 - [x] Framework: Next.js 14.x (React-based framework for web applications)
 - [x] Routing: Next.js App Router
@@ -33,6 +31,12 @@
      - Journal updates
      - Inventory changes
      - Combat initiation
+   - useGameSession: Centralizes game session management:
+     - Handles combat state transitions
+     - Manages inventory interactions
+     - Controls game flow and state updates
+     - Provides unified interface for game actions
+     - Maintains separation between game logic and UI rendering
 5. Character Management System: Manages character creation and stats
 6. Inventory System: Manages character inventory and item interactions
   - Handles adding and removing items dynamically

@@ -124,7 +124,8 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
       } else {
         return state;
       }
-    } catch {
+    } catch (error) {
+      console.error('Failed to load game state:', error);
       return null;
     }
   }, [state, dispatch]);
