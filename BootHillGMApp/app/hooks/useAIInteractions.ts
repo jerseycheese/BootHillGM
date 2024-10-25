@@ -53,18 +53,10 @@ export const useAIInteractions = (
       savedTimestamp: Date.now()
     };
 
-    // Update narrative first
-    console.log('Updating state with new narrative:', {
-      oldLength: state.narrative?.length,
-      newLength: updatedNarrative.length,
-      hasLocation: !!response.location
-    });
-
     dispatch({ type: 'SET_STATE', payload: stateUpdate });
 
     // Save the updated state immediately
     if (saveGame) {
-      console.log('Saving state after narrative update');
       saveGame(stateUpdate);
     }
 
@@ -116,10 +108,6 @@ export const useAIInteractions = (
       // Double-check state was saved
       if (saveGame) {
         const currentState = JSON.parse(localStorage.getItem('campaignState') || '{}');
-        console.log('Verifying save:', {
-          localStorageNarrativeLength: currentState.narrative?.length,
-          expectedNarrativeLength: (state.narrative || '').length + input.length + response.narrative.length + 50 // approximate
-        });
       }
 
     } catch (err) {

@@ -1,0 +1,45 @@
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import StatusPanel from '../../components/StatusPanel';
+import { Character } from '../../types/character';
+
+describe('StatusPanel', () => {
+  const mockCharacter: Character = {
+    name: 'Test Character',
+    health: 100,
+    attributes: {
+      speed: 10,
+      gunAccuracy: 10,
+      throwingAccuracy: 10,
+      strength: 10,
+      bravery: 10,
+      experience: 5
+    },
+    skills: {
+      shooting: 50,
+      riding: 50,
+      brawling: 50
+    }
+  };
+
+  const mockSave = jest.fn();
+
+  beforeEach(() => {
+    mockSave.mockClear();
+  });
+
+  test('renders character information correctly', () => {
+    render(<StatusPanel character={mockCharacter} location="Test Town" onSave={mockSave} />);
+    
+    expect(screen.getByText(/Name: Test Character/)).toBeInTheDocument();
+    expect(screen.getByText(/Location: Test Town/)).toBeInTheDocument();
+    expect(screen.getByText(/Health: 100/)).toBeInTheDocument();
+  });
+
+  test('calls onSave when save button is clicked', () => {
+    render(<StatusPanel character={mockCharacter} location="Test Town" onSave={mockSave} />);
+    
+    fireEvent.click(screen.getByText('Save Game'));
+    expect(mockSave).toHaveBeenCalledTimes(1);
+  });
+});

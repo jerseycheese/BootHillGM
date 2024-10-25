@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import CombatSystem from './CombatSystem';
 import JournalViewer from './JournalViewer';
 import UserInputHandler from './UserInputHandler';
+import StatusPanel from './StatusPanel';
 import { useAIInteractions } from '../hooks/useAIInteractions';
 import '../styles/wireframe.css';
 import { useGameInitialization } from '../hooks/useGameInitialization';
@@ -47,9 +48,6 @@ export default function GameSession() {
     dispatch,
     handleInventoryChange,
     (updatedState: GameState) => {
-      console.log('Saving after AI interaction:', {
-        narrativeLength: updatedState.narrative?.length
-      });
       saveGame(updatedState);
     }
   );
@@ -101,18 +99,6 @@ export default function GameSession() {
     await handleUserInput(actionText);
   }, [state?.character, handleUserInput]);
 
-  // Single state update effect to prevent multiple unnecessary re-renders
-  // Only runs when state changes and client-side rendering is confirmed
-  useEffect(() => {
-    if (isClient && state) {
-      console.log('GameSession state updated:', {
-        narrativeLength: state?.narrative?.length,
-        timestamp: state?.savedTimestamp,
-        hasInventory: !!state?.inventory?.length
-      });
-    }
-  }, [isClient, state]);
-
   // Loading state
   if (!isClient || !state || !state.character || isInitializing) {
     return <div className="wireframe-container">Loading game session...</div>;
@@ -122,14 +108,14 @@ export default function GameSession() {
   return (
     <div className="wireframe-container">
       <h1 className="wireframe-title">Game Session</h1>
-      {/* Character status display */}
-      <div className="wireframe-section">
-        <h2 className="wireframe-subtitle">Character Status</h2>
-        <p>Name: {state.character?.name}</p>
-        <p>Location: {state.location || 'Unknown'}</p>
-        <p>Health: {state.character?.health}</p>
-        <button onClick={handleManualSave} className="wireframe-button">Save Game</button>
-      </div>
+      
+      {/* StatusPanel handles character status display and game saving */}
+      <StatusPanel 
+        character={state.character!} 
+        location={state.location} 
+        onSave={handleManualSave}
+      />
+      
       {/* Game narrative display */}
       <div className="wireframe-section h-64 overflow-y-auto">
         <pre className="wireframe-text whitespace-pre-wrap">{state.narrative}</pre>

@@ -79,7 +79,17 @@
   - [ ] NarrativeDisplay (components/NarrativeDisplay.tsx)
 - **Potential Challenges:** Integrating AI-generated content, maintaining narrative consistency
 
-### 8. CombatSystem
+### 8. Status Display:
+- **Main Functionality:** Displays character status information and provides game save functionality
+- **Key Components:**
+  - [x] StatusPanel (components/StatusPanel.tsx)
+    - Shows character name, location, and health
+    - Provides game save functionality
+    - Uses a two-column grid layout for better organization
+    - Maintains consistency with the wireframe styling theme
+- **Potential Challenges:** Ensuring consistent state persistence across game sessions
+
+### 9. CombatSystem
 - **Main Functionality:** Manages simplified combat mechanics
 - **Key Components:**
   - [x] CombatSystem (components/CombatSystem.tsx)
@@ -92,7 +102,7 @@
   - Comprehensive test coverage including rendering with/without opponent, player attacks, and combat end scenarios
 - **Potential Challenges:** Implementing turn-based logic, integrating with game state
 
-### 9. UIComponents
+### 10. UIComponents
 - **Main Functionality:** Reusable UI elements for consistent look and feel
 - **Key Components:**
   - [ ] Button (components/ui/Button.tsx)
@@ -100,7 +110,7 @@
   - [ ] Card (components/ui/Card.tsx)
 - **Potential Challenges:** Creating reusable components, styling with CSS Modules
 
-### 10. DataPersistence
+### 11. DataPersistence
 - **Main Functionality:** Handles saving and loading game states
 - **Key Components:**
   - [x] CampaignStateManager (app/components/CampaignStateManager.tsx)
@@ -116,7 +126,7 @@
   - Robust date formatting and entry organization
 - **Potential Challenges:** Managing complex state serialization/deserialization, ensuring data consistency across saves
 
-### 11. GameSession
+### 12. GameSession
 - **Main Functionality:** Manages the main game play experience
 - **Key Components:**
   - GameSession (app/game-session/page.tsx)

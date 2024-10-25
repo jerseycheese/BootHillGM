@@ -15,7 +15,6 @@ export const useGameInitialization = () => {
     if (typeof window !== 'undefined') {
       const isNewCharacter = sessionStorage.getItem('initializing_new_character');
       if (isNewCharacter) {
-        console.log('Detected new character initialization flag - ensuring clean state');
         dispatch({ type: 'SET_STATE', payload: { ...initialGameState, isClient: true } });
       }
     }
@@ -23,12 +22,6 @@ export const useGameInitialization = () => {
   }, [dispatch]);
 
   const initializeGameSession = useCallback(async () => {
-    console.log('InitializeGameSession called', {
-      isNewCharacter: !!sessionStorage.getItem('initializing_new_character'),
-      currentCharacter: state?.character?.name,
-      hasNarrative: !!state?.narrative
-    });
-
     if (!state || !dispatch) return null;
 
     setIsInitializing(true);
@@ -40,7 +33,6 @@ export const useGameInitialization = () => {
 
       // Always initialize new session if initialization flag is set
       if (sessionStorage.getItem('initializing_new_character')) {
-        console.log('Initializing fresh session for new character:', characterData?.name);
         sessionStorage.removeItem('initializing_new_character');
 
         const response = await getAIResponse(
@@ -58,30 +50,13 @@ export const useGameInitialization = () => {
           savedTimestamp: Date.now(),
           isClient: true
         };
-
-        console.log('Created fresh session state:', {
-          character: freshState.character?.name,
-          location: freshState.location
-        });
-
         return freshState;
       }
 
       // If we have existing state with narrative, use it
       if (state.narrative && state.narrative.length > 0) {
-        console.log('Using existing state:', {
-          characterName: state.character?.name,
-          narrativeLength: state.narrative?.length,
-          location: state.location
-        });
         return state;
       }
-
-      // Initialize state for current character
-      console.log('Initializing current character:', {
-        characterName: state.character?.name,
-        hasNarrative: false
-      });
 
       const response = await getAIResponse(
         `Initialize a new game session for ${state.character?.name || 'Unknown'}. 
@@ -101,12 +76,6 @@ export const useGameInitialization = () => {
         isClient: true
       };
 
-      console.log('Initialized current character:', {
-        characterName: initializedState.character?.name,
-        narrativeLength: initializedState.narrative?.length,
-        location: initializedState.location
-      });
-
       return initializedState;
 
     } catch (error) {
@@ -120,23 +89,15 @@ export const useGameInitialization = () => {
   useEffect(() => {
     const initGame = async () => {
       if (!isClient || !state || !dispatch) {
-        console.log('Skipping initialization - prerequisites not met', {
-          isClient, hasState: !!state, hasDispatch: !!dispatch
-        });
         return;
       }
 
       // Add extra check for initialization flag
       if (!initializationRef.current || sessionStorage.getItem('initializing_new_character')) {
-        console.log('Starting game initialization');
         initializationRef.current = true;
 
         const initializedState = await initializeGameSession();
         if (initializedState) {
-          console.log('Setting initialized state:', {
-            character: initializedState.character?.name,
-            location: initializedState.location
-          });
           dispatch({ type: 'SET_STATE', payload: initializedState });
           saveGame(initializedState);
         }

@@ -161,20 +161,12 @@ export default function GameSession() {
 
   // Finalize character creation and navigate to game session
   const finishCharacterCreation = () => {
-    console.group('Character Creation Completion');
-    console.log('Starting character creation completion');
-    console.log('Current localStorage state:', localStorage.getItem('campaignState'));
-    
     // Clean up existing state first
     cleanupState();
-    
-    console.log('After cleanup - localStorage state:', localStorage.getItem('campaignState'));
-    console.log('After cleanup - sessionStorage state:', sessionStorage.getItem('initializing_new_character'));
     
     // Save the new character
     const newCharacterData = JSON.stringify(character);
     localStorage.setItem('lastCreatedCharacter', newCharacterData);
-    console.log('Saved new character:', character.name);
     
     // Create clean initial state with new character
     const initialState = {
@@ -184,13 +176,7 @@ export default function GameSession() {
       isClient: true
     };
     
-    console.log('Saving initial state:', {
-      characterName: character.name,
-      timestamp: initialState.savedTimestamp
-    });
-    
     saveGame(initialState);
-    console.groupEnd();
     
     router.push('/game-session');
   };
