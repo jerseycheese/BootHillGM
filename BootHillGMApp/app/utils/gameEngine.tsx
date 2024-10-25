@@ -133,6 +133,10 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         }
       };
     case 'SET_NARRATIVE':
+      console.log('SET_NARRATIVE in reducer:', {
+        currentNarrative: state.narrative,
+        newNarrative: action.payload
+      });
       return { ...state, narrative: action.payload };
     case 'SET_GAME_PROGRESS':
       return { ...state, gameProgress: action.payload };

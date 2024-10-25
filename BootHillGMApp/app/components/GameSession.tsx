@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import CombatSystem from './CombatSystem';
 import JournalViewer from './JournalViewer';
 import UserInputHandler from './UserInputHandler';
@@ -26,6 +26,14 @@ export default function GameSession() {
     handleManualSave,
     handleUseItem,
   } = useGameSession();
+
+  useEffect(() => {
+    console.log('GameSession mounted/updated:', {
+      isCombatActive,
+      opponent,
+      campaignState: state
+    });
+  }, [isCombatActive, opponent, state]);
 
   // Loading state
   if (!isClient || !state || !state.character || isInitializing) {
