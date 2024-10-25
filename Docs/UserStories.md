@@ -70,6 +70,27 @@
   - Ensure the game state updates correctly based on player decisions
   **Status:** Implemented.
 
+- [x] As a player, I want to see my previous actions and their outcomes in the narrative, so that I can follow the story progression
+  **Test Plan:**
+  - Verify that player actions are recorded in the narrative
+  - Check that outcomes are clearly displayed
+  - Ensure narrative history is preserved during the session
+  **Status:** Implemented.
+
+- [x] As a player, I want journal entries to show concise summaries of my actions, so that I can easily review my adventure
+  **Test Plan:**
+  - Verify that journal entries are created for significant actions
+  - Check that summaries are clear and concise
+  - Ensure journal entries persist across game sessions
+  **Status:** Implemented.
+
+- [x] As a player, I want my inventory to update correctly when I find or use items, so that I can track my possessions accurately
+  **Test Plan:**
+  - Test adding items through narrative actions
+  - Verify item removal when used
+  - Check that inventory persists across sessions
+  **Status:** Implemented.
+
 - [ ] As a player, I want to view the game narrative and dialogue in a scrollable text display so that I can follow the story easily.
   **Test Plan:**
   - Check that new narrative text is added to the display correctly

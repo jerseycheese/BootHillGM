@@ -21,7 +21,7 @@ describe('Journal Manager', () => {
 
   // Test case: Adding a new journal entry
   test('addJournalEntry adds a new entry with current timestamp', async () => {
-    const newJournal = await addJournalEntry(journal, 'New entry', 'Test context', 'Test Character');
+    const newJournal = await addJournalEntry(journal, 'New entry', 'Test context');
     expect(newJournal).toHaveLength(4);
     expect(newJournal[3].content).toBe('New entry');
     expect(newJournal[3].timestamp).toBeGreaterThan(3000);

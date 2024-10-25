@@ -79,6 +79,20 @@
 - [ ] Integrate journal context into AI prompts for story continuity
 - [ ] Optimize AI text generation to prevent duplicate content
 
+### 5.3 Response Processing
+- Maintains narrative continuity by appending new responses to existing narrative
+- Generates concise narrative summaries for journal entries
+- Processes inventory changes with unique item identifiers
+- Handles combat initiation and state transitions
+- Preserves conversation flow with "Player: [action]" and "Game Master: [response]" format
+
+### 5.4 State Management Flow
+- AI responses update multiple state elements:
+  - Narrative: Appended with context of player actions
+  - Journal: Maintains concise summaries of key events
+  - Inventory: Tracks item acquisitions and removals
+  - Combat: Initiates based on narrative context
+
 ## 6. State Management
 - [x] Implement React Context for global game state
 - [x] Use useReducer for complex state updates

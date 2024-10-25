@@ -1,129 +1,160 @@
-import { useState, useCallback } from 'react';
-import { getAIResponse } from '../services/ai';
-import { generateNarrativeSummary } from '../utils/aiService';
-import { getJournalContext } from '../utils/JournalManager';
+import { useCallback, useState } from 'react';
+import { AIService } from '../services/ai';
 import { GameState } from '../types/campaign';
 import { GameEngineAction } from '../utils/gameEngine';
+import { JournalEntry } from '../types/journal';
+import { Character } from '../types/character';
+import { generateNarrativeSummary } from '../utils/aiService';
 
-interface AIInteractionResult {
-  isLoading: boolean;
-  error: string | null;
-  handleUserInput: (input: string) => Promise<void>;
-  retryLastAction: () => Promise<void>;
-}
+const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
+const aiService = new AIService(API_KEY);
 
-/**
- * Processes user actions including inventory usage:
- * - Handles direct item usage through Use buttons
- * - Integrates with AI for narrative generation
- * - Manages state updates and persistence
- * - Coordinates inventory changes with narrative flow
- */
+type AIResponse = {
+  narrative?: string;
+  location?: string;
+  combatInitiated?: boolean;
+  opponent?: Character;
+  acquiredItems: string[];
+  removedItems: string[];
+};
+
 export const useAIInteractions = (
   state: GameState,
   dispatch: React.Dispatch<GameEngineAction>,
   onInventoryChange: (acquired: string[], removed: string[]) => void,
-  saveGame?: (state: GameState) => void
-): AIInteractionResult => {
+) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastInput, setLastInput] = useState<string | null>(null);
 
-  const processAIResponse = useCallback(async (
-    input: string,
-    response: Awaited<ReturnType<typeof getAIResponse>>
-  ) => {
-    // Clean narrative (remove metadata)
-    const cleanNarrative = response.narrative
-      .split('\n')
-      .filter(line => 
-        !line.startsWith('ACQUIRED_ITEMS:') &&
-        !line.startsWith('REMOVED_ITEMS:')
-      )
-      .join('\n')
-      .trim();
+  const getJournalContext = (journal: JournalEntry[]) => {
+    return journal.slice(-5).map(entry => entry.content).join('\n');
+  };
 
-    const updatedNarrative = `${state.narrative || ''}\n\nPlayer: ${input}\n\nGame Master: ${cleanNarrative}`;
+  const processAIResponse = useCallback(async (input: string, response: AIResponse) => {
+    console.log('--- ProcessAIResponse Debug ---');
+    
+    if (response.narrative) {
+      // Build narrative by combining existing text with new input and response
+      // This maintains conversation history in a readable format
+      const narrativeUpdate = state.narrative 
+        ? `${state.narrative}\n\nPlayer: ${input}\n\nGame Master: ${response.narrative}`
+        : response.narrative;
+      
+      console.log('Narrative Update:', {
+        before: state.narrative,
+        after: narrativeUpdate
+      });
 
-    // Create a complete state update
-    const stateUpdate = {
-      ...state,
-      narrative: updatedNarrative,
-      location: response.location || state.location,
-      savedTimestamp: Date.now()
-    };
+      // Update narrative state
+      dispatch({ type: 'SET_NARRATIVE', payload: narrativeUpdate });
 
-    dispatch({ type: 'SET_STATE', payload: stateUpdate });
+      // Create a concise summary for the journal instead of using full narrative
+      // This makes the journal more readable and focused
+      const narrativeSummary = await generateNarrativeSummary(
+        input,
+        `${state.character?.name || 'You'} ${input}`
+      );
+      
+      console.log('Generated Summary:', narrativeSummary);
 
-    // Save the updated state immediately
-    if (saveGame) {
-      saveGame(stateUpdate);
-    }
-
-    // Handle combat if needed
-    if (response.combatInitiated && response.opponent) {
-      dispatch({ type: 'SET_COMBAT_ACTIVE', payload: true });
-      dispatch({ type: 'SET_OPPONENT', payload: response.opponent });
-    }
-
-    // Create journal entry with narrative summary
-    const narrativeSummary = await generateNarrativeSummary(
-      input,
-      `${state.character?.name || 'You'} ${input}`
-    );
-
-    dispatch({
-      type: 'UPDATE_JOURNAL',
-      payload: {
+      // Add journal entry with the concise summary
+      const journalEntry = {
         timestamp: Date.now(),
         content: input,
         narrativeSummary
-      }
-    });
-
-    // Process inventory changes
-    const cleanedAcquiredItems = [...new Set(
-      response.acquiredItems.filter(item => item && item.trim() !== '')
-    )];
-    const cleanedRemovedItems = [...new Set(
-      response.removedItems.filter(item => item && item.trim() !== '')
-    )];
-
-    if (cleanedAcquiredItems.length > 0 || cleanedRemovedItems.length > 0) {
-      await onInventoryChange(cleanedAcquiredItems, cleanedRemovedItems);
+      };
+      
+      console.log('Creating Journal Entry:', journalEntry);
+      dispatch({ type: 'UPDATE_JOURNAL', payload: journalEntry });
     }
 
-  }, [state, dispatch, onInventoryChange, saveGame]);
+    // Update location if provided in response
+    if (response.location) {
+      dispatch({ type: 'SET_LOCATION', payload: response.location });
+    }
+
+    // Handle combat initiation with opponent
+    if (response.combatInitiated && response.opponent) {
+      dispatch({ 
+        type: 'SET_CHARACTER',
+        payload: response.opponent
+      });
+    }
+
+    // Process inventory changes by creating unique IDs for new items
+    // This ensures each item can be tracked and managed individually
+    if (response.acquiredItems.length > 0) {
+      console.log('Adding items:', response.acquiredItems);
+      response.acquiredItems.forEach(itemName => {
+        const newItem = {
+          id: `${itemName.toLowerCase()}-${Date.now()}`,
+          name: itemName,
+          quantity: 1,
+          description: `A ${itemName.toLowerCase()}`
+        };
+        dispatch({ type: 'ADD_ITEM', payload: newItem });
+      });
+    }
+
+    // Notify parent component of inventory changes
+    if (response.acquiredItems.length > 0 || response.removedItems.length > 0) {
+      onInventoryChange(response.acquiredItems, response.removedItems);
+    }
+
+    // Update game progress
+    dispatch({ 
+      type: 'SET_GAME_PROGRESS', 
+      payload: state.gameProgress + 1
+    });
+
+    console.log('--- End ProcessAIResponse ---');
+  }, [dispatch, onInventoryChange, state.gameProgress, state.narrative, state.character?.name]);
 
   const handleUserInput = useCallback(async (input: string) => {
     setIsLoading(true);
     setError(null);
-    setLastInput(input);
 
     try {
       const journalContext = getJournalContext(state.journal || []);
-      const response = await getAIResponse(input, journalContext, state.inventory || []);
+      const response = await aiService.getResponse(
+        input, 
+        journalContext,
+        { 
+          inventory: state.inventory || [],
+          character: state.character || undefined,
+          location: state.location
+        }
+      );
       await processAIResponse(input, response);
     } catch (err) {
       console.error('Error in handleUserInput:', err);
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-      dispatch({
-        type: 'SET_NARRATIVE',
-        payload: `${state.narrative || ''}\n\nAn error occurred. Please try again or retry your last action.`
-      });
     } finally {
       setIsLoading(false);
     }
-  }, [state, dispatch, processAIResponse]);
+  }, [state, processAIResponse]);
+
+  const retryLastAction = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await aiService.retryLastAction();
+      if (response) {
+        await processAIResponse('', response);
+      }
+    } catch (err) {
+      console.error('Error in retryLastAction:', err);
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [processAIResponse]);
 
   return {
-    isLoading,
-    error,
     handleUserInput,
-    retryLastAction: useCallback(async () => {
-      if (lastInput) {
-        await handleUserInput(lastInput);
-      }
-    }, [lastInput, handleUserInput])
+    retryLastAction,
+    isLoading,
+    error
   };
 };

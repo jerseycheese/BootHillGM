@@ -14,7 +14,6 @@
   import { useCallback, useState } from 'react';
   import { useCampaignState } from '../components/CampaignStateManager';
   import { useAIInteractions } from './useAIInteractions';
-  import { GameState } from '../types/campaign';
   import { Character } from '../types/character';
   
   export const useGameSession = () => {
@@ -83,10 +82,7 @@
     const { isLoading, error, handleUserInput, retryLastAction } = useAIInteractions(
       state,
       dispatch,
-      handleInventoryChange,
-      (updatedState: GameState) => {
-        saveGame(updatedState);
-      }
+      handleInventoryChange
     );
   
     const handleUseItem = useCallback(async (itemName: string) => {
