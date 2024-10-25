@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { getAIResponse } from '../utils/aiService';
-import { getJournalContext } from '../utils/JournalManager';
+import { getJournalContext, addJournalEntry } from '../utils/JournalManager';
 import { useCombatManager } from './useCombatManager';
 import { InventoryItem } from '../types/inventory';
 
@@ -35,13 +35,6 @@ export const useGameSession = () => {
    * @param playerInput - The player's action that triggered this response
    */
   const updateNarrative = useCallback((text: string, playerInput?: string) => {
-    console.log('Updating narrative:', {
-      currentNarrative: state.narrative,
-      newText: text,
-      playerInput,
-      lastAction: playerInput
-    });
-    
     let updatedNarrative = '';
     
     if (state.narrative) {
@@ -69,23 +62,25 @@ export const useGameSession = () => {
    * @param input - The user's input text to process
    */
   const handleUserInput = useCallback(async (input: string) => {
-    console.log('Starting user input handling:', {
-      input,
-      currentState: {
-        narrative: state.narrative,
-        inventory: state.inventory,
-        journal: state.journal,
-        location: state.location
-      }
-    });
-
     setIsLoading(true);
     setError(null);
     setLastAction(input);
 
     try {
       const response = await getAIResponse(input, getJournalContext(state.journal || []), state.inventory || []);
-      console.log('AI Response:', response);
+      
+      // Update journal with the new action
+      const updatedJournal = await addJournalEntry(
+        state.journal || [],
+        input,
+        getJournalContext(state.journal || [])
+      );
+      
+      // Update campaign state with new journal
+      dispatch({
+        type: 'UPDATE_JOURNAL',
+        payload: updatedJournal
+      });
       
       if (response.combatInitiated && response.opponent) {
         combatManager.initiateCombat(response.opponent);
@@ -95,16 +90,11 @@ export const useGameSession = () => {
       
       // Handle other response effects (inventory, location, etc.)
       if (response.location) {
-        console.log('Updating location:', {
-          currentLocation: state.location,
-          newLocation: response.location
-        });
         dispatch({ type: 'SET_LOCATION', payload: response.location });
       }
       
       // Handle inventory changes
       if (response.acquiredItems?.length > 0) {
-        console.log('Adding items to inventory:', response.acquiredItems);
         response.acquiredItems.forEach(itemName => {
           const newItem: InventoryItem = {
             id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -117,7 +107,6 @@ export const useGameSession = () => {
       }
       
       if (response.removedItems?.length > 0) {
-        console.log('Removing items from inventory:', response.removedItems);
         response.removedItems.forEach(itemName => {
           const itemToRemove = state.inventory?.find(item => item.name === itemName);
           if (itemToRemove) {
@@ -126,7 +115,6 @@ export const useGameSession = () => {
         });
       }
     } catch (err) {
-      console.error('Error in handleUserInput:', err);
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
       setIsLoading(false);
@@ -139,7 +127,6 @@ export const useGameSession = () => {
    */
   const handleManualSave = useCallback(() => {
     if (state) {
-      console.log('Manually saving game state:', state);
       saveGame(state);
     }
   }, [state, saveGame]);
@@ -149,7 +136,6 @@ export const useGameSession = () => {
    */
   const retryLastAction = useCallback(() => {
     if (lastAction) {
-      console.log('Retrying last action:', lastAction);
       handleUserInput(lastAction);
     }
   }, [lastAction, handleUserInput]);
@@ -163,7 +149,6 @@ export const useGameSession = () => {
   const handleUseItem = useCallback((itemId: string) => {
     const item = state.inventory?.find(i => i.id === itemId);
     if (item) {
-      console.log('Using item:', item);
       dispatch({ type: 'USE_ITEM', payload: item.id });
     }
   }, [dispatch, state.inventory]);
