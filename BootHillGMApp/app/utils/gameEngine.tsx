@@ -93,22 +93,20 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         ...state,
         inventory: state.inventory.filter(item => item.id !== action.payload)
       };
-    case 'USE_ITEM':
-      const itemToUse = state.inventory.find(item => item.id === action.payload);
-      if (!itemToUse) {
-        return state;
-      }
-      // Decrease the quantity of the used item
-      const updatedItem = { ...itemToUse, quantity: itemToUse.quantity - 1 };
-      const updatedInventory = state.inventory.map(item =>
-        item.id === action.payload ? updatedItem : item // Access payload directly
-      ).filter(item => item.quantity > 0);  // Remove items with quantity 0
+    case 'USE_ITEM': {
+      // Simply decrement the quantity of the used item by 1
+      const updatedInventory = state.inventory.map(item => {
+        if (item.id === action.payload) {
+          return { ...item, quantity: item.quantity - 1 };
+        }
+        return item;
+      }).filter(item => item.quantity > 0);
 
-      newState = {
+      return {
         ...state,
         inventory: updatedInventory
       };
-      return newState;
+    }
     case 'ADD_QUEST':
       return { ...state, quests: [...state.quests, action.payload] };
     case 'SET_CHARACTER':
@@ -133,10 +131,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         }
       };
     case 'SET_NARRATIVE':
-      console.log('SET_NARRATIVE in reducer:', {
-        currentNarrative: state.narrative,
-        newNarrative: action.payload
-      });
       return { ...state, narrative: action.payload };
     case 'SET_GAME_PROGRESS':
       return { ...state, gameProgress: action.payload };
@@ -152,7 +146,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         ...state,
         inventory: state.inventory.map(item =>
           item.id === action.payload.id ? { ...item, quantity: action.payload.quantity } : item
-        )
+        ).filter(item => item.quantity > 0)
       };
     case 'CLEAN_INVENTORY':
       newState = {

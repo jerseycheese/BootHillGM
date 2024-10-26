@@ -7,7 +7,7 @@ import { useCampaignState } from '../components/CampaignStateManager';
  * Integrates with CampaignStateManager for state persistence.
  */
 const Inventory: React.FC<{
-  onUseItem?: (itemName: string) => void;
+  onUseItem?: (itemId: string) => void;
 }> = ({ onUseItem }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const { state } = useCampaignState();
@@ -18,9 +18,9 @@ const Inventory: React.FC<{
    * Creates a "use [item]" action that gets processed like a player command.
    * Ensures state persistence after item usage.
    */
-  const handleUseItem = (itemName: string) => {
+  const handleUseItem = (itemId: string) => {
     if (onUseItem) {
-      onUseItem(itemName);
+      onUseItem(itemId);
     }
   };
 
@@ -49,7 +49,7 @@ const Inventory: React.FC<{
                     )}
                   </div>
                   <button
-                    onClick={() => handleUseItem(item.name)}
+                    onClick={() => handleUseItem(item.id)}
                     className="ml-4 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                     aria-label={`Use ${item.name}`}
                   >

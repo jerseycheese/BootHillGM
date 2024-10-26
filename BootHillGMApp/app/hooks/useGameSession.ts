@@ -25,6 +25,8 @@ export const useGameSession = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
+  // Flag to prevent double-processing of item removal when using items
+  const [isUsingItem, setIsUsingItem] = useState(false);
 
   /**
    * Updates the game narrative by appending player actions and AI responses.
@@ -106,7 +108,8 @@ export const useGameSession = () => {
         });
       }
       
-      if (response.removedItems?.length > 0) {
+      // Skip item removal if using an item through the Use button
+      if (!isUsingItem && response.removedItems?.length > 0) {
         response.removedItems.forEach(itemName => {
           const itemToRemove = state.inventory?.find(item => item.name === itemName);
           if (itemToRemove) {
@@ -114,12 +117,16 @@ export const useGameSession = () => {
           }
         });
       }
+
+      return response;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      throw err;
     } finally {
       setIsLoading(false);
+      setIsUsingItem(false);
     }
-  }, [state, combatManager.initiateCombat, dispatch, updateNarrative]);
+  }, [state, combatManager.initiateCombat, dispatch, updateNarrative, isUsingItem]);
 
   /**
    * Manually saves the current game state.
@@ -142,16 +149,26 @@ export const useGameSession = () => {
 
   /**
    * Processes the use of an inventory item.
-   * Updates game state to reflect item usage.
+   * Creates a "use [item]" action that gets processed through the AI system.
    * 
    * @param itemId - The ID of the item to use
    */
-  const handleUseItem = useCallback((itemId: string) => {
+  const handleUseItem = useCallback(async (itemId: string) => {
     const item = state.inventory?.find(i => i.id === itemId);
     if (item) {
-      dispatch({ type: 'USE_ITEM', payload: item.id });
+      try {
+        setIsUsingItem(true);
+        // First decrement the item quantity, then update narrative
+        dispatch({ type: 'USE_ITEM', payload: itemId });
+        
+        // Then process the action through the AI system for narrative
+        await handleUserInput(`use ${item.name}`);
+      } catch (err) {
+        // If AI processing fails, don't update inventory
+        console.error('Failed to process item use:', err);
+      }
     }
-  }, [dispatch, state.inventory]);
+  }, [dispatch, state.inventory, handleUserInput]);
 
   return {
     state,

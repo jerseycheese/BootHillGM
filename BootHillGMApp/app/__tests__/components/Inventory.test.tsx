@@ -137,4 +137,38 @@ describe('Inventory', () => {
     // Check if description is hidden
     expect(screen.queryByText('Restores 20 health points')).not.toBeInTheDocument();
   });
+
+  test('calls onUseItem with item ID when Use button is clicked', () => {
+    const mockOnUseItem = jest.fn();
+    renderWithContext(<Inventory onUseItem={mockOnUseItem} />);
+    
+    // Find and click the Use button for Health Potion
+    const useButtons = screen.getAllByText('Use');
+    fireEvent.click(useButtons[0]); // First Use button (Health Potion)
+    
+    // Check if onUseItem was called with the correct item ID
+    expect(mockOnUseItem).toHaveBeenCalledWith('1');
+  });
+
+  test('handles using an item with quantity greater than 1', () => {
+    const mockOnUseItem = jest.fn();
+    const stateWithMultipleItems: CampaignState = {
+      ...mockState,
+      inventory: [
+        { id: '1', name: 'Health Potion', quantity: 3, description: 'Restores 20 health points' }
+      ]
+    };
+
+    renderWithContext(<Inventory onUseItem={mockOnUseItem} />, stateWithMultipleItems);
+    
+    // Find and click the Use button
+    const useButton = screen.getByText('Use');
+    fireEvent.click(useButton);
+    
+    // Check if onUseItem was called with the correct item ID
+    expect(mockOnUseItem).toHaveBeenCalledWith('1');
+    
+    // The item should still be visible since quantity was > 1
+    expect(screen.getByText(/Health Potion \(x3\)/)).toBeInTheDocument();
+  });
 });
