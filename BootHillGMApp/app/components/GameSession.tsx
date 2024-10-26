@@ -1,15 +1,20 @@
+/**
+ * Main game session container component.
+ * Coordinates between input, display, combat, and inventory systems.
+ * Handles conditional rendering based on game state (combat vs. normal play).
+ * Uses modular components for better maintainability and testing.
+ */
 'use client';
 
-import React, { useEffect } from 'react';
-import CombatSystem from './CombatSystem';
-import JournalViewer from './JournalViewer';
-import UserInputHandler from './UserInputHandler';
-import StatusPanel from './StatusPanel';
-import { useGameSession } from '../hooks/useGameSession';
-import '../styles/wireframe.css';
+import React from 'react';
 import { useGameInitialization } from '../hooks/useGameInitialization';
+import { useGameSession } from '../hooks/useGameSession';
+import CombatSystem from './CombatSystem';
+import InputManager from './InputManager';
+import StatusDisplayManager from './StatusDisplayManager';
 import NarrativeDisplay from './NarrativeDisplay';
 import Inventory from './Inventory';
+import JournalViewer from './JournalViewer';
 
 export default function GameSession() {
   const { isInitializing, isClient } = useGameInitialization();
@@ -27,40 +32,30 @@ export default function GameSession() {
     handleUseItem,
   } = useGameSession();
 
-  useEffect(() => {
-    console.log('GameSession mounted/updated:', {
-      isCombatActive,
-      opponent,
-      campaignState: state
-    });
-  }, [isCombatActive, opponent, state]);
-
-  // Loading state
   if (!isClient || !state || !state.character || isInitializing) {
-    return <div className="wireframe-container">Loading game session...</div>;
+    return (
+      <div className="wireframe-container" role="status">
+        Loading game session...
+      </div>
+    );
   }
 
-  // Game narrative is now handled by NarrativeDisplay component for better separation of concerns
   return (
     <div className="wireframe-container">
       <h1 className="wireframe-title">Game Session</h1>
       
-      {/* StatusPanel handles character status display and game saving */}
-      <StatusPanel 
-        character={state.character} 
+      <StatusDisplayManager
+        character={state.character}
         location={state.location}
-        onSave={handleManualSave}
+        onManualSave={handleManualSave}
       />
 
-      <div>
-        <NarrativeDisplay
-          narrative={state.narrative}
-          error={error}
-          onRetry={retryLastAction}
-        />
-      </div>
+      <NarrativeDisplay
+        narrative={state.narrative}
+        error={error}
+        onRetry={retryLastAction}
+      />
 
-      {/* Conditional rendering of Combat System or User Input form */}
       {isCombatActive && opponent ? (
         <CombatSystem
           playerCharacter={state.character}
@@ -69,9 +64,12 @@ export default function GameSession() {
           onPlayerHealthChange={handlePlayerHealthChange}
         />
       ) : (
-        <UserInputHandler onSubmit={handleUserInput} isLoading={isLoading} />
+        <InputManager
+          onSubmit={handleUserInput}
+          isLoading={isLoading}
+        />
       )}
-      {/* Inventory and Journal components */}
+
       <Inventory onUseItem={handleUseItem} />
       <JournalViewer entries={state.journal || []} />
     </div>

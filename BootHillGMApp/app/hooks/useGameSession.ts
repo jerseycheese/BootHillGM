@@ -126,7 +126,7 @@ export const useGameSession = () => {
       setIsLoading(false);
       setIsUsingItem(false);
     }
-  }, [state, combatManager.initiateCombat, dispatch, updateNarrative, isUsingItem]);
+  }, [state, dispatch, updateNarrative, isUsingItem, combatManager]);
 
   /**
    * Manually saves the current game state.

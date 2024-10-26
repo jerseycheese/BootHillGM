@@ -141,6 +141,7 @@
   - Robust state initialization handling saved games and new sessions
   - Proper preservation of narrative and inventory between sessions
 - **Potential Challenges:** Balancing complexity with performance, managing asynchronous AI interactions
+
 ### 13. NarrativeDisplay Component
 - **Main Functionality:** Handles the display of game narrative text and error states
 - **Key Components:**
@@ -154,6 +155,26 @@
   - Proper text formatting preservation
   - Full test coverage including accessibility tests
 - **Status:** Implemented and tested
+
+### InputManager
+- **Main Functionality:** Handles user input during game sessions with loading states and validation
+- **Key Features:**
+  - [x] Text input for player actions
+  - [x] Loading state management
+  - [x] Input validation
+  - [x] Accessibility support
+- **Status:** Implemented and tested
+- **Potential Challenges:** Handling very long inputs, maintaining responsiveness during loading
+
+### StatusDisplayManager
+- **Main Functionality:** Displays current game status and provides save functionality
+- **Key Features:**
+  - [x] Character name display
+  - [x] Location tracking
+  - [x] Health display with current/max format
+  - [x] Manual save functionality
+- **Status:** Implemented and tested
+- **Potential Challenges:** Handling long character/location names, ensuring save state consistency
 
 ## Recommended Development Order (MVP Focus)
 

@@ -45,25 +45,12 @@ interface UseCombatManagerProps {
 export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): UseCombatManagerResult => {
   const { dispatch, state } = useCampaignState();
 
-  // Initialize from campaign state
-  console.log('useCombatManager initializing with campaign state:', {
-    stateCombatActive: state.isCombatActive,
-    stateOpponent: state.opponent
-  });
-
   // Initialize from persisted campaign state to maintain combat across page loads
   const [isCombatActive, setIsCombatActive] = useState(state.isCombatActive || false);
   const [opponent, setOpponent] = useState<Character | null>(state.opponent);
 
   // Sync local state with campaign state for persistence
   useEffect(() => {
-    console.log('Combat state sync effect:', {
-      localCombatActive: isCombatActive,
-      localOpponent: opponent,
-      stateCombatActive: state.isCombatActive,
-      stateOpponent: state.opponent
-    });
-    
     if (state.isCombatActive !== isCombatActive) {
       setIsCombatActive(state.isCombatActive);
     }
@@ -80,7 +67,6 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
    * @param combatSummary - Detailed summary of the combat encounter
    */
   const handleCombatEnd = useCallback((winner: 'player' | 'opponent', combatSummary: string) => {
-    console.log('Combat ending:', { winner, isCombatActive, opponent });
     
     setIsCombatActive(false);
     setOpponent(null);
@@ -98,18 +84,7 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
 
     dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
     dispatch({ type: 'SET_OPPONENT', payload: null });
-
-    // Verify state after combat ends
-    console.log('Combat ended, checking localStorage...');
-    const savedState = localStorage.getItem('campaignState');
-    if (savedState) {
-      const parsed = JSON.parse(savedState);
-      console.log('Saved state after combat:', {
-        isCombatActive: parsed.isCombatActive,
-        opponent: parsed.opponent
-      });
-    }
-  }, [dispatch, onUpdateNarrative, isCombatActive, opponent]);
+  }, [dispatch, onUpdateNarrative]);
 
   /**
    * Updates the player's health during combat.
@@ -131,27 +106,12 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
    * @param newOpponent - The character to initiate combat with
    */
   const initiateCombat = useCallback((newOpponent: Character) => {
-    console.log('Initiating combat:', {
-      newOpponent,
-      currentState: { isCombatActive, opponent }
-    });
     
     setIsCombatActive(true);
     setOpponent(newOpponent);
     dispatch({ type: 'SET_COMBAT_ACTIVE', payload: true });
     dispatch({ type: 'SET_OPPONENT', payload: newOpponent });
-
-    // Verify state after combat starts
-    console.log('Combat initiated, checking localStorage...');
-    const savedState = localStorage.getItem('campaignState');
-    if (savedState) {
-      const parsed = JSON.parse(savedState);
-      console.log('Saved state after initiation:', {
-        isCombatActive: parsed.isCombatActive,
-        opponent: parsed.opponent
-      });
-    }
-  }, [dispatch, isCombatActive, opponent]);
+  }, [dispatch]);
 
   /**
    * Retrieves the current opponent in combat.
