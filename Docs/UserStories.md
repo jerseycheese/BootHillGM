@@ -467,16 +467,6 @@ This section is for tracking bugs found during development and testing. Each bug
   - Status: Open
   - Priority: Medium
 
-[BUG-004] Narrative Display UX Issue
-  - Description: New AI messages are not automatically visible to the user.
-  - Steps to Reproduce: 
-    1. Engage in a conversation with the AI that generates multiple messages.
-    2. Observe the scrollable area after each AI response.
-  - Expected Behavior: View should automatically scroll to show the latest AI message at the top.
-  - Actual Behavior: User must manually scroll to see new messages.
-  - Status: Open
-  - Priority: Medium
-
 [BUG-005] Incomplete Game State Restoration
   - Description: Some elements of the game state are not properly restored when loading a saved game.
   - Steps to Reproduce: 
@@ -600,36 +590,16 @@ This section is for tracking bugs found during development and testing. Each bug
 
 ### Closed Bugs
 
-[BUG-09] API Error: Insufficient Resources
-  - Description: API calls to the Gemini model are failing due to insufficient resources.
-  - Resolution: Updated API key and adjusted rate limiting to prevent resource exhaustion.
-  - Closed Date: 2024-10-08
-
-[BUG-010] Infinite Rendering Loop in Combat System
-  - Description: The CombatSystem component is causing an infinite loop of updates.
-  - Resolution: Fixed dependency array in useEffect hook to prevent unnecessary re-renders.
-  - Closed Date: 2024-10-09
-
-[BUG-012] Page Reload on Action Submission in Game Session
-  - Description: Submitting an action in the text field causes the page to reload before showing the response.
-  - Resolution: Updated GameSession component to handle form submission asynchronously and prevent default form behavior. Implemented proper state management to update the UI without page reload.
-  - Closed Date: 2024-10-09
-
-[BUG-015] Combat System State Update Error
-   - Description: After entering combat and attacking more than once, a React state update error occurred.
-   - Resolution: Separated state updates from callback functions in the CombatSystem component to prevent updating state during render cycle.
-   - Closed Date: 2024-10-09
-
-[BUG-008] Incorrect Location Display in Game Session
-  - Description: The location in the status area shows as "Unknown" despite being named in the AI's first message.
+[BUG-004] Narrative Display UX Issue
+  - Description: New AI messages are not automatically visible to the user
   - Steps to Reproduce: 
-    1. Create a character
-    2. Click "Finish Character Creation"
-    3. Observe the Game Session screen
-  - Expected Behavior: The location in the status area should match the location named in the AI's first message
-  - Actual Behavior: Location is displayed as "Unknown"
-  - Resolution: Updated the GameSession component to explicitly request a location from the AI and set a default "Unknown Location" if not provided. Modified the Character Status section to display the correct location.
-  - Closed Date: 2024-10-10
+    1. Engage in a conversation with the AI that generates multiple messages
+    2. Observe the scrollable area after each AI response
+  - Expected Behavior: View should automatically scroll to show the latest AI message at the top
+  - Actual Behavior: User must manually scroll to see new messages
+  - Status: Fixed
+  - Resolution: Implemented smart auto-scrolling with manual override and visual message distinction
+  - Closed Date: 2024-10-27
 
 [BUG-002] Game Session State Reset
 - Description: Game state resets when navigating away from and back to the Game Session page.

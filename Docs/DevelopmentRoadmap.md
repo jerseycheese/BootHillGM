@@ -67,7 +67,7 @@ This roadmap outlines the development phases for the BootHillGM MVP, tailored fo
 - [ ] Implement contextual action buttons
 - [ ] Separate action suggestions from narrative
 - [x] Extract status display into separate component
-- [ ] Add visual distinction for player actions
+- [x] Add visual distinction for player actions
 
 3.2 State Management Improvements
 - [ ] Implement progressive state saving

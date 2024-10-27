@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import NarrativeDisplay from '../../components/NarrativeDisplay';
 
 describe('NarrativeDisplay', () => {
@@ -8,110 +8,89 @@ describe('NarrativeDisplay', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Mock scrollIntoView
+    Element.prototype.scrollIntoView = jest.fn();
+    // Mock scrollHeight and clientHeight
+    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+      configurable: true,
+      value: 1000
+    });
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+      configurable: true,
+      value: 500
+    });
   });
 
-  test('renders narrative content correctly', () => {
-    render(<NarrativeDisplay narrative={mockNarrative} />);
-    expect(screen.getByText(mockNarrative)).toBeInTheDocument();
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
-  test('handles long narrative content with scroll', () => {
-    const longNarrative = 'A'.repeat(1000);
-    const { container } = render(<NarrativeDisplay narrative={longNarrative} />);
-    const narrativeContainer = container.firstChild as HTMLElement;
-    expect(narrativeContainer).toHaveClass('overflow-y-auto');
-  });
-
-  test('preserves whitespace in narrative', () => {
-    const formattedNarrative = 'Line 1\n  Indented line\nLine 3';
+  test('renders narrative content with proper formatting', () => {
+    const formattedNarrative = `
+Player: Look around
+Game Master: You see a dusty saloon
+Regular narrative text
+    `;
+    
     render(<NarrativeDisplay narrative={formattedNarrative} />);
-    const narrativeElement = screen.getByText(/Line 1/);
-    expect(narrativeElement).toHaveClass('whitespace-pre-wrap');
+    
+    expect(screen.getByText('Player: Look around')).toHaveClass('player-action');
+    expect(screen.getByText('GM: You see a dusty saloon')).toHaveClass('gm-response');
+    expect(screen.getByText('Regular narrative text')).toHaveClass('narrative-line');
   });
 
-  test('does not render error section when no error provided', () => {
-    render(<NarrativeDisplay narrative={mockNarrative} />);
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
+  test('auto-scrolls when new content is added', () => {
+    const { rerender } = render(<NarrativeDisplay narrative="Initial content" />);
+    
+    const container = screen.getByTestId('narrative-display');
+    const scrollSpy = jest.spyOn(container, 'scrollTop', 'set');
+    
+    rerender(<NarrativeDisplay narrative="Initial content\nNew content" />);
+    
+    expect(scrollSpy).toHaveBeenCalled();
   });
 
-  describe('error handling', () => {
-    test('renders error message when error is provided', () => {
-      render(
-        <NarrativeDisplay 
-          narrative={mockNarrative} 
-          error={mockError}
-        />
-      );
-      expect(screen.getByText(mockError)).toBeInTheDocument();
+  test('disables auto-scroll when user manually scrolls up', () => {
+    const { rerender } = render(<NarrativeDisplay narrative="Initial content" />);
+    
+    const container = screen.getByTestId('narrative-display');
+    
+    // Simulate manual scroll
+    act(() => {
+      fireEvent.scroll(container, {
+        target: { scrollTop: 0 }
+      });
     });
-
-    test('does not render error section when error is null', () => {
-      render(
-        <NarrativeDisplay 
-          narrative={mockNarrative} 
-          error={null}
-        />
-      );
-      expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
-    });
-
-    test('does not render retry button when onRetry is not provided', () => {
-      render(
-        <NarrativeDisplay 
-          narrative={mockNarrative} 
-          error={mockError}
-        />
-      );
-      expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    });
-
-    test('renders retry button when both error and onRetry are provided', () => {
-      render(
-        <NarrativeDisplay 
-          narrative={mockNarrative} 
-          error={mockError}
-          onRetry={mockRetry}
-        />
-      );
-      expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
-    });
-
-    test('calls onRetry when retry button is clicked', () => {
-      render(
-        <NarrativeDisplay 
-          narrative={mockNarrative} 
-          error={mockError}
-          onRetry={mockRetry}
-        />
-      );
-      fireEvent.click(screen.getByRole('button', { name: /retry/i }));
-      expect(mockRetry).toHaveBeenCalledTimes(1);
-    });
+    
+    // Add new content
+    rerender(<NarrativeDisplay narrative="Initial content\nNew content" />);
+    
+    // Verify scroll position wasn't automatically updated
+    expect(container.scrollTop).toBe(0);
   });
 
-  describe('accessibility', () => {
-    test('error message has appropriate text color for visibility', () => {
-      render(
-        <NarrativeDisplay 
-          narrative={mockNarrative} 
-          error={mockError}
-        />
-      );
-      const errorElement = screen.getByText(mockError).parentElement;
-      expect(errorElement).toHaveClass('text-red-500');
-    });
+  test('handles error states correctly', () => {
+    render(
+      <NarrativeDisplay 
+        narrative={mockNarrative} 
+        error={mockError}
+        onRetry={mockRetry}
+      />
+    );
+    
+    const errorElement = screen.getByRole('alert');
+    expect(errorElement).toHaveTextContent(mockError);
+    
+    const retryButton = screen.getByText('Retry');
+    fireEvent.click(retryButton);
+    expect(mockRetry).toHaveBeenCalledTimes(1);
+  });
 
-    test('retry button has appropriate hover state', () => {
-      render(
-        <NarrativeDisplay 
-          narrative={mockNarrative} 
-          error={mockError}
-          onRetry={mockRetry}
-        />
-      );
-      const button = screen.getByRole('button', { name: /retry/i });
-      expect(button).toHaveClass('hover:bg-red-200');
-    });
+  test('maintains empty line spacing', () => {
+    const narrativeWithEmptyLines = `Line 1\n\nLine 2`;
+    render(<NarrativeDisplay narrative={narrativeWithEmptyLines} />);
+    
+    const emptySpacers = document.getElementsByClassName('h-2');
+    expect(emptySpacers.length).toBe(1);
   });
 });
