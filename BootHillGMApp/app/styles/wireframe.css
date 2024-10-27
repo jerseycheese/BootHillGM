@@ -2,12 +2,17 @@
 
 /* Main container for page content */
 .wireframe-container {
-  @apply max-w-4xl mx-auto p-4;
+  @apply max-w-4xl mx-auto p-4 h-screen;
 }
 
 /* Section divider */
 .wireframe-section {
   @apply border border-white p-4 mb-4;
+}
+
+/* Remove bottom margin for narrative section */
+.h-full .wireframe-section {
+  @apply mb-0;
 }
 
 /* Main title styling */

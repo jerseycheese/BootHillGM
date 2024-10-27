@@ -42,7 +42,7 @@ const JournalViewer: React.FC<JournalViewerProps> = ({ entries }) => {
     const content = entry.narrativeSummary || entry.content;
 
     return (
-      <li key={`${entry.timestamp}-${index}`} className="wireframe-text mb-2">
+      <li key={`${entry.timestamp}-${index}`} className="wireframe-text mb-2 p-2 rounded">
         <strong>{dateStr}</strong>: {content}
       </li>
     );
@@ -50,14 +50,16 @@ const JournalViewer: React.FC<JournalViewerProps> = ({ entries }) => {
 
   return (
     <div className="wireframe-section">
-      <h2 className="wireframe-subtitle">Journal</h2>
-      {!Array.isArray(entries) || entries.length === 0 ? (
-        <p>No journal entries yet.</p>
-      ) : (
-        <ul className="wireframe-list">
-          {entries.slice().reverse().map((entry, index) => renderEntry(entry, index))}
-        </ul>
-      )}
+      <h2 className="wireframe-subtitle mb-2">Journal</h2>
+      <div className="h-[200px] overflow-y-auto">
+        {!Array.isArray(entries) || entries.length === 0 ? (
+          <p>No journal entries yet.</p>
+        ) : (
+          <ul className="wireframe-list space-y-2">
+            {entries.slice().reverse().map((entry, index) => renderEntry(entry, index))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };
