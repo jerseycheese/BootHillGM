@@ -69,6 +69,7 @@ export default function GameSession() {
                 <InputManager
                   onSubmit={handleUserInput}
                   isLoading={isLoading}
+                  suggestedActions={state.suggestedActions}
                 />
               )}
             </div>

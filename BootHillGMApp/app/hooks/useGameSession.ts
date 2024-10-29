@@ -118,6 +118,14 @@ export const useGameSession = () => {
         });
       }
 
+      // Update suggested actions
+      if (response.suggestedActions) {
+        dispatch({
+          type: 'SET_SUGGESTED_ACTIONS',
+          payload: response.suggestedActions
+        });
+      }
+
       return response;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');

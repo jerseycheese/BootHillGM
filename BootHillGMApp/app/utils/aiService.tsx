@@ -3,6 +3,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
+import { SuggestedAction } from '../types/campaign';
 
 // TODO: Improve formatting of AI messages for better readability and engagement
 
@@ -52,6 +53,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
   opponent?: Character;
   acquiredItems: string[];
   removedItems: string[];
+  suggestedActions: SuggestedAction[];
 }> {
   try {
     const model = getAIModel();
@@ -81,7 +83,8 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       After your narrative response, on a new line, add:
       ACQUIRED_ITEMS: [List any items the player acquired, separated by commas. If no items were acquired, leave this empty]
       REMOVED_ITEMS: [List any items the player used, discarded, or lost, separated by commas. If no items were removed, leave this empty]
-      If the action involves using an item, update their inventory accordingly. 
+      SUGGESTED_ACTIONS: [{"text": "action description", "type": "action type", "context": "tooltip explanation"}]
+      Include exactly 3 suggested actions with types: "basic" (look, move), "combat" (fight, defend), or "interaction" (talk, trade).
       If combat occurs, describe it narratively and include a COMBAT: tag followed by the opponent's name.
       If the location has changed, on a new line, write "LOCATION:" followed by a brief (2-5 words) description of the new location. 
       If the location hasn't changed, don't include a LOCATION line.
@@ -102,6 +105,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
 
     const acquiredItemsMatch = text.match(/ACQUIRED_ITEMS:\s*(.*?)(?=\n|$)/);
     const removedItemsMatch = text.match(/REMOVED_ITEMS:\s*(.*?)(?=\n|$)/);
+    const suggestedActionsMatch = text.match(/SUGGESTED_ACTIONS:\s*(\[[\s\S]*?\])/);
 
     const acquiredItems = acquiredItemsMatch 
       ? acquiredItemsMatch[1].split(',').map(item => item.trim()).filter(Boolean).map(item => item.replace(/^\[|\]$/g, ''))
@@ -109,6 +113,22 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
     const removedItems = removedItemsMatch
       ? removedItemsMatch[1].split(',').map(item => item.trim()).filter(Boolean).map(item => item.replace(/^\[|\]$/g, ''))
       : [];
+
+    let suggestedActions: SuggestedAction[] = [];
+    if (suggestedActionsMatch) {
+      try {
+        const parsedActions = JSON.parse(suggestedActionsMatch[1]);
+        if (Array.isArray(parsedActions)) {
+          suggestedActions = parsedActions.filter(action => 
+            action.text && 
+            action.type && 
+            ['basic', 'combat', 'interaction'].includes(action.type)
+          );
+        }
+      } catch (e) {
+        console.warn('Failed to parse suggested actions:', e);
+      }
+    }
 
     // Filter out any items that start with "REMOVED_ITEMS:" from acquiredItems
     // This prevents incorrectly adding items that should be removed
@@ -144,8 +164,12 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       };
     }
     
-    // Remove the ACQUIRED_ITEMS and REMOVED_ITEMS lines from the narrative
-    narrative = narrative.replace(/ACQUIRED_ITEMS: \[.*?\]\n?/, '').replace(/REMOVED_ITEMS: \[.*?\]\n?/, '').trim();
+    // Remove the ACQUIRED_ITEMS, REMOVED_ITEMS, and SUGGESTED_ACTIONS lines from the narrative
+    narrative = narrative
+      .replace(/ACQUIRED_ITEMS: \[.*?\]\n?/, '')
+      .replace(/REMOVED_ITEMS: \[.*?\]\n?/, '')
+      .replace(/SUGGESTED_ACTIONS: \[[\s\S]*?\]\n?/, '')
+      .trim();
 
     // Return filtered acquired items and remove any "REMOVED_ITEMS: " prefix from removed items
     // This ensures clean data for inventory management
@@ -155,7 +179,8 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       combatInitiated, 
       opponent, 
       acquiredItems: filteredAcquiredItems, 
-      removedItems: removedItems.map(item => item.replace("REMOVED_ITEMS: ", "").trim()).filter(Boolean)
+      removedItems: removedItems.map(item => item.replace("REMOVED_ITEMS: ", "").trim()).filter(Boolean),
+      suggestedActions
     };
   } catch (error) {
     // Error handling for API issues

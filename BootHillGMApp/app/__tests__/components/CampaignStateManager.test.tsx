@@ -84,6 +84,7 @@ describe('CampaignStateManager', () => {
     expect(initialState.opponent).toBeNull();
     expect(initialState.savedTimestamp).toBeUndefined();
     expect(initialState.isClient).toBe(false);
+    expect(initialState.suggestedActions).toEqual([]);
   });
 
   // Test case: Verify that the state updates correctly when actions are dispatched
@@ -157,6 +158,7 @@ describe('CampaignStateManager', () => {
     expect(updatedState.inventory[0]).toEqual({ id: '1', name: 'Test Item', quantity: 1, description: 'A test item' });
     expect(updatedState.quests).toEqual(['Test Quest']);
     expect(updatedState.isClient).toBe(false);
+    expect(updatedState.suggestedActions).toEqual([]);
   });
 
   test('saves state to localStorage', async () => {
@@ -245,6 +247,7 @@ describe('CampaignStateManager', () => {
       opponent: null,
       savedTimestamp: Date.now(),
       isClient: false,
+      suggestedActions: []
     };
     
     localStorage.setItem('campaignState', JSON.stringify(testState));
@@ -343,7 +346,8 @@ describe('CampaignStateManager', () => {
       gameProgress: 0,
       isCombatActive: false,
       opponent: null,
-      isClient: false
+      isClient: false,
+      suggestedActions: []
     };
     
     compareStatesWithoutTimestamp(result.current.state, stateToCompare);
@@ -380,6 +384,7 @@ describe('CampaignStateManager', () => {
       opponent: null,
       savedTimestamp: Date.now(),
       isClient: false,
+      suggestedActions: []
     };
 
     localStorage.setItem('campaignState', JSON.stringify(testState));
@@ -423,7 +428,8 @@ describe('CampaignStateManager', () => {
       isCombatActive: false,
       opponent: null,
       savedTimestamp: Date.now(),
-      isClient: false
+      isClient: false,
+      suggestedActions: []
     };
 
     localStorage.setItem('campaignState', JSON.stringify(minimalState));

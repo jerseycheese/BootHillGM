@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, ReactNode, Dispatch } fro
 import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
 import { JournalEntry } from '../types/journal';
+import { SuggestedAction } from '../types/campaign';
 
 // Define the structure of the game state
 export interface GameState {
@@ -18,6 +19,7 @@ export interface GameState {
   opponent: Character | null;
   savedTimestamp?: number;
   isClient?: boolean;
+  suggestedActions: SuggestedAction[];
 }
 
 // Define all possible actions that can be dispatched to update the game state
@@ -40,7 +42,8 @@ export type GameEngineAction =
   | { type: 'CLEAN_INVENTORY' }
   | { type: 'SET_INVENTORY'; payload: InventoryItem[] }
   | { type: 'SET_SAVED_TIMESTAMP'; payload: number }
-  | { type: 'SET_STATE'; payload: Partial<GameState> };
+  | { type: 'SET_STATE'; payload: Partial<GameState> }
+  | { type: 'SET_SUGGESTED_ACTIONS'; payload: SuggestedAction[] };
 
 // Initial state of the game
 export const initialState: GameState = {
@@ -57,6 +60,7 @@ export const initialState: GameState = {
   opponent: null,
   savedTimestamp: undefined,
   isClient: false,
+  suggestedActions: [],
 };
 
 // Reducer function to handle state updates based on dispatched actions
@@ -166,6 +170,8 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       return { ...state, savedTimestamp: action.payload };
     case 'SET_STATE':
       return { ...state, ...action.payload };
+    case 'SET_SUGGESTED_ACTIONS':
+      return { ...state, suggestedActions: action.payload };
     default:
       return state;
   }

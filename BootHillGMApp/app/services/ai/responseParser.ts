@@ -1,5 +1,6 @@
 import { AIResponse } from './types';
 import { Character } from '../../types/character';
+import { SuggestedAction } from '../../types/campaign';
 
 // Helper function to clean metadata markers from any text
 function cleanMetadataMarkers(text: string): string {
@@ -11,9 +12,11 @@ function cleanMetadataMarkers(text: string): string {
     // Clean standalone metadata markers
     .replace(/ACQUIRED_ITEMS:\s*(?:\[[^\]]*\]|\s*[^\n]*)/g, '')
     .replace(/REMOVED_ITEMS:\s*(?:\[[^\]]*\]|\s*[^\n]*)/g, '')
+    .replace(/SUGGESTED_ACTIONS:\s*\[[^\]]*\]/g, '')
     // Clean any remaining markers
     .replace(/\s*ACQUIRED_ITEMS:\s*/g, '')
     .replace(/\s*REMOVED_ITEMS:\s*/g, '')
+    .replace(/\s*SUGGESTED_ACTIONS:\s*/g, '')
     // Clean up extra whitespace
     .replace(/\s{2,}/g, ' ')
     .trim();
@@ -22,12 +25,15 @@ function cleanMetadataMarkers(text: string): string {
 }
 
 export function parseAIResponse(text: string): AIResponse {
+  const defaultResponse: AIResponse = {
+    narrative: '',
+    acquiredItems: [],
+    removedItems: [],
+    suggestedActions: []
+  };
+
   if (!text) {
-    return {
-      narrative: '',
-      acquiredItems: [],
-      removedItems: []
-    };
+    return defaultResponse;
   }
 
   try {
@@ -51,6 +57,24 @@ export function parseAIResponse(text: string): AIResponse {
           .map(item => item.trim())
           .filter(Boolean)
       : [];
+
+    // Parse suggested actions
+    let suggestedActions: SuggestedAction[] = [];
+    const suggestedActionsMatch = text.match(/SUGGESTED_ACTIONS:\s*(\[[\s\S]*?\])/);
+    if (suggestedActionsMatch) {
+      try {
+        const parsedActions = JSON.parse(suggestedActionsMatch[1]);
+        if (Array.isArray(parsedActions)) {
+          suggestedActions = parsedActions.filter(action => 
+            action.text && 
+            action.type && 
+            ['basic', 'combat', 'interaction'].includes(action.type)
+          );
+        }
+      } catch (e) {
+        console.warn('Failed to parse suggested actions:', e);
+      }
+    }
 
     let combatInitiated = false;
     let opponent: Character | undefined;
@@ -92,6 +116,7 @@ export function parseAIResponse(text: string): AIResponse {
         if (lowerLine.includes('removed_items:') && lowerLine.trim().startsWith('removed_items:')) return '';
         if (lowerLine.includes('location:') && lowerLine.trim().startsWith('location:')) return '';
         if (lowerLine.includes('combat:') && lowerLine.trim().startsWith('combat:')) return '';
+        if (lowerLine.includes('suggested_actions:') && lowerLine.trim().startsWith('suggested_actions:')) return '';
         
         // Clean any remaining metadata markers from the line
         return cleanMetadataMarkers(line);
@@ -106,7 +131,8 @@ export function parseAIResponse(text: string): AIResponse {
       combatInitiated,
       opponent,
       acquiredItems,
-      removedItems
+      removedItems,
+      suggestedActions
     };
   } catch (error) {
     // If it's an API error, let it propagate
@@ -116,9 +142,8 @@ export function parseAIResponse(text: string): AIResponse {
     }
     // For parsing errors, return a basic response
     return {
-      narrative: text,
-      acquiredItems: [],
-      removedItems: []
+      ...defaultResponse,
+      narrative: text
     };
   }
 }

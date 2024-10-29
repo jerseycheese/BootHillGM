@@ -22,11 +22,23 @@ export function buildGamePrompt(
     1. When the player acquires items, list them after "ACQUIRED_ITEMS:" on a new line
     2. When the player uses or loses items, list them after "REMOVED_ITEMS:" on a new line
     3. Always specify these lists even if empty
+    4. After your narrative response, provide "SUGGESTED_ACTIONS:" followed by a JSON array of 3 contextually appropriate actions
+       Format: [{"text": "action description", "type": "action type", "context": "tooltip explanation"}]
+       Types must be one of: "basic" (look, move), "combat" (fight, defend), "interaction" (talk, trade)
+       Example:
+       SUGGESTED_ACTIONS: [
+         {"text": "Look around the saloon", "type": "basic", "context": "Search for details or threats"},
+         {"text": "Draw your pistol", "type": "combat", "context": "Prepare for potential conflict"},
+         {"text": "Talk to the bartender", "type": "interaction", "context": "Gather information"}
+       ]
     
     Recent story events:
     ${context}
 
     Player input: "${action}"
 
-    Respond as the Game Master, describing the results of the player's action and advancing the story.`;
+    Respond as the Game Master with:
+    1. A narrative description of the results of the player's action
+    2. ACQUIRED_ITEMS/REMOVED_ITEMS markers if applicable
+    3. SUGGESTED_ACTIONS in the specified JSON format`;
 }

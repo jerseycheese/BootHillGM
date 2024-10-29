@@ -2,6 +2,12 @@ import { Character } from './character';
 import { JournalEntry } from './journal';
 import { InventoryItem } from './inventory';
 
+export interface SuggestedAction {
+  text: string;
+  type: 'basic' | 'combat' | 'interaction';
+  context?: string;
+}
+
 // Define the structure of the campaign state
 export interface CampaignState {
   currentPlayer: string;
@@ -17,6 +23,7 @@ export interface CampaignState {
   isCombatActive: boolean;
   opponent: Character | null;
   isClient?: boolean;
+  suggestedActions: SuggestedAction[];
 }
 
 export const initialGameState: CampaignState = {
@@ -31,7 +38,8 @@ export const initialGameState: CampaignState = {
   quests: [],
   isCombatActive: false,
   opponent: null,
-  isClient: false
+  isClient: false,
+  suggestedActions: []
 };
 
 
@@ -55,7 +63,8 @@ export type GameAction =
   | { type: 'CLEAN_INVENTORY' }
   | { type: 'SET_INVENTORY'; payload: InventoryItem[] }
   | { type: 'SET_SAVED_TIMESTAMP'; payload: number }
-  | { type: 'SET_STATE'; payload: Partial<CampaignState> };
+  | { type: 'SET_STATE'; payload: Partial<CampaignState> }
+  | { type: 'SET_SUGGESTED_ACTIONS'; payload: SuggestedAction[] };
 
 // Export GameState type alias for compatibility
 export type GameState = CampaignState;
