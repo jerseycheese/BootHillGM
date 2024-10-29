@@ -172,6 +172,7 @@ export const useGameSession = () => {
 
   return {
     state,
+    dispatch, // Now exposing dispatch
     isLoading,
     error,
     handleUserInput,

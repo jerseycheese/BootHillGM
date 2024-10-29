@@ -31,7 +31,6 @@ export const useAIInteractions = (
   };
 
   const processAIResponse = useCallback(async (input: string, response: AIResponse) => {
-    console.log('--- ProcessAIResponse Debug ---');
     
     if (response.narrative) {
       // Build narrative by combining existing text with new input and response
@@ -39,11 +38,6 @@ export const useAIInteractions = (
       const narrativeUpdate = state.narrative 
         ? `${state.narrative}\n\nPlayer: ${input}\n\nGame Master: ${response.narrative}`
         : response.narrative;
-      
-      console.log('Narrative Update:', {
-        before: state.narrative,
-        after: narrativeUpdate
-      });
 
       // Update narrative state
       dispatch({ type: 'SET_NARRATIVE', payload: narrativeUpdate });
@@ -54,8 +48,6 @@ export const useAIInteractions = (
         input,
         `${state.character?.name || 'You'} ${input}`
       );
-      
-      console.log('Generated Summary:', narrativeSummary);
 
       // Add journal entry with the concise summary
       const journalEntry = {
@@ -64,7 +56,6 @@ export const useAIInteractions = (
         narrativeSummary
       };
       
-      console.log('Creating Journal Entry:', journalEntry);
       dispatch({ type: 'UPDATE_JOURNAL', payload: journalEntry });
     }
 
@@ -84,7 +75,6 @@ export const useAIInteractions = (
     // Process inventory changes by creating unique IDs for new items
     // This ensures each item can be tracked and managed individually
     if (response.acquiredItems.length > 0) {
-      console.log('Adding items:', response.acquiredItems);
       response.acquiredItems.forEach(itemName => {
         const newItem = {
           id: `${itemName.toLowerCase()}-${Date.now()}`,
@@ -107,7 +97,6 @@ export const useAIInteractions = (
       payload: state.gameProgress + 1
     });
 
-    console.log('--- End ProcessAIResponse ---');
   }, [dispatch, onInventoryChange, state.gameProgress, state.narrative, state.character?.name]);
 
   const handleUserInput = useCallback(async (input: string) => {

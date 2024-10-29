@@ -1,142 +1,147 @@
-// File: BootHillGMApp/app/components/CombatSystem.tsx
-
-import React, { useState, useEffect, useCallback, useContext } from 'react';
-import { act } from '@testing-library/react';
+/**
+ * CombatSystem implements Boot Hill RPG combat mechanics featuring:
+ * - Turn-based combat between player and opponent
+ * - Hit chance calculations based on character attributes
+ * - Automatic opponent turns with 1-second delay
+ * - Combat log showing attack rolls and results
+ */
+import React, { useState, useCallback, useEffect } from 'react';
 import { Character } from '../types/character';
-import { CampaignStateContext } from './CampaignStateManager';
-import { addCombatJournalEntry } from '../utils/JournalManager';
+import { calculateHitChance, rollD100 } from '../utils/combatRules';
+import { GameEngineAction } from '../utils/gameEngine';
 
-// Props for the CombatSystem component
 interface CombatSystemProps {
   playerCharacter: Character;
-  opponent: Character | null;
-  onCombatEnd: (winner: 'player' | 'opponent', combatSummary: string) => void;
-  onPlayerHealthChange: (newHealth: number) => void;
+  opponent: Character;
+  onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
+  onPlayerHealthChange: (health: number) => void;
+  dispatch: React.Dispatch<GameEngineAction>;
 }
 
-const CombatSystem: React.FC<CombatSystemProps> = ({ 
-  playerCharacter, 
-  opponent, 
-  onCombatEnd, 
-  onPlayerHealthChange 
+/**
+ * Removes metadata markers from character names to ensure clean combat messages.
+ * Example: "Bandit ACQUIRED_ITEMS:" becomes "Bandit"
+ */
+function cleanCharacterName(name: string): string {
+  return name
+    .replace(/\s*ACQUIRED_ITEMS:\s*REMOVED_ITEMS:\s*/g, '')
+    .replace(/\s*ACQUIRED_ITEMS:\s*/g, '')
+    .replace(/\s*REMOVED_ITEMS:\s*/g, '')
+    .trim();
+}
+
+/**
+ * Combat system component that manages turn-based combat between player and opponent.
+ * Handles attack calculations, damage, health tracking, and combat logging.
+ */
+const CombatSystem: React.FC<CombatSystemProps> = ({
+  playerCharacter,
+  opponent,
+  onCombatEnd,
+  onPlayerHealthChange,
+  dispatch
 }) => {
-  const context = useContext(CampaignStateContext);
-  const { dispatch } = context || {};
-
-  const [playerHealth, setPlayerHealth] = useState(playerCharacter.health);
-  const [opponentHealth, setOpponentHealth] = useState(opponent?.health ?? 0);
-  const [combatLog, setCombatLog] = useState<string[]>([]);
+  const [playerHealth, setPlayerHealth] = useState(playerCharacter.health || 100);
+  const [opponentHealth, setOpponentHealth] = useState(opponent.health || 100);
   const [currentTurn, setCurrentTurn] = useState<'player' | 'opponent'>('player');
+  const [combatLog, setCombatLog] = useState<string[]>([]);
 
-  // Update opponent health when the opponent changes
-  useEffect(() => {
-    if (opponent) {
-      setOpponentHealth(opponent.health);
-    }
-  }, [opponent]);
-
-  const rollD100 = useCallback(() => Math.floor(Math.random() * 100) + 1, []);
-
-  // Function to handle attack logic
+  /**
+   * Executes an attack action between two characters.
+   * Calculates hit chance, rolls for success, applies damage, and updates combat state.
+   * Also handles combat end conditions and journal updates.
+   */
   const performAttack = useCallback((attacker: Character, defender: Character, isPlayer: boolean) => {
+    const hitChance = calculateHitChance(attacker);
     const attackRoll = rollD100();
-    const hitChance = attacker.skills.shooting;
+    
+    const attackerName = cleanCharacterName(attacker.name);
+    const defenderName = cleanCharacterName(defender.name);
     
     if (attackRoll <= hitChance) {
-      const damage = Math.floor(Math.random() * 6) + 1; // Simple d6 damage
+      const damage = Math.floor(Math.random() * 6) + 1;
+      const hitMessage = `${attackerName} hits ${defenderName} for ${damage} damage! (Roll: ${attackRoll}, Target: ${hitChance})`;
+      
       if (isPlayer) {
         const newHealth = Math.max(0, opponentHealth - damage);
-        act(() => {
-          setOpponentHealth(newHealth);
-        });
+        setOpponentHealth(newHealth);
+        
         if (newHealth <= 0) {
-          // Add combat result to journal when combat ends
-          const summary = `${playerCharacter.name} defeated ${opponent?.name ?? 'the opponent'} in combat.`;
+          const summary = `${attackerName} hits ${defenderName} with a fatal shot! (Roll: ${attackRoll}, Target: ${hitChance})`;
+          dispatch({ 
+            type: 'UPDATE_JOURNAL',
+            payload: {
+              timestamp: Date.now(),
+              content: summary,
+              narrativeSummary: `Combat ended with ${attackerName} defeating ${defenderName}`
+            }
+          });
           onCombatEnd('player', summary);
-          // Dispatch action to update journal with combat result
-          dispatch?.({ type: 'UPDATE_JOURNAL', payload: addCombatJournalEntry(summary) });
+        } else {
+          setCombatLog(prev => [...prev, hitMessage]);
         }
       } else {
         const newHealth = Math.max(0, playerHealth - damage);
-        act(() => {
-          setPlayerHealth(newHealth);
-        });
+        setPlayerHealth(newHealth);
         onPlayerHealthChange(newHealth);
+        
         if (newHealth <= 0) {
-          // Add combat result to journal when combat ends
-          const summary = `${playerCharacter.name} was defeated by ${opponent?.name ?? 'the opponent'} in combat.`;
+          const summary = `${attackerName} defeats ${defenderName}! (Roll: ${attackRoll}, Target: ${hitChance})`;
+          dispatch({ 
+            type: 'UPDATE_JOURNAL',
+            payload: {
+              timestamp: Date.now(),
+              content: summary,
+              narrativeSummary: `Combat ended with ${attackerName} defeating ${defenderName}`
+            }
+          });
           onCombatEnd('opponent', summary);
-          // Dispatch action to update journal with combat result
-          dispatch?.({ type: 'UPDATE_JOURNAL', payload: addCombatJournalEntry(summary) });
+        } else {
+          setCombatLog(prev => [...prev, hitMessage]);
         }
       }
-      act(() => {
-        setCombatLog(prev => [...prev, `${attacker.name} hits ${defender.name} for ${damage} damage!`]);
-      });
     } else {
-      act(() => {
-        setCombatLog(prev => [...prev, `${attacker.name} misses ${defender.name}!`]);
-      });
+      const missMessage = `${attackerName} misses ${defenderName}! (Roll: ${attackRoll}, Target: ${hitChance})`;
+      setCombatLog(prev => [...prev, missMessage]);
     }
+    
+    setCurrentTurn(isPlayer ? 'opponent' : 'player');
+  }, [opponentHealth, playerHealth, onPlayerHealthChange, onCombatEnd, dispatch]);
 
-    act(() => {
-      setCurrentTurn(isPlayer ? 'opponent' : 'player');
-    });
-  }, [rollD100, opponentHealth, playerHealth, onPlayerHealthChange, onCombatEnd, dispatch, playerCharacter.name, opponent]);
-
-  // Handle player's attack action
-  const handlePlayerAction = useCallback(() => {
-    if (opponent) {
-      performAttack(playerCharacter, opponent, true);
-    }
-  }, [playerCharacter, opponent, performAttack]);
-
-  // Handle opponent's attack action
-  const handleOpponentTurn = useCallback(() => {
-    if (opponent) {
-      performAttack(opponent, playerCharacter, false);
-    }
-  }, [opponent, playerCharacter, performAttack]);
-
-  // Handle opponent's turn after a delay
+  // Handles automatic opponent turns with a 1-second delay
   useEffect(() => {
-    if (currentTurn === 'opponent' && opponent) {
-      const timer = setTimeout(handleOpponentTurn, 1000);
+    if (currentTurn === 'opponent') {
+      const timer = setTimeout(() => {
+        performAttack(opponent, playerCharacter, false);
+      }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [currentTurn, handleOpponentTurn, opponent]);
-
-  if (!context) {
-    return <div>Error: CombatSystem must be used within a CampaignStateProvider</div>;
-  }
-
-  // Don't render anything if there's no opponent
-  if (!opponent) {
-    return null; // or return some UI indicating no active combat
-  }
+  }, [currentTurn, opponent, playerCharacter, performAttack]);
 
   return (
     <div className="combat-system wireframe-section">
       <h2>Combat</h2>
-      <div className="flex justify-between">
-        <div className="combat-actions">
-          {currentTurn === 'player' && (
-            <button onClick={handlePlayerAction} disabled={currentTurn !== 'player'} className="wireframe-button">
-              Attack
-            </button>
-          )}
-          {currentTurn === 'opponent' && <p>Opponent is taking their turn...</p>}
+      <div className="combat-actions">
+        {currentTurn === 'player' && (
+          <button
+            onClick={() => performAttack(playerCharacter, opponent, true)}
+            disabled={currentTurn !== 'player'}
+            className="wireframe-button"
+          >
+            Attack
+          </button>
+        )}
+        {currentTurn === 'opponent' && <p>Opponent is taking their turn...</p>}
+      </div>
+      <div className="combat-info">
+        <div className="health-bars">
+          <div>Player Health: {playerHealth}</div>
+          <div>Opponent Health: {opponentHealth}</div>
         </div>
-        <div className="combat-info">
-          <div className="health-bars">
-            <div>Player Health: {playerHealth}</div>
-            <div>Opponent Health: {opponentHealth}</div>
-          </div>
-          <div className="combat-log">
-            {combatLog.map((log, index) => (
-              <p key={index}>{log}</p>
-            ))}
-          </div>
+        <div className="combat-log max-h-48 overflow-y-auto">
+          {combatLog.map((log: string, index: number) => (
+            <p key={index} className="text-sm">{log}</p>
+          ))}
         </div>
       </div>
     </div>

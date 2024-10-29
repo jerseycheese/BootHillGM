@@ -20,6 +20,7 @@ export default function GameSession() {
   const { isInitializing, isClient } = useGameInitialization();
   const {
     state,
+    dispatch,
     isLoading,
     error,
     isCombatActive,
@@ -62,6 +63,7 @@ export default function GameSession() {
                   opponent={opponent}
                   onCombatEnd={handleCombatEnd}
                   onPlayerHealthChange={handlePlayerHealthChange}
+                  dispatch={dispatch}
                 />
               ) : (
                 <InputManager

@@ -165,34 +165,37 @@
 
 
 ### Combat System
-- [ ] As a player, I want to engage in simple turn-based combat so that I can experience the dangers of the Old West.
+- [x] As a player, I want to engage in simple turn-based combat so that I can experience the dangers of the Old West.
   **Test Plan:**
   - Verify that combat initializes correctly with proper turn order
   - Test that each combatant can perform actions on their turn
   - Ensure combat resolves correctly (victory, defeat, or escape)
-  **Status:** Not yet implemented.
+  **Status:** Implemented with Boot Hill combat mechanics and turn structure.
+  - Combat uses Boot Hill rules for hit calculations
+  - Includes automated opponent turns with 1-second delay
+  - Shows roll results and hit chances
+  - Maintains clear combat log messages
 
-- [ ] As a player, I want to use my character's skills and attributes in combat so that the fights feel personalized to my character.
+- [x] As a player, I want to use my character's skills and attributes in combat so that the fights feel personalized to my character.
   **Test Plan:**
   - Confirm that character skills and attributes affect combat calculations
   - Test different character builds to ensure varied combat experiences
   - Verify that skill/attribute improvements reflect in combat performance
-  **Status:** Not yet implemented.
+  **Status:** Implemented. Combat system uses character attributes for hit chance calculations.
 
-- [ ] As a player, I want to see the results of combat actions quickly so that fights maintain a fast pace.
+- [x] As a player, I want to see the results of combat actions quickly so that fights maintain a fast pace.
   **Test Plan:**
   - Measure the time between player action and result display
   - Ensure combat messages are clear and concise
   - Verify that the UI updates promptly to reflect combat outcomes
-  **Status:** Not yet implemented.
+  **Status:** Implemented. Combat actions resolve immediately with clear feedback.
 
-- [ ] As a player, I want to see a scrollable or collapsible combat log, so that I can review the entire combat history without it taking up too much screen space.
+- [x] As a player, I want to see a scrollable combat log, so that I can review the entire combat history without it taking up too much screen space.
   **Test Plan:**
-  - Verify that the combat log is scrollable or has a collapse/expand functionality
+  - Verify that the combat log is scrollable
   - Check that all combat actions are recorded in the log
   - Ensure the log is readable and doesn't interfere with other UI elements
-  **Status:** Not yet implemented.
-
+  **Status:** Implemented. Combat log is scrollable with max height constraint.
 
 ### Inventory and Economy
 - [x] As a player, I want to view my character's inventory so that I know what items I have available.
@@ -612,3 +615,4 @@ This section is for tracking bugs found during development and testing. Each bug
 - Status: Closed
 - Resolution: Implemented robust game state persistence using localStorage and added fallback mechanism for character data.
 - Closed Date: 2024-10-24
+
