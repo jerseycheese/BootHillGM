@@ -31,6 +31,20 @@ function cleanCharacterName(name: string): string {
 }
 
 /**
+ * Gets the weapon name for a character, defaulting to "fists" if no weapon is equipped
+ */
+const getWeaponName = (character: Character): string => {
+  return character.weapon?.name || 'fists';
+};
+
+/**
+ * Determines if a roll is critical (≤5 or ≥96)
+ */
+const isCritical = (roll: number): boolean => {
+  return roll <= 5 || roll >= 96;
+};
+
+/**
  * Combat system component that manages turn-based combat between player and opponent.
  * Handles attack calculations, damage, health tracking, and combat logging.
  */
@@ -60,14 +74,14 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
     
     if (attackRoll <= hitChance) {
       const damage = Math.floor(Math.random() * 6) + 1;
-      const hitMessage = `${attackerName} hits ${defenderName} for ${damage} damage! (Roll: ${attackRoll}, Target: ${hitChance})`;
+      const hitMessage = `${attackerName} hits ${defenderName} with ${getWeaponName(attacker)} for ${damage} damage! [Roll: ${attackRoll}/${hitChance}${isCritical(attackRoll) ? ' - Critical!' : ''}]`;
       
       if (isPlayer) {
         const newHealth = Math.max(0, opponentHealth - damage);
         setOpponentHealth(newHealth);
         
         if (newHealth <= 0) {
-          const summary = `${attackerName} hits ${defenderName} with a fatal shot! (Roll: ${attackRoll}, Target: ${hitChance})`;
+          const summary = `${attackerName} hits ${defenderName} with ${getWeaponName(attacker)} - a fatal shot! [Roll: ${attackRoll}/${hitChance}${isCritical(attackRoll) ? ' - Critical!' : ''}]`;
           dispatch({ 
             type: 'UPDATE_JOURNAL',
             payload: {
@@ -86,7 +100,7 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
         onPlayerHealthChange(newHealth);
         
         if (newHealth <= 0) {
-          const summary = `${attackerName} defeats ${defenderName}! (Roll: ${attackRoll}, Target: ${hitChance})`;
+          const summary = `${attackerName} defeats ${defenderName} with ${getWeaponName(attacker)}! [Roll: ${attackRoll}/${hitChance}${isCritical(attackRoll) ? ' - Critical!' : ''}]`;
           dispatch({ 
             type: 'UPDATE_JOURNAL',
             payload: {
@@ -101,7 +115,7 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
         }
       }
     } else {
-      const missMessage = `${attackerName} misses ${defenderName}! (Roll: ${attackRoll}, Target: ${hitChance})`;
+      const missMessage = `${attackerName} misses ${defenderName}! [Roll: ${attackRoll}/${hitChance}]`;
       setCombatLog(prev => [...prev, missMessage]);
     }
     
