@@ -56,10 +56,12 @@ describe('CombatSystem', () => {
       />
     );
 
-    expect(screen.getByText('Combat')).toBeInTheDocument();
+    // Verify combat interface elements are present
     expect(screen.getByText('Player Health: 100')).toBeInTheDocument();
     expect(screen.getByText('Opponent Health: 100')).toBeInTheDocument();
     expect(screen.getByText('Attack')).toBeInTheDocument();
+    expect(screen.getByText("Player's Turn")).toBeInTheDocument();
+    expect(screen.getByText("Opponent's Turn")).toBeInTheDocument();
   });
 
   test('handles player attack with weapon display', async () => {
@@ -238,7 +240,10 @@ describe('CombatSystem', () => {
       />
     );
 
-    expect(screen.getByText('Combat')).toBeInTheDocument();
+    // Verify initial combat interface elements
+    expect(screen.getByText('Player Health: 100')).toBeInTheDocument();
+    expect(screen.getByText('Opponent Health: 100')).toBeInTheDocument();
+    expect(screen.getByText('Attack')).toBeInTheDocument();
 
     rerender(
       <CombatSystem
@@ -251,9 +256,9 @@ describe('CombatSystem', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Combat')).toBeInTheDocument();
       expect(screen.getByText('Player Health: 100')).toBeInTheDocument();
       expect(screen.getByText('Opponent Health: 100')).toBeInTheDocument();
+      expect(screen.getByText('Attack')).toBeInTheDocument();
     });
   });
 });

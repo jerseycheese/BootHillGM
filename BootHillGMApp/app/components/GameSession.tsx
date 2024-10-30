@@ -1,93 +1,29 @@
 /**
- * Main game session container component.
- * Coordinates between input, display, combat, and inventory systems.
- * Handles conditional rendering based on game state (combat vs. normal play).
- * Uses modular components for better maintainability and testing.
+ * Main game session container that orchestrates the game's UI components.
+ * Uses a two-column layout with the main game area and side panel.
+ * Handles initialization checks and loading states before rendering the game interface.
  */
-'use client';
-
-import React from 'react';
 import { useGameInitialization } from '../hooks/useGameInitialization';
 import { useGameSession } from '../hooks/useGameSession';
-import CombatSystem from './CombatSystem';
-import InputManager from './InputManager';
-import StatusDisplayManager from './StatusDisplayManager';
-import NarrativeDisplay from './NarrativeDisplay';
-import Inventory from './Inventory';
-import JournalViewer from './JournalViewer';
+import { MainGameArea } from './GameArea/MainGameArea';
+import { SidePanel } from './GameArea/SidePanel';
+import { LoadingScreen } from './GameArea/LoadingScreen';
 
 export default function GameSession() {
   const { isInitializing, isClient } = useGameInitialization();
-  const {
-    state,
-    dispatch,
-    isLoading,
-    error,
-    isCombatActive,
-    opponent,
-    handleUserInput,
-    retryLastAction,
-    handleCombatEnd,
-    handlePlayerHealthChange,
-    handleManualSave,
-    handleUseItem,
-  } = useGameSession();
+  const gameSession = useGameSession();
+  const { state } = gameSession;
 
+  // Show loading screen until game state is fully initialized
   if (!isClient || !state || !state.character || isInitializing) {
-    return (
-      <div className="wireframe-container" role="status">
-        Loading game session...
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
     <div className="wireframe-container">
       <div className="h-full grid grid-cols-[1fr_300px] gap-4">
-        {/* Main Game Area */}
-        <div className="h-full flex flex-col overflow-auto">
-          
-          {/* Narrative section */}
-          <div className="wireframe-section flex-1 flex flex-col overflow-auto">
-            <NarrativeDisplay
-              narrative={state.narrative}
-              error={error}
-              onRetry={retryLastAction}
-            />
-            
-            {/* Input or Combat section directly below narrative */}
-            <div className="mt-4 shrink-0">
-              {isCombatActive && opponent ? (
-                <CombatSystem
-                  playerCharacter={state.character}
-                  opponent={opponent}
-                  onCombatEnd={handleCombatEnd}
-                  onPlayerHealthChange={handlePlayerHealthChange}
-                  dispatch={dispatch}
-                />
-              ) : (
-                <InputManager
-                  onSubmit={handleUserInput}
-                  isLoading={isLoading}
-                  suggestedActions={state.suggestedActions}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Side Panel - Fixed at bottom */}
-        <div className="h-full flex flex-col justify-end">
-          <div className="space-y-4">
-            <StatusDisplayManager
-              character={state.character}
-              location={state.location}
-              onManualSave={handleManualSave}
-            />
-            <Inventory onUseItem={handleUseItem} />
-            <JournalViewer entries={state.journal || []} />
-          </div>
-        </div>
+        <MainGameArea {...gameSession} />
+        <SidePanel {...gameSession} />
       </div>
     </div>
   );

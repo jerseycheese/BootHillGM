@@ -71,7 +71,6 @@
     - Handles item quantity updates
     - Maintains inventory state across sessions
 
-
 ### 7. NarrativeEngine
 - **Main Functionality:** Generates and manages basic storylines and narrative elements
 - **Key Components:**
@@ -134,6 +133,26 @@
     - Handles user input and AI responses
     - Manages combat initiation and resolution
     - Renders game UI including narrative, inventory, and user input
+  - **GameSession Components**:
+    - **GameSession**: Root component that orchestrates the game interface
+      - [x] Two-column layout with main game area and side panel
+      - [x] Handles initialization and loading states
+      - [x] Distributes game state to child components
+    - **MainGameArea**: Primary game interaction space
+      - [x] Displays narrative content
+      - [x] Manages combat and input interfaces
+      - [x] Handles state transitions between normal and combat modes
+    - **SidePanel**: Secondary information display
+      - [x] Shows character status
+      - [x] Displays inventory
+      - [x] Shows journal entries
+    - **GameplayControls**: Manages user interaction methods
+      - [x] Switches between combat and normal input modes
+      - [x] Handles loading states during AI responses
+      - [x] Displays suggested actions
+    - **LoadingScreen**: Simple loading state display
+      - [x] Shown during initialization
+      - [x] Accessible loading indicator
 - **Implemented Features:**
   - Integration with AI service for dynamic game narration
   - Journal system for tracking important story elements
