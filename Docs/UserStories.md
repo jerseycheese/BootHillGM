@@ -326,6 +326,21 @@
   - Verify that added IDs and classes are unique and descriptive
   - Test that added identifiers don't break existing styles or functionality
 
+- [x] As a player, I want to see three contextual action buttons suggested by the AI, alongside the free text input option, so that I have quick access to logical choices while maintaining freedom of action.
+  **Implementation Status:**
+  - ✓ Color-coded buttons for different action types (basic/combat/interaction)
+  - ✓ Tooltips provide context for each suggested action
+  - ✓ Free text input maintained for full player freedom
+  - ✓ Buttons dynamically update based on game context
+  - ✓ Actions properly separated from narrative text
+
+- [x] As a player, I want the narrative to focus on describing the scene and events, without including suggested actions in the text itself, so that the narrative flow is cleaner and more immersive.
+  **Implementation Status:**
+  - ✓ Clean narrative focused solely on scene descriptions and events
+  - ✓ Suggested actions moved to dedicated UI elements
+  - ✓ Improved readability and immersion
+  - ✓ AI responses properly structured to separate narrative from suggestions
+
 - [ ] As a user, I want to see character attributes and skills in title case for better readability.
   **Test Plan:**
   - Check all instances where character attributes and skills are displayed
@@ -615,4 +630,5 @@ This section is for tracking bugs found during development and testing. Each bug
 - Status: Closed
 - Resolution: Implemented robust game state persistence using localStorage and added fallback mechanism for character data.
 - Closed Date: 2024-10-24
+
 
