@@ -9,13 +9,26 @@ export interface CombatMessageParams {
   hitChance: number;
 }
 
-export const cleanCharacterName = (name: string): string => {
-  return name
-    .replace(/\s*ACQUIRED_ITEMS:\s*REMOVED_ITEMS:\s*/g, ' ')
-    .replace(/\s*ACQUIRED_ITEMS:\s*/g, ' ')
-    .replace(/\s*REMOVED_ITEMS:\s*/g, ' ')
-    .replace(/\s+/g, ' ')
+export const cleanMetadataMarkers = (text: string): string => {
+  return text
+    // Remove suggested actions JSON
+    .replace(/\s*SUGGESTED_ACTIONS:\s*\[[^\]]*\]/g, '')
+    // Remove empty brackets
+    .replace(/\[\s*\]/g, '')
+    // Remove important markers
+    .replace(/\s*important:\s*[^.!?]*[.!?]/g, '')
+    // Clean up location markers
+    .replace(/\s*LOCATION:\s*[^.!?\n]*/g, '')
+    // Remove acquired/removed items markers
+    .replace(/\s*ACQUIRED_ITEMS:\s*(?:\[[^\]]*\]|\s*[^\n]*)/g, '')
+    .replace(/\s*REMOVED_ITEMS:\s*(?:\[[^\]]*\]|\s*[^\n]*)/g, '')
+    // Clean up extra whitespace
+    .replace(/\s{2,}/g, ' ')
     .trim();
+};
+
+export const cleanCharacterName = (name: string): string => {
+  return cleanMetadataMarkers(name);
 };
 
 export const getWeaponName = (character: Character): string => {
@@ -35,7 +48,10 @@ export const formatHitMessage = ({
   hitChance
 }: CombatMessageParams): string => {
   const isCriticalHit = isCritical(roll);
-  return `${attackerName} hits ${defenderName} with ${weaponName} for ${damage} damage! [Roll: ${roll}/${hitChance}${isCriticalHit ? ' - Critical!' : ''}]`;
+  const cleanedAttacker = cleanMetadataMarkers(attackerName);
+  const cleanedDefender = cleanMetadataMarkers(defenderName);
+  
+  return `${cleanedAttacker} hits ${cleanedDefender} with ${weaponName} for ${damage} damage! [Roll: ${roll}/${hitChance}${isCriticalHit ? ' - Critical!' : ''}]`;
 };
 
 export const formatMissMessage = (
@@ -44,7 +60,10 @@ export const formatMissMessage = (
   roll: number,
   hitChance: number
 ): string => {
-  return `${attackerName} misses ${defenderName}! [Roll: ${roll}/${hitChance}]`;
+  const cleanedAttacker = cleanMetadataMarkers(attackerName);
+  const cleanedDefender = cleanMetadataMarkers(defenderName);
+  
+  return `${cleanedAttacker} misses ${cleanedDefender}! [Roll: ${roll}/${hitChance}]`;
 };
 
 export const calculateCombatDamage = (): number => {

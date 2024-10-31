@@ -1,5 +1,6 @@
 import {
   cleanCharacterName,
+  cleanMetadataMarkers,
   getWeaponName,
   isCritical,
   formatHitMessage,
@@ -9,9 +10,36 @@ import {
 import { Character } from '../../types/character';
 
 describe('Combat Utilities', () => {
+  describe('cleanMetadataMarkers', () => {
+    it('removes suggested actions from text', () => {
+      const text = 'Player SUGGESTED_ACTIONS: [{"text": "action"}] hits enemy';
+      expect(cleanMetadataMarkers(text)).toBe('Player hits enemy');
+    });
+
+    it('removes empty brackets', () => {
+      const text = 'Player [] [] hits enemy';
+      expect(cleanMetadataMarkers(text)).toBe('Player hits enemy');
+    });
+
+    it('removes important markers', () => {
+      const text = 'Player important: Fight started with enemy. hits target';
+      expect(cleanMetadataMarkers(text)).toBe('Player hits target');
+    });
+
+    it('removes all metadata markers while preserving combat text', () => {
+      const text = 'Player [] [] SUGGESTED_ACTIONS: [{"text": "action"}] important: Fight started. hits enemy with sword for 5 damage!';
+      expect(cleanMetadataMarkers(text)).toBe('Player hits enemy with sword for 5 damage!');
+    });
+  });
+
   describe('cleanCharacterName', () => {
     it('removes metadata markers from character names', () => {
       const name = 'John ACQUIRED_ITEMS: REMOVED_ITEMS: Smith';
+      expect(cleanCharacterName(name)).toBe('John Smith');
+    });
+
+    it('removes suggested actions from character names', () => {
+      const name = 'John SUGGESTED_ACTIONS: [{"text": "action"}] Smith';
       expect(cleanCharacterName(name)).toBe('John Smith');
     });
   });
@@ -78,10 +106,10 @@ describe('Combat Utilities', () => {
   });
 
   describe('formatHitMessage', () => {
-    it('formats hit message correctly', () => {
+    it('formats hit message correctly with cleaned names', () => {
       const params = {
-        attackerName: 'John',
-        defenderName: 'Bandit',
+        attackerName: 'John SUGGESTED_ACTIONS: [{"text": "action"}]',
+        defenderName: 'Bandit LOCATION: Saloon',
         weaponName: 'Revolver',
         damage: 5,
         roll: 50,
@@ -108,8 +136,10 @@ describe('Combat Utilities', () => {
   });
 
   describe('formatMissMessage', () => {
-    it('formats miss message correctly', () => {
-      expect(formatMissMessage('John', 'Bandit', 80, 70)).toBe(
+    it('formats miss message correctly with cleaned names', () => {
+      const attackerName = 'John SUGGESTED_ACTIONS: [{"text": "action"}]';
+      const defenderName = 'Bandit LOCATION: Saloon';
+      expect(formatMissMessage(attackerName, defenderName, 80, 70)).toBe(
         'John misses Bandit! [Roll: 80/70]'
       );
     });

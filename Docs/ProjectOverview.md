@@ -101,3 +101,21 @@ The project has made significant progress:
 - Implement advanced UI/UX improvements
 - Develop infrastructure for user accounts and online features
 - Consider content warnings or age verification for uncensored content
+
+## 10. Project Documentation
+The project's documentation is organized in the Docs folder:
+
+### Core Documentation
+- ProjectOverview.md (this file): High-level project overview and architecture
+- TechnicalSpecification.md: Detailed technical specifications and implementation details
+- DevelopmentRoadmap.md: Development timeline and milestone tracking
+- ComponentBreakdown.md: Detailed component structure and relationships
+- ArchitectureDecisionRecord.md: Key architectural decisions and their rationales
+- UserStories.md: User stories and feature tracking
+- OpenBugs.md: List of known bugs and issues
+- ClosedBugs.md: History of resolved bugs and their solutions
+
+### Reference Documentation
+- BootHillRules/: Boot Hill RPG rules documentation and reference materials
+- Reference/: Additional reference materials and integration guides
+- Wireframes/: UI/UX design wireframes and mockups
