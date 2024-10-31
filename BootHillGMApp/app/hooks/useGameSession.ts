@@ -57,12 +57,6 @@ export const useGameSession = () => {
     onUpdateNarrative: updateNarrative
   });
 
-  /**
-   * Processes user input and manages game state updates based on AI responses.
-   * Handles combat initiation, inventory changes, and location updates.
-   * 
-   * @param input - The user's input text to process
-   */
   const handleUserInput = useCallback(async (input: string) => {
     setIsLoading(true);
     setError(null);
@@ -180,7 +174,7 @@ export const useGameSession = () => {
 
   return {
     state,
-    dispatch, // Now exposing dispatch
+    dispatch,
     isLoading,
     error,
     handleUserInput,

@@ -30,6 +30,7 @@ export function GameplayControls({
           onCombatEnd={onCombatEnd}
           onPlayerHealthChange={onPlayerHealthChange}
           dispatch={dispatch}
+          initialCombatState={state.combatState}
         />
       ) : (
         <InputManager

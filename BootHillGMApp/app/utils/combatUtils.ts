@@ -19,9 +19,9 @@ export const cleanMetadataMarkers = (text: string): string => {
     .replace(/\s*important:\s*[^.!?]*[.!?]/g, '')
     // Clean up location markers
     .replace(/\s*LOCATION:\s*[^.!?\n]*/g, '')
-    // Remove acquired/removed items markers
-    .replace(/\s*ACQUIRED_ITEMS:\s*(?:\[[^\]]*\]|\s*[^\n]*)/g, '')
-    .replace(/\s*REMOVED_ITEMS:\s*(?:\[[^\]]*\]|\s*[^\n]*)/g, '')
+    // Remove acquired/removed items markers while preserving text after them
+    .replace(/\s*ACQUIRED_ITEMS:\s*(?:\[[^\]]*\]|\s*[^\s]*)\s*/g, ' ')
+    .replace(/\s*REMOVED_ITEMS:\s*(?:\[[^\]]*\]|\s*[^\s]*)\s*/g, ' ')
     // Clean up extra whitespace
     .replace(/\s{2,}/g, ' ')
     .trim();

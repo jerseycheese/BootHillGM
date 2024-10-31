@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, useReducer, useCallback, useEffect, useState, useRef } from 'react';
 import { GameState, GameEngineAction, gameReducer, initialState as initialGameState } from '../utils/gameEngine';
+import { InventoryItem } from '../types/inventory';
 
-// Create the context with the cleanup function
 export const CampaignStateContext = createContext<{
   state: GameState;
   dispatch: React.Dispatch<GameEngineAction>;
@@ -12,7 +12,6 @@ export const CampaignStateContext = createContext<{
   cleanupState: () => void;
 } | undefined>(undefined);
 
-// Custom hook to use the campaign state
 export const useCampaignState = () => {
   const context = useContext(CampaignStateContext);
   if (context === undefined) {
@@ -25,42 +24,64 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   const getInitialState = (): GameState => {
     try {
       if (typeof window === 'undefined') {
-        return initialGameState;
+        return { ...initialGameState };
       }
       
-      // Immediately check for initialization flag
       const isInitializing = sessionStorage.getItem('initializing_new_character');
       
       if (isInitializing) {
         return { ...initialGameState, isClient: true };
       }
       
-      // Check localStorage
       const savedStateJSON = localStorage.getItem('campaignState');
       
       if (savedStateJSON) {
         try {
           const savedState = JSON.parse(savedStateJSON);
           
-          // Quick validation of saved state
           if (!savedState.character || !savedState.character.name) {
             return { ...initialGameState, isClient: true };
           }
           
-          return { ...savedState, isClient: true };
-        } catch {
+          // Restore state with proper type handling for combat-related fields
+          const restoredState = {
+            ...initialGameState,
+            ...savedState,
+            isClient: true,
+            isCombatActive: Boolean(savedState.isCombatActive),
+            opponent: savedState.opponent ? {
+              ...savedState.opponent,
+              health: Number(savedState.opponent.health),
+              attributes: { ...savedState.opponent.attributes },
+              skills: { ...savedState.opponent.skills }
+            } : null,
+            combatState: savedState.combatState ? {
+              ...savedState.combatState,
+              playerHealth: Number(savedState.combatState.playerHealth),
+              opponentHealth: Number(savedState.combatState.opponentHealth),
+              currentTurn: savedState.combatState.currentTurn,
+              combatLog: [...(savedState.combatState.combatLog || [])]
+            } : undefined,
+            inventory: savedState.inventory?.map((item: InventoryItem) => ({ ...item })) || [],
+            journal: savedState.journal || []
+          };
+
+          return restoredState;
+        } catch (error) {
+          console.error('Error parsing saved state:', error);
           return { ...initialGameState, isClient: true };
         }
       }
-      return initialGameState;
+      return { ...initialGameState, isClient: true };
     } catch {
-      return initialGameState;
+      return { ...initialGameState };
     }
   };
 
   const [state, baseDispatch] = useReducer(gameReducer, getInitialState());
   const [isHydrated, setIsHydrated] = useState(false);
   const lastSavedRef = useRef<number>(0);
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     setIsHydrated(true);
@@ -70,39 +91,101 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
     baseDispatch(action);
   }, []);
 
+  /**
+   * Handles saving the game state to localStorage.
+   * Includes special handling for combat state to ensure turn-based combat 
+   * persists across page reloads and navigation.
+   */
   const saveGame = useCallback((stateToSave: GameState) => {
     try {
-      // Add timestamp for save verification
       const timestamp = Date.now();
+      
+      if (timestamp - lastSavedRef.current < 1000) {
+        return;
+      }
+
+      // Create a clean state with properly preserved combat information
       const cleanState = {
         ...stateToSave,
-        inventory: stateToSave.inventory.map((item) => ({ ...item })),
+        // Deep clone arrays to avoid reference issues
+        inventory: stateToSave.inventory.map(item => ({ ...item })),
+        npcs: [...stateToSave.npcs],
+        journal: [...stateToSave.journal],
+        // Maintain combat state for ongoing battles
+        isCombatActive: Boolean(stateToSave.isCombatActive),
+        opponent: stateToSave.opponent ? {
+          ...stateToSave.opponent,
+          health: Number(stateToSave.opponent.health),
+          attributes: { ...stateToSave.opponent.attributes },
+          skills: { ...stateToSave.opponent.skills }
+        } : null,
+        combatState: stateToSave.combatState ? {
+          ...stateToSave.combatState,
+          playerHealth: Number(stateToSave.combatState.playerHealth),
+          opponentHealth: Number(stateToSave.combatState.opponentHealth),
+          currentTurn: stateToSave.combatState.currentTurn,
+          combatLog: [...stateToSave.combatState.combatLog]
+        } : undefined,
         savedTimestamp: timestamp,
-        isClient: false  // Changed from true to false for storage
+        isClient: false
       };
 
-      const serializedState = JSON.stringify(cleanState);
-      localStorage.setItem('campaignState', serializedState);
+      localStorage.setItem('campaignState', JSON.stringify(cleanState));
       lastSavedRef.current = timestamp;
 
-      // Update React state with the new timestamp
-      dispatch({ type: 'SET_SAVED_TIMESTAMP', payload: timestamp });
-
+      if (stateToSave.savedTimestamp !== timestamp) {
+        dispatch({ type: 'SET_SAVED_TIMESTAMP', payload: timestamp });
+      }
     } catch (error) {
       console.error('Failed to save game state:', error);
     }
   }, [dispatch]);
 
-  // Autosave effect
+  // Auto-save effect for narrative changes
   useEffect(() => {
     if (isHydrated && state.narrative) {
-      const currentTimestamp = state.savedTimestamp || 0;
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+
+      saveTimeoutRef.current = setTimeout(() => {
+        const currentTimestamp = state.savedTimestamp || 0;
+        if (currentTimestamp > lastSavedRef.current) {
+          saveGame(state);
+        }
+      }, 1000);
+
+      return () => {
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+        }
+      };
+    }
+  }, [isHydrated, saveGame, state]);
+
+  // Combat state persistence effect
+  useEffect(() => {
+    if (state.combatState && isHydrated) {
+      const currentTimestamp = Date.now();
       if (currentTimestamp > lastSavedRef.current) {
         saveGame(state);
       }
     }
-  }, [isHydrated, state, saveGame]);
+  }, [
+    isHydrated,
+    saveGame,
+    state.combatState?.playerHealth,
+    state.combatState?.opponentHealth,
+    state.combatState?.currentTurn,
+    state.isCombatActive,
+    state
+  ]);
 
+  /**
+   * Loads and restores the game state from localStorage.
+   * Ensures proper type conversion for combat-related numerical values
+   * and maintains combat state consistency.
+   */
   const loadGame = useCallback((): GameState | null => {
     try {
       const serializedState = localStorage.getItem('campaignState');
@@ -112,42 +195,47 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const loadedState = JSON.parse(serializedState);
       
-      // Only load if the saved state is newer than what we have
-      if (!state.savedTimestamp || loadedState.savedTimestamp > state.savedTimestamp) {
-        const stateWithClient = {
-          ...loadedState,
-          isClient: true
-        };
-        
-        dispatch({ type: 'SET_STATE', payload: stateWithClient });
-        return stateWithClient;
-      } else {
-        return state;
+      if (!loadedState || !loadedState.savedTimestamp) {
+        return null;
       }
+
+      const stateWithClient = {
+        ...loadedState,
+        isClient: true,
+        isCombatActive: Boolean(loadedState.isCombatActive),
+        opponent: loadedState.opponent ? {
+          ...loadedState.opponent,
+          health: Number(loadedState.opponent.health),
+          attributes: { ...loadedState.opponent.attributes },
+          skills: { ...loadedState.opponent.skills }
+        } : null,
+        combatState: loadedState.combatState ? {
+          ...loadedState.combatState,
+          playerHealth: Number(loadedState.combatState.playerHealth),
+          opponentHealth: Number(loadedState.combatState.opponentHealth),
+          currentTurn: loadedState.combatState.currentTurn,
+          combatLog: [...(loadedState.combatState.combatLog || [])]
+        } : undefined
+      };
+      
+      dispatch({ type: 'SET_STATE', payload: stateWithClient });
+      return stateWithClient;
     } catch (error) {
       console.error('Failed to load game state:', error);
       return null;
     }
-  }, [state, dispatch]);
+  }, [dispatch]);
 
-  // Add cleanup function
-const cleanupState = useCallback(() => {
+  const cleanupState = useCallback(() => {
     try {
-      // Performs a complete state cleanup when creating a new character
-      // 1. Sets initialization flag to ensure fresh state on next load
-      // 2. Clears existing game state from storage
-      // 3. Forces immediate state reset to prevent stale data
       sessionStorage.setItem('initializing_new_character', 'true');
-      
-      // Clear all game state
       localStorage.removeItem('campaignState');
-      
-      // Force immediate state reset
       const cleanState = { ...initialGameState, isClient: true };
       dispatch({ type: 'SET_STATE', payload: cleanState });
     } finally {
+      // Cleanup runs regardless of success/failure
     }
-}, [dispatch]);
+  }, [dispatch]);
 
   if (!isHydrated) {
     return null;

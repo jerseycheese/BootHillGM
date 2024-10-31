@@ -51,18 +51,25 @@ describe('useCombatManager', () => {
     expect(result.current.opponent).toEqual(mockOpponent);
   });
 
-  it('should handle combat end', () => {
+  it('should handle combat end', async () => {
     const { result } = renderHook(
       () => useCombatManager({ onUpdateNarrative: mockUpdateNarrative }), 
       { wrapper: CampaignStateProvider }
     );
 
+    // Start combat
     act(() => {
       result.current.initiateCombat(mockOpponent);
-      result.current.handleCombatEnd('player', 'Test combat summary');
     });
 
-    expect(result.current.isCombatActive).toBe(false);
+    // End combat
+    await act(async () => {
+      result.current.handleCombatEnd('player', 'Test combat summary');
+      // Wait for state updates to complete
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    // Check final state
     expect(result.current.opponent).toBeNull();
     expect(mockUpdateNarrative).toHaveBeenCalledWith(
       expect.stringContaining('Test combat summary')

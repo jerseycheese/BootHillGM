@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { debounce } from 'lodash';
 import { Character } from '../types/character';
 import { calculateHitChance, rollD100 } from '../utils/combatRules';
 import { GameEngineAction } from '../utils/gameEngine';
@@ -17,24 +18,120 @@ interface CombatSystemProps {
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
   onPlayerHealthChange: (health: number) => void;
   dispatch: React.Dispatch<GameEngineAction>;
+  initialCombatState?: {
+    playerHealth: number;
+    opponentHealth: number;
+    currentTurn: 'player' | 'opponent';
+    combatLog: string[];
+  };
 }
+
+// Move debounce outside component to prevent recreation
+const updateCombatState = debounce((
+  dispatch: React.Dispatch<GameEngineAction>,
+  state: {
+    playerHealth: number;
+    opponentHealth: number;
+    currentTurn: 'player' | 'opponent';
+    combatLog: string[];
+  }
+) => {
+  dispatch({
+    type: 'UPDATE_COMBAT_STATE',
+    payload: state
+  });
+}, 250);
 
 const CombatSystem: React.FC<CombatSystemProps> = ({
   playerCharacter,
   opponent,
   onCombatEnd,
   onPlayerHealthChange,
-  dispatch
+  dispatch,
+  initialCombatState
 }) => {
-  // Use the actual character health instead of defaulting to 100
-  const [playerHealth, setPlayerHealth] = useState(playerCharacter.health);
-  const [opponentHealth, setOpponentHealth] = useState(opponent.health);
-  const [currentTurn, setCurrentTurn] = useState<'player' | 'opponent'>('player');
-  const [combatLog, setCombatLog] = useState<string[]>([]);
+  // Use ref to prevent initialization loops
+  const isInitialized = useRef(false);
+  
+  // Initialize state from initialCombatState if available
+  const [playerHealth, setPlayerHealth] = useState(
+    initialCombatState?.playerHealth ?? playerCharacter.health
+  );
+  const [opponentHealth, setOpponentHealth] = useState(
+    initialCombatState?.opponentHealth ?? opponent.health
+  );
+  const [currentTurn, setCurrentTurn] = useState<'player' | 'opponent'>(
+    initialCombatState?.currentTurn ?? 'player'
+  );
+  const [combatLog, setCombatLog] = useState<string[]>(
+    initialCombatState?.combatLog ?? []
+  );
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const performAttack = useCallback((attacker: Character, defender: Character, isPlayer: boolean) => {
-    setIsProcessing(true);
+  // Memoize the callback function that uses the debounced update
+  const debouncedUpdateCombatState = useCallback((state: {
+    playerHealth: number;
+    opponentHealth: number;
+    currentTurn: 'player' | 'opponent';
+    combatLog: string[];
+  }) => {
+    updateCombatState(dispatch, state);
+  }, [dispatch]);
+
+  // Add initialization effect with ref guard
+  useEffect(() => {
+    if (!isInitialized.current && initialCombatState) {
+      isInitialized.current = true;
+      const { playerHealth: savedPlayerHealth, opponentHealth: savedOpponentHealth, currentTurn: savedTurn, combatLog: savedLog } = initialCombatState;
+      
+      console.log('Combat System - Restoring state:', {
+        savedPlayerHealth,
+        savedOpponentHealth,
+        savedTurn,
+        savedLogEntries: savedLog?.length
+      });
+
+      setPlayerHealth(savedPlayerHealth);
+      setOpponentHealth(savedOpponentHealth);
+      setCurrentTurn(savedTurn);
+      
+      if (savedLog && savedLog.length > 0) {
+        setCombatLog(savedLog);
+      }
+    }
+  }, [initialCombatState]); 
+
+  // Update combat state when relevant values change
+  useEffect(() => {
+    if (isInitialized.current) {
+      debouncedUpdateCombatState({
+        playerHealth,
+        opponentHealth,
+        currentTurn,
+        combatLog
+      });
+    }
+  }, [playerHealth, opponentHealth, currentTurn, combatLog, debouncedUpdateCombatState]);
+
+  // Notify parent of player health changes
+  useEffect(() => {
+    onPlayerHealthChange(playerHealth);
+  }, [playerHealth, onPlayerHealthChange]);
+
+  // Wrapper for setPlayerHealth that also notifies parent
+  const updatePlayerHealth = useCallback((newHealth: number) => {
+    setPlayerHealth(newHealth);
+  }, []);
+
+  // Memoize the attack logic separately from the handler
+  const processAttack = useCallback((
+    attacker: Character,
+    defender: Character,
+    isPlayer: boolean,
+    currentHealth: number,
+    setHealth: (health: number) => void,
+    updateLog: (message: string) => void
+  ) => {
     const hitChance = calculateHitChance(attacker);
     const attackRoll = rollD100();
     
@@ -53,67 +150,90 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
         hitChance
       });
       
-      if (isPlayer) {
-        const newHealth = Math.max(0, opponentHealth - damage);
-        setOpponentHealth(newHealth);
-        
-        if (newHealth <= 0) {
-          const summary = `${attackerName} hits ${defenderName} with ${weaponName} - a fatal shot! [Roll: ${attackRoll}/${hitChance}]`;
-          dispatch({ 
-            type: 'UPDATE_JOURNAL',
-            payload: {
-              timestamp: Date.now(),
-              content: summary,
-              narrativeSummary: `Combat ended with ${attackerName} defeating ${defenderName}`
-            }
-          });
-          onCombatEnd('player', summary);
-          return;
-        } else {
-          setCombatLog(prev => [...prev, hitMessage]);
-        }
+      const newHealth = Math.max(0, currentHealth - damage);
+      setHealth(newHealth);
+      
+      if (newHealth <= 0) {
+        const summary = `${attackerName} hits ${defenderName} with ${weaponName} - a fatal shot! [Roll: ${attackRoll}/${hitChance}]`;
+        dispatch({ 
+          type: 'UPDATE_JOURNAL',
+          payload: {
+            timestamp: Date.now(),
+            content: summary,
+            narrativeSummary: `Combat ended with ${attackerName} defeating ${defenderName}`
+          }
+        });
+        onCombatEnd(isPlayer ? 'player' : 'opponent', summary);
+        return true;
       } else {
-        const newHealth = Math.max(0, playerHealth - damage);
-        setPlayerHealth(newHealth);
-        onPlayerHealthChange(newHealth);
-        
-        if (newHealth <= 0) {
-          const summary = `${attackerName} defeats ${defenderName} with ${weaponName}!`;
-          dispatch({ 
-            type: 'UPDATE_JOURNAL',
-            payload: {
-              timestamp: Date.now(),
-              content: summary,
-              narrativeSummary: `Combat ended with ${attackerName} defeating ${defenderName}`
-            }
-          });
-          onCombatEnd('opponent', summary);
-          return;
-        } else {
-          setCombatLog(prev => [...prev, hitMessage]);
-        }
+        updateLog(hitMessage);
       }
     } else {
       const missMessage = formatMissMessage(attackerName, defenderName, attackRoll, hitChance);
-      setCombatLog(prev => [...prev, missMessage]);
+      updateLog(missMessage);
     }
-    
-    setCurrentTurn(isPlayer ? 'opponent' : 'player');
-    setIsProcessing(false);
-  }, [opponentHealth, playerHealth, onPlayerHealthChange, onCombatEnd, dispatch]);
+    return false;
+  }, [dispatch, onCombatEnd]);
 
-  // Effect to handle opponent's turn
+  const performAttack = useCallback(() => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+
+    const isGameOver = processAttack(
+      playerCharacter,
+      opponent,
+      true,
+      opponentHealth,
+      setOpponentHealth,
+      (message) => setCombatLog(prev => [...prev, message])
+    );
+
+    if (!isGameOver) {
+      setCurrentTurn('opponent');
+    }
+    setIsProcessing(false);
+  }, [
+    isProcessing,
+    processAttack,
+    playerCharacter,
+    opponent,
+    opponentHealth,
+    setCurrentTurn,
+    setCombatLog
+  ]);
+
+  // Effect to handle opponent's turn with cleanup
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (currentTurn === 'opponent' && !isProcessing) {
       timer = setTimeout(() => {
-        performAttack(opponent, playerCharacter, false);
+        const isGameOver = processAttack(
+          opponent,
+          playerCharacter,
+          false,
+          playerHealth,
+          updatePlayerHealth,
+          (message) => setCombatLog(prev => [...prev, message])
+        );
+        if (!isGameOver) {
+          setCurrentTurn('player');
+        }
       }, 1000);
     }
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [currentTurn, opponent, playerCharacter, performAttack, isProcessing]);
+  }, [
+    currentTurn,
+    isProcessing,
+    processAttack,
+    opponent,
+    playerCharacter,
+    playerHealth,
+    updatePlayerHealth,
+    setCurrentTurn,
+    setCombatLog
+  ]);
 
   // Add turn indicator style
   const getTurnStyle = (turn: 'player' | 'opponent') => 
@@ -132,7 +252,7 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
         </div>
         {currentTurn === 'player' && !isProcessing && (
           <button
-            onClick={() => performAttack(playerCharacter, opponent, true)}
+            onClick={performAttack}
             className="wireframe-button"
           >
             Attack

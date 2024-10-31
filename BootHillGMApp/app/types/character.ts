@@ -46,4 +46,16 @@ export interface Character {
     /** Damage rating in dice notation (e.g., "1d6", "2d6") */
     damage: string;
   };
+
+  /** Optional combat state for saving/restoring combat */
+  combatState?: {
+    /** Current health of the player */
+    playerHealth: number;
+    /** Current health of the opponent */
+    opponentHealth: number;
+    /** Current turn in combat */
+    currentTurn: 'player' | 'opponent';
+    /** Combat log entries */
+    combatLog: string[];
+  };
 }

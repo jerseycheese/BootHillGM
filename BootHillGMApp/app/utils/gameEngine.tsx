@@ -20,6 +20,12 @@ export interface GameState {
   savedTimestamp?: number;
   isClient?: boolean;
   suggestedActions: SuggestedAction[];
+  combatState?: {
+    playerHealth: number;
+    opponentHealth: number;
+    currentTurn: 'player' | 'opponent';
+    combatLog: string[];
+  };
 }
 
 // Define all possible actions that can be dispatched to update the game state
@@ -43,7 +49,13 @@ export type GameEngineAction =
   | { type: 'SET_INVENTORY'; payload: InventoryItem[] }
   | { type: 'SET_SAVED_TIMESTAMP'; payload: number }
   | { type: 'SET_STATE'; payload: Partial<GameState> }
-  | { type: 'SET_SUGGESTED_ACTIONS'; payload: SuggestedAction[] };
+  | { type: 'SET_SUGGESTED_ACTIONS'; payload: SuggestedAction[] }
+  | { type: 'UPDATE_COMBAT_STATE'; payload: {
+      playerHealth: number;
+      opponentHealth: number;
+      currentTurn: 'player' | 'opponent';
+      combatLog: string[];
+    }};
 
 // Initial state of the game
 export const initialState: GameState = {
@@ -61,11 +73,11 @@ export const initialState: GameState = {
   savedTimestamp: undefined,
   isClient: false,
   suggestedActions: [],
+  combatState: undefined
 };
 
 // Reducer function to handle state updates based on dispatched actions
 export function gameReducer(state: GameState, action: GameEngineAction): GameState {
-  let newState: GameState;
   switch (action.type) {
     case 'SET_PLAYER':
       return { ...state, currentPlayer: action.payload };
@@ -74,11 +86,9 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'SET_LOCATION':
       return { ...state, location: action.payload };
     case 'ADD_ITEM': {
-      // Check if the item already exists in the inventory
       const existingItem = state.inventory.find(item => item.id === action.payload.id);
       if (existingItem) {
-        // If it exists, update the quantity
-        newState = {
+        return {
           ...state,
           inventory: state.inventory.map(item =>
             item.id === action.payload.id
@@ -87,10 +97,8 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           )
         };
       } else {
-        // If it's a new item, add it to the inventory
-        newState = { ...state, inventory: [...state.inventory, action.payload] };
+        return { ...state, inventory: [...state.inventory, action.payload] };
       }
-      return newState;
     }
     case 'REMOVE_ITEM':
       return {
@@ -98,7 +106,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         inventory: state.inventory.filter(item => item.id !== action.payload)
       };
     case 'USE_ITEM': {
-      // Simply decrement the quantity of the used item by 1
       const updatedInventory = state.inventory.map(item => {
         if (item.id === action.payload) {
           return { ...item, quantity: item.quantity - 1 };
@@ -139,12 +146,47 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'SET_GAME_PROGRESS':
       return { ...state, gameProgress: action.payload };
     case 'UPDATE_JOURNAL':
-      // Handle both single entry and array of entries
       return { ...state, journal: Array.isArray(action.payload) ? action.payload : [...state.journal, action.payload] };
+    
+    // Combat-related state updates
     case 'SET_COMBAT_ACTIVE':
-      return { ...state, isCombatActive: action.payload };
+      return {
+        ...state,
+        isCombatActive: Boolean(action.payload),
+        // Clear combat state only when combat is ending
+        ...((!action.payload) && {
+          opponent: null,
+          combatState: undefined
+        })
+      };
     case 'SET_OPPONENT':
       return { ...state, opponent: action.payload };
+    case 'UPDATE_COMBAT_STATE':
+      if (!action.payload) return state;
+      
+      // Update combat state while ensuring type consistency
+      return {
+        ...state,
+        isCombatActive: true, // Ensure combat flag is set when updating state
+        combatState: {
+          ...action.payload,
+          playerHealth: Number(action.payload.playerHealth),
+          opponentHealth: Number(action.payload.opponentHealth),
+          currentTurn: action.payload.currentTurn,
+          combatLog: [...(action.payload.combatLog || [])]
+        },
+        // Sync character and opponent health with combat state
+        character: state.character ? {
+          ...state.character,
+          health: Number(action.payload.playerHealth)
+        } : null,
+        opponent: state.opponent ? {
+          ...state.opponent,
+          health: Number(action.payload.opponentHealth)
+        } : null
+      };
+    
+    // Inventory management
     case 'UPDATE_ITEM_QUANTITY':
       return {
         ...state,
@@ -153,7 +195,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         ).filter(item => item.quantity > 0)
       };
     case 'CLEAN_INVENTORY':
-      newState = {
+      return {
         ...state,
         inventory: state.inventory.filter(item => 
           item.id &&
@@ -162,14 +204,33 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           !item.name.startsWith('REMOVED_ITEMS:')
         ),
       };
-      return newState;
     case 'SET_INVENTORY':
-      newState = { ...state, inventory: action.payload };
-      return newState;
+      return { ...state, inventory: action.payload };
     case 'SET_SAVED_TIMESTAMP':
       return { ...state, savedTimestamp: action.payload };
+    
+    // Full state restoration with proper type handling
     case 'SET_STATE':
-      return { ...state, ...action.payload };
+      return {
+        ...state,
+        ...action.payload,
+        // Ensure combat state is properly preserved with correct types
+        isCombatActive: Boolean(action.payload.isCombatActive),
+        opponent: action.payload.opponent ? {
+          ...action.payload.opponent,
+          health: Number(action.payload.opponent.health),
+          attributes: { ...action.payload.opponent.attributes },
+          skills: { ...action.payload.opponent.skills }
+        } : null,
+        combatState: action.payload.combatState ? {
+          ...action.payload.combatState,
+          playerHealth: Number(action.payload.combatState.playerHealth),
+          opponentHealth: Number(action.payload.combatState.opponentHealth),
+          currentTurn: action.payload.combatState.currentTurn,
+          combatLog: [...action.payload.combatState.combatLog]
+        } : undefined,
+        isClient: true
+      };
     case 'SET_SUGGESTED_ACTIONS':
       return { ...state, suggestedActions: action.payload };
     default:

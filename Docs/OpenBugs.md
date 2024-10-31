@@ -121,13 +121,12 @@ This document tracks bugs found during development and testing. Each bug entry s
   - Status: Open
   - Priority: High
 
-[BUG-030] Combat State Not Persisting After Page Navigation
-  - Description: When leaving the Game Session page during combat and returning, the combat state is not maintained.
-  - Steps to Reproduce:
-    1. Start a game session and enter combat
-    2. Navigate to the homepage
-    3. Return to the Game Session page
-  - Expected Behavior: Combat should resume from where it left off
-  - Actual Behavior: Combat state is lost, and the game resumes as if combat never occurred
+[BUG-031] Combat System Enhancement Opportunities
+  - Description: While core combat functionality is working, several enhancements would improve the experience
+  - Areas for Improvement:
+    - Visual feedback during combat turns
+    - More detailed combat log formatting
+    - Weapon-specific combat modifiers
+    - Enhanced critical hit system
   - Status: Open
-  - Priority: Medium
+  - Priority: Low

@@ -176,6 +176,14 @@
   - Shows roll results and hit chances
   - Maintains clear combat log messages
 
+- [x] As a player, I want my combat state to persist when I navigate away or refresh the page, so that I can resume battles where I left off.
+  **Test Plan:**
+  - Start a combat encounter and navigate away from the page
+  - Return to the game session
+  - Verify combat state is maintained
+  - Test with page refresh during combat
+  **Status:** Implemented. Combat state properly persists across navigation and page reloads.
+
 - [x] As a player, I want to use my character's skills and attributes in combat so that the fights feel personalized to my character.
   **Test Plan:**
   - Confirm that character skills and attributes affect combat calculations
@@ -196,6 +204,34 @@
   - Check that all combat actions are recorded in the log
   - Ensure the log is readable and doesn't interfere with other UI elements
   **Status:** Implemented. Combat log is scrollable with max height constraint.
+
+- [ ] As a player, I want visual feedback during combat turns, so that I can better understand the flow of battle.
+  **Test Plan:**
+  - Implement visual indicators for current turn
+  - Add animations or effects for combat actions
+  - Verify feedback is clear and enhances combat experience
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want more detailed combat log formatting, so that I can better understand what's happening in combat.
+  **Test Plan:**
+  - Implement enhanced formatting for combat log entries
+  - Add clear visual distinction between different types of combat actions
+  - Ensure important information stands out
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want weapon-specific combat modifiers, so that my choice of weapon matters more in combat.
+  **Test Plan:**
+  - Implement weapon-specific bonuses and penalties
+  - Test different weapons in combat scenarios
+  - Verify modifiers affect combat outcomes appropriately
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want an enhanced critical hit system, so that combat has more exciting moments.
+  **Test Plan:**
+  - Implement expanded critical hit rules
+  - Test critical hit effects in various combat scenarios
+  - Verify critical hits add excitement without unbalancing combat
+  **Status:** Not yet implemented.
 
 ### Inventory and Economy
 - [x] As a player, I want to view my character's inventory so that I know what items I have available.
@@ -308,8 +344,6 @@
   - Verify that a loading indicator appears when generating a random character
   - Check that the loading indicator is visible when transitioning between steps
   - Ensure the loading indicator disappears once content is loaded
-
-
 
 
 ### Technical Improvements
