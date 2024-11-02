@@ -21,6 +21,13 @@
   - Includes name regeneration capability
   - Names properly saved to character state
 
+- As a player, I want my character creation progress to be saved automatically after each step, so that I don't lose progress if I need to refresh or encounter an error.
+  **Test Plan:**
+  - Verify that progress is saved after each step completion
+  - Test recovery of progress after page refresh
+  - Ensure partial character data is properly stored and retrieved
+  **Status:** Implemented and tested. Features automatic saving and restoration of progress, with cleanup on completion.
+
 ## Game Session
 - As a player, I want to start a new game session so that I can begin my adventure in the Old West.
   **Test Plan:**

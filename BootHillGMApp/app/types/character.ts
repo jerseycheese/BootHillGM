@@ -3,6 +3,29 @@
  * Contains all essential information about a character including
  * their attributes, skills, and equipment.
  */
+
+/** Storage keys for character-related data */
+export const STORAGE_KEYS = {
+  CHARACTER_CREATION: 'character-creation-progress',
+  LAST_CHARACTER: 'lastCreatedCharacter',
+  COMPLETED_CHARACTER: 'completed-character'
+} as const;
+
+/** Steps in the character creation process */
+export const CHARACTER_CREATION_STEPS = [
+  { key: 'name', type: 'string' },
+  { key: 'speed', type: 'number' },
+  { key: 'gunAccuracy', type: 'number' },
+  { key: 'throwingAccuracy', type: 'number' },
+  { key: 'strength', type: 'number' },
+  { key: 'bravery', type: 'number' },
+  { key: 'experience', type: 'number' },
+  { key: 'shooting', type: 'number' },
+  { key: 'riding', type: 'number' },
+  { key: 'brawling', type: 'number' },
+  { key: 'summary', type: 'review' }
+] as const;
+
 export interface Character {
   /** Character's full name */
   name: string;

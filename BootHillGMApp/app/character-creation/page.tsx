@@ -8,6 +8,9 @@ import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from '../types/character';
 import { initialGameState } from '../types/campaign';
 
+// Storage key for character creation progress
+const STORAGE_KEY = 'character-creation-progress';
+
 // Initial character state with default values
 const initialCharacter: Character = {
   name: '',
@@ -27,17 +30,75 @@ const initialCharacter: Character = {
   },
 };
 
+/**
+ * Character Creation page component
+ * Implements a step-by-step character creation process with auto-save functionality.
+ * Progress is saved after each step and restored if the process is interrupted.
+ */
 export default function GameSession() {
   const router = useRouter();
-  useGame(); // Keep the hook call without destructuring
+  useGame();
   const { saveGame, cleanupState } = useCampaignState();
-  const [character, setCharacter] = useState<Character>(initialCharacter);
-  const [currentStep, setCurrentStep] = useState(0);
+
+  /**
+   * Initialize character state from localStorage if available.
+   * Falls back to initial character template if no saved progress exists
+   * or if saved data is invalid.
+   */
+  const [character, setCharacter] = useState<Character>(() => {
+    if (typeof window === 'undefined') return initialCharacter;
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        return data.character || initialCharacter;
+      } catch {
+        return initialCharacter;
+      }
+    }
+    return initialCharacter;
+  });
+
+  const [currentStep, setCurrentStep] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        return data.currentStep || 0;
+      } catch {
+        return 0;
+      }
+    }
+    return 0;
+  });
+
   const [aiPrompt, setAiPrompt] = useState('');
   const [userResponse, setUserResponse] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [characterSummary, setCharacterSummary] = useState('');
+
+  /**
+   * Automatically saves character creation progress to localStorage
+   * after any changes to character data or current step.
+   * Handles storage errors gracefully with user feedback.
+   */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        character,
+        currentStep,
+        lastUpdated: Date.now()
+      }));
+    } catch {
+      setError('Failed to save progress');
+    }
+  }, [character, currentStep]);
 
   // Define the structure of each step in the character creation process
   const steps = useMemo(() => [
@@ -54,8 +115,7 @@ export default function GameSession() {
         const prompt = await getCharacterCreationStep(currentStep, steps[currentStep].key);
         setAiPrompt(prompt);
       }
-    } catch (error) {
-      console.error('Error getting AI prompt:', error);
+    } catch {
       setAiPrompt('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -75,8 +135,7 @@ export default function GameSession() {
       const summary = await generateCharacterSummary(character);
       setCharacterSummary(summary);
       setAiPrompt("Review your character summary below. If you're satisfied, click 'Finish' to create your character.");
-    } catch (error) {
-      console.error('Error generating character summary:', error);
+    } catch {
       setCharacterSummary("An error occurred while generating the character summary. Please try again.");
     }
   }, [character]);
@@ -100,11 +159,13 @@ export default function GameSession() {
     if (currentStep < steps.length - 1) {
       if (validateInput()) {
         updateCharacter();
-        setCurrentStep(prev => prev + 1);
+        setCurrentStep((prev: number) => prev + 1);
         setUserResponse('');
         setIsLoading(true);
       }
     } else {
+      cleanupState();
+      localStorage.removeItem(STORAGE_KEY); // Clear saved progress
       finishCharacterCreation();
     }
   };
@@ -135,9 +196,7 @@ export default function GameSession() {
       // Move to the summary step to display the generated character
       setCurrentStep(steps.length - 1);
     } catch (error) {
-      console.error('Error generating character:', error);
-      // Display a user-friendly error message
-      setError(`Failed to generate character. Please try again. (Error: ${error instanceof Error ? error.message : 'Unknown error'})`);
+      setError('Failed to generate character. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -159,12 +218,14 @@ export default function GameSession() {
     });
   };
 
-  // Finalize character creation and navigate to game session
+  /**
+   * Completes the character creation process by:
+   * 1. Saving the final character
+   * 2. Cleaning up temporary progress data
+   * 3. Initializing game state
+   * 4. Navigating to game session
+   */
   const finishCharacterCreation = () => {
-    // Clean up existing state first
-    cleanupState();
-    
-    // Save the new character
     const newCharacterData = JSON.stringify(character);
     localStorage.setItem('lastCreatedCharacter', newCharacterData);
     
@@ -177,7 +238,6 @@ export default function GameSession() {
     };
     
     saveGame(initialState);
-    
     router.push('/game-session');
   };
 
@@ -195,9 +255,8 @@ export default function GameSession() {
         // Set a default message for the summary step
         setUserResponse("Character creation complete. Review your character.");
       }
-    } catch (error) {
-      console.error('Error generating field value:', error);
-      setError(`Failed to generate value. Please try again. (Error: ${error instanceof Error ? error.message : 'Unknown error'})`);
+    } catch {
+      setError('Failed to generate value. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -271,7 +330,7 @@ export default function GameSession() {
       >
         Generate Random Character
       </button>
-      <form onSubmit={handleSubmit} className="wireframe-section">
+      <form onSubmit={handleSubmit} className="wireframe-section" data-testid="character-form">
         {renderInput()}
         <button type="submit" className="wireframe-button" disabled={isLoading}>
           {currentStep < steps.length - 1 ? 'Next Step' : 'Finish Character Creation'}
