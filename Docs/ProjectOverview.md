@@ -25,11 +25,14 @@ BootHillGM is a web-based application providing an AI-driven virtual Game Master
 - [x] AI-powered Game Mastering for Western settings (limited scope)
 - [ ] AI-powered NPCs with basic persistence
 - [x] Simple Game Session and State Management
-- [ ] Boot Hill's percentile dice system for chance-based outcomes
+- [x] Boot Hill's combat system implementation
 - [x] Basic Character Sheet View
-- [ ] Simple Inventory System
+- [x] Simple Inventory System
 - [ ] Linear Quest System
 - [x] Uncensored AI responses for unrestricted player agency
+- [x] Combat log system with scrollable history
+- [x] Persistent game state across sessions
+- [x] Journal system with action summaries
 
 ### Post-MVP
 - [ ] Advanced AI-driven Character Creation with more options
@@ -82,10 +85,14 @@ The project has made significant progress:
   - User input processing
   - Structured AI responses for location tracking
   - Basic character status display
+  - Turn-based combat system with Boot Hill rules
+  - Scrollable combat log
+  - Persistent game state
 - Implemented uncensored AI responses for unrestricted player agency
 - Updated AI service to handle player actions without censorship or moral judgment
-- Implemented a basic Journal Viewer component and integrated it into the Game Session page
-- Added functionality to automatically create journal entries based on player actions
+- Implemented a Journal Viewer component with automatic entry creation
+- Added inventory system with item tracking
+- Implemented state persistence across navigation and page reloads
 
 ## 8. MVP Development Focus
 - Implement core gameplay loop for personal/family/friends use
@@ -112,6 +119,7 @@ The project's documentation is organized in the Docs folder:
 - ComponentBreakdown.md: Detailed component structure and relationships
 - ArchitectureDecisionRecord.md: Key architectural decisions and their rationales
 - UserStories.md: User stories and feature tracking
+- CompletedUserStories.md: Archive of completed user stories
 - OpenBugs.md: List of known bugs and issues
 - ClosedBugs.md: History of resolved bugs and their solutions
 

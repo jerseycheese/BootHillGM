@@ -5,14 +5,7 @@
 ## MVP Features
 
 ### Character Creation
-- [x] As a player, I want to create a character using AI-guided prompts so that I can quickly generate a unique persona for the game.
-  **Test Plan:**
-  - Verify that AI prompts are generated and displayed to the user
-  - Check that user input is correctly captured and processed
-  - Ensure that a complete character is created based on user responses
-  **Status:** Implemented.
-
-- [ ] As a player, I want to view my character's attributes (Strength, Agility, Intelligence) so that I understand my character's capabilities.
+- As a player, I want to view my character's attributes (Strength, Agility, Intelligence) so that I understand my character's capabilities.
   **Test Plan:**
   - Confirm that all required attributes are displayed
   - Verify that attribute values are within expected ranges
@@ -54,44 +47,8 @@
   - Check that rolls follow Boot Hill rules
   - Verify dice roll explanation appears before the Next Step button
 
-
 ### Game Session
-- [x] As a player, I want to start a new game session so that I can begin my adventure in the Old West.
-  **Test Plan:**
-  - Verify that a new game session initializes correctly
-  - Ensure all necessary game state variables are set to their starting values
-  - Check that the player's character data is loaded into the session
-  **Status:** Implemented.
-
-- [x] As a player, I want to interact with the AI Game Master through text input so that I can make decisions and progress the story.
-  **Test Plan:**
-  - Test various types of player input (commands, dialogue choices, etc.)
-  - Verify that the AI responds appropriately to different inputs
-  - Ensure the game state updates correctly based on player decisions
-  **Status:** Implemented.
-
-- [x] As a player, I want to see my previous actions and their outcomes in the narrative, so that I can follow the story progression
-  **Test Plan:**
-  - Verify that player actions are recorded in the narrative
-  - Check that outcomes are clearly displayed
-  - Ensure narrative history is preserved during the session
-  **Status:** Implemented.
-
-- [x] As a player, I want journal entries to show concise summaries of my actions, so that I can easily review my adventure
-  **Test Plan:**
-  - Verify that journal entries are created for significant actions
-  - Check that summaries are clear and concise
-  - Ensure journal entries persist across game sessions
-  **Status:** Implemented.
-
-- [x] As a player, I want my inventory to update correctly when I find or use items, so that I can track my possessions accurately
-  **Test Plan:**
-  - Test adding items through narrative actions
-  - Verify item removal when used
-  - Check that inventory persists across sessions
-  **Status:** Implemented.
-
-- [ ] As a player, I want to view the game narrative and dialogue in a scrollable text display so that I can follow the story easily.
+- As a player, I want to view the game narrative and dialogue in a scrollable text display so that I can follow the story easily.
   **Test Plan:**
   - Check that new narrative text is added to the display correctly
   - Verify that the text display scrolls automatically to show new content
@@ -111,7 +68,7 @@
   - Check that saved state includes character information, current location, and game progress
   - Ensure that saving occurs without noticeable impact on game performance
 
-- [ ] As a player, I want to be able to resume my game from where I left off, so that I can continue my adventure across multiple play sessions.
+- As a player, I want to be able to resume my game from where I left off, so that I can continue my adventure across multiple play sessions.
   **Test Plan:**
   - Test loading a saved game from the main menu
   - Verify that the game resumes with the correct character, location, and narrative context
@@ -138,74 +95,16 @@
   - Check that the format remains consistent after taking damage or healing
   - Test that the display handles edge cases (0 health, max health, etc.)
 
-
 ### Journal and Campaign Persistence
-
-- [x] As a player, I want to view my journal entries during a game session, so that I can keep track of important story events.
-  **Test Plan:**
-  - Implement a basic UI for viewing journal entries
-  - Verify that journal entries are displayed in chronological order
-  - Ensure that the journal UI is accessible during gameplay without disrupting the game flow
-  **Status:** Implemented. Journal entries now include narrative summaries.
-
-- [x] As a player, I want to see narrative summaries of my actions in the journal, so that I can better recall and understand the story progression.
-  **Test Plan:**
-  - Verify that the AI service generates appropriate narrative summaries for different types of player actions
-  - Ensure that generated summaries are concise (1-2 sentences) and informative
-  - Check that narrative summaries are correctly added to journal entries
-  - Verify that the JournalViewer displays narrative summaries clearly
-  **Status:** Implemented. AI-generated narrative summaries are now included in journal entries.
-
-- [ ] As a player, I want my game progress and journal entries to persist when I navigate away from the game session, so that I can resume my game where I left off.
+- As a player, I want my game progress and journal entries to persist when I navigate away from the game session, so that I can resume my game where I left off.
   **Test Plan:**
   - Start a game session and make several interactions
   - Navigate away from the game session and then return
   - Verify that the game state, including journal entries, is restored correctly
   **Status:** Partially implemented, needs testing.
 
-
 ### Combat System
-- [x] As a player, I want to engage in simple turn-based combat so that I can experience the dangers of the Old West.
-  **Test Plan:**
-  - Verify that combat initializes correctly with proper turn order
-  - Test that each combatant can perform actions on their turn
-  - Ensure combat resolves correctly (victory, defeat, or escape)
-  **Status:** Implemented with Boot Hill combat mechanics and turn structure.
-  - Combat uses Boot Hill rules for hit calculations
-  - Includes automated opponent turns with 1-second delay
-  - Shows roll results and hit chances
-  - Maintains clear combat log messages
-
-- [x] As a player, I want my combat state to persist when I navigate away or refresh the page, so that I can resume battles where I left off.
-  **Test Plan:**
-  - Start a combat encounter and navigate away from the page
-  - Return to the game session
-  - Verify combat state is maintained
-  - Test with page refresh during combat
-  **Status:** Implemented. Combat state properly persists across navigation and page reloads.
-
-- [x] As a player, I want to use my character's skills and attributes in combat so that the fights feel personalized to my character.
-  **Test Plan:**
-  - Confirm that character skills and attributes affect combat calculations
-  - Test different character builds to ensure varied combat experiences
-  - Verify that skill/attribute improvements reflect in combat performance
-  **Status:** Implemented. Combat system uses character attributes for hit chance calculations.
-
-- [x] As a player, I want to see the results of combat actions quickly so that fights maintain a fast pace.
-  **Test Plan:**
-  - Measure the time between player action and result display
-  - Ensure combat messages are clear and concise
-  - Verify that the UI updates promptly to reflect combat outcomes
-  **Status:** Implemented. Combat actions resolve immediately with clear feedback.
-
-- [x] As a player, I want to see a scrollable combat log, so that I can review the entire combat history without it taking up too much screen space.
-  **Test Plan:**
-  - Verify that the combat log is scrollable
-  - Check that all combat actions are recorded in the log
-  - Ensure the log is readable and doesn't interfere with other UI elements
-  **Status:** Implemented. Combat log is scrollable with max height constraint.
-
-- [ ] As a player, I want visual feedback during combat turns, so that I can better understand the flow of battle.
+- As a player, I want visual feedback during combat turns, so that I can better understand the flow of battle.
   **Test Plan:**
   - Implement visual indicators for current turn
   - Add animations or effects for combat actions
@@ -234,21 +133,7 @@
   **Status:** Not yet implemented.
 
 ### Inventory and Economy
-- [x] As a player, I want to view my character's inventory so that I know what items I have available.
-  **Test Plan:**
-  - Verify that all items in the inventory are displayed correctly
-  - Test adding and removing items from the inventory
-  - Ensure the inventory display updates in real-time based on narrative actions
-  **Status:** Implemented. Inventory component has been added to the game session.
-
-- [x] As a player, I want to use items from my inventory so that I can interact with the game world.
-  **Test Plan:**
-  - Test using different types of items through the Use button
-  - Verify that items are removed from inventory when used
-  - Ensure that items can't be used if they're not in the inventory
-  **Status:** Implemented. Item usage is now handled through dedicated Use buttons with proper state management.
-
-- [ ] As a player, I want to see short descriptions of items in my inventory, so I can understand their purpose and any gameplay-relevant stats.
+- As a player, I want to see short descriptions of items in my inventory, so I can understand their purpose and any gameplay-relevant stats.
   **Test Plan:**
   - Verify that each item in the inventory has a short description
   - Verify that item effects are applied correctly
@@ -262,7 +147,7 @@
   - Ensure inventory and money totals update correctly after transactions
   **Status:** Not yet implemented.
 
-- [ ] As a player, I want to see a visual notification when new items are added to my inventory, so that I'm aware of my character's changing possessions without constantly checking the inventory.
+- As a player, I want to see a visual notification when new items are added to my inventory, so that I'm aware of my character's changing possessions without constantly checking the inventory.
   **Test Plan:**
   - Implement and test a notification system for inventory updates
   - Verify that notifications are visible but not intrusive
@@ -270,53 +155,36 @@
   - Ensure that multiple rapid inventory changes are handled appropriately
   **Status:** Not yet implemented.
 
-- [ ] As a player, I want to have the option to end combat early if my opponent agrees, so that I can resolve conflicts peacefully when possible.
+- As a player, I want to have the option to end combat early if my opponent agrees, so that I can resolve conflicts peacefully when possible.
   **Test Plan:**
   - Implement a "Call Truce" button in the combat interface
   - Verify that using this option prompts the AI to consider ending the combat
   - Ensure that combat can end early if the AI agrees to the truce
   **Status:** Not yet implemented.
 
-
-### Game State
-- [x] As a player, I want to save my game progress so that I can continue my adventure later.
-  **Test Plan:**
-  - Verify that all relevant game state data is included in the save
-  - Test saving at different points in the game
-  - Ensure saved games are stored correctly and can be accessed later
-  **Status:** Implemented. Automatic saving occurs 10 seconds after state changes, and manual saving is available.
-
-- [x] As a player, I want to load a saved game so that I can resume my previous adventure.
-  **Test Plan:**
-  - Verify that loading a saved game restores all game state correctly
-  - Test loading games from different points in the story
-  - Ensure the game continues seamlessly from the loaded state
-  **Status:** Implemented. Game state is loaded automatically when returning to the game session.
-
-
 ### Setting and Atmosphere
-- [ ] As a player, I want to explore one frontier town and its immediate surroundings so that I can immerse myself in a focused Western setting.
+- As a player, I want to explore one frontier town and its immediate surroundings so that I can immerse myself in a focused Western setting.
   **Test Plan:**
   - Verify that all areas of the town and surroundings are accessible
   - Test interactions with various locations and objects in the environment
   - Ensure the setting is consistently portrayed throughout the game
   **Status:** Not yet implemented.
 
-- [ ] As a player, I want to experience themes of survival, law vs. outlaw, and frontier justice so that I feel like I'm in an authentic Western story.
+- As a player, I want to experience themes of survival, law vs. outlaw, and frontier justice so that I feel like I'm in an authentic Western story.
   **Test Plan:**
   - Verify that these themes are present in the main storyline and side quests
   - Test player choices that relate to these themes
   - Ensure the game's atmosphere consistently reflects these Western themes
   **Status:** Not yet implemented.
 
-- [ ] As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
+- As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
   **Test Plan:**
   - Verify that a loading indicator appears when generating a random character
   - Check that the loading indicator is visible when transitioning between steps
   - Ensure the loading indicator disappears once content is loaded
   **Status:** Not yet implemented.
 
-- [ ] As a player, I want to start with 4-5 genre-appropriate, inexpensive (non-combat) items, so that I have a realistic and thematic starting inventory.
+- As a player, I want to start with 4-5 genre-appropriate, inexpensive (non-combat) items, so that I have a realistic and thematic starting inventory.
   **Test Plan:**
   - Verify that each new character starts with 4-5 items
   - Check that the items are appropriate for the Western genre
@@ -324,181 +192,125 @@
   - Confirm that the items are displayed correctly in the character's inventory
   **Status:** Not yet implemented.
 
-
 ### UI/UX Improvements
-- [ ] As a developer, I want to add identifying IDs/classes to page markup, including specific classes for Boot Hill rules tables and dice roll results.
+- As a developer, I want to add identifying IDs/classes to page markup, including specific classes for Boot Hill rules tables and dice roll results.
   **Test Plan:**
   - Review all components and add appropriate IDs and classes
   - Verify that added IDs and classes are unique and descriptive
   - Test that added identifiers don't break existing styles or functionality
   - Ensure Boot Hill rules tables and dice roll results have clear identifying classes
 
-- [ ] As a player, I want my character creation progress to be saved automatically after each step, so that I don't lose progress if I need to refresh or encounter an error.
+- As a player, I want my character creation progress to be saved automatically after each step, so that I don't lose progress if I need to refresh or encounter an error.
   **Test Plan:**
   - Verify that progress is saved after each step completion
   - Test recovery of progress after page refresh
   - Ensure partial character data is properly stored and retrieved
 
-- [ ] As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
+- As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
   **Test Plan:**
   - Verify that a loading indicator appears when generating a random character
   - Check that the loading indicator is visible when transitioning between steps
   - Ensure the loading indicator disappears once content is loaded
 
-
 ### Technical Improvements
-- [x] As a developer, I want to use a dispatch function for state updates so that I can manage game state more efficiently and consistently.
-  **Test Plan:**
-  - Verify that all state updates use the dispatch function
-  - Check that different types of state updates (character, inventory, etc.) work correctly
-  - Ensure that the state remains consistent across different components
-  **Status:** Implemented. The game session now uses a dispatch function for state updates.
-
-- [ ] As a developer, I want to add identifying IDs/classes to page markup to make debugging and testing easier.
+- As a developer, I want to add identifying IDs/classes to page markup to make debugging and testing easier.
   **Test Plan:**
   - Review all components and add appropriate IDs and classes
   - Verify that added IDs and classes are unique and descriptive
   - Test that added identifiers don't break existing styles or functionality
 
-- [x] As a player, I want to see three contextual action buttons suggested by the AI, alongside the free text input option, so that I have quick access to logical choices while maintaining freedom of action.
-  **Implementation Status:**
-  - ✓ Color-coded buttons for different action types (basic/combat/interaction)
-  - ✓ Tooltips provide context for each suggested action
-  - ✓ Free text input maintained for full player freedom
-  - ✓ Buttons dynamically update based on game context
-  - ✓ Actions properly separated from narrative text
-
-- [x] As a player, I want the narrative to focus on describing the scene and events, without including suggested actions in the text itself, so that the narrative flow is cleaner and more immersive.
-  **Implementation Status:**
-  - ✓ Clean narrative focused solely on scene descriptions and events
-  - ✓ Suggested actions moved to dedicated UI elements
-  - ✓ Improved readability and immersion
-  - ✓ AI responses properly structured to separate narrative from suggestions
-
-- [ ] As a user, I want to see character attributes and skills in title case for better readability.
+- As a user, I want to see character attributes and skills in title case for better readability.
   **Test Plan:**
   - Check all instances where character attributes and skills are displayed
   - Verify that attributes and skills are consistently displayed in title case
 
-- [ ] As a user, I want the journal to be on its own separate page, so that it doesn't take up too much space on the Game Session page.
+- As a user, I want the journal to be on its own separate page, so that it doesn't take up too much space on the Game Session page.
   **Test Plan:**
   - Create a new page for the journal
   - Add navigation to the journal page from the Game Session page
   - Verify that the journal displays correctly on its own page
   - Ensure that the Game Session page layout improves with the journal removed
 
-- [ ] As a user, I want to see a more condensed combat log, so that I can quickly review the combat history without excessive scrolling.
+- As a user, I want to see a more condensed combat log, so that I can quickly review the combat history without excessive scrolling.
   **Test Plan:**
   - Redesign the combat log to display information more concisely
   - Ensure that all important combat information is still visible
   - Verify that the condensed log is easy to read and understand
 
-- [ ] As a user, I want to see weapon information in each combat turn, so that I know what weapons are being used.
+- As a user, I want to see weapon information in each combat turn, so that I know what weapons are being used.
   **Test Plan:**
   - Update the combat system to include weapon information in each turn
   - Verify that weapon names are displayed correctly for both player and opponent
   - Ensure that weapon changes during combat are reflected in the log
 
-- [ ] As a user, I want to see the dice rolls for each combat turn, so that I understand how the results are determined.
+- As a user, I want to see the dice rolls for each combat turn, so that I understand how the results are determined.
   **Test Plan:**
   - Implement dice roll display in the combat system
   - Verify that displayed rolls align with Boot Hill rules
   - Ensure that the relationship between rolls and outcomes is clear
 
-- [ ] As a user, I want to see my actions emphasized in the narrative, so that I can easily distinguish them from the rest of the text.
+- As a user, I want to see my actions emphasized in the narrative, so that I can easily distinguish them from the rest of the text.
   **Test Plan:**
   - Implement visual distinction for player actions in the narrative
   - Verify that player actions are easily identifiable
   - Ensure that the emphasis doesn't disrupt the overall readability of the narrative
 
-
 ## Post-MVP Features
 
 ### Advanced Character Creation
-- [ ] As a player, I want to choose from multiple character backgrounds so that I can create more diverse characters.
-- [ ] As a player, I want to customize my character's appearance so that I can better visualize my persona.
-- [ ] As a player, I want to select from an expanded list of skills (20+ skills) so that I can create more specialized characters.
+- As a player, I want to choose from multiple character backgrounds so that I can create more diverse characters.
+- As a player, I want to customize my character's appearance so that I can better visualize my persona.
+- As a player, I want to select from an expanded list of skills (20+ skills) so that I can create more specialized characters.
 
 ### Enhanced Game Session
-- [ ] As a player, I want to explore multiple towns and wilderness areas so that I can experience a more expansive Old West setting.
-- [ ] As a player, I want to engage in branching narratives so that my choices have more significant impacts on the story.
-- [ ] As a player, I want to experience dynamic world events so that the game world feels alive and changing.
+- As a player, I want to explore multiple towns and wilderness areas so that I can experience a more expansive Old West setting.
+- As a player, I want to engage in branching narratives so that my choices have more significant impacts on the story.
+- As a player, I want to experience dynamic world events so that the game world feels alive and changing.
 
 ### Expanded Combat System
-- [ ] As a player, I want to use advanced combat tactics so that fights are more strategic and engaging.
-- [ ] As a player, I want to engage in duels with specific NPCs so that I can experience iconic Western showdowns.
-- [ ] As a player, I want to consider positioning and environmental factors in combat so that battles feel more realistic.
-- [ ] As a player, I want to experience critical hits and misses in combat to add more excitement and unpredictability to fights.
-- [ ] As a player, I want to use different weapons and items during combat to add more tactical depth to battles.
+- As a player, I want to use advanced combat tactics so that fights are more strategic and engaging.
+- As a player, I want to engage in duels with specific NPCs so that I can experience iconic Western showdowns.
+- As a player, I want to consider positioning and environmental factors in combat so that battles feel more realistic.
+- As a player, I want to experience critical hits and misses in combat to add more excitement and unpredictability to fights.
+- As a player, I want to use different weapons and items during combat to add more tactical depth to battles.
 
 ### NPC Interaction
-- [ ] As a player, I want to form relationships with NPCs so that the game world feels more dynamic and responsive to my actions.
-- [ ] As a player, I want to recruit NPC companions so that I can form a posse for adventures.
-- [ ] As a player, I want NPCs to remember past interactions so that the world feels persistent and my actions have consequences.
+- As a player, I want to form relationships with NPCs so that the game world feels more dynamic and responsive to my actions.
+- As a player, I want to recruit NPC companions so that I can form a posse for adventures.
+- As a player, I want NPCs to remember past interactions so that the world feels persistent and my actions have consequences.
 
 ### Economy and Progression
-- [ ] As a player, I want to earn and manage in-game currency so that I can experience the economic aspects of the Old West.
-- [ ] As a player, I want to improve my character's skills and attributes over time so that I can experience long-term character growth.
-- [ ] As a player, I want to engage with a complex economic system with supply/demand dynamics so that the game world feels more realistic.
+- As a player, I want to earn and manage in-game currency so that I can experience the economic aspects of the Old West.
+- As a player, I want to improve my character's skills and attributes over time so that I can experience long-term character growth.
+- As a player, I want to engage with a complex economic system with supply/demand dynamics so that the game world feels more realistic.
 
 ### Enhanced UI and Media
-- [ ] As a player, I want to see thematic graphics and animations so that the game is more visually engaging.
-- [ ] As a player, I want to use an interactive map for navigation and exploration so that I can better understand the game world.
-- [ ] As a player, I want to hear ambient sounds and music so that I feel more immersed in the Western setting.
+- As a player, I want to see thematic graphics and animations so that the game is more visually engaging.
+- As a player, I want to use an interactive map for navigation and exploration so that I can better understand the game world.
+- As a player, I want to hear ambient sounds and music so that I feel more immersed in the Western setting.
 
 ### Campaign Persistence
-- [x] As a player, I want my game progress to persist when I navigate away from the game session, so that I can resume my game where I left off.
-  **Test Plan:**
-  - Start a game session and make several interactions
-  - Navigate away from the game session and then return
-  - Verify that the game state, including journal entries, is restored correctly
-  **Status:** Implemented. State properly persists and restores after navigation.
-
-- [x] As a player, I want to see a clean state when creating a new character, so that my previous game doesn't interfere with my new character.
-  **Test Plan:**
-  - Clear all storage
-  - Create new character
-  - Verify game session starts fresh
-  - Create another character
-  - Verify previous state is not restored
-  **Status:** Implemented. State cleanup works correctly during character creation.
-
-- [ ] As a player, I want important story information to be recorded in a journal, so that I can keep track of the game's narrative.
+- As a player, I want important story information to be recorded in a journal, so that I can keep track of the game's narrative.
   **Test Plan:**
   - Verify that significant story events are automatically added to the journal
   - Check that journal entries include a timestamp and relevant content
   - Ensure that the journal is saved as part of the campaign state
 
-- [ ] As a player, I want the AI Game Master to remember important story details from previous sessions, so that the narrative remains consistent across play sessions.
+- As a player, I want the AI Game Master to remember important story details from previous sessions, so that the narrative remains consistent across play sessions.
   **Test Plan:**
   - Test that AI responses reference events and information from previous play sessions
   - Verify that the AI maintains consistent NPC personalities and plot points across sessions
   - Check that the AI doesn't contradict previously established story elements
 
-- [ ] As a player, I want to be able to view my journal entries, so that I can refresh my memory on important story details.
+- As a player, I want to be able to view my journal entries, so that I can refresh my memory on important story details.
   **Test Plan:**
   - Implement a basic UI for viewing journal entries
   - Verify that journal entries are displayed in chronological order
   - Ensure that the journal UI is accessible during gameplay without disrupting the game flow
 
-- [ ] As a player, I want combat results to be automatically added to my journal, so that I can keep track of significant battles and their outcomes.
+- As a player, I want combat results to be automatically added to my journal, so that I can keep track of significant battles and their outcomes.
   **Test Plan:**
   - Confirm that a summary of each combat is added to the journal upon completion
   - Verify that the combat entry includes relevant details (opponent, outcome, any significant events)
   - Check that the journal entry is formatted consistently with other entries
   **Status:** Not yet implemented.
-
-
-## Completed Tasks
-- [x] As a developer, I want to set up the Next.js project structure so that I have a solid foundation for the app.
-- [x] As a developer, I want to implement basic state management using React Context so that I can manage game state effectively.
-- [x] As a developer, I want to create a responsive layout for the main pages so that the app is usable on various devices.
-- [x] As a player, I want to view the main menu of the game so that I can navigate to different sections of the app.
-- [x] As a player, I want complete freedom of action without AI censorship or resistance, so that I can fully immerse myself in the game world and make any choices I desire.
-- [x] As a developer, I want to implement a basic combat system to allow players to engage in turn-based fights with AI-generated opponents.
-- [x] As a developer, I want to implement proper state management in the GameSession component to prevent unnecessary page reloads and improve user experience.
-- [x] As a developer, I want to update the CombatSystem integration in the GameSession component to ensure smooth transitions between normal gameplay and combat scenarios.
-- [x] As a developer, I want to implement proper journal narrative summaries for player actions.
-- [x] As a developer, I want to implement proper state management in the GameSession component to prevent unnecessary page reloads and improve user experience.
-- [x] As a developer, I want to ensure reliable game state initialization to provide a consistent starting experience for players.
-- [x] As a player, I want my initial game state (narrative, inventory) to be properly set up when starting a new game.
