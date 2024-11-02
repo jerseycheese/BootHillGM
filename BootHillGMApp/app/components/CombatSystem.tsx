@@ -113,10 +113,20 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
     }
   }, [playerHealth, opponentHealth, currentTurn, combatLog, debouncedUpdateCombatState]);
 
-  // Notify parent of player health changes
+  // Notify parent of player health changes and trigger immediate state update
   useEffect(() => {
     onPlayerHealthChange(playerHealth);
-  }, [playerHealth, onPlayerHealthChange]);
+    // Trigger immediate state update for combat state
+    dispatch({
+      type: 'UPDATE_COMBAT_STATE',
+      payload: {
+        playerHealth,
+        opponentHealth,
+        currentTurn,
+        combatLog
+      }
+    });
+  }, [playerHealth, opponentHealth, currentTurn, combatLog, onPlayerHealthChange, dispatch]);
 
   // Wrapper for setPlayerHealth that also notifies parent
   const updatePlayerHealth = useCallback((newHealth: number) => {
@@ -242,7 +252,7 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
   return (
     <div className="combat-system wireframe-section">
       <div className="combat-actions">
-        <div className="turn-indicator mb-2">
+        <div className="turn-indicator mb-2 flex">
           <div className={`p-2 ${getTurnStyle('player')}`}>
             Player&#39;s Turn
           </div>

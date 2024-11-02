@@ -181,6 +181,23 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
     state
   ]);
 
+  // Add beforeunload handler for combat state
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (state.isCombatActive && state.combatState) {
+        // Force immediate save before unload
+        localStorage.setItem('campaignState', JSON.stringify({
+          ...state,
+          savedTimestamp: Date.now(),
+          isClient: false
+        }));
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [state]);
+
   /**
    * Loads and restores the game state from localStorage.
    * Ensures proper type conversion for combat-related numerical values
