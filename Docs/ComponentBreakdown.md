@@ -89,17 +89,38 @@
 - **Potential Challenges:** Ensuring consistent state persistence across game sessions
 
 ### 9. CombatSystem
-- **Main Functionality:** Manages simplified combat mechanics
+- **Main Functionality:** Manages turn-based combat encounters
 - **Key Components:**
-  - [x] CombatSystem (components/CombatSystem.tsx)
-  - [ ] ActionResolver (utils/ActionResolver.ts)
+  - CombatSystem (components/CombatSystem.tsx)
+    - Handles combat UI and turn management
+    - Uses useCombatEngine hook for logic
+    - Renders combat status, controls, and log
+    - Auto-processes opponent turns after delay
+  - useCombatEngine (hooks/useCombatEngine.ts)
+    - Manages combat state and calculations
+    - Handles attack calculations and damage
+    - Processes combat outcomes
+    - Maintains combat log
+    - Integrates with game state through dispatch
+  - Combat UI Components:
+    - CombatStatus: Displays health for both combatants
+    - CombatControls: Manages player actions
+    - CombatLog: Shows combat history
 - **Implemented Features:**
-  - Handles optional opponents (Character | null)
-  - Implements null checks before performing opponent-related actions
-  - Uses useEffect to update opponent health when the opponent changes
-  - Enhances error handling and edge case management
-  - Comprehensive test coverage including rendering with/without opponent, player attacks, and combat end scenarios
-- **Potential Challenges:** Implementing turn-based logic, integrating with game state
+  - Separation of combat logic from UI presentation
+  - Turn-based combat system with auto-processing for opponent turns
+  - Health tracking and damage calculations
+  - Combat log with detailed action results
+  - State persistence through game engine integration
+  - Comprehensive test coverage for combat scenarios
+- **Status:** Implemented with improved architecture
+  - Combat logic extracted to dedicated hook
+  - UI components focused on presentation
+  - Enhanced maintainability and testability
+- **Potential Challenges:** 
+  - Balancing combat difficulty
+  - Handling edge cases in combat state
+  - Maintaining performance with state updates
 
 ### 10. UIComponents
 - **Main Functionality:** Reusable UI elements for consistent look and feel
@@ -211,3 +232,4 @@
 This order allows for building core functionality first, then gradually adding more complex systems. It's designed to be more manageable for a single developer new to React and Next.js, allowing for learning and iterative development.
 
 Note: While developing these components, you may need to work on multiple components simultaneously due to their interconnected nature. This order is a general guideline and may need adjustment based on your learning progress and specific implementation challenges.
+
