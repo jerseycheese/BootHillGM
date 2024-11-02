@@ -25,7 +25,7 @@ export default function Navigation() {
         dispatch({ type: 'SET_STATE', payload: loadedState });
       }
     }
-  }, [state.character, loadGame, dispatch]);
+  }, [state.character, loadGame, state, dispatch]);
 
   return (
     <nav className="bg-gray-800 p-4">

@@ -4,13 +4,14 @@ import { initialGameState } from '../types/campaign';
 import { getAIResponse } from '../utils/aiService';
 import { INITIAL_INVENTORY } from '../utils/constants';
 
+// Hook to handle game session initialization and state management
 export const useGameInitialization = () => {
   const { state, dispatch, saveGame } = useCampaignState();
   const [isInitializing, setIsInitializing] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const initializationRef = useRef(false);
 
-  // Add immediate cleanup check
+  // Handle initial client-side setup and cleanup
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const isNewCharacter = sessionStorage.getItem('initializing_new_character');
@@ -19,19 +20,25 @@ export const useGameInitialization = () => {
       }
     }
     setIsClient(true);
+
+    // Reset initialization state when component unmounts
+    return () => {
+      initializationRef.current = false;
+      setIsInitializing(false);
+    };
   }, [dispatch]);
 
+  // Initialize a new game session or restore existing one
   const initializeGameSession = useCallback(async () => {
     if (!state || !dispatch) return null;
 
     setIsInitializing(true);
 
     try {
-      // Get last created character
       const lastCharacterJSON = localStorage.getItem('lastCreatedCharacter');
       const characterData = lastCharacterJSON ? JSON.parse(lastCharacterJSON) : null;
 
-      // Always initialize new session if initialization flag is set
+      // Handle new character initialization
       if (sessionStorage.getItem('initializing_new_character')) {
         sessionStorage.removeItem('initializing_new_character');
 
@@ -41,7 +48,7 @@ export const useGameInitialization = () => {
           []
         );
 
-        const freshState = {
+        return {
           ...initialGameState,
           character: characterData,
           narrative: response.narrative,
@@ -50,14 +57,14 @@ export const useGameInitialization = () => {
           savedTimestamp: Date.now(),
           isClient: true
         };
-        return freshState;
       }
 
-      // If we have existing state with narrative, use it
+      // Use existing state if available
       if (state.narrative && state.narrative.length > 0) {
         return state;
       }
 
+      // Initialize state for existing character
       const response = await getAIResponse(
         `Initialize a new game session for ${state.character?.name || 'Unknown'}. 
         Provide a brief introduction to the game world and the character's current situation. 
@@ -67,7 +74,7 @@ export const useGameInitialization = () => {
         []
       );
 
-      const initializedState = {
+      return {
         ...state,
         narrative: response.narrative,
         location: response.location || 'Unknown Location',
@@ -75,8 +82,6 @@ export const useGameInitialization = () => {
         savedTimestamp: Date.now(),
         isClient: true
       };
-
-      return initializedState;
 
     } catch (error) {
       console.error('Error in initializeGameSession:', error);
@@ -86,13 +91,13 @@ export const useGameInitialization = () => {
     }
   }, [state, dispatch]);
 
+  // Manage game initialization lifecycle
   useEffect(() => {
     const initGame = async () => {
       if (!isClient || !state || !dispatch) {
         return;
       }
 
-      // Add extra check for initialization flag
       if (!initializationRef.current || sessionStorage.getItem('initializing_new_character')) {
         initializationRef.current = true;
 
@@ -103,6 +108,11 @@ export const useGameInitialization = () => {
         }
       }
     };
+
+    // Reset initialization if state is cleared
+    if (!state.character) {
+      initializationRef.current = false;
+    }
 
     initGame();
   }, [isClient, state, dispatch, saveGame, initializeGameSession]);

@@ -1,4 +1,4 @@
-# BootHillGM opem Bugs
+# BootHillGM Open Bugs
 
 This document tracks bugs found during development and testing. Each bug entry should include a description, steps to reproduce, expected behavior, actual behavior, and current status.
 
@@ -11,17 +11,6 @@ This document tracks bugs found during development and testing. Each bug entry s
   - Actual Behavior: Story progresses at the same pace regardless of setting.
   - Status: Open
   - Priority: Medium
-
-[BUG-005] Incomplete Game State Restoration
-  - Description: Some elements of the game state are not properly restored when loading a saved game.
-  - Steps to Reproduce: 
-    1. Play a game session and make various character and world state changes.
-    2. Save the game and exit.
-    3. Load the saved game and check all game state elements.
-  - Expected Behavior: All game state elements should be fully restored to their saved state.
-  - Actual Behavior: Some state elements (e.g., NPC relationships, quest flags) are not correctly restored.
-  - Status: Open
-  - Priority: High
 
 [BUG-021] Delayed Content Update and Incorrect Step Information on Character Summary
   - Description: When generating a random character, there's a delay in updating the UI, and outdated step information is briefly shown.
@@ -109,17 +98,6 @@ This document tracks bugs found during development and testing. Each bug entry s
   - Actual Behavior: Player actions blend in with the rest of the narrative text
   - Status: Open
   - Priority: Medium
-
-[BUG-029] Game State Not Persisting Across Pages
-  - Description: Character Sheet page shows "No character found" message despite having an active character in the game session.
-  - Steps to Reproduce:
-    1. Generate a character and start a game session
-    2. Navigate to the Character Sheet page
-  - Expected Behavior: Character Sheet should display the current character's information
-  - Actual Behavior: Page shows "No character found" message
-  - Root Cause: Likely issue with state persistence between pages
-  - Status: Open
-  - Priority: High
 
 [BUG-032] Combat System UI Polish Needed
   - Description: While the combat system has been refactored for better maintainability, some UI improvements could enhance user experience

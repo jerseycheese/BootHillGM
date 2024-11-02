@@ -38,3 +38,15 @@ This document tracks resolved bugs in the BootHillGM project. For active bugs, s
 - Status: Fixed
 - Resolution: Implemented enhanced text cleaning in combatUtils.ts to remove all metadata markers
 - Closed Date: 2024-10-31
+
+[BUG-005] Incomplete Game State Restoration
+- Description: Some elements of the game state are not properly restored when loading a saved game.
+- Steps to Reproduce: 
+  1. Play a game session and make various character and world state changes.
+  2. Save the game and exit.
+  3. Load the saved game and check all game state elements.
+- Expected Behavior: All game state elements should be fully restored to their saved state.
+- Actual Behavior: Some state elements (e.g., NPC relationships, quest flags) are not correctly restored.
+- Status: Fixed
+- Priority: High
+- Closed Date: 2024-11-2
