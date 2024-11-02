@@ -8,7 +8,7 @@ import { debounce } from 'lodash';
 import { Character } from '../types/character';
 import { calculateHitChance, rollD100 } from '../utils/combatRules';
 import { GameEngineAction } from '../utils/gameEngine';
-import { CombatLog } from './CombatLog';
+import { CombatLog } from './Combat/CombatLog';
 import { CombatControls } from './Combat/CombatControls';
 import { CombatStatus } from './Combat/CombatStatus';
 import {
