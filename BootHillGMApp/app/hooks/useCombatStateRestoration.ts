@@ -16,6 +16,13 @@ interface CombatInitiator extends GameSessionWithoutState {
   ) => void;
 }
 
+/**
+ * Hook to handle combat state restoration after page refreshes or navigation.
+ * Ensures combat can resume exactly where it left off by:
+ * - Restoring opponent data with proper type conversion
+ * - Maintaining exact health values and turn state
+ * - Preserving combat log history
+ */
 export function useCombatStateRestoration(
   state: GameSessionProps['state'],
   gameSession: CombatInitiator | null
@@ -29,11 +36,6 @@ export function useCombatStateRestoration(
       !gameSession.isCombatActive;
 
     if (shouldRestoreCombat && state.opponent && state.combatState) {
-      console.log('Combat State Restoration - Restoring combat state:', {
-        opponent: state.opponent,
-        combatState: state.combatState
-      });
-
       const restoredOpponent: Character = {
         name: state.opponent.name,
         health: Number(state.opponent.health),

@@ -99,7 +99,7 @@
 - [x] Implement automatic saving to localStorage (5 seconds after state changes)
 - [x] Add manual save functionality with "Save Game" button
 - [x] Store character data in localStorage during navigation to prevent loss
-- [ ] Implement combat state persistence during navigation (To be addressed)
+- [x] Implement combat state persistence during navigation
 
 ## 7. UI/UX Design
 - [x] Develop responsive layouts using CSS Modules
@@ -309,6 +309,10 @@ The combat system is implemented as a separate component (`CombatSystem.tsx`) th
 - Health tracking for both player and opponent
 - Basic attack actions with hit chance calculations
 - Combat log for narrating the fight progression
+- Combat state persistence through:
+  - Immediate state updates for health changes
+  - beforeunload event handling for combat state
+  - Dedicated restoration logic in useCombatStateRestoration hook
 
 ### Combat Flow
 1. AI service detects a combat scenario and generates an opponent
@@ -316,6 +320,7 @@ The combat system is implemented as a separate component (`CombatSystem.tsx`) th
 3. Players and opponents take turns performing actions
 4. Combat results are reflected in the game state and narrative
 5. Combat ends when either the player or opponent's health reaches zero
+6. Combat state is preserved during page refreshes or navigation
 
 ### Future Enhancements
 - Implement critical hits and misses
