@@ -1,189 +1,143 @@
 # BootHillGM Game Design Document
 
-Note: For the most up-to-date list of features currently in development, please refer to the User Stories document. This Game Design Document serves as a comprehensive overview of the game's vision, mechanics, and design principles.
+Note: This Game Design Document serves as a comprehensive overview of the game's vision, mechanics, and design principles, with a focus on the current MVP implementation.
 
 ## 1. Game Overview
-BootHillGM is an AI-driven, text-based RPG set in the American Old West, based on the Boot Hill tabletop RPG system. Players engage in a solo adventure guided by an AI Game Master, experiencing the gritty and dangerous life of the frontier through a web-based interface built with Next.js.
+BootHillGM is an AI-driven, web-based RPG set in the American Old West, based on the Boot Hill tabletop RPG system. Players engage in a solo adventure guided by an AI Game Master that provides uncensored, authentic Western storytelling through a responsive web interface.
 
-## 2. Core Gameplay
-### MVP
-- [x] Text-based interaction with an AI Game Master
-- [x] Basic character creation based on simplified Boot Hill RPG rules
-- [x] Linear narrative-driven adventures in a Western setting
-- [x] Simple decision-making that impacts the story
-- [x] Simplified combat system focusing on gunfights
-- [ ] Campaign persistence across sessions
-- [ ] Basic journal system for tracking important story information
+## 2. Core Design Principles
+- Uncensored storytelling that adapts to all player actions
+- Faithful adaptation of Boot Hill RPG mechanics
+- Clear and responsive web-based interface
+- Persistent game state with automatic saving
+- Seamless integration of AI responses with game mechanics
 
-### Post-MVP
-- [ ] Advanced character creation with more options and backgrounds
-- [ ] Branching narratives with long-term consequences
-- [ ] Complex decision-making with far-reaching impacts
-- [ ] Expanded combat system with tactical options
-- [ ] Enhanced journal system with categorization and search functionality
-- [ ] Multiple save slots for different campaigns
+## 3. Current Features
+### 3.1 Character System
+- AI-guided character creation
+- Boot Hill attribute and skill system
+- Character state persistence
+- Equipment and inventory management
+- AI-generated character backgrounds
 
-## 3. Setting
-### MVP
-- Time Period: American Old West (circa 1865-1895)
-- Locations: One frontier town and immediate surroundings
-- Themes: Survival, law vs. outlaw, frontier justice
+### 3.2 Game Session Management
+- Real-time narrative generation
+- Context-aware AI responses
+- Automatic state saving
+- Journal system for tracking events
+- Combat state restoration
 
-### Post-MVP
-- Multiple towns and wilderness areas
-- Dynamic world events and changing landscapes
-- Deeper exploration of historical themes and events
+### 3.3 Combat System
+- Turn-based combat following Boot Hill rules
+- Health and damage tracking
+- Combat log with detailed actions
+- Weapon-specific modifiers
+- Combat state persistence
+- Auto-processing of opponent turns
 
-## 4. Character System
-### MVP
-#### 4.1 Attributes
-- [ ] Strength: Physical power and endurance
-- [ ] Agility: Speed, reflexes, and coordination
-- [ ] Intelligence: Mental acuity and problem-solving
+### 3.4 Inventory System
+- Item tracking and management
+- Use item functionality
+- Quantity tracking
+- Item descriptions
+- Automatic updates from narrative
 
-#### 4.2 Skills
-- [ ] Limited skill list (5-10 key skills)
-- [ ] Essential skills: Shooting, Riding, Brawling
+### 3.5 Journal System
+- Automatic entry creation
+- Combat result tracking
+- Narrative summaries
+- Timestamp organization
+- Action history preservation
 
-#### 4.3 Character Creation
-- [ ] Basic AI-guided character creation process
-- [ ] Simple background generation
-- [ ] Starting equipment based on available funds
+## 4. Technical Implementation
+### 4.1 User Interface
+- Main Game Area
+  - Narrative display
+  - Input controls
+  - Combat interface
+- Side Panel
+  - Character status
+  - Inventory display
+  - Journal viewer
+- Game Controls
+  - Action buttons
+  - Save functionality
+  - System messages
 
-### Post-MVP
-- Expanded attributes and derived statistics
-- Comprehensive skill list (20+ skills)
-- Complex background generation with personal history
-- Character progression and experience system
+### 4.2 State Management
+- Campaign state provider
+- Combat state handling
+- Inventory management
+- Journal tracking
+- Automatic saving
+
+### 4.3 AI Integration
+- Context management
+- Response parsing
+- Prompt engineering
+- Error handling
+- State synchronization
 
 ## 5. Game Mechanics
-### MVP
-#### 5.1 Core Mechanic
-- [ ] Simplified percentile dice (d100) system for skill resolution
-- [ ] Basic target numbers based on skill levels
-- [ ] Implementation of virtual dice rolls in web environment
+### 5.1 Core Loop
+1. Player inputs action
+2. AI processes and generates response
+3. Game state updates based on response
+4. UI updates to reflect changes
+5. State is automatically saved
+6. Loop continues with next player action
 
-#### 5.2 Combat System
-- [ ] Simple initiative system
-- [ ] Basic hit resolution
-- [ ] High lethality maintained
-- [ ] Turn-based combat interface optimized for web interaction
+### 5.2 Combat Loop
+1. Initiative determination
+2. Turn-based actions
+3. Damage calculation
+4. State updates
+5. Combat log updates
+6. Victory/defeat conditions
+7. State restoration if interrupted
 
-#### 5.3 Campaign Persistence
-- [ ] Save and load campaign state using client-side storage
-- [ ] Automatically save progress after significant game events
-- [ ] Resume gameplay from the last saved point
-- [ ] Basic journal system to track important story information
-- [ ] Generate narrative summaries for journal entries (e.g., "CHARACTER_NAME drank his last health potion")
-- [ ] Use journal entries to provide context for AI storytelling
+### 5.3 Inventory Management
+1. Automatic item acquisition from narrative
+2. Manual item usage
+3. Quantity tracking
+4. State updates
+5. Journal entry creation
 
-#### 5.4 Item Usage
-- [ ] Implement logical restrictions on item usage
-- [ ] Prevent players from using items they don't own
-- [ ] Provide appropriate feedback when a player attempts to use an unavailable item
-- [ ] Ensure all player actions check for required items before execution
-- [ ] Maintain consistency between inventory and available actions
+## 6. Content Guidelines
+### 6.1 AI Response Parameters
+- Uncensored but contextually appropriate
+- Historical Western setting accuracy
+- Integration with game mechanics
+- Consistent narrative style
+- Clear action outcomes
 
-### Post-MVP
-- Advanced skill resolution with modifiers and circumstances
-- Detailed combat system with positioning and tactics
-- Injury and healing mechanics
-- Integration of environment and weather effects on gameplay
-- Cloud save functionality for cross-device play
-- Enhanced journal system with player notes and categorization
-- Dynamic world state persistence (NPC relationships, economy, etc.)
+### 6.2 Combat Narration
+- Detailed action description
+- Weapon-specific details
+- Damage and health updates
+- Combat log formatting
+- Critical hit/miss handling
 
-## 6. AI Game Master
-### MVP
-#### 6.1 Narrative Generation
-- [x] Implement uncensored storytelling to allow full player agency
-- [x] AI adapts to all player actions without moral judgment
-- [ ] Generate concise, narrative-style journal entries based on player actions
-- [ ] Linear story creation with minimal branching
-- [ ] Integration of basic Boot Hill RPG rules into narrative decisions
-- [ ] Simple text generation and display in web interface
+### 6.3 Journal Entries
+- Automatic generation
+- Clear timestamps
+- Concise summaries
+- Combat results
+- Inventory changes
 
-#### 6.2 NPC Interaction
-- [ ] AI-generated NPCs with basic personalities
-- [ ] Simple dialogue generation
-- [ ] Text-based conversation system with limited response options
+## 7. Development Focus
+### 7.1 Current Priorities
+- Combat system refinements
+- Inventory interaction improvements
+- Journal system enhancements
+- UI/UX polish
+- Performance optimization
 
-### Post-MVP
-- Dynamic story creation based on player choices and character background
-- Complex NPC system with goals, relationships, and memory
-- Advanced dialogue system with natural language processing
+### 7.2 Testing Priorities
+- Combat balance
+- AI response quality
+- State persistence
+- Error recovery
+- Performance monitoring
 
-## 7. Quests and Missions
-### MVP
-- [ ] One main storyline with minimal branching
-- [ ] 1-2 side quests for additional gameplay
-- [ ] Simple quest log accessible through web interface
-
-### Post-MVP
-- Multiple intertwining storylines
-- Dynamic quest generation based on player actions and world state
-- Complex quest system with consequences and reputation impacts
-
-## 8. Inventory and Economy
-### MVP
-- [ ] Limited list of essential period-appropriate items and weapons
-- [ ] Basic economic system for buying/selling goods
-- [ ] Simple inventory management in web UI
-
-### Post-MVP
-- Extensive item list with crafting and customization
-- Complex economic system with supply/demand dynamics
-- Detailed inventory management with weight and capacity considerations
-
-## 9. User Interface
-### MVP
-- [ ] Responsive web-based interface with minimal graphics
-- [ ] Text-based interaction with basic clickable options
-- [ ] Simple character sheet displaying current stats and equipment
-- [ ] Basic action buttons for common interactions (e.g., "Draw Gun")
-- [ ] Optimization for both desktop and mobile web browsers
-
-### Post-MVP
-- Enhanced UI with thematic graphics and animations
-- Interactive map for navigation and exploration
-- Advanced character sheet with visual representations of stats and skills
-- Customizable UI elements and themes
-
-## 10. Technical Implementation
-- [ ] Built using Next.js for a responsive web application
-- [ ] Server-side rendering for improved performance and SEO
-- [ ] Client-side navigation for a smooth, app-like experience
-- [ ] Responsive design for compatibility with various devices and screen sizes
-
-## 11. Accessibility
-### MVP
-- [ ] Basic semantic HTML for screen reader compatibility
-- [ ] Keyboard navigation for essential game functions
-- [ ] Simple high contrast mode
-
-### Post-MVP
-- Comprehensive accessibility features including screen reader optimizations
-- Advanced color contrast options and text scaling
-- Keyboard shortcuts for all game functions
-
-## 12. Data Persistence
-### MVP
-- [ ] Utilize localStorage for saving game progress and campaign state
-- [ ] Implement basic error handling for save/load operations
-- [ ] Store journal entries as part of the campaign state
-
-### Post-MVP
-- Cloud save functionality for cross-device play
-- User accounts with encrypted data storage
-- Multiple save slots per user
-
-## 13. Post-MVP Features and Expansions
-- Asynchronous multiplayer features
-- Shared world elements between players
-- Historical event integration
-- Mod support for user-created content
-- Mobile app version with offline capabilities
-- Community features (character sharing, custom scenarios)
-- Audio integration (ambient sounds, music, voice acting)
-
-This updated Game Design Document now clearly distinguishes between MVP features for personal/family/friends usage and post-MVP expansions for a broader audience and more advanced gameplay.
+This document serves as both a design reference and a guide for AI systems analyzing the project. It reflects the current implementation state while maintaining the original vision of an uncensored, authentic Western RPG experience.

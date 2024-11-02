@@ -8,6 +8,19 @@
   - Ensure that a complete character is created based on user responses
   **Status:** Implemented.
 
+- As a player, I want to view my character's attributes (Strength, Agility, Intelligence) so that I understand my character's capabilities.
+  **Implementation Status:**
+  - Successfully implemented in CharacterCreation component
+  - Includes full attribute display and validation
+  - AI-driven attribute descriptions integrated
+  - Test coverage in place
+
+- As a player, I want to generate a character name using AI so that it fits the Western theme.
+  **Implementation Status:**
+  - Implemented in CharacterCreation with AI name generation
+  - Includes name regeneration capability
+  - Names properly saved to character state
+
 ## Game Session
 - As a player, I want to start a new game session so that I can begin my adventure in the Old West.
   **Test Plan:**
@@ -86,21 +99,32 @@
   **Status:** Implemented. Combat log is scrollable with max height constraint.
 
 ## Campaign Persistence
-- As a player, I want my game progress to persist when I navigate away from the game session, so that I can resume my game where I left off.
-  **Test Plan:**
-  - Start a game session and make several interactions
-  - Navigate away from the game session and then return
-  - Verify that the game state, including journal entries, is restored correctly
-  **Status:** Implemented. State properly persists and restores after navigation.
+- As a player, I want my game progress to be automatically saved, so that I don't lose my progress if I need to stop playing.
+  **Implementation Status:**
+  - Implemented in CampaignStateManager
+  - Automatic saving after significant events
+  - State persistence across page refreshes
 
-- As a player, I want to see a clean state when creating a new character, so that my previous game doesn't interfere with my new character.
-  **Test Plan:**
-  - Clear all storage
-  - Create new character
-  - Verify game session starts fresh
-  - Create another character
-  - Verify previous state is not restored
-  **Status:** Implemented. State cleanup works correctly during character creation.
+- As a player, I want to resume my game from where I left off, so that I can continue my adventure across multiple play sessions.
+  **Implementation Status:**
+  - Full implementation through CampaignStateManager
+  - Complete state restoration functionality
+  - Combat state persistence included
+
+## Combat System
+✅ As a player, I want to experience turn-based combat with accurate Boot Hill rules implementation.
+  **Implementation Status:**
+  - Full implementation in CombatSystem component
+  - Turn management system complete
+  - Combat log functionality implemented
+  - Health tracking and combat resolution in place
+
+## Inventory System
+✅ As a player, I want to see my inventory items and their quantities clearly displayed.
+  **Implementation Status:**
+  - Implemented in Inventory component
+  - Item quantities and descriptions included
+  - Full state management for inventory changes
 
 ## Technical Improvements
 - As a developer, I want to use a dispatch function for state updates so that I can manage game state more efficiently and consistently.

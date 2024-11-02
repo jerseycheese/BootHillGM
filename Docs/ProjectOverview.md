@@ -1,115 +1,85 @@
 # BootHillGM Project Overview
 
 ## 1. Project Description
-BootHillGM is a web-based application providing an AI-driven virtual Game Master for the Boot Hill tabletop RPG, offering an engaging, user-friendly experience for solo players in the Western genre. The app is built with Next.js, a React-based framework, allowing for a responsive web experience accessible from various devices.
+BootHillGM is a Next.js-based web application that provides an AI-driven Game Master experience for the Boot Hill tabletop RPG. The application uses the Gemini 1.5 Pro API to deliver dynamic, uncensored storytelling while maintaining the authentic feel of the Boot Hill RPG system. Built with modern web technologies, it offers an accessible and responsive single-player experience.
 
-## 2. Project Objectives
-- Develop an AI-driven virtual Game Master app specifically for Boot Hill RPG
-- Automate Western-themed campaign management via AI
-- Create an engaging, user-friendly experience for solo players
-- Faithfully implement Boot Hill RPG rules and mechanics
-- Build a flexible and scalable app architecture using Next.js
+## 2. Current Development Status
 
-## 3. Target Audience
-### MVP
-- Personal use, family, and friends interested in Western-themed RPGs
-- Boot Hill RPG enthusiasts within the developer's circle
+### 2.1 Implemented Core Features
+- AI-driven character creation with Boot Hill v2 rules integration
+- Uncensored AI storytelling for authentic Western narratives
+- Turn-based combat system with Boot Hill mechanics
+- Persistent game state management
+- Automatic journal entry system
+- Basic inventory management
+- Combat logging and state restoration
 
-### Post-MVP
-- Broader audience of solo players interested in Western-themed RPGs
-- Newcomers to tabletop RPGs seeking an accessible entry point
+### 2.2 In Development
+- Enhanced combat mechanics with weapon modifiers
+- Improved narrative formatting and display
+- Advanced inventory interactions
+- Journal system enhancements
 
-## 4. Key Features
-### MVP
-- [x] AI-driven Boot Hill Character Creation (basic)
-- [x] AI-powered Game Mastering for Western settings (limited scope)
-- [ ] AI-powered NPCs with basic persistence
-- [x] Simple Game Session and State Management
-- [x] Boot Hill's combat system implementation
-- [x] Basic Character Sheet View
-- [x] Simple Inventory System
-- [ ] Linear Quest System
-- [x] Uncensored AI responses for unrestricted player agency
-- [x] Combat log system with scrollable history
-- [x] Persistent game state across sessions
-- [x] Journal system with action summaries
+## 3. Technical Foundation
+- Framework: Next.js 14.x with App Router
+- AI Integration: Gemini 1.5 Pro API
+- State Management: React Context with useReducer
+- Data Persistence: localStorage with automated saving
+- UI: Tailwind CSS with wireframe styling
+- Testing: Jest with React Testing Library
 
-### Post-MVP
-- [ ] Advanced AI-driven Character Creation with more options
-- [ ] Enhanced Game Mastering with dynamic storytelling
-- [ ] Complex NPC system with advanced persistence and relationships
-- [ ] Advanced Game Session and State Management
-- [ ] Expanded Character Sheet with progression tracking
-- [ ] Comprehensive Inventory System with economics
-- [ ] Complex Quest System with branching narratives
-- [ ] Multiple Campaign and Character Management
-- [ ] Rich Media Integration (images, ambient sounds)
-- [ ] Customization Options (house rules, custom items)
-- [ ] Mobile-optimized version
+## 4. Project Objectives
+- Deliver an engaging, AI-driven Boot Hill RPG experience
+- Maintain authentic Western atmosphere through uncensored AI responses
+- Implement faithful Boot Hill v2 rule adaptations
+- Create an intuitive, responsive web interface
+- Ensure reliable game state management and persistence
 
-## 5. Boot Hill RPG Core Elements
-- Percentile dice (d100) system
-- Quick-action combat emphasizing gunfighting
-- Extensive skill selection
-- High lethality gameplay
-- Historical Western setting and themes
+## 5. Target Audience
+- Personal use, family, and friends interested in Western RPGs
+- Boot Hill RPG enthusiasts seeking a solo play experience
+- Players interested in AI-driven narrative experiences
 
-## 6. App Architecture
-The BootHillGMApp app is built using Next.js 14.x with the App Router, featuring a modular component structure, including:
-- Core Game Engine
-- AI Integration Service
-- Character Management System
-- Narrative Engine
-- Combat System
-- Inventory System
-- NPC Management
-- Quest System
-- User Interface
-- Data Persistence
-- Next.js API routes for server-side logic
+## 6. Development Approach
+- Focus on essential MVP features
+- Iterative development with regular testing
+- Emphasis on reliable state management
+- Regular documentation updates
+- Systematic testing implementation
 
-This modular approach, combined with the App Router structure, allows for easier development, testing, and future expansions.
+## 7. Key Components
+### 7.1 Core Systems
+- GameProviderWrapper: Global state provider
+- CampaignStateManager: Game state persistence
+- AIService: Gemini API integration
+- CombatSystem: Turn-based combat management
+- JournalSystem: Automatic history tracking
 
-## 7. Development Status
-The project has made significant progress:
-- Implemented the basic Next.js 14.x project structure using the App Router.
-- Set up the core game engine using React Context for state management.
-- Created the main layout and home page.
-- Implemented a fully functional character creation page, including:
-  - Multi-step, AI-guided character creation process
-  - Dynamic attribute and skill input with validation
-  - AI-generated prompts and descriptions for character traits
-  - Character summary generation at the final step
-- Implemented a functional Game Session page, including:
-  - AI-driven narrative generation
-  - User input processing
-  - Structured AI responses for location tracking
-  - Basic character status display
-  - Turn-based combat system with Boot Hill rules
-  - Scrollable combat log
-  - Persistent game state
-- Implemented uncensored AI responses for unrestricted player agency
-- Updated AI service to handle player actions without censorship or moral judgment
-- Implemented a Journal Viewer component with automatic entry creation
-- Added inventory system with item tracking
-- Implemented state persistence across navigation and page reloads
+### 7.2 User Interface
+- Character Creation Wizard
+- Game Session Interface
+- Combat Controls and Log
+- Inventory Management
+- Journal Viewer
 
-## 8. MVP Development Focus
-- Implement core gameplay loop for personal/family/friends use
-- Prioritize basic AI integration for character creation and simple storytelling
-- Develop essential UI components for game interaction
-- Implement basic data persistence for game sessions
-- Enhance character creation with AI-generated summaries and descriptions
-- Ensure uncensored and adaptable storytelling based on player actions
+## 8. Current Priorities
+- Complete core combat system enhancements
+- Improve narrative display and formatting
+- Enhance inventory interactions
+- Expand journal functionality
+- Implement comprehensive testing
 
-## 9. Post-MVP Considerations
-- Enhance AI capabilities for more dynamic and complex gameplay
-- Expand features for a broader audience
-- Implement advanced UI/UX improvements
-- Develop infrastructure for user accounts and online features
-- Consider content warnings or age verification for uncensored content
+## 9. Development Status
+The project has established its core architecture and implemented several key features. Current focus is on enhancing existing functionality and completing remaining MVP features while maintaining code quality and testing coverage.
 
-## 10. Project Documentation
+## 10. Next Steps
+- Complete remaining MVP features
+- Enhance existing component functionality
+- Implement comprehensive testing
+- Refine user interface and experience
+- Prepare for initial testing with target audience
+
+## 11. Project Documentation
 The project's documentation is organized in the Docs folder:
 
 ### Core Documentation

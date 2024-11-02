@@ -5,26 +5,12 @@
 ## MVP Features
 
 ### Character Creation
-- As a player, I want to view my character's attributes (Strength, Agility, Intelligence) so that I understand my character's capabilities.
-  **Test Plan:**
-  - Confirm that all required attributes are displayed
-  - Verify that attribute values are within expected ranges
-  - Check that changes to attributes are reflected in the display
-  **Status:** Partially implemented. Character attributes are defined in the data model, but the display needs to be completed.
-
 - [ ] As a player, I want to see my character's essential skills (Shooting, Riding, Brawling) so that I know my character's specialties.
   **Test Plan:**
   - Ensure all essential skills are listed
   - Verify that skill values are calculated correctly based on character attributes
   - Check that skill updates are reflected immediately in the display
   **Status:** Partially implemented. Skills are defined in the data model, but display and calculation need completion.
-
-- [ ] As a player, I want to generate a character name using AI so that it fits the Western theme.
-  **Test Plan:**
-  - Verify that the AI generates names appropriate to the Western setting
-  - Ensure the user can regenerate names if desired
-  - Check that the chosen name is correctly associated with the character
-  **Status:** Not yet implemented.
 
 - [ ] As a player, I want to receive a simple background for my character so that I have a starting point for roleplaying.
   **Test Plan:**
@@ -53,7 +39,7 @@
   - Check that new narrative text is added to the display correctly
   - Verify that the text display scrolls automatically to show new content
   - Ensure that past dialogue remains accessible by scrolling up
-  **Status:** Not yet implemented.
+  **Status:** Partially implemented. Basic narrative display is in place with NarrativeDisplay component, but needs enhanced formatting for dialogue.
 
 - [ ] As a player, I want to experience a linear narrative with minimal branching so that I can enjoy a focused storyline.
   **Test Plan:**
@@ -61,47 +47,6 @@
   - Test decision points to ensure they don't create major narrative branches
   - Check that player choices influence the story without derailing the main plot
   **Status:** Not yet implemented.
-
-- [ ] As a player, I want my game progress to be automatically saved, so that I don't lose my progress if I need to stop playing.
-  **Test Plan:**
-  - Verify that game state is saved after significant events (e.g., completing a conversation, finishing a combat encounter)
-  - Check that saved state includes character information, current location, and game progress
-  - Ensure that saving occurs without noticeable impact on game performance
-
-- As a player, I want to be able to resume my game from where I left off, so that I can continue my adventure across multiple play sessions.
-  **Test Plan:**
-  - Test loading a saved game from the main menu
-  - Verify that the game resumes with the correct character, location, and narrative context
-  - Ensure that all relevant game state (inventory, quest progress, etc.) is correctly restored
-
-- [ ] As a player, I want to see three contextual action buttons suggested by the AI, alongside the free text input option, so that I have quick access to logical choices while maintaining freedom of action.
-  **Test Plan:**
-  - Verify that three contextual actions are displayed as buttons
-  - Ensure buttons update based on current game context
-  - Check that free text input remains available
-  - Verify suggested actions are not duplicated in the narrative text
-
-- [ ] As a player, I want the narrative to focus on describing the scene and events, without including suggested actions in the text itself, so that the narrative flow is cleaner and more immersive.
-  **Test Plan:**
-  - Verify that narrative text doesn't include explicit action suggestions
-  - Ensure narrative remains descriptive and engaging
-  - Check that suggested actions appear only as UI buttons
-  - Test that narrative and action buttons work together cohesively
-
-- [ ] As a player, I want to see my character's health displayed as "current/total" format, so that I can better understand my character's health status.
-  **Test Plan:**
-  - Verify health is displayed in "current/total" format
-  - Ensure health updates are reflected correctly in both numbers
-  - Check that the format remains consistent after taking damage or healing
-  - Test that the display handles edge cases (0 health, max health, etc.)
-
-### Journal and Campaign Persistence
-- As a player, I want my game progress and journal entries to persist when I navigate away from the game session, so that I can resume my game where I left off.
-  **Test Plan:**
-  - Start a game session and make several interactions
-  - Navigate away from the game session and then return
-  - Verify that the game state, including journal entries, is restored correctly
-  **Status:** Partially implemented, needs testing.
 
 ### Combat System
 - As a player, I want visual feedback during combat turns, so that I can better understand the flow of battle.

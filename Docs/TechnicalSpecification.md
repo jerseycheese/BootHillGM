@@ -1,265 +1,106 @@
-## 1. Technical Stack
-- [x] Framework: Next.js 14.x (React-based framework for web applications)
-- [x] Routing: Next.js App Router
-- [x] Programming Language: TypeScript 5.x for enhanced type safety
-- [x] AI Model: Gemini 1.5 Pro API (Google Generative AI)
-- [x] Development Environment: Visual Studio Code with ESLint and Prettier
-- [x] Version Control: Git
-- [x] UI Components: Custom React components
-- [x] State Management: React Context API with useReducer for more complex state updates
-- [x] Styling: CSS Modules and Tailwind CSS
-- [x] Data Persistence: localStorage for client-side storage (MVP phase)
+# BootHillGM Technical Specification
 
-## 2. Architecture Overview
-- [x] Next.js pages and API routes
-- [x] React component-based architecture
-- [x] Server-side rendering (SSR) for initial page load
-- [x] Client-side navigation for subsequent page transitions
+## 1. System Architecture
 
-## 3. Key Components
-1. Pages (now using App Router):
-   - Home (app/page.tsx)
-   - Character Creation (app/character-creation/page.tsx)
-   - Game Session (app/game-session/page.tsx)
-   - Character Sheet (app/character-sheet/page.tsx)
-2. Layout (app/layout.tsx): Defines the main layout for the application
-3. Game Engine: Manages game state, turns, and basic game flow
-4. Custom Hooks:
-   - useAIInteractions: Manages AI interaction logic including:
-     - User input processing
-     - AI response handling
-     - Journal updates
-     - Inventory changes
-     - Combat initiation
-   - useGameSession: Centralizes game session management:
-     - Handles combat state transitions
-     - Manages inventory interactions
-     - Controls game flow and state updates
-     - Provides unified interface for game actions
-     - Maintains separation between game logic and UI rendering
-5. Character Management System: Manages character creation and stats
-6. Inventory System: Manages character inventory and item interactions
-  - Handles adding and removing items dynamically
-  - Supports multiple instances of the same item
-  - Implements debounced inventory change handler for improved performance
-  - Handles item quantity updates and removals
-  - Filters out invalid items and handles edge cases
-  - Uses lodash for debounce functionality
-7. UI Components: Basic reusable React components
-8. Campaign State Manager: Handles saving, loading, and managing campaign state
-   - Handles saving, loading, and managing campaign state
-   - Implements React Context for global state management
-   - Uses localStorage for client-side persistence
-   - Properly manages state cleanup during character creation
-   - Provides saveGame and loadGame functions
-   - Includes state validation and hydration checks
-   - Handles automatic saving of game state
-   - Manages clean state initialization for new characters
-9. Journal System: Manages the storage and retrieval of important story information
+### 1.1 Core Technologies
+- Framework: Next.js 14.x with App Router
+- Programming Language: TypeScript 5.x
+- AI Model: Gemini 1.5 Pro API
+- State Management: React Context API with useReducer
+- Client-Side Storage: localStorage
+- UI: Tailwind CSS with CSS Modules for component-specific styles
 
-## 4. Data Flow
-1. User interacts with the UI
-2. Client-side components dispatch actions to update state
-3. Reducer functions process actions and update the global state
-4. Inventory is cleaned and updated based on AI responses
-5. Components re-render based on state changes
-6. Debounced inventory changes are processed to prevent duplicate additions
-7. API routes handle server-side logic, including AI interactions
-8. Server responds with updated data
-9. Campaign state is saved after significant game events
-10. Journal entries are added based on important story developments
-11. AI responses are generated with context from the journal
+### 1.2 Key Architectural Patterns
+- Server-Side Rendering (SSR) for initial page loads
+- Client-side routing for subsequent navigation
+- Component-based architecture with hooks for reusable logic
+- Event-driven state updates through Context/Reducer pattern
+- Atomic state updates for combat and inventory systems
+- Separation of concerns between game logic and UI components
 
-## 5. AI Integration
-- [x] Implement interface for AI model interaction with uncensored responses
-- [x] Design prompts for character creation, dialogue, and unrestricted player actions
-- [x] Implement error handling for common failure scenarios
-- [x] Maintain minimal context for the current game session
-- [x] Generate combat scenarios and opponent details
-- [ ] Integrate journal context into AI prompts for story continuity
-- [ ] Optimize AI text generation to prevent duplicate content
+## 2. Core Systems
 
-### 5.3 Response Processing
-- Maintains narrative continuity by appending new responses to existing narrative
-- Generates concise narrative summaries for journal entries
-- Processes inventory changes with unique item identifiers
-- Handles combat initiation and state transitions
-- Preserves conversation flow with "Player: [action]" and "Game Master: [response]" format
-
-### 5.4 State Management Flow
-- AI responses update multiple state elements:
-  - Narrative: Appended with context of player actions
-  - Journal: Maintains concise summaries of key events
-  - Inventory: Tracks item acquisitions and removals
-  - Combat: Initiates based on narrative context
-
-## 6. State Management
-- [x] Implement React Context for global game state
-- [x] Use useReducer for complex state updates
-- [x] Implement automatic saving to localStorage (5 seconds after state changes)
-- [x] Add manual save functionality with "Save Game" button
-- [x] Store character data in localStorage during navigation to prevent loss
-- [x] Implement combat state persistence during navigation
-
-## 7. UI/UX Design
-- [x] Develop responsive layouts using CSS Modules
-- [x] Create basic UI components (buttons, inputs, cards)
-- [ ] Implement simple animations for transitions (optional)
-- [ ] Add identifying IDs and classes to all components for easier debugging and testing
-- [ ] Implement title casing for character attributes and skills in the UI
-
-## 8. Performance Considerations
-- [x] Utilize Next.js built-in performance optimizations
-- [ ] Implement basic caching for frequently accessed data
-- [ ] Optimize critical API routes for efficient processing
-- [ ] Optimize journal context selection for AI prompts to minimize token usage
-- [ ] Implement efficient serialization/deserialization of campaign state
-
-## 9. Security Measures
-- [x] Secure storage of API keys using Next.js environment variables
-- [x] Implement HTTPS for all network requests
-- [x] Use Next.js API routes to handle sensitive operations server-side
-
-## 10. Testing Strategy
-- [ ] Implement comprehensive unit tests for core logic components
-- [ ] Conduct manual testing for game scenarios and AI interactions
-- [ ] Implement integration tests for key user flows
-- [ ] Aim for at least 80% test coverage across the application
-
-### Unit Testing
-Unit tests should be implemented for all core logic components, including:
-
-1. Game Engine functions
-2. AI Integration Service methods
-3. Character Management System
-4. Narrative Engine
-5. Combat System
-6. Inventory System
-7. Campaign State Manager
-8. Journal System
-
-For each component, create a corresponding test file (e.g., `gameEngine.test.ts` for `gameEngine.ts`). Use Jest and React Testing Library for writing and running tests.
-
-Example unit test structure:
-
+### 2.1 State Management
 ```typescript
-import { functionToTest } from './componentToTest';
+// Campaign State Provider
+interface CampaignStateContextType {
+  state: GameState;
+  dispatch: React.Dispatch<GameEngineAction>;
+  saveGame: (state: GameState) => void;
+  loadGame: () => GameState | null;
+  cleanupState: () => void;
+}
 
-describe('Component Name', () => {
-  test('should perform expected action', () => {
-    // Arrange
-    const input = // ...
-
-    // Act
-    const result = functionToTest(input);
-
-    // Assert
-    expect(result).toBe(/* expected output */);
-  });
-});
+// Game Engine Actions
+type GameEngineAction =
+  | { type: 'SET_PLAYER'; payload: string }
+  | { type: 'SET_CHARACTER'; payload: Character | null }
+  | { type: 'SET_LOCATION'; payload: string }
+  | { type: 'SET_NARRATIVE'; payload: string }
+  | { type: 'UPDATE_COMBAT_STATE'; payload: CombatState }
+  | { type: 'SET_COMBAT_ACTIVE'; payload: boolean }
+  | { type: 'SET_OPPONENT'; payload: Character | null }
+  | { type: 'ADD_ITEM'; payload: InventoryItem }
+  | { type: 'REMOVE_ITEM'; payload: string }
+  | { type: 'USE_ITEM'; payload: string }
+  | { type: 'UPDATE_JOURNAL'; payload: JournalEntry }
+  | { type: 'SET_STATE'; payload: Partial<GameState> };
 ```
 
-### Integration Testing
-Integration tests should cover key user flows and interactions between components. Focus on the following areas:
-
-1. Character Creation flow
-2. Game Session initialization
-3. Player input and AI response cycle
-4. Combat initiation and resolution
-5. Inventory management
-6. Saving and loading game state
-
-Example integration test structure:
-
+### 2.2 AI Integration
 ```typescript
-import { render, screen, fireEvent } from '@testing-library/react';
-import GameSession from './GameSession';
+interface AIResponse {
+  narrative: string;
+  location?: string;
+  combatInitiated?: boolean;
+  opponent?: Character;
+  acquiredItems: string[];
+  removedItems: string[];
+  suggestedActions: SuggestedAction[];
+}
 
-describe('Game Session Integration', () => {
-  test('should handle player input and update game state', async () => {
-    render(<GameSession />);
+interface AIConfig {
+  modelName: string;
+  maxRetries: number;
+  temperature: number;
+}
 
-    // Simulate player input
-    const input = screen.getByPlaceholderText('Enter your action');
-    fireEvent.change(input, { target: { value: 'Look around' } });
-    fireEvent.click(screen.getByText('Submit'));
-
-    // Wait for AI response
-    await screen.findByText(/The AI responds/);
-
-    // Assert that game state has been updated
-    expect(screen.getByText(/Current location/)).toHaveTextContent('New location');
-  });
-});
+interface PromptOptions {
+  inventory?: InventoryItem[];
+  character?: Character;
+  location?: string;
+}
 ```
 
-### CombatSystem Testing
-The CombatSystem component now has comprehensive test coverage, including:
-
-- Rendering with and without an opponent
-- Handling player attacks
-- Managing combat end scenarios (player or opponent defeat)
-- Proper initialization and updates of opponent health
-
-Example CombatSystem test structure:
-
+### 2.3 Combat System
 ```typescript
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import CombatSystem from './CombatSystem';
+interface CombatState {
+  playerHealth: number;
+  opponentHealth: number;
+  currentTurn: 'player' | 'opponent';
+  combatLog: string[];
+}
 
-describe('CombatSystem', () => {
-  test('renders combat interface when opponent is present', () => {
-    render(<CombatSystem playerCharacter={mockPlayer} opponent={mockOpponent} />);
-    expect(screen.getByText('Combat')).toBeInTheDocument();
-  });
+interface CombatMessageParams {
+  attackerName: string;
+  defenderName: string;
+  weaponName: string;
+  damage: number;
+  roll: number;
+  hitChance: number;
+}
 
-  test('handles player attack', async () => {
-    render(<CombatSystem playerCharacter={mockPlayer} opponent={mockOpponent} />);
-    fireEvent.click(screen.getByText('Attack'));
-    await waitFor(() => {
-      expect(screen.getByText(/Player hits Opponent for \d+ damage!/)).toBeInTheDocument();
-    });
-  });
-
-  test('ends combat when opponent health reaches 0', async () => {
-    const mockOnCombatEnd = jest.fn();
-    render(<CombatSystem playerCharacter={mockPlayer} opponent={lowHealthOpponent} onCombatEnd={mockOnCombatEnd} />);
-    fireEvent.click(screen.getByText('Attack'));
-    await waitFor(() => {
-      expect(mockOnCombatEnd).toHaveBeenCalledWith('player');
-    });
-  });
-});
+interface UseCombatEngineProps {
+  playerCharacter: Character;
+  opponent: Character;
+  onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
+  onPlayerHealthChange: (health: number) => void;
+  dispatch: React.Dispatch<GameEngineAction>;
+  initialState?: CombatState;
+}
 ```
 
-### Test Coverage
-Use Jest's built-in coverage reporting to track test coverage. Aim for at least 80% coverage across the application. To run tests with coverage, use the following command:
-
-```
-npm test -- --coverage
-```
-
-Focus on increasing coverage for critical components and user flows first. Regularly review and update tests as new features are added or existing ones are modified.
-
-## 11. Deployment
-- [ ] Deploy to Vercel (optimized for Next.js applications)
-- [ ] Set up basic continuous integration (CI) pipeline
-
-## 12. Accessibility (Basic Considerations)
-- [x] Ensure proper heading structure and semantic HTML
-- [ ] Implement keyboard navigation for essential functions
-- [x] Maintain sufficient color contrast for text readability
-
-## 13. Performance Targets
-- [x] Initial page load time: < 3 seconds on average broadband
-- [x] Time to interactive: < 5 seconds
-- [x] API response time: < 1 second for non-AI operations
-- [x] AI response time: < 5 seconds for typical interactions
-
-## 14. Journal System
-The journal system automatically records game events using typed entries for different kinds of events. It's implemented through the JournalManager class with support for multiple entry types and filtering capabilities.
-
-### Entry Types
+### 2.4 Journal System
 ```typescript
 interface JournalEntry {
   type: 'narrative' | 'combat' | 'inventory' | 'quest';
@@ -268,17 +109,13 @@ interface JournalEntry {
   narrativeSummary?: string;
 }
 
-interface NarrativeJournalEntry extends JournalEntry {
-  type: 'narrative';
-}
-
 interface CombatJournalEntry extends JournalEntry {
   type: 'combat';
   combatants: {
     player: string;
     opponent: string;
   };
-  outcome: 'victory' | 'defeat' | 'escape';
+  outcome: 'victory' | 'defeat' | 'escape' | 'truce';
 }
 
 interface InventoryJournalEntry extends JournalEntry {
@@ -290,118 +127,116 @@ interface InventoryJournalEntry extends JournalEntry {
 }
 ```
 
-### Key Features
-- Automatic entry generation based on game events
-- AI-generated narrative summaries for better readability
-- Type-safe entry management
-- Integration with combat and inventory systems
-- Filtering capabilities by type, date range, and search text
-- Automatic persistence through CampaignStateManager
+## 3. System Components
 
-### Core Functions
-- `addNarrativeEntry`: Creates entries for standard player actions and game events
-- `addCombatEntry`: Records combat encounters with participant details and outcomes
-- `addInventoryEntry`: Tracks inventory changes from item acquisition and usage
-- `filterJournal`: Filters entries by type, date range, and search text
-- `getJournalContext`: Retrieves recent entries for AI context
-
-### Implementation Details
-- Uses TypeScript for type safety and code clarity
-- Integrates with AI service for narrative summary generation
-- Maintains chronological order with timestamp-based sorting
-- Implements efficient filtering algorithms
-- Handles edge cases and error conditions gracefully
-
-This system provides a robust foundation for tracking game events while maintaining narrative continuity and supporting various gameplay features.
-
-## 15. Browser Support
-- [x] Modern evergreen browsers (latest two versions)
-- [ ] Basic functionality in IE11 (optional, if required for specific users)
-
-## 16. Monitoring and Logging
-- [x] Implement basic error logging to console
-- [ ] Set up simple analytics for usage tracking (e.g., Google Analytics)
-
-## 17. Data Structures
-### Campaign State
+### 3.1 Core Components
 ```typescript
-interface CampaignState {
-  character: Character;
-  location: string;
-  gameProgress: number;
-  journal: JournalEntry[];
-  narrative: string;
-  inventory: InventoryItem[];
-  isCombatActive: boolean;
-  opponent: Character | null;
+// Game Provider
+export function GameProvider({ children }: { children: ReactNode }) {
+  const [state, dispatch] = useReducer(gameReducer, initialState);
+  return (
+    <GameContext.Provider value={{ state, dispatch }}>
+      {children}
+    </GameContext.Provider>
+  );
 }
 
-interface JournalEntry {
-  timestamp: number;
-  content: string;
-}
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  quantity: number;
-  description: string;
+// Campaign State Manager
+export function CampaignStateProvider({ children }: { children: ReactNode }) {
+  const [state, baseDispatch] = useReducer(gameReducer, getInitialState());
+  const [isHydrated, setIsHydrated] = useState(false);
+  const lastSavedRef = useRef<number>(0);
+  // ... state management implementation
 }
 ```
 
-## 18. Key Functions
-- `saveCampaignState(state: CampaignState): void`
-- `loadCampaignState(): CampaignState | null`
-- `updateJournal(entry: string): void`
-- `getJournalContext(): string`
-- `debouncedHandleInventoryChanges(acquiredItems: string[], removedItems: string[]): void`
-- `dispatch(action: Action): void`
+### 3.2 Custom Hooks
+```typescript
+// Combat Engine Hook
+export const useCombatEngine = ({
+  playerCharacter,
+  opponent,
+  onCombatEnd,
+  onPlayerHealthChange,
+  dispatch,
+  initialState
+}: UseCombatEngineProps) => {
+  const [playerHealth, setPlayerHealth] = useState(initialState?.playerHealth ?? 100);
+  const [opponentHealth, setOpponentHealth] = useState(initialState?.opponentHealth ?? 100);
+  const [currentTurn, setCurrentTurn] = useState<'player' | 'opponent'>(initialState?.currentTurn ?? 'player');
+  // ... combat logic implementation
+};
 
-These functions will be implemented in the CampaignStateManager and GameEngine components.
+// AI Interactions Hook
+export const useAIInteractions = (
+  state: GameState,
+  dispatch: React.Dispatch<GameEngineAction>,
+  onInventoryChange: (acquired: string[], removed: string[]) => void,
+) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  // ... AI interaction logic
+};
+```
 
-## 19. Combat System
-The combat system is implemented as a separate component (`CombatSystem.tsx`) that integrates with the main game flow. Key features include:
+## 4. Performance Considerations
 
-- Turn-based combat mechanics
-- Integration with the AI service for generating combat scenarios and opponents
-- Health tracking for both player and opponent
-- Basic attack actions with hit chance calculations
-- Combat log for narrating the fight progression
-- Combat state persistence through:
-  - Immediate state updates for health changes
-  - beforeunload event handling for combat state
-  - Dedicated restoration logic in useCombatStateRestoration hook
+### 4.1 State Updates
+- Debounced state persistence (1000ms)
+- Memoized component renders using useMemo and useCallback
+- Atomic updates for combat state
+- Selective journal context updates
 
-### Combat Flow
-1. AI service detects a combat scenario and generates an opponent
-2. Game session switches to combat mode, rendering the CombatSystem component
-3. Players and opponents take turns performing actions
-4. Combat results are reflected in the game state and narrative
-5. Combat ends when either the player or opponent's health reaches zero
-6. Combat state is preserved during page refreshes or navigation
+### 4.2 AI Optimization
+- Retry mechanism with exponential backoff
+- Context management for token efficiency
+- Response parsing optimization
+- Error recovery with graceful degradation
 
-### Future Enhancements
-- Implement critical hits and misses
-- Add combat-specific inventory interactions (e.g., weapon switching, item usage)
-- Enhance combat UI with more detailed statistics and options
+## 5. Error Handling
 
-## 20. Inventory System
-The inventory system is implemented as a separate component (`Inventory.tsx`) that integrates with the main game flow. Key features include:
+### 5.1 Core Error Types
+```typescript
+interface GameError extends Error {
+  type: 'ai' | 'state' | 'combat' | 'inventory';
+  severity: 'low' | 'medium' | 'high';
+  recoverable: boolean;
+}
+```
 
-- Display of player's current items
-- Add and remove items from inventory
-- Use items from inventory
-- Integration with the game state management system
+### 5.2 Recovery Strategies
+- Automated retry for AI failures
+- State validation on load
+- Combat state restoration
+- Manual save/load fallback
 
-### Inventory Flow
-1. Initial items are added to the inventory during game session initialization
-2. Players can view their inventory at any time during the game session
-3. Items can be added or removed based on game events or player actions
-4. Using an item triggers appropriate effects in the game state
 
-### Future Enhancements
-- Implement item categories (e.g., weapons, consumables, quest items)
-- Add item rarity and value for economic interactions
-- Implement inventory capacity limits
+## 6. Environment Configuration
+```typescript
+// next.config.mjs
+const nextConfig = {
+  env: {
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    NEXT_PUBLIC_GEMINI_API_KEY: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
+  },
+};
 
-This technical specification outlines the essential requirements for the BootHillGM MVP, including the newly implemented combat system and inventory system. It focuses on core functionality and maintainable architecture, suitable for implementation by a single developer new to React and Next.js. As development progresses and skills improve, this specification can be expanded to include more advanced features and optimizations.
+// tailwind.config.ts
+const config: Config = {
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+      },
+    },
+  },
+};
+```
+
+This technical specification reflects the current implementation state and serves as a comprehensive reference for development and AI analysis of the codebase.
