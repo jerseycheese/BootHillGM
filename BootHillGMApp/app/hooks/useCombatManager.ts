@@ -97,10 +97,16 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
       // Update narrative first
       onUpdateNarrative(`${endMessage}\n\n${combatSummary}\n\nWhat would you like to do now?`);
     
-      // Update journal
+      // Update journal with all required parameters
       dispatch({ 
         type: 'UPDATE_JOURNAL', 
-        payload: addCombatJournalEntry(combatSummary)
+        payload: addCombatJournalEntry(
+          state.journal || [],
+          state.character?.name || 'Player',
+          state.opponent?.name || 'Unknown Opponent',
+          winner === 'player' ? 'victory' : 'defeat',
+          combatSummary
+        )
       });
 
       // Clear combat state in campaign state first
@@ -120,7 +126,7 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
     } finally {
       isUpdatingRef.current = false;
     }
-  }, [dispatch, onUpdateNarrative, state.character?.health]);
+  }, [dispatch, onUpdateNarrative, state.character?.health, state.character?.name, state.opponent?.name, state.journal]);
 
   /**
    * Updates the player's health during combat.

@@ -256,15 +256,73 @@ Focus on increasing coverage for critical components and user flows first. Regul
 - [x] API response time: < 1 second for non-AI operations
 - [x] AI response time: < 5 seconds for typical interactions
 
-## 14. Browser Support
+## 14. Journal System
+The journal system automatically records game events using typed entries for different kinds of events. It's implemented through the JournalManager class with support for multiple entry types and filtering capabilities.
+
+### Entry Types
+```typescript
+interface JournalEntry {
+  type: 'narrative' | 'combat' | 'inventory' | 'quest';
+  timestamp: number;
+  content: string;
+  narrativeSummary?: string;
+}
+
+interface NarrativeJournalEntry extends JournalEntry {
+  type: 'narrative';
+}
+
+interface CombatJournalEntry extends JournalEntry {
+  type: 'combat';
+  combatants: {
+    player: string;
+    opponent: string;
+  };
+  outcome: 'victory' | 'defeat' | 'escape';
+}
+
+interface InventoryJournalEntry extends JournalEntry {
+  type: 'inventory';
+  items: {
+    acquired: string[];
+    removed: string[];
+  };
+}
+```
+
+### Key Features
+- Automatic entry generation based on game events
+- AI-generated narrative summaries for better readability
+- Type-safe entry management
+- Integration with combat and inventory systems
+- Filtering capabilities by type, date range, and search text
+- Automatic persistence through CampaignStateManager
+
+### Core Functions
+- `addNarrativeEntry`: Creates entries for standard player actions and game events
+- `addCombatEntry`: Records combat encounters with participant details and outcomes
+- `addInventoryEntry`: Tracks inventory changes from item acquisition and usage
+- `filterJournal`: Filters entries by type, date range, and search text
+- `getJournalContext`: Retrieves recent entries for AI context
+
+### Implementation Details
+- Uses TypeScript for type safety and code clarity
+- Integrates with AI service for narrative summary generation
+- Maintains chronological order with timestamp-based sorting
+- Implements efficient filtering algorithms
+- Handles edge cases and error conditions gracefully
+
+This system provides a robust foundation for tracking game events while maintaining narrative continuity and supporting various gameplay features.
+
+## 15. Browser Support
 - [x] Modern evergreen browsers (latest two versions)
 - [ ] Basic functionality in IE11 (optional, if required for specific users)
 
-## 15. Monitoring and Logging
+## 16. Monitoring and Logging
 - [x] Implement basic error logging to console
 - [ ] Set up simple analytics for usage tracking (e.g., Google Analytics)
 
-## 16. Data Structures
+## 17. Data Structures
 ### Campaign State
 ```typescript
 interface CampaignState {
@@ -291,7 +349,7 @@ interface InventoryItem {
 }
 ```
 
-## 17. Key Functions
+## 18. Key Functions
 - `saveCampaignState(state: CampaignState): void`
 - `loadCampaignState(): CampaignState | null`
 - `updateJournal(entry: string): void`
@@ -301,7 +359,7 @@ interface InventoryItem {
 
 These functions will be implemented in the CampaignStateManager and GameEngine components.
 
-## 18. Combat System
+## 19. Combat System
 The combat system is implemented as a separate component (`CombatSystem.tsx`) that integrates with the main game flow. Key features include:
 
 - Turn-based combat mechanics
@@ -327,7 +385,7 @@ The combat system is implemented as a separate component (`CombatSystem.tsx`) th
 - Add combat-specific inventory interactions (e.g., weapon switching, item usage)
 - Enhance combat UI with more detailed statistics and options
 
-## 19. Inventory System
+## 20. Inventory System
 The inventory system is implemented as a separate component (`Inventory.tsx`) that integrates with the main game flow. Key features include:
 
 - Display of player's current items

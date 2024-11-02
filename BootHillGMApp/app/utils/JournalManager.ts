@@ -1,87 +1,199 @@
-import { JournalEntry } from '../types/journal';
+/**
+ * JournalManager handles creation and management of game journal entries.
+ * Supports multiple entry types (narrative, combat, inventory) with filtering
+ * and search capabilities. Journal entries maintain narrative continuity and
+ * track important game events.
+ */
 import { generateNarrativeSummary } from './aiService';
+import {
+  JournalEntry,
+  NarrativeJournalEntry,
+  CombatJournalEntry,
+  InventoryJournalEntry,
+  JournalFilter
+} from '../types/journal';
 
+// Legacy exports for backward compatibility
 export const addJournalEntry = async (
   journal: JournalEntry[],
   entry: string | JournalEntry,
   context: string = ''
 ): Promise<JournalEntry[]> => {
-  // Ensure journal is an array
-  const currentJournal = Array.isArray(journal) ? journal : [];
-  
-  try {
-    // Create the new entry
-    const timestamp = Date.now();
-    let newEntry: JournalEntry;
-
-    if (typeof entry === 'string') {
-      const narrativeSummary = await generateNarrativeSummary(entry, context);
-      newEntry = {
-        timestamp,
-        content: entry,
-        narrativeSummary
-      };
-    } else {
-      // If entry is already a JournalEntry, ensure it has a timestamp
-      newEntry = {
-        ...entry,
-        timestamp: entry.timestamp || timestamp
-      };
-    }
-
-    // Return new journal array with the new entry
-    return [...currentJournal, newEntry];
-  } catch (error) {
-    console.error('Error adding journal entry:', error);
-    // Return original journal if there's an error
-    return currentJournal;
-  }
+  return JournalManager.addJournalEntry(journal, entry, context);
 };
 
-export const getRecentJournalEntries = (
+export const addCombatJournalEntry = (
   journal: JournalEntry[],
-  count: number = 5
+  playerName: string,
+  opponentName: string,
+  outcome: CombatJournalEntry['outcome'],
+  summary: string
 ): JournalEntry[] => {
-  // Ensure journal is an array
-  if (!Array.isArray(journal)) {
-    console.warn('Invalid journal format:', journal);
-    return [];
-  }
-  return getJournalEntries(journal).slice(0, count);
-};
-
-export const getJournalEntries = (journal: JournalEntry[]): JournalEntry[] => {
-  // Ensure journal is an array
-  if (!Array.isArray(journal)) {
-    console.warn('Invalid journal format:', journal);
-    return [];
-  }
-  // Sort by timestamp, ensuring each entry has a valid timestamp
-  return [...journal]
-    .filter(entry => entry && entry.timestamp)
-    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  return JournalManager.addCombatEntry(journal, playerName, opponentName, outcome, summary);
 };
 
 export const getJournalContext = (journal: JournalEntry[]): string => {
-  // Ensure journal is an array
-  if (!Array.isArray(journal)) {
-    console.warn('Invalid journal format:', journal);
-    return '';
-  }
-  
-  // Get the 3 most recent entries
-  const recentEntries = getRecentJournalEntries(journal, 3);
-  // Combine their narrative summaries or content
-  return recentEntries
-    .map(entry => entry.narrativeSummary || entry.content)
-    .filter(Boolean)
-    .join(' ');
+  if (!journal.length) return '';
+  const recentEntries = journal.slice(-3);
+  return recentEntries.map(entry => entry.content).join('\n');
 };
 
-export const addCombatJournalEntry = (summary: string): JournalEntry => {
-  return {
-    timestamp: Date.now(),
-    content: `Combat: ${summary}`,
-    narrativeSummary: summary
-  };
+export const filterJournal = (journal: JournalEntry[], filter: JournalFilter): JournalEntry[] => {
+  return JournalManager.filterJournal(journal, filter);
 };
+
+export class JournalManager {
+  /**
+   * Creates a narrative entry for standard player actions and game events
+   * Generates a summary using AI for concise event description
+   */
+  static async addNarrativeEntry(
+    journal: JournalEntry[],
+    content: string,
+    context: string = ''
+  ): Promise<JournalEntry[]> {
+    try {
+      const narrativeSummary = await generateNarrativeSummary(content, context);
+      const newEntry: NarrativeJournalEntry = {
+        type: 'narrative',
+        timestamp: Date.now(),
+        content,
+        narrativeSummary
+      };
+      return [...journal, newEntry];
+    } catch (error) {
+      console.error('Error adding narrative entry:', error);
+      return journal;
+    }
+  }
+
+  /**
+   * Records combat encounters with details about participants and outcome
+   * Used automatically by the combat system when battles conclude
+   */
+  static addCombatEntry(
+    journal: JournalEntry[],
+    playerName: string,
+    opponentName: string,
+    outcome: CombatJournalEntry['outcome'],
+    summary: string
+  ): JournalEntry[] {
+    const newEntry: CombatJournalEntry = {
+      type: 'combat',
+      timestamp: Date.now(),
+      content: summary,
+      combatants: {
+        player: playerName,
+        opponent: opponentName
+      },
+      outcome,
+      narrativeSummary: summary
+    };
+    return [...journal, newEntry];
+  }
+
+  /**
+   * Tracks inventory changes from item acquisition and usage
+   * Only creates entries when items are actually added or removed
+   */
+  static addInventoryEntry(
+    journal: JournalEntry[],
+    acquiredItems: string[],
+    removedItems: string[],
+    context: string
+  ): JournalEntry[] {
+    if (acquiredItems.length === 0 && removedItems.length === 0) {
+      return journal;
+    }
+
+    const newEntry: InventoryJournalEntry = {
+      type: 'inventory',
+      timestamp: Date.now(),
+      content: context,
+      items: {
+        acquired: acquiredItems,
+        removed: removedItems
+      },
+      narrativeSummary: this.generateInventorySummary(acquiredItems, removedItems)
+    };
+    return [...journal, newEntry];
+  }
+
+  static filterJournal(journal: JournalEntry[], filter: JournalFilter): JournalEntry[] {
+    return journal.filter(entry => {
+      if (filter.type && entry.type !== filter.type) return false;
+      if (filter.startDate && entry.timestamp < filter.startDate) return false;
+      if (filter.endDate && entry.timestamp > filter.endDate) return false;
+      if (filter.searchText && !this.entryMatchesSearch(entry, filter.searchText)) return false;
+      return true;
+    });
+  }
+
+  private static entryMatchesSearch(entry: JournalEntry, searchText: string): boolean {
+    const searchLower = searchText.toLowerCase();
+    return (
+      entry.content.toLowerCase().includes(searchLower) ||
+      (entry.narrativeSummary?.toLowerCase().includes(searchLower) ?? false)
+    );
+  }
+
+  private static generateInventorySummary(acquired: string[], removed: string[]): string {
+    const parts: string[] = [];
+    if (acquired.length) {
+      parts.push(`Acquired: ${acquired.join(', ')}`);
+    }
+    if (removed.length) {
+      parts.push(`Used/Lost: ${removed.join(', ')}`);
+    }
+    return parts.join('. ');
+  }
+
+  // Backward compatibility method
+  static async addJournalEntry(
+    journal: JournalEntry[],
+    entry: string | JournalEntry,
+    context: string = ''
+  ): Promise<JournalEntry[]> {
+    if (typeof entry === 'string') {
+      return this.addNarrativeEntry(journal, entry, context);
+    }
+    
+    // If it's already a JournalEntry, ensure it has required fields
+    const timestamp = entry.timestamp || Date.now();
+    const type = entry.type || 'narrative';
+    
+    // Create a properly typed entry based on the type
+    switch (type) {
+      case 'narrative':
+        return [...journal, {
+          ...entry,
+          timestamp,
+          type: 'narrative'
+        } as NarrativeJournalEntry];
+      case 'combat':
+        return [...journal, {
+          ...entry,
+          timestamp,
+          type: 'combat'
+        } as CombatJournalEntry];
+      case 'inventory':
+        return [...journal, {
+          ...entry,
+          timestamp,
+          type: 'inventory'
+        } as InventoryJournalEntry];
+      case 'quest':
+        return [...journal, {
+          ...entry,
+          timestamp,
+          type: 'quest'
+        } as JournalEntry];
+      default:
+        return [...journal, {
+          ...entry,
+          timestamp,
+          type: 'narrative'
+        } as NarrativeJournalEntry];
+    }
+  }
+}

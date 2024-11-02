@@ -1,94 +1,204 @@
-// BootHillGMApp/app/__tests__/utils/journalManager.test.ts
-
-import { addJournalEntry, getJournalEntries, getRecentJournalEntries, getJournalContext, addCombatJournalEntry } from '../../utils/JournalManager';
-import { JournalEntry } from '../../types/journal';
+import {
+  JournalManager,
+  addJournalEntry,
+  addCombatJournalEntry,
+  getJournalContext,
+  filterJournal
+} from '../../utils/JournalManager';
+import {
+  JournalEntry,
+  CombatJournalEntry,
+  InventoryJournalEntry,
+  NarrativeJournalEntry
+} from '../../types/journal';
+import { generateNarrativeSummary } from '../../utils/aiService';
 
 jest.mock('../../utils/aiService', () => ({
-  generateNarrativeSummary: jest.fn().mockResolvedValue('Mocked narrative summary'),
+  generateNarrativeSummary: jest.fn().mockResolvedValue('Mocked summary')
 }));
 
-describe('Journal Manager', () => {
-  let journal: JournalEntry[];
+describe('JournalManager', () => {
+  const emptyJournal: JournalEntry[] = [];
 
-  // Set up a sample journal before each test
   beforeEach(() => {
-    journal = [
-      { timestamp: 1000, content: 'First entry' },
-      { timestamp: 2000, content: 'Second entry' },
-      { timestamp: 3000, content: 'Third entry' },
-    ];
+    jest.clearAllMocks();
   });
 
-  // Test case: Adding a new journal entry
-  test('addJournalEntry adds a new entry with current timestamp', async () => {
-    const newJournal = await addJournalEntry(journal, 'New entry', 'Test context');
-    expect(newJournal).toHaveLength(4);
-    expect(newJournal[3].content).toBe('New entry');
-    expect(newJournal[3].timestamp).toBeGreaterThan(3000);
-    expect(newJournal[3].narrativeSummary).toBe('Mocked narrative summary');
+  describe('Legacy Functions', () => {
+    it('should add journal entry using legacy function', async () => {
+      const result = await addJournalEntry(emptyJournal, 'Test content', 'Test context');
+      
+      expect(result).toHaveLength(1);
+      expect(result[0].type).toBe('narrative');
+      expect(result[0].content).toBe('Test content');
+    });
+
+    it('should add combat entry using legacy function', () => {
+      const result = addCombatJournalEntry(
+        emptyJournal,
+        'Player',
+        'Enemy',
+        'victory',
+        'Combat summary'
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].type).toBe('combat');
+      expect((result[0] as CombatJournalEntry).outcome).toBe('victory');
+    });
+
+    it('should get journal context', () => {
+      const journal: JournalEntry[] = [
+        {
+          type: 'narrative',
+          timestamp: 1000,
+          content: 'Entry 1'
+        } as NarrativeJournalEntry,
+        {
+          type: 'narrative',
+          timestamp: 2000,
+          content: 'Entry 2'
+        } as NarrativeJournalEntry
+      ];
+
+      const context = getJournalContext(journal);
+      expect(context).toBe('Entry 1\nEntry 2');
+    });
+
+    it('should filter journal using legacy function', () => {
+      const journal: JournalEntry[] = [
+        {
+          type: 'narrative',
+          timestamp: 1000,
+          content: 'Test narrative'
+        } as NarrativeJournalEntry,
+        {
+          type: 'combat',
+          timestamp: 2000,
+          content: 'Test combat',
+          combatants: { player: 'P1', opponent: 'E1' },
+          outcome: 'victory'
+        } as CombatJournalEntry
+      ];
+
+      const result = filterJournal(journal, { type: 'narrative' });
+      expect(result).toHaveLength(1);
+      expect(result[0].type).toBe('narrative');
+    });
   });
 
-  // Test case: Getting journal entries sorted by timestamp
-  test('getJournalEntries returns entries sorted by timestamp descending', () => {
-    const sortedEntries = getJournalEntries(journal);
-    expect(sortedEntries).toHaveLength(3);
-    expect(sortedEntries[0].content).toBe('Third entry');
-    expect(sortedEntries[2].content).toBe('First entry');
-  });
+  describe('Class Methods', () => {
+    describe('addNarrativeEntry', () => {
+      it('should add a narrative entry with AI-generated summary', async () => {
+        const result = await JournalManager.addNarrativeEntry(emptyJournal, 'Test content', 'Test context');
+        
+        expect(result).toHaveLength(1);
+        expect(result[0].type).toBe('narrative');
+        expect(result[0].content).toBe('Test content');
+        expect(result[0].narrativeSummary).toBe('Mocked summary');
+        expect(generateNarrativeSummary).toHaveBeenCalledWith('Test content', 'Test context');
+      });
 
-  // Test case: Getting a specified number of recent journal entries
-  test('getRecentJournalEntries returns the specified number of recent entries', () => {
-    const recentEntries = getRecentJournalEntries(journal, 2);
-    expect(recentEntries).toHaveLength(2);
-    expect(recentEntries[0].content).toBe('Third entry');
-    expect(recentEntries[1].content).toBe('Second entry');
-  });
+      it('should handle AI service errors gracefully', async () => {
+        (generateNarrativeSummary as jest.Mock).mockRejectedValueOnce(new Error('AI Error'));
+        
+        const result = await JournalManager.addNarrativeEntry(emptyJournal, 'Test content');
+        expect(result).toEqual(emptyJournal);
+      });
+    });
 
-  // Test case: Getting recent entries when requested count exceeds journal length
-  test('getRecentJournalEntries returns all entries if count exceeds journal length', () => {
-    const recentEntries = getRecentJournalEntries(journal, 5);
-    expect(recentEntries).toHaveLength(3);
-  });
+    describe('addCombatEntry', () => {
+      it('should add a combat entry with correct structure', () => {
+        const result = JournalManager.addCombatEntry(
+          emptyJournal,
+          'Player',
+          'Enemy',
+          'victory',
+          'Combat summary'
+        );
 
-  // Test case: Getting journal context as a string
-  test('getJournalContext returns a string of recent journal entries', () => {
-    const context = getJournalContext(journal);
-    expect(typeof context).toBe('string');
-    expect(context).toContain('Third entry');
-    expect(context).toContain('Second entry');
-    expect(context).toContain('First entry');
-  });
-});
+        expect(result).toHaveLength(1);
+        const entry = result[0] as CombatJournalEntry;
+        expect(entry.type).toBe('combat');
+        expect(entry.combatants).toEqual({
+          player: 'Player',
+          opponent: 'Enemy'
+        });
+        expect(entry.outcome).toBe('victory');
+        expect(entry.content).toBe('Combat summary');
+      });
+    });
 
-describe('addCombatJournalEntry', () => {
-  it('should create a correctly formatted combat journal entry', () => {
-    const summary = 'Player defeated Outlaw in a shootout.';
-    const entry = addCombatJournalEntry(summary);
+    describe('addInventoryEntry', () => {
+      it('should add an inventory entry when items change', () => {
+        const result = JournalManager.addInventoryEntry(
+          emptyJournal,
+          ['New Item'],
+          ['Used Item'],
+          'Inventory context'
+        );
 
-    expect(entry).toHaveProperty('timestamp');
-    expect(typeof entry.timestamp).toBe('number');
-    expect(entry.content).toBe(`Combat: ${summary}`);
-  });
+        expect(result).toHaveLength(1);
+        const entry = result[0] as InventoryJournalEntry;
+        expect(entry.type).toBe('inventory');
+        expect(entry.items).toEqual({
+          acquired: ['New Item'],
+          removed: ['Used Item']
+        });
+        expect(entry.narrativeSummary).toBe('Acquired: New Item. Used/Lost: Used Item');
+      });
 
-  it('should be included in recent journal entries', () => {
-    const summary = 'Player was ambushed by Bandits.';
-    const combatEntry = addCombatJournalEntry(summary);
-    const journal: JournalEntry[] = [
-      { timestamp: Date.now() - 3000, content: 'Entered the saloon.' },
-      combatEntry,
-      { timestamp: Date.now() - 1000, content: 'Found a treasure map.' }
-    ];
+      it('should not add entry when no items changed', () => {
+        const result = JournalManager.addInventoryEntry(
+          emptyJournal,
+          [],
+          [],
+          'No changes'
+        );
 
-    const recentEntries = getRecentJournalEntries(journal, 2);
-    expect(recentEntries).toContainEqual(combatEntry);
-  });
+        expect(result).toEqual(emptyJournal);
+      });
+    });
 
-  it('should be included in journal context', () => {
-    const summary = 'Player won a duel against the Sheriff.';
-    const combatEntry = addCombatJournalEntry(summary);
-    const journal: JournalEntry[] = [combatEntry];
+    describe('filterJournal', () => {
+      const testJournal: JournalEntry[] = [
+        {
+          type: 'narrative',
+          timestamp: 1000,
+          content: 'Test narrative',
+          narrativeSummary: 'Summary'
+        } as NarrativeJournalEntry,
+        {
+          type: 'combat',
+          timestamp: 2000,
+          content: 'Test combat',
+          combatants: { player: 'P1', opponent: 'E1' },
+          outcome: 'victory'
+        } as CombatJournalEntry
+      ];
 
-    const context = getJournalContext(journal);
-    expect(context).toContain(summary);
+      it('should filter by type', () => {
+        const result = JournalManager.filterJournal(testJournal, { type: 'narrative' });
+        expect(result).toHaveLength(1);
+        expect(result[0].type).toBe('narrative');
+      });
+
+      it('should filter by date range', () => {
+        const result = JournalManager.filterJournal(testJournal, {
+          startDate: 1500,
+          endDate: 2500
+        });
+        expect(result).toHaveLength(1);
+        expect(result[0].timestamp).toBe(2000);
+      });
+
+      it('should filter by search text', () => {
+        const result = JournalManager.filterJournal(testJournal, {
+          searchText: 'combat'
+        });
+        expect(result).toHaveLength(1);
+        expect(result[0].content).toContain('combat');
+      });
+    });
   });
 });

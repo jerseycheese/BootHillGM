@@ -52,6 +52,7 @@ export const useAIInteractions = (
       // Add journal entry with the concise summary
       const journalEntry = {
         timestamp: Date.now(),
+        type: 'narrative' as const,
         content: input,
         narrativeSummary
       };
