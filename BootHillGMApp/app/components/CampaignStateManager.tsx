@@ -30,6 +30,8 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
       const isInitializing = sessionStorage.getItem('initializing_new_character');
       
       if (isInitializing) {
+        // Clear the initialization flag immediately
+        sessionStorage.removeItem('initializing_new_character');
         return { ...initialGameState, isClient: true };
       }
       
@@ -85,17 +87,14 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     setIsHydrated(true);
+    // Clear any stale initialization flags
+    sessionStorage.removeItem('initializing_new_character');
   }, []);
 
   const dispatch: React.Dispatch<GameEngineAction> = useCallback((action) => {
     baseDispatch(action);
   }, []);
 
-  /**
-   * Handles saving the game state to localStorage.
-   * Includes special handling for combat state to ensure turn-based combat 
-   * persists across page reloads and navigation.
-   */
   const saveGame = useCallback((stateToSave: GameState) => {
     try {
       const timestamp = Date.now();
@@ -198,11 +197,6 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [state]);
 
-  /**
-   * Loads and restores the game state from localStorage.
-   * Ensures proper type conversion for combat-related numerical values
-   * and maintains combat state consistency.
-   */
   const loadGame = useCallback((): GameState | null => {
     try {
       const serializedState = localStorage.getItem('campaignState');
@@ -250,7 +244,8 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
       const cleanState = { ...initialGameState, isClient: true };
       dispatch({ type: 'SET_STATE', payload: cleanState });
     } finally {
-      // Cleanup runs regardless of success/failure
+      // Remove the initialization flag after cleanup is complete
+      sessionStorage.removeItem('initializing_new_character');
     }
   }, [dispatch]);
 

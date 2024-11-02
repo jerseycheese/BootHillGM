@@ -1,13 +1,62 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useGame } from '../utils/gameEngine';
+import { useCampaignState } from '../components/CampaignStateManager';
+import { debugStorage } from '../utils/debugHelpers';
 
 export default function CharacterSheet() {
-  const { state } = useGame();
+  const { state, dispatch } = useGame();
+  const { loadGame, saveGame } = useCampaignState();
   const { character } = state;
 
+  useEffect(() => {
+    // Debug current state
+    console.log('Current game state:', state);
+    console.log('Character data:', character);
+    debugStorage();
+
+    // Try to load game if character is not present
+    if (!character) {
+      // First try to load from campaign state
+      const loadedState = loadGame();
+      console.log('Loaded campaign state:', loadedState);
+
+      // If no campaign state, check for last created character
+      if (!loadedState?.character && typeof window !== 'undefined') {
+        const lastCharacterJSON = localStorage.getItem('lastCreatedCharacter');
+        if (lastCharacterJSON) {
+          try {
+            const lastCharacter = JSON.parse(lastCharacterJSON);
+            console.log('Found last created character:', lastCharacter);
+            
+            // Create a new game state with this character
+            const newState = {
+              ...state,
+              character: lastCharacter,
+              savedTimestamp: Date.now()
+            };
+            
+            // Save and update the state
+            saveGame(newState);
+            dispatch({ type: 'SET_STATE', payload: newState });
+          } catch (error) {
+            console.error('Error loading last created character:', error);
+          }
+        }
+      }
+    }
+  }, [character, loadGame, saveGame, dispatch, state]);
+
   if (!character) {
-    return <div className="wireframe-container">No character found. Please create a character first.</div>;
+    return (
+      <div className="wireframe-container">
+        <div>No character found. Please create a character first.</div>
+        <div className="text-sm text-gray-500 mt-4">
+          Debug info: Check browser console for state information
+        </div>
+      </div>
+    );
   }
 
   return (

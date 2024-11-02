@@ -2,9 +2,30 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
+import { useCampaignState } from './CampaignStateManager';
+import { useGame } from '../utils/gameEngine';
+import { debugStorage } from '../utils/debugHelpers';
 
 export default function Navigation() {
   const pathname = usePathname();
+  const { loadGame } = useCampaignState();
+  const { state, dispatch } = useGame();
+
+  useEffect(() => {
+    // Debug current state
+    console.log('Navigation - Current game state:', state);
+    debugStorage();
+
+    // Load game state if no character is present
+    if (!state.character) {
+      const loadedState = loadGame();
+      if (loadedState) {
+        console.log('Navigation - Loaded state:', loadedState);
+        dispatch({ type: 'SET_STATE', payload: loadedState });
+      }
+    }
+  }, [state.character, loadGame, dispatch]);
 
   return (
     <nav className="bg-gray-800 p-4">
