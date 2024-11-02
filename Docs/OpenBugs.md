@@ -121,12 +121,11 @@ This document tracks bugs found during development and testing. Each bug entry s
   - Status: Open
   - Priority: High
 
-[BUG-031] Combat System Enhancement Opportunities
-  - Description: While core combat functionality is working, several enhancements would improve the experience
+[BUG-032] Combat System UI Polish Needed
+  - Description: While the combat system has been refactored for better maintainability, some UI improvements could enhance user experience
   - Areas for Improvement:
-    - Visual feedback during combat turns
-    - More detailed combat log formatting
-    - Weapon-specific combat modifiers
-    - Enhanced critical hit system
+    - Animations for health changes
+    - More prominent turn indicators
+    - Enhanced visual feedback for critical hits
   - Status: Open
   - Priority: Low

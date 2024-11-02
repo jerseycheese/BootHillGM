@@ -18,7 +18,7 @@ export function SidePanel({
   }
 
   return (
-    <div className="h-full flex flex-col justify-end">
+    <div className="h-full flex flex-col">
       <div className="space-y-4">
         <StatusDisplayManager
           character={state.character}

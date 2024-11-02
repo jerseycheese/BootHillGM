@@ -5,23 +5,21 @@ interface CombatLogProps {
 }
 
 export const CombatLog: React.FC<CombatLogProps> = ({ entries }) => {
-  const logRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    if (logRef.current) {
-      logRef.current.scrollTop = logRef.current.scrollHeight;
-    }
-  }, [entries]);
-
   return (
     <div 
-      ref={logRef}
       className="combat-log max-h-48 overflow-y-auto"
       role="log"
       aria-label="Combat log"
+      data-testid="combat-log"
     >
-      {entries.map((log: string, index: number) => (
-        <p key={index} className="text-sm">{log}</p>
+      {entries.map((entry, index) => (
+        <p 
+          key={`${entry}-${index}`}
+          className="text-sm"
+          data-testid={`combat-log-entry-${index}`}
+        >
+          {entry}
+        </p>
       ))}
     </div>
   );
