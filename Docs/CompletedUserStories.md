@@ -156,6 +156,15 @@
   - ✓ Improved readability and immersion
   - ✓ AI responses properly structured to separate narrative from suggestions
 
+- As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
+  **Implementation:**
+  - Added loading states for async operations
+  - Improved UI responsiveness
+  **Test Plan:**
+  - Verify that a loading indicator appears when generating a random character
+  - Check that the loading indicator is visible when transitioning between steps
+  - Ensure the loading indicator disappears once content is loaded
+
 ## Completed Tasks
 - As a developer, I want to set up the Next.js project structure so that I have a solid foundation for the app.
 - As a developer, I want to implement basic state management using React Context so that I can manage game state effectively.

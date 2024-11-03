@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGame } from '../utils/gameEngine';
-import { getCharacterCreationStep, validateAttributeValue, generateFieldValue, generateCompleteCharacter, generateCharacterSummary } from '../utils/aiService';
+import { validateAttributeValue, generateFieldValue, generateCompleteCharacter, generateCharacterSummary } from '../utils/aiService';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from '../types/character';
 import { initialGameState } from '../types/campaign';
@@ -31,10 +31,89 @@ const initialCharacter: Character = {
   },
 };
 
+// Add new interface for step descriptions
+interface StepDescription {
+  title: string;
+  description: string;
+  min?: number;
+  max?: number;
+}
+
 /**
- * Character Creation page component
- * Implements a step-by-step character creation process with auto-save functionality.
- * Progress is saved after each step and restored if the process is interrupted.
+ * Static descriptions for each character creation step
+ * Includes field descriptions, valid ranges, and context for each attribute/skill
+ */
+const STEP_DESCRIPTIONS: Record<string, StepDescription> = {
+  name: {
+    title: "Character Name",
+    description: "Choose a name for your character that fits the Old West setting."
+  },
+  speed: {
+    title: "Speed",
+    description: "Determines your character's quickness in combat and reactions. Affects who shoots first.",
+    min: 1,
+    max: 20
+  },
+  gunAccuracy: {
+    title: "Gun Accuracy",
+    description: "Your character's skill with firearms. Critical for combat and survival.",
+    min: 1,
+    max: 20
+  },
+  throwingAccuracy: {
+    title: "Throwing Accuracy",
+    description: "Skill with thrown weapons and general coordination.",
+    min: 1,
+    max: 20
+  },
+  strength: {
+    title: "Strength",
+    description: "Physical power affecting melee damage and carrying capacity.",
+    min: 8,
+    max: 20
+  },
+  bravery: {
+    title: "Bravery",
+    description: "Courage under fire. Affects combat bonuses and reactions.",
+    min: 1,
+    max: 20
+  },
+  experience: {
+    title: "Experience",
+    description: "Previous combat encounters and gunfights. Provides combat bonuses.",
+    min: 0,
+    max: 11
+  },
+  shooting: {
+    title: "Shooting",
+    description: "Overall firearms proficiency. Higher values improve hit chances.",
+    min: 1,
+    max: 100
+  },
+  riding: {
+    title: "Riding",
+    description: "Horsemanship and mounted combat ability.",
+    min: 1,
+    max: 100
+  },
+  brawling: {
+    title: "Brawling",
+    description: "Hand-to-hand combat skill. Important for close encounters.",
+    min: 1,
+    max: 100
+  },
+  summary: {
+    title: "Character Summary",
+    description: "Review your character before finalizing."
+  }
+};
+
+/**
+ * Character creation page implementing a step-by-step process with:
+ * - Static descriptions for each attribute and skill
+ * - AI-generated character background only in final summary
+ * - Automated progress saving
+ * - Loading states for async operations (name generation, background)
  */
 export default function GameSession() {
   const router = useRouter();
@@ -61,6 +140,7 @@ export default function GameSession() {
     return initialCharacter;
   });
 
+  // Restore initial step state handling
   const [currentStep, setCurrentStep] = useState<number>(() => {
     if (typeof window === 'undefined') return 0;
 
@@ -81,6 +161,21 @@ export default function GameSession() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [characterSummary, setCharacterSummary] = useState('');
+
+  // Update the renderInput function to clear input value on corrupted data
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          JSON.parse(saved);
+        } catch {
+          setUserResponse('');
+        }
+      }
+    }
+  }, []);
+
 
   /**
    * Automatically saves character creation progress to localStorage
@@ -103,42 +198,60 @@ export default function GameSession() {
   }, [character, currentStep]);
 
   // Define the structure of each step in the character creation process
+  type StepType = 'string' | 'number' | 'review';
+
+  interface Step {
+    key: keyof Character['attributes'] | keyof Character['skills'] | 'name' | 'summary';
+    type: StepType;
+  }
+
   const steps = useMemo(() => [
-    { key: 'name' as const, type: 'string' },
+    { key: 'name', type: 'string' as const },
     ...Object.keys(character.attributes).map(attr => ({ key: attr as keyof Character['attributes'], type: 'number' as const })),
     ...Object.keys(character.skills).map(skill => ({ key: skill as keyof Character['skills'], type: 'number' as const })),
-    { key: 'summary' as const, type: 'review' as const }
-  ] as const, [character.attributes, character.skills]);
+    { key: 'summary', type: 'review' as const }
+  ] satisfies Step[], [character.attributes, character.skills]);
 
   // Fetch AI-generated prompts for each character creation step
-  const getNextAIPrompt = useCallback(async () => {
-    try {
-      if (currentStep < steps.length - 1) {
-        const prompt = await getCharacterCreationStep(currentStep, steps[currentStep].key);
-        setAiPrompt(prompt);
-      }
-    } catch {
-      setAiPrompt('An error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
+  const getStepPrompt = (currentStep: number) => {
+    const { key } = steps[currentStep];
+    const stepInfo = STEP_DESCRIPTIONS[key];
+
+
+    if (!stepInfo) {
+      return '';
     }
-  }, [currentStep, steps]);
+
+    let prompt = `${stepInfo.title}\n${stepInfo.description}`;
+
+    if (stepInfo.min !== undefined && stepInfo.max !== undefined) {
+      prompt += `\n\nEnter a value between ${stepInfo.min} and ${stepInfo.max}.`;
+    }
+    return prompt;
+  };
+
 
   // Fetch new AI prompt when step changes
   useEffect(() => {
-    if (isLoading && currentStep < steps.length - 1) {
-      getNextAIPrompt();
+    if (currentStep < steps.length - 1) {
+      setAiPrompt(getStepPrompt(currentStep));
+      setIsLoading(false); // Remove loading state for static content
     }
-  }, [currentStep, isLoading, getNextAIPrompt, steps.length]);
+  }, [currentStep, steps.length, getStepPrompt]); // Add getStepPrompt to the dependency array
 
   // Generate and display a summary of the character at the final step
   const generateSummary = useCallback(async () => {
+    setIsLoading(true);
     try {
+      // Only use AI for the character description/background
       const summary = await generateCharacterSummary(character);
       setCharacterSummary(summary);
-      setAiPrompt("Review your character summary below. If you're satisfied, click 'Finish' to create your character.");
     } catch {
-      setCharacterSummary("An error occurred while generating the character summary. Please try again.");
+      setCharacterSummary("An error occurred generating your character's background.");
+    } finally {
+      setIsLoading(false);
+      // Set the static prompt immediately
+      setAiPrompt(STEP_DESCRIPTIONS.summary.description);
     }
   }, [character]);
 
@@ -167,7 +280,6 @@ export default function GameSession() {
       }
     } else {
       cleanupState();
-      localStorage.removeItem(STORAGE_KEY); // Clear saved progress
       finishCharacterCreation();
     }
   };
@@ -230,7 +342,8 @@ export default function GameSession() {
   const finishCharacterCreation = () => {
     const newCharacterData = JSON.stringify(character);
     localStorage.setItem('lastCreatedCharacter', newCharacterData);
-    
+    localStorage.removeItem(STORAGE_KEY); // Add this line back
+
     // Create clean initial state with new character
     const initialState = {
       ...initialGameState,
@@ -238,7 +351,7 @@ export default function GameSession() {
       savedTimestamp: Date.now(),
       isClient: true
     };
-    
+
     saveGame(initialState);
     router.push('/game-session');
   };
@@ -264,88 +377,120 @@ export default function GameSession() {
     }
   };
 
-  // Render input field or character summary based on current step
+  /**
+ * Renders the appropriate input interface based on current step:
+ * - Text input with name generation for character name
+ * - Number input with value generation for attributes/skills
+ * - Summary view with AI-generated background for final step
+ */
   const renderInput = () => {
-    const { type } = steps[currentStep];
-    if (type === 'review') {
+    const step = steps[currentStep];
+
+    if (step.type === 'review') {
       // Display character summary and details at the final step
       return (
         <div className="space-y-2">
           <h2 className="text-xl font-bold">Character Summary</h2>
-          <p>{characterSummary}</p>
-          <p><strong>Name:</strong> {character.name}</p>
-          <h3 className="text-lg font-bold">Attributes</h3>
-          {Object.entries(character.attributes).map(([attr, value]) => (
-            <p key={attr}>
-              <strong>{attr.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (str: string) => str.toUpperCase())}:</strong> {value}
-            </p>
-          ))}
-          <h3 className="text-lg font-bold">Skills</h3>
-          {Object.entries(character.skills).map(([skill, value]) => (
-            <p key={skill}>
-              <strong>{skill.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (str: string) => str.toUpperCase())}:</strong> {value}
-            </p>
-          ))}
+          {isLoading ? (
+            <LoadingScreen 
+              message="Generating character background..." 
+              size="small"
+              fullscreen={false}
+            />
+          ) : (
+            <>
+              {/* AI-generated character background */}
+              <p className="mb-4">{characterSummary}</p>
+              
+              {/* Static character details */}
+              <div className="space-y-4">
+                <p><strong>Name:</strong> {character.name}</p>
+                
+                <div>
+                  <h3 className="text-lg font-bold">Attributes</h3>
+                  {Object.entries(character.attributes).map(([attr, value]) => (
+                    <p key={attr}>
+                      <strong>{STEP_DESCRIPTIONS[attr].title}:</strong> {value}
+                    </p>
+                  ))}
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-bold">Skills</h3>
+                  {Object.entries(character.skills).map(([skill, value]) => (
+                    <p key={skill}>
+                      <strong>{STEP_DESCRIPTIONS[skill].title}:</strong> {value}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       );
     }
-    // Render input field for character attributes and skills
+
     return (
       <div>
         <label htmlFor="userResponse" className="block mb-2">Your Response:</label>
-        <div className="flex space-x-2">
+        <div className="relative flex space-x-2">
           <input
-            type={type}
+            type={step.type}
             id="userResponse"
             value={userResponse}
             onChange={handleInputChange}
-            className="wireframe-input"
+            className="wireframe-input flex-1"
             required
           />
           <button
             type="button"
             onClick={generateFieldValueForStep}
-            className="wireframe-button mb-2"
+            className="wireframe-button"
             disabled={isLoading}
           >
-            Generate
+            {isLoading ? 'Generating...' : 'Generate'}
           </button>
         </div>
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <LoadingScreen 
+              message={step.type === 'string' ? "Generating name..." : "Generating value..."}
+              size="small"
+              fullscreen={false}
+            />
+          </div>
+        )}
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </div>
     );
   };
 
+
   // Render the character creation form
   return (
     <div className="wireframe-container">
+      {currentStep < steps.length - 1 && ( // Only show random character button before summary step
+        <button
+          type="button"
+          onClick={generateCharacter}
+          className={`wireframe-button mb-4 float-right ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isLoading}
+        >
+          Generate Random Character
+        </button>
+      )}
       <h1 className="wireframe-title">Create Your Character</h1>
       <div className="wireframe-section relative">
-        <p className="wireframe-text mb-4">Step {currentStep + 1}: {steps[currentStep].key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, str => str.toUpperCase())}</p>
-        {isLoading ? (
-          <LoadingScreen 
-            message="Generating content..." 
-            subMessage="Please wait while AI processes your request"
-            size="small"
-            fullscreen={false}
-          />
-        ) : (
-          <p className="wireframe-text">{aiPrompt}</p>
-        )}
+        <p className="wireframe-text mb-4">Step {currentStep + 1}: {STEP_DESCRIPTIONS[steps[currentStep].key].title}</p>
+        <p className="wireframe-text">{aiPrompt}</p>
       </div>
-      <button
-        type="button"
-        onClick={generateCharacter}
-        className={`wireframe-button mb-4 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-        disabled={isLoading}
-      >
-        {isLoading ? 'Generating Character...' : 'Generate Random Character'}
-      </button>
       <form onSubmit={handleSubmit} className="wireframe-section" data-testid="character-form">
         {renderInput()}
-        <button type="submit" className="wireframe-button" disabled={isLoading}>
-          {currentStep < steps.length - 1 ? 'Next Step' : 'Finish Character Creation'}
-        </button>
+        <div className="flex justify-end mt-4">
+          <button type="submit" className="wireframe-button" disabled={isLoading && currentStep === steps.length - 1}>
+            {currentStep < steps.length - 1 ? 'Next Step' : 'Finish Character Creation'}
+          </button>
+        </div>
       </form>
     </div>
   );

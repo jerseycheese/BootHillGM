@@ -228,6 +228,7 @@ describe('Character Creation', () => {
     expect(screen.getByText('Test Character')).toBeInTheDocument();
   });
 
+
   test('restores to initial state if saved data is corrupted', async () => {
     mockLocalStorage.getItem.mockReturnValueOnce('invalid json');
 
@@ -238,4 +239,5 @@ describe('Character Creation', () => {
     const input = screen.getByLabelText(/your response/i);
     expect(input).toHaveValue(null);
   });
+
 });

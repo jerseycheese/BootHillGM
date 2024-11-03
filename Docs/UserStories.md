@@ -151,11 +151,6 @@
   - Test recovery of progress after page refresh
   - Ensure partial character data is properly stored and retrieved
 
-- As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
-  **Test Plan:**
-  - Verify that a loading indicator appears when generating a random character
-  - Check that the loading indicator is visible when transitioning between steps
-  - Ensure the loading indicator disappears once content is loaded
 
 ### Technical Improvements
 - As a developer, I want to add identifying IDs/classes to page markup to make debugging and testing easier.

@@ -18,7 +18,7 @@ export default function GameSession() {
 
   return (
     <div className="wireframe-container">
-      <div className="h-full grid grid-cols-[1fr_300px] gap-4">
+      <div className="grid grid-cols-[1fr_300px] gap-4">
         <MainGameArea {...gameSession} />
         <SidePanel {...gameSession} />
       </div>
