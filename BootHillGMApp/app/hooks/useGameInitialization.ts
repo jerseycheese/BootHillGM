@@ -109,7 +109,7 @@ export const useGameInitialization = () => {
         suggestedActions: response.suggestedActions || []
       };
 
-    } catch (error) {
+    } catch {
       // Handle errors gracefully with fallback suggestions
       try {
         const fallbackResponse = await getAIResponse(

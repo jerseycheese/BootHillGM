@@ -50,3 +50,13 @@ This document tracks resolved bugs in the BootHillGM project. For active bugs, s
 - Status: Fixed
 - Priority: High
 - Closed Date: 2024-11-2
+
+[BUG-021] Delayed Content Update and Incorrect Step Information on Character Summary
+  - Description: When generating a random character, there's a delay in updating the UI, and outdated step information is briefly shown.
+  - Resolution: 
+    - Implemented granular loading states for different operations
+    - Added proper async/await handling for step transitions
+    - Removed unnecessary loading state from step changes
+    - Improved loading indicator visibility
+  - Fixed in commit: [commit-hash] "fix: eliminate loading indicator flash in character creation"
+  - Date Closed: 2024-11-03

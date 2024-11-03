@@ -12,19 +12,6 @@ This document tracks bugs found during development and testing. Each bug entry s
   - Status: Open
   - Priority: Medium
 
-[BUG-021] Delayed Content Update and Incorrect Step Information on Character Summary
-  - Description: When generating a random character, there's a delay in updating the UI, and outdated step information is briefly shown.
-  - Steps to Reproduce: 
-    1. Go to the Character Creation page
-    2. Click "Generate Random Character"
-    3. Observe the transition to the summary page
-  - Expected Behavior: Immediate update of step information and character description, with a loading indicator if there's a delay.
-  - Actual Behavior: 
-    - "Step 1: name" text remains visible for a few seconds before changing to "Step 11: summary"
-    - Character description takes several seconds to load without any loading indication
-  - Status: Open
-  - Priority: Medium
-
 [BUG-022] Generate Random Character Button Malfunction on Summary Page
   - Description: The Generate Random Character button doesn't generate a new character when clicked on the summary page.
   - Steps to Reproduce: 

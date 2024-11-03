@@ -158,7 +158,10 @@ export default function GameSession() {
 
   const [aiPrompt, setAiPrompt] = useState('');
   const [userResponse, setUserResponse] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  // Track loading states separately for different operations to prevent unwanted flashes
+  const [isGeneratingField, setIsGeneratingField] = useState(false);
+  const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
+  const [isProcessingStep, setIsProcessingStep] = useState(false);
   const [error, setError] = useState('');
   const [characterSummary, setCharacterSummary] = useState('');
 
@@ -212,8 +215,8 @@ export default function GameSession() {
     { key: 'summary', type: 'review' as const }
   ] satisfies Step[], [character.attributes, character.skills]);
 
-  // Fetch AI-generated prompts for each character creation step
-  const getStepPrompt = (currentStep: number) => {
+  // Synchronously get step prompt without API call to avoid loading flashes
+  const getStepPrompt = useCallback((currentStep: number) => {
     const { key } = steps[currentStep];
     const stepInfo = STEP_DESCRIPTIONS[key];
 
@@ -228,20 +231,19 @@ export default function GameSession() {
       prompt += `\n\nEnter a value between ${stepInfo.min} and ${stepInfo.max}.`;
     }
     return prompt;
-  };
+  }, [steps]);
 
 
   // Fetch new AI prompt when step changes
   useEffect(() => {
     if (currentStep < steps.length - 1) {
       setAiPrompt(getStepPrompt(currentStep));
-      setIsLoading(false); // Remove loading state for static content
     }
   }, [currentStep, steps.length, getStepPrompt]); // Add getStepPrompt to the dependency array
 
   // Generate and display a summary of the character at the final step
   const generateSummary = useCallback(async () => {
-    setIsLoading(true);
+    setIsGeneratingCharacter(true);
     try {
       // Only use AI for the character description/background
       const summary = await generateCharacterSummary(character);
@@ -249,7 +251,7 @@ export default function GameSession() {
     } catch {
       setCharacterSummary("An error occurred generating your character's background.");
     } finally {
-      setIsLoading(false);
+      setIsGeneratingCharacter(false);
       // Set the static prompt immediately
       setAiPrompt(STEP_DESCRIPTIONS.summary.description);
     }
@@ -268,15 +270,19 @@ export default function GameSession() {
     setError('');
   };
 
-  // Process form submission for each step
-  const handleSubmit = (e: React.FormEvent) => {
+  // Process form submission with proper async handling and loading states
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (currentStep < steps.length - 1) {
       if (validateInput()) {
-        updateCharacter();
-        setCurrentStep((prev: number) => prev + 1);
-        setUserResponse('');
-        setIsLoading(true);
+        setIsProcessingStep(true);
+        try {
+          await updateCharacter();
+          setCurrentStep((prev: number) => prev + 1);
+          setUserResponse('');
+        } finally {
+          setIsProcessingStep(false);
+        }
       }
     } else {
       cleanupState();
@@ -301,7 +307,7 @@ export default function GameSession() {
   };
 
   const generateCharacter = async () => {
-    setIsLoading(true);
+    setIsGeneratingCharacter(true);
     setError('');
     try {
       // Attempt to generate a complete character using the AI
@@ -312,12 +318,12 @@ export default function GameSession() {
     } catch {
       setError('Failed to generate character. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsGeneratingCharacter(false);
     }
   };
 
   // Update character state based on current step and user response
-  const updateCharacter = () => {
+  const updateCharacter = async () => {
     const { key, type } = steps[currentStep];
     const value = type === 'number' ? parseInt(userResponse) : userResponse;
 
@@ -358,7 +364,7 @@ export default function GameSession() {
 
   // Generate a value for the current field using AI or random generation
   const generateFieldValueForStep = async () => {
-    setIsLoading(true);
+    setIsGeneratingField(true);
     setError('');
     try {
       const { key } = steps[currentStep];
@@ -373,7 +379,7 @@ export default function GameSession() {
     } catch {
       setError('Failed to generate value. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsGeneratingField(false);
     }
   };
 
@@ -391,7 +397,7 @@ export default function GameSession() {
       return (
         <div className="space-y-2">
           <h2 className="text-xl font-bold">Character Summary</h2>
-          {isLoading ? (
+          {isGeneratingCharacter ? (
             <LoadingScreen 
               message="Generating character background..." 
               size="small"
@@ -446,15 +452,15 @@ export default function GameSession() {
             type="button"
             onClick={generateFieldValueForStep}
             className="wireframe-button"
-            disabled={isLoading}
+            disabled={isGeneratingField}
           >
-            {isLoading ? 'Generating...' : 'Generate'}
+            {isGeneratingField ? 'Generating...' : 'Generate'}
           </button>
         </div>
-        {isLoading && (
+        {isProcessingStep && (
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
             <LoadingScreen 
-              message={step.type === 'string' ? "Generating name..." : "Generating value..."}
+              message="Processing..."
               size="small"
               fullscreen={false}
             />
@@ -473,8 +479,8 @@ export default function GameSession() {
         <button
           type="button"
           onClick={generateCharacter}
-          className={`wireframe-button mb-4 float-right ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          disabled={isLoading}
+          className={`wireframe-button mb-4 float-right ${isGeneratingCharacter ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isGeneratingCharacter}
         >
           Generate Random Character
         </button>
@@ -487,7 +493,7 @@ export default function GameSession() {
       <form onSubmit={handleSubmit} className="wireframe-section" data-testid="character-form">
         {renderInput()}
         <div className="flex justify-end mt-4">
-          <button type="submit" className="wireframe-button" disabled={isLoading && currentStep === steps.length - 1}>
+          <button type="submit" className="wireframe-button" disabled={isProcessingStep}>
             {currentStep < steps.length - 1 ? 'Next Step' : 'Finish Character Creation'}
           </button>
         </div>
