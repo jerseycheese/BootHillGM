@@ -123,10 +123,8 @@ export const useGameSession = () => {
       return response;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-      throw err;
     } finally {
       setIsLoading(false);
-      setIsUsingItem(false);
     }
   }, [state, dispatch, updateNarrative, isUsingItem, combatManager]);
 

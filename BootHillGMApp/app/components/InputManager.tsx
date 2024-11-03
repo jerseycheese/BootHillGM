@@ -60,14 +60,14 @@ const InputManager: React.FC<InputManagerProps> = ({
           type="text"
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
-          className="wireframe-input px-3 py-2"
+          className={`wireframe-input px-3 py-2 ${isLoading ? 'opacity-50' : ''}`}
           placeholder="Or type any action..."
           disabled={isLoading}
           aria-label="Custom action input"
         />
         <button 
           type="submit" 
-          className="wireframe-button"
+          className={`wireframe-button ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           disabled={isLoading || !userInput.trim()}
           aria-busy={isLoading}
         >

@@ -49,12 +49,12 @@
   **Status:** Not yet implemented.
 
 ### Combat System
-- As a player, I want visual feedback during combat turns, so that I can better understand the flow of battle.
-  **Test Plan:**
-  - Implement visual indicators for current turn
-  - Add animations or effects for combat actions
-  - Verify feedback is clear and enhances combat experience
-  **Status:** Not yet implemented.
+- [x] As a player, I want visual feedback during combat turns, so that I can better understand the flow of battle.
+  **Implementation:**
+  - Added loading states for combat actions
+  - Improved button disabled states
+  - Clear turn indicator messages
+  - Proper cursor feedback
 
 - [ ] As a player, I want more detailed combat log formatting, so that I can better understand what's happening in combat.
   **Test Plan:**
@@ -122,12 +122,12 @@
   - Ensure the game's atmosphere consistently reflects these Western themes
   **Status:** Not yet implemented.
 
-- As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
-  **Test Plan:**
-  - Verify that a loading indicator appears when generating a random character
-  - Check that the loading indicator is visible when transitioning between steps
-  - Ensure the loading indicator disappears once content is loaded
-  **Status:** Not yet implemented.
+- [x] As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
+  **Implementation:**
+  - Added loading states during character generation
+  - Clear button state transitions
+  - Processing feedback in button text
+
 
 - As a player, I want to start with 4-5 genre-appropriate, inexpensive (non-combat) items, so that I have a realistic and thematic starting inventory.
   **Test Plan:**

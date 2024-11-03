@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
 interface NarrativeDisplayProps {
   narrative: string;
@@ -6,15 +6,6 @@ interface NarrativeDisplayProps {
   onRetry?: () => void;
 }
 
-/**
- * NarrativeDisplay handles the presentation of game narrative text and error states.
- * It provides:
- * - Expanded scrollable container for game text
- * - Error message display in red
- * - Optional retry functionality for error recovery
- * - Preserves text formatting using pre tag and whitespace-pre-wrap
- * - Auto-scrolls to bottom when new narrative content arrives
- */
 const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   narrative,
   error,
@@ -49,10 +40,7 @@ const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
     return text.split('\n').map((line, index) => {
       if (line.startsWith('Player:')) {
         return (
-          <div 
-            key={`line-${index}`}
-            className="player-action my-3 py-2 px-4 rounded border-l-4 border-green-500"
-          >
+          <div key={`line-${index}`} className="player-action my-3 py-2 px-4 rounded border-l-4 border-green-500">
             {line}
           </div>
         );
@@ -60,20 +48,14 @@ const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       
       if (line.startsWith('Game Master:')) {
         return (
-          <div 
-            key={`line-${index}`}
-            className="gm-response my-3 py-2 px-4 border-l-4 border-blue-500"
-          >
+          <div key={`line-${index}`} className="gm-response my-3 py-2 px-4 border-l-4 border-blue-500">
             {line.replace('Game Master:', 'GM:')}
           </div>
         );
       }
       
       return line.trim() ? (
-        <div 
-          key={`line-${index}`}
-          className="narrative-line my-2 py-1"
-        >
+        <div key={`line-${index}`} className="narrative-line my-2 py-1">
           {line}
         </div>
       ) : <div key={`line-${index}`} className="h-2" />;
@@ -87,20 +69,20 @@ const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       className="narrative-container overflow-y-auto flex-1 max-h-[60vh] px-4"
       data-testid="narrative-display"
     >
-      <div className="narrative-content py-4 space-y-1">
+      <div className="narrative-content py-4 space-y-1 relative">
         {formatNarrativeContent(narrative)}
       </div>
       
       {error && (
         <div 
-          className="error-container text-red-500 flex items-center gap-2 mt-4 p-2 bg-red-50 rounded"
+          className="wireframe-section text-red-500 flex items-center gap-2 mt-4 p-2"
           role="alert"
         >
           <span>{error}</span>
           {onRetry && (
             <button
               onClick={onRetry}
-              className="retry-button px-3 py-1 text-sm bg-red-100 hover:bg-red-200 rounded transition-colors"
+              className="wireframe-button px-3 py-1"
             >
               Retry
             </button>

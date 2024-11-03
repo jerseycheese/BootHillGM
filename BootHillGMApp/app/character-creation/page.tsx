@@ -7,6 +7,7 @@ import { getCharacterCreationStep, validateAttributeValue, generateFieldValue, g
 import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from '../types/character';
 import { initialGameState } from '../types/campaign';
+import { LoadingScreen } from '../components/GameArea/LoadingScreen';
 
 // Storage key for character creation progress
 const STORAGE_KEY = 'character-creation-progress';
@@ -95,7 +96,8 @@ export default function GameSession() {
         currentStep,
         lastUpdated: Date.now()
       }));
-    } catch {
+    } catch (error) {
+      console.error('Failed to save character creation progress:', error);
       setError('Failed to save progress');
     }
   }, [character, currentStep]);
@@ -195,7 +197,7 @@ export default function GameSession() {
       setCharacter(generatedCharacter);
       // Move to the summary step to display the generated character
       setCurrentStep(steps.length - 1);
-    } catch (error) {
+    } catch {
       setError('Failed to generate character. Please try again.');
     } finally {
       setIsLoading(false);
@@ -318,17 +320,26 @@ export default function GameSession() {
   return (
     <div className="wireframe-container">
       <h1 className="wireframe-title">Create Your Character</h1>
-      <div className="wireframe-section">
+      <div className="wireframe-section relative">
         <p className="wireframe-text mb-4">Step {currentStep + 1}: {steps[currentStep].key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, str => str.toUpperCase())}</p>
-        {isLoading ? <p>Loading...</p> : <p className="wireframe-text">{aiPrompt}</p>}
+        {isLoading ? (
+          <LoadingScreen 
+            message="Generating content..." 
+            subMessage="Please wait while AI processes your request"
+            size="small"
+            fullscreen={false}
+          />
+        ) : (
+          <p className="wireframe-text">{aiPrompt}</p>
+        )}
       </div>
       <button
         type="button"
         onClick={generateCharacter}
-        className="wireframe-button mb-4"
+        className={`wireframe-button mb-4 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
         disabled={isLoading}
       >
-        Generate Random Character
+        {isLoading ? 'Generating Character...' : 'Generate Random Character'}
       </button>
       <form onSubmit={handleSubmit} className="wireframe-section" data-testid="character-form">
         {renderInput()}

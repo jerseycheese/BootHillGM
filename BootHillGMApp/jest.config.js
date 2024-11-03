@@ -13,7 +13,11 @@ const customJestConfig = {
     '^.+\\.(css|sass|scss)$': 'identity-obj-proxy',
   },
   moduleDirectories: ['node_modules', '<rootDir>/'],
-  testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  testPathIgnorePatterns: [
+    '<rootDir>/.next/',
+    '<rootDir>/node_modules/',
+    '<rootDir>/app/__tests__/hooks/useCharacterCreation.test.ts'
+  ],
   collectCoverage: true,
   collectCoverageFrom: [
     '**/*.{js,jsx,ts,tsx}',

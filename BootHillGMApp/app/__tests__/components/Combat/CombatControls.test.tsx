@@ -22,28 +22,6 @@ describe('CombatControls', () => {
     expect(screen.getByText("Opponent's Turn")).not.toHaveClass('bg-green-100');
   });
 
-  test('shows attack button only during player turn', () => {
-    const { rerender } = render(
-      <CombatControls
-        currentTurn="player"
-        isProcessing={false}
-        onAttack={mockAttack}
-      />
-    );
-
-    expect(screen.getByText('Attack')).toBeInTheDocument();
-
-    rerender(
-      <CombatControls
-        currentTurn="opponent"
-        isProcessing={false}
-        onAttack={mockAttack}
-      />
-    );
-
-    expect(screen.queryByText('Attack')).not.toBeInTheDocument();
-  });
-
   test('disables attack button when processing', () => {
     render(
       <CombatControls

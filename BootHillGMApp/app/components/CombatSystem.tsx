@@ -15,6 +15,7 @@ import { GameEngineAction } from '../utils/gameEngine';
 import { CombatLog } from './Combat/CombatLog';
 import { CombatControls } from './Combat/CombatControls';
 import { CombatStatus } from './Combat/CombatStatus';
+import { LoadingScreen } from './GameArea/LoadingScreen';
 import { useCombatEngine } from '../hooks/useCombatEngine';
 
 interface CombatSystemProps {
@@ -68,17 +69,31 @@ const CombatSystem: React.FC<CombatSystemProps> = ({
   }, [currentTurn, isProcessing, handleOpponentAttack]);
 
   return (
-    <div className="combat-system wireframe-section">
+    <div className="combat-system wireframe-section space-y-4">
       <CombatStatus
         playerHealth={playerHealth}
         opponentHealth={opponentHealth}
       />
       
-      <CombatControls
-        currentTurn={currentTurn}
-        isProcessing={isProcessing}
-        onAttack={handlePlayerAttack}
-      />
+      <div className="relative">
+        <CombatControls
+          currentTurn={currentTurn}
+          isProcessing={isProcessing}
+          onAttack={handlePlayerAttack}
+        />
+        
+        {isProcessing && (
+          <div 
+            className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90" 
+          >
+            <LoadingScreen 
+              message="Processing combat action..." 
+              size="small"
+              fullscreen={false}
+            />
+          </div>
+        )}
+      </div>
       
       <div className="combat-info">
         <CombatLog entries={combatLog} />
