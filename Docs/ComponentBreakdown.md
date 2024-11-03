@@ -17,6 +17,7 @@
   - [x] Two-column layout with main game area and side panel
   - [x] Handles initialization and loading states
   - [x] Distributes game state to child components
+  - [x] Manages item acquisition and usage notifications
 - **MainGameArea**: Primary game interaction space
   - [x] Displays narrative content
   - [x] Manages combat and input interfaces
@@ -103,6 +104,7 @@
   - [x] Uses CampaignStateManager
   - [x] Handles quantity updates
   - [x] Maintains persistence
+  - [x] Coordinates with narrative for item notifications
 
 ### 8. Journal System
 - **JournalViewer Component:**
@@ -117,6 +119,7 @@
   - [x] Shows game text with formatting
   - [x] Auto-scrolls for new content
   - [x] Handles error states
+  - [x] Displays item notifications
 - **InputManager:**
   - [x] Processes player input
   - [x] Shows loading states
@@ -127,9 +130,9 @@
   - [x] Provides save functionality
 
 ### 10. Current Development Focus
-- [ ] Enhanced combat feedback
-- [ ] Improved inventory interactions
-- [ ] Journal system refinements
+- [x] Enhanced inventory feedback
+- [ ] Combat system refinements
+- [ ] Journal system improvements
 - [ ] UI polish and optimization
 - [ ] Additional error handling
 
