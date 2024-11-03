@@ -1,70 +1,164 @@
-/* app/styles/wireframe.css */
+/* Western Theme CSS Variables */
+:root {
+  /* Color Palette */
+  --leather-brown: #8B4513;
+  --saddle-brown: #954535;
+  --dusty-red: #B85450;
+  --parchment: #FFF8DC;
+  --aged-paper: #F4E4BC;
+  --weathered-wood: #967969;
+  --desert-sand: #EDC9AF;
+  --gunmetal: #2C3539;
+  
+  /* Font Families */
+  --western-display: "Playfair Display", serif;
+  --western-text: "Crimson Text", serif;
+}
 
-/* Main container for page content */
+/* Base Container Styles */
 .wireframe-container {
-  margin-left: auto;
-  margin-right: auto;
-  padding: 1rem;
-  height: 100vh;
+  background-color: var(--parchment);
+  border: 2px solid var(--leather-brown);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 1.5rem;
 }
 
-/* Section divider */
+/* Section Styling */
 .wireframe-section {
-  border: 1px solid white;
-  padding: 1rem;
-  margin-bottom: 1rem;
+  background-color: var(--aged-paper);
+  border: 1px solid var(--weathered-wood);
+  border-radius: 4px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Remove bottom margin for narrative section */
-.h-full .wireframe-section {
-  margin-bottom: 0;
-}
-
-/* Main title styling */
+/* Typography */
 .wireframe-title {
-  font-size: 1.5rem;
-  font-weight: 400;
+  font-family: var(--western-display);
+  color: var(--leather-brown);
+  font-size: 2.5rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  border-bottom: 2px solid var(--saddle-brown);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.wireframe-subtitle {
+  font-family: var(--western-display);
+  color: var(--saddle-brown);
+  font-size: 1.8rem;
   margin-bottom: 1rem;
 }
 
-/* Subtitle styling */
-.wireframe-subtitle {
-  font-size: 1.25rem;
-  font-weight: 400;
-  margin-bottom: 0.5rem;
-}
-
-/* Regular text styling */
 .wireframe-text {
-  font-size: 1rem;
+  font-family: var(--western-text);
+  color: var(--gunmetal);
+  line-height: 1.6;
 }
 
-/* Input field styling */
-.wireframe-input {
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-  border: 1px solid white;
-  color: black;
-}
-
-/* Button styling */
+/* Interactive Elements */
 .wireframe-button {
-  padding: 0.5rem 1rem;
-  border: 1px solid white;
-  background-color: white;
+  background-color: var(--leather-brown);
+  color: var(--parchment);
+  border: 2px solid var(--saddle-brown);
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--western-display);
+  font-size: 1rem;
   cursor: pointer;
-  color: black;
+  transition: all 0.3s ease;
 }
 
-/* List styling */
+.wireframe-button:hover {
+  background-color: var(--saddle-brown);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.wireframe-button:active {
+  transform: translateY(1px);
+}
+
+.wireframe-input {
+  background-color: var(--desert-sand);
+  border: 1px solid var(--weathered-wood);
+  border-radius: 4px;
+  padding: 0.75rem;
+  font-family: var(--western-text);
+  color: var(--gunmetal);
+  width: 100%;
+}
+
+.wireframe-input:focus {
+  outline: none;
+  border-color: var(--leather-brown);
+  box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2);
+}
+
+/* Lists */
 .wireframe-list {
-  list-style-type: disc;
-  list-style-position: inside;
+  list-style-type: none;
+  padding-left: 0;
 }
 
-/* Card styling for grouped content */
-.wireframe-card {
-  border: 1px solid white;
+.wireframe-list li {
+  border-bottom: 1px solid var(--weathered-wood);
+  padding: 0.75rem 0;
+}
+
+.wireframe-list li:last-child {
+  border-bottom: none;
+}
+
+/* Combat System Specific Styles */
+.combat-log {
+  font-family: var(--western-text);
+  background-color: var(--parchment);
+  border: 1px solid var(--weathered-wood);
+  padding: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.combat-log p {
+  color: var(--gunmetal);
+  margin-bottom: 0.5rem;
+  border-left: 3px solid var(--dusty-red);
+  padding-left: 0.75rem;
+}
+
+/* Journal Specific Styles */
+.journal-entry {
+  background-color: var(--desert-sand);
+  border-left: 4px solid var(--leather-brown);
   padding: 1rem;
   margin-bottom: 1rem;
+}
+
+/* Loading States */
+.wireframe-loading {
+  color: var(--leather-brown);
+  font-family: var(--western-text);
+  font-style: italic;
+}
+
+/* Narrative Display */
+.narrative-container {
+  background-color: var(--aged-paper);
+  border: 1px solid var(--weathered-wood);
+  padding: 1.5rem;
+  margin: 1rem 0;
+  font-family: var(--western-text);
+  line-height: 1.8;
+}
+
+.player-action {
+  color: var(--saddle-brown);
+  font-weight: bold;
+}
+
+.gm-response {
+  color: var(--dusty-red);
+  font-style: italic;
 }
