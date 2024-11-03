@@ -28,7 +28,13 @@ export const useGameInitialization = () => {
     };
   }, [dispatch]);
 
-  // Initialize a new game session or restore existing one
+  /**
+   * Initializes or restores a game session with AI-generated suggested actions.
+   * Handles three scenarios:
+   * 1. New character initialization
+   * 2. Existing state restoration
+   * 3. Continuing an active session
+   */
   const initializeGameSession = useCallback(async () => {
     if (!state || !dispatch) return null;
 
@@ -38,12 +44,16 @@ export const useGameInitialization = () => {
       const lastCharacterJSON = localStorage.getItem('lastCreatedCharacter');
       const characterData = lastCharacterJSON ? JSON.parse(lastCharacterJSON) : null;
 
-      // Handle new character initialization
+      // New character initialization
       if (sessionStorage.getItem('initializing_new_character')) {
         sessionStorage.removeItem('initializing_new_character');
 
+        // Generate initial narrative and actions considering character background
         const response = await getAIResponse(
-          `Initialize a new game session for ${characterData?.name}. Describe their current situation and location.`,
+          `Initialize a new game session for ${characterData?.name}. 
+          Describe their current situation and location in detail.
+          Consider the character's background and skills.
+          Include suggestions for what they might do next.`,
           '',
           []
         );
@@ -55,23 +65,38 @@ export const useGameInitialization = () => {
           location: response.location || 'Unknown Location',
           inventory: INITIAL_INVENTORY,
           savedTimestamp: Date.now(),
-          isClient: true
+          isClient: true,
+          suggestedActions: response.suggestedActions || []
         };
       }
 
       // Use existing state if available
       if (state.narrative && state.narrative.length > 0) {
+        if (!state.suggestedActions?.length) {
+          // If we need to generate new suggestions for existing state
+          const response = await getAIResponse(
+            `Based on the current situation, what are some actions ${state.character?.name || 'the player'} might take?`,
+            state.narrative,
+            state.inventory || []
+          );
+
+          return {
+            ...state,
+            suggestedActions: response.suggestedActions || []
+          };
+        }
         return state;
       }
 
       // Initialize state for existing character
       const response = await getAIResponse(
         `Initialize a new game session for ${state.character?.name || 'Unknown'}. 
-        Provide a brief introduction to the game world and the character's current situation. 
-        Include a detailed description of their current location and some potential options for action.
-        Ensure to explicitly state the name of the current location.`,
+        Provide a detailed introduction to the character's current situation.
+        Consider their skills, background, and circumstances.
+        Include clear suggestions for what they might do next.
+        Ensure to explicitly state their current location.`,
         '',
-        []
+        state.inventory || []
       );
 
       return {
@@ -80,12 +105,25 @@ export const useGameInitialization = () => {
         location: response.location || 'Unknown Location',
         inventory: INITIAL_INVENTORY,
         savedTimestamp: Date.now(),
-        isClient: true
+        isClient: true,
+        suggestedActions: response.suggestedActions || []
       };
 
     } catch (error) {
-      console.error('Error in initializeGameSession:', error);
-      return state;
+      // Handle errors gracefully with fallback suggestions
+      try {
+        const fallbackResponse = await getAIResponse(
+          'What are some basic actions the player could take right now?',
+          state.narrative || '',
+          state.inventory || []
+        );
+        return {
+          ...state,
+          suggestedActions: fallbackResponse.suggestedActions || []
+        };
+      } catch {
+        return state;
+      }
     } finally {
       setIsInitializing(false);
     }
