@@ -15,7 +15,7 @@ const STORAGE_KEY = 'character-creation-progress';
 // Initial character state with default values
 const initialCharacter: Character = {
   name: '',
-  health: 0,
+  health: 50,  // Changed from 0 to a reasonable starting value
   attributes: {
     speed: 0,
     gunAccuracy: 0,
@@ -30,6 +30,9 @@ const initialCharacter: Character = {
     brawling: 0,
   },
 };
+
+// Add debug logging after initialCharacter is declared
+console.log('Character health during creation:', initialCharacter.health);
 
 // Add new interface for step descriptions
 interface StepDescription {

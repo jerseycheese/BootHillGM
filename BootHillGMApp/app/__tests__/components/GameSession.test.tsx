@@ -53,7 +53,8 @@ const mockGameSession = {
   handleManualSave: jest.fn(),
   handleUseItem: jest.fn(),
   initiateCombat: jest.fn(),
-  getCurrentOpponent: jest.fn()
+  getCurrentOpponent: jest.fn(),
+  dispatch: jest.fn()
 };
 
 // Mock the hooks
@@ -61,47 +62,27 @@ jest.mock('../../hooks/useGameInitialization');
 jest.mock('../../hooks/useGameSession');
 
 // Mock the child components
-jest.mock('../../components/InputManager', () => ({
+jest.mock('../../components/GameArea/MainGameArea', () => ({
   __esModule: true,
-  default: ({ onSubmit, isLoading }: { onSubmit: (input: string) => void, isLoading: boolean }) => (
-    <div data-testid="input-manager">
-      <input
-        type="text"
-        onChange={(e) => onSubmit(e.target.value)}
-        disabled={isLoading}
-      />
+  MainGameArea: (props: any) => (
+    <div data-testid="main-game-area">
+      {props.isCombatActive ? (
+        <div data-testid="combat-system" />
+      ) : (
+        <div data-testid="narrative-display" />
+      )}
     </div>
   ),
 }));
 
-jest.mock('../../components/StatusDisplayManager', () => ({
+jest.mock('../../components/GameArea/SidePanel', () => ({
   __esModule: true,
-  default: ({ character, location }: { character: Character, location: string }) => (
-    <div data-testid="status-display">
-      <span>{character.name}</span>
-      <span>{location}</span>
-    </div>
-  ),
+  SidePanel: () => <div data-testid="side-panel" />
 }));
 
-jest.mock('../../components/NarrativeDisplay', () => ({
+jest.mock('../../components/GameArea/LoadingScreen', () => ({
   __esModule: true,
-  default: () => <div data-testid="narrative-display" />
-}));
-
-jest.mock('../../components/Inventory', () => ({
-  __esModule: true,
-  default: () => <div data-testid="inventory" />
-}));
-
-jest.mock('../../components/JournalViewer', () => ({
-  __esModule: true,
-  default: () => <div data-testid="journal-viewer" />
-}));
-
-jest.mock('../../components/CombatSystem', () => ({
-  __esModule: true,
-  default: () => <div data-testid="combat-system" />
+  LoadingScreen: () => <div>Loading game session...</div>
 }));
 
 describe('GameSession', () => {
@@ -125,13 +106,10 @@ describe('GameSession', () => {
   it('renders game components when loaded', () => {
     renderGameSession();
     
-    // Since we've mocked the hooks to return loaded state,
-    // components should render immediately
-    expect(screen.getByTestId('input-manager')).toBeInTheDocument();
-    expect(screen.getByTestId('status-display')).toBeInTheDocument();
+    // Check for main components
+    expect(screen.getByTestId('main-game-area')).toBeInTheDocument();
+    expect(screen.getByTestId('side-panel')).toBeInTheDocument();
     expect(screen.getByTestId('narrative-display')).toBeInTheDocument();
-    expect(screen.getByTestId('inventory')).toBeInTheDocument();
-    expect(screen.getByTestId('journal-viewer')).toBeInTheDocument();
   });
 
   it('renders loading state when initializing', () => {
@@ -180,8 +158,7 @@ describe('GameSession', () => {
     });
 
     renderGameSession();
-    expect(screen.queryByTestId('input-manager')).not.toBeInTheDocument();
     expect(screen.getByTestId('combat-system')).toBeInTheDocument();
-    expect(screen.getByTestId('status-display')).toBeInTheDocument();
+    expect(screen.queryByTestId('narrative-display')).not.toBeInTheDocument();
   });
 });

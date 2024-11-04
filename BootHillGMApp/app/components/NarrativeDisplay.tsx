@@ -1,12 +1,17 @@
 import { useRef, useEffect } from 'react';
 
-interface NarrativeDisplayProps {
+export interface NarrativeDisplayProps {
   narrative: string;
   error?: string | null;
   onRetry?: () => void;
 }
 
-const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
+interface ItemUpdate {
+  items: string;
+  type: 'acquired' | 'used';
+}
+
+export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   narrative,
   error,
   onRetry
@@ -34,7 +39,7 @@ const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   // Shows a notification when items are acquired or used
   // Acquired items appear in amber with a package emoji
   // Used items appear in gray with a recycle emoji
-  const createItemUpdateNotification = (items: string, type: 'acquired' | 'used'): JSX.Element => {
+  const createItemUpdateNotification = ({ items, type }: ItemUpdate): JSX.Element => {
     const itemList = items.split(',').map(item => item.trim());
     const isAcquired = type === 'acquired';
     
@@ -63,7 +68,7 @@ const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   // - Item updates appear after the relevant action
   const formatNarrativeContent = (text: string): JSX.Element[] => {
     const elements: JSX.Element[] = [];
-    let pendingUpdate: { items: string; type: 'acquired' | 'used' } | null = null;
+    let pendingUpdate: ItemUpdate | null = null;
 
     text.split('\n').forEach((line, index) => {
       if (line.startsWith('ACQUIRED_ITEMS:')) {
@@ -85,7 +90,7 @@ const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       if (pendingUpdate && 
           !line.startsWith('ACQUIRED_ITEMS:') && 
           !line.startsWith('REMOVED_ITEMS:')) {
-        elements.push(createItemUpdateNotification(pendingUpdate.items, pendingUpdate.type));
+        elements.push(createItemUpdateNotification(pendingUpdate));
         pendingUpdate = null;
       }
 
@@ -113,7 +118,7 @@ const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
     });
 
     if (pendingUpdate) {
-      elements.push(createItemUpdateNotification(pendingUpdate.items, pendingUpdate.type));
+      elements.push(createItemUpdateNotification(pendingUpdate));
     }
 
     return elements;
@@ -149,5 +154,3 @@ const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
     </div>
   );
 };
-
-export default NarrativeDisplay;

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import NarrativeDisplay from '../../components/NarrativeDisplay';
+import { NarrativeDisplay } from '../../components/NarrativeDisplay';
 
 describe('NarrativeDisplay', () => {
   const mockNarrative = 'Test narrative content';

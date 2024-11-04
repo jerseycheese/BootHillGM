@@ -3,7 +3,7 @@
  * Combines narrative display with gameplay controls in a scrollable container.
  * Manages the display of both normal gameplay and combat interfaces.
  */
-import NarrativeDisplay from '../NarrativeDisplay';
+import { NarrativeDisplay } from '../NarrativeDisplay';
 import { GameplayControls } from './GameplayControls';
 import type { GameSessionProps } from './types';
 
