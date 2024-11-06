@@ -1,7 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import { GameState, GameEngineAction, gameReducer, initialState as initialGameState } from '../utils/gameEngine';
+import { useStateRestoration } from '../hooks/useCampaignStateRestoration';
 import { InventoryItem } from '../types/inventory';
 
 export const CampaignStateContext = createContext<{
@@ -21,65 +22,22 @@ export const useCampaignState = () => {
 };
 
 export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const getInitialState = (): GameState => {
-    try {
-      if (typeof window === 'undefined') {
-        return { ...initialGameState };
-      }
-      
-      const isInitializing = sessionStorage.getItem('initializing_new_character');
-      
-      if (isInitializing) {
-        // Clear the initialization flag immediately
-        sessionStorage.removeItem('initializing_new_character');
-        return { ...initialGameState, isClient: true };
-      }
-      
-      const savedStateJSON = localStorage.getItem('campaignState');
-      
-      if (savedStateJSON) {
-        try {
-          const savedState = JSON.parse(savedStateJSON);
-          
-          if (!savedState.character || !savedState.character.name) {
-            return { ...initialGameState, isClient: true };
-          }
-          
-          // Restore state with proper type handling for combat-related fields
-          const restoredState = {
-            ...initialGameState,
-            ...savedState,
-            isClient: true,
-            isCombatActive: Boolean(savedState.isCombatActive),
-            opponent: savedState.opponent ? {
-              ...savedState.opponent,
-              attributes: { ...savedState.opponent.attributes },
-              skills: { ...savedState.opponent.skills }
-            } : null,
-            combatState: savedState.combatState ? {
-              ...savedState.combatState,
-              playerStrength: Number(savedState.combatState.playerStrength),
-              opponentStrength: Number(savedState.combatState.opponentStrength),
-              currentTurn: savedState.combatState.currentTurn,
-              combatLog: [...(savedState.combatState.combatLog || [])]
-            } : undefined,
-            inventory: savedState.inventory?.map((item: InventoryItem) => ({ ...item })) || [],
-            journal: savedState.journal || []
-          };
+  const isInitializing = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return Boolean(sessionStorage.getItem('initializing_new_character'));
+  }, []);
 
-          return restoredState;
-        } catch (error) {
-          console.error('Error parsing saved state:', error);
-          return { ...initialGameState, isClient: true };
-        }
-      }
-      return { ...initialGameState, isClient: true };
-    } catch {
-      return { ...initialGameState };
-    }
-  };
+  const savedStateJSON = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('campaignState');
+  }, []);
 
-  const [state, baseDispatch] = useReducer(gameReducer, getInitialState());
+  const initialState = useStateRestoration({ 
+    isInitializing, 
+    savedStateJSON 
+  });
+
+  const [state, baseDispatch] = useReducer(gameReducer, initialState);
   const [isHydrated, setIsHydrated] = useState(false);
   const lastSavedRef = useRef<number>(0);
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
@@ -106,7 +64,7 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
       const cleanState = {
         ...stateToSave,
         // Deep clone arrays to avoid reference issues
-        inventory: stateToSave.inventory.map(item => ({ ...item })),
+        inventory: stateToSave.inventory.map((item: InventoryItem) => ({ ...item })),
         npcs: [...stateToSave.npcs],
         journal: [...stateToSave.journal],
         // Maintain combat state for ongoing battles
@@ -195,6 +153,10 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [state]);
 
+  /**
+   * Loads the game state from local storage.
+   * @returns The restored GameState object, or null if loading fails.
+   */
   const loadGame = useCallback((): GameState | null => {
     try {
       const serializedState = localStorage.getItem('campaignState');
@@ -208,14 +170,17 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
         return null;
       }
 
-      const stateWithClient = {
+      const restoredState = {
+        ...initialGameState,
         ...loadedState,
         isClient: true,
         isCombatActive: Boolean(loadedState.isCombatActive),
         opponent: loadedState.opponent ? {
           ...loadedState.opponent,
           attributes: { ...loadedState.opponent.attributes },
-          skills: { ...loadedState.opponent.skills }
+          skills: { ...loadedState.opponent.skills },
+          wounds: [...(loadedState.opponent.wounds || [])],
+          isUnconscious: Boolean(loadedState.opponent.isUnconscious)
         } : null,
         combatState: loadedState.combatState ? {
           ...loadedState.combatState,
@@ -223,11 +188,13 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
           opponentStrength: Number(loadedState.combatState.opponentStrength),
           currentTurn: loadedState.combatState.currentTurn,
           combatLog: [...(loadedState.combatState.combatLog || [])]
-        } : undefined
+        } : undefined,
+        inventory: loadedState.inventory?.map((item: InventoryItem) => ({ ...item })) || [],
+        journal: loadedState.journal || []
       };
       
-      dispatch({ type: 'SET_STATE', payload: stateWithClient });
-      return stateWithClient;
+      dispatch({ type: 'SET_STATE', payload: restoredState });
+      return restoredState;
     } catch (error) {
       console.error('Failed to load game state:', error);
       return null;
