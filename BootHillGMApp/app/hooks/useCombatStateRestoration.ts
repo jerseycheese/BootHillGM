@@ -2,6 +2,13 @@ import { useEffect } from 'react';
 import { GameSessionProps } from '../components/GameArea/types';
 import { Character } from '../types/character';
 
+interface CombatLogEntry {
+  text: string;
+  type: 'hit' | 'miss' | 'critical' | 'info';
+  timestamp: number;
+}
+
+
 type GameSessionWithoutState = Omit<GameSessionProps, 'state'>;
 
 interface CombatInitiator extends GameSessionWithoutState {
@@ -11,7 +18,7 @@ interface CombatInitiator extends GameSessionWithoutState {
       playerStrength: number;
       opponentStrength: number;
       currentTurn: 'player' | 'opponent';
-      combatLog: string[];
+      combatLog: CombatLogEntry[];
     }
   ) => void;
 }
@@ -66,9 +73,7 @@ export function useCombatStateRestoration(
           playerStrength: Number(state.combatState.playerStrength),
           opponentStrength: Number(state.combatState.opponentStrength),
           currentTurn: state.combatState.currentTurn,
-          combatLog: Array.isArray(state.combatState.combatLog) 
-            ? [...state.combatState.combatLog] 
-            : []
+          combatLog: state.combatState.combatLog
         }
       );
     }

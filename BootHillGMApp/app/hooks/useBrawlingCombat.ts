@@ -1,7 +1,8 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { Character, Wound } from '../types/character';
 import { isCharacterDefeated } from '../utils/strengthSystem';
 import { resolveBrawlingRound, BrawlingResult } from '../utils/brawlingSystem';
+import { calculateBrawlingDamage } from '../utils/bootHillCombat';
 import { GameEngineAction } from '../utils/gameEngine';
 
 interface UseBrawlingCombatProps {
@@ -12,11 +13,17 @@ interface UseBrawlingCombatProps {
   initialCombatState?: BrawlingState;
 }
 
+interface CombatLogEntry {
+  text: string;
+  type: 'hit' | 'miss' | 'critical' | 'info';
+  timestamp: number;
+}
+
 interface BrawlingState {
   round: 1 | 2;
   playerModifier: number;
   opponentModifier: number;
-  roundLog: string[];
+  roundLog: CombatLogEntry[];
 }
 
 /**
@@ -36,90 +43,106 @@ export const useBrawlingCombat = ({
   onCombatEnd,
   dispatch
 }: UseBrawlingCombatProps) => {
-  // Maintain roundLog as a ref to prevent clearing
-  const roundLogRef = useRef<string[]>([]);
   const [brawlingState, setBrawlingState] = useState<BrawlingState>({
     round: 1,
     playerModifier: 0,
     opponentModifier: 0,
-    roundLog: roundLogRef.current
+    roundLog: []
   });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const applyWound = useCallback((character: Character, result: BrawlingResult): Character => {
+  const applyWound = useCallback((isPlayer: boolean, location: "head" | "chest" | "abdomen" | "leftArm" | "rightArm" | "leftLeg" | "rightLeg", damage: number) => {
     const wound: Wound = {
-      location: result.location,
+      location,
       severity: 'light',
-      strengthReduction: result.damage,
+      strengthReduction: damage,
       turnReceived: Date.now()
     };
 
-    return {
-      ...character,
-      wounds: [...character.wounds, wound]
+    const target = isPlayer ? playerCharacter : opponent;
+    const updatedTarget = {
+      ...target,
+      wounds: [...target.wounds, wound],
+      attributes: {
+        ...target.attributes,
+        strength: Math.max(0, target.attributes.strength - damage)
+      }
     };
-  }, []);
+
+    dispatch({
+      type: isPlayer ? 'SET_CHARACTER' : 'SET_OPPONENT',
+      payload: updatedTarget
+    });
+
+    return updatedTarget;
+  }, [playerCharacter, opponent, dispatch]);
 
   const formatBrawlingMessage = (attacker: string, result: BrawlingResult, isPunching: boolean): string => {
     const moveType = isPunching ? 'punches' : 'grapples';
     return `${attacker} ${moveType} with ${result.result} (Roll: ${result.roll}) dealing ${result.damage} damage to ${result.location}`;
   };
 
-  const processRound = useCallback(async (isPunching: boolean, isPlayer: boolean) => {
+  const handleCombatAction = useCallback((isPlayer: boolean, isPunching: boolean) => {
+    const modifier = isPlayer ? brawlingState.playerModifier : brawlingState.opponentModifier;
+    const result = resolveBrawlingRound(modifier, isPunching);
+
+    // Calculate damage based on attacker's strength
+    const attacker = isPlayer ? playerCharacter : opponent;
+    const defender = isPlayer ? opponent : playerCharacter;
+    const finalDamage = calculateBrawlingDamage(
+      result.damage,
+      attacker.attributes.strength,
+      defender.attributes.strength
+    );
+
+    // Add new log entry
+    const message = formatBrawlingMessage(isPlayer ? playerCharacter.name : opponent.name, result, isPunching);
+    const newLogEntry = { text: message, type: 'info' as const, timestamp: Date.now() };
+    
+    setBrawlingState(prev => ({
+      ...prev,
+      playerModifier: isPlayer ? result.nextRoundModifier : prev.playerModifier,
+      opponentModifier: !isPlayer ? result.nextRoundModifier : prev.opponentModifier,
+      roundLog: [...prev.roundLog, newLogEntry]
+    }));
+
+    // Apply damage if hit landed
+    if (finalDamage > 0) {
+      const updatedTarget = applyWound(!isPlayer, result.location, finalDamage);
+      
+      // Check for knockout
+      if (updatedTarget.attributes.strength === 0) {
+        const winner = isPlayer ? 'player' : 'opponent';
+        const loser = isPlayer ? opponent.name : playerCharacter.name;
+        const attacker = isPlayer ? playerCharacter.name : opponent.name;
+        const summary = `${attacker} knocks out ${loser} with a ${isPunching ? 'devastating punch' : 'powerful grapple'}!`;
+        onCombatEnd(winner, summary);
+        return true;
+      }
+    }
+    return false;
+  }, [brawlingState, opponent, playerCharacter, onCombatEnd, applyWound]);
+
+  const processRound = useCallback(async (isPlayer: boolean, isPunching: boolean) => {
     if (isProcessing) return;
     setIsProcessing(true);
 
     try {
-      const modifier = isPlayer ? brawlingState.playerModifier : brawlingState.opponentModifier;
-      const result = resolveBrawlingRound(modifier, isPunching);
-
-      // Add new log entry
-      const message = formatBrawlingMessage(isPlayer ? 'Player' : 'Opponent', result, isPunching);
-      roundLogRef.current = [...roundLogRef.current, message];
-
-      // Apply damage if hit landed
-      if (result.damage > 0) {
-        const target = isPlayer ? opponent : playerCharacter;
-        const updatedTarget = applyWound(target, result);
-        
-        dispatch({
-          type: isPlayer ? 'SET_OPPONENT' : 'SET_CHARACTER',
-          payload: updatedTarget
-        });
-
-        // Check for defeat
-        if (isCharacterDefeated(updatedTarget)) {
-          onCombatEnd(isPlayer ? 'player' : 'opponent', `${target.name} is knocked out!`);
-          return;
-        }
-      }
-
-      // Update state for next round
-      setBrawlingState(prev => ({
-        ...prev,
-        roundLog: roundLogRef.current,
-        [isPlayer ? 'opponentModifier' : 'playerModifier']: 
-          prev[isPlayer ? 'opponentModifier' : 'playerModifier'] + result.nextRoundModifier,
-        // Only advance round after opponent's action
-        ...(isPlayer ? {} : { round: prev.round === 1 ? 2 : 1 })
-      }));
-
-      // Opponent's immediate response
-      if (isPlayer && !isCharacterDefeated(opponent)) {
-        setTimeout(() => {
-          processRound(Math.random() > 0.5, false);
-        }, 1000);
+      // Handle player's action
+      const isKnockout = handleCombatAction(isPlayer, isPunching);
+      
+      // Handle opponent's response if player acted and no knockout occurred
+      if (!isKnockout && isPlayer && !isCharacterDefeated(opponent)) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        handleCombatAction(false, Math.random() > 0.5);
       }
     } finally {
       setIsProcessing(false);
     }
-  }, [brawlingState, opponent, playerCharacter, dispatch, onCombatEnd, applyWound, isProcessing]);
+  }, [isProcessing, handleCombatAction, opponent]);
 
   return {
-    brawlingState: {
-      ...brawlingState,
-      roundLog: roundLogRef.current
-    },
+    brawlingState,
     isProcessing,
     processRound
   };

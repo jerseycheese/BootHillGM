@@ -12,6 +12,13 @@ import { BrawlingControls } from './Combat/BrawlingControls';
 import { useBrawlingCombat } from '../hooks/useBrawlingCombat';
 import { GameEngineAction } from '../utils/gameEngine';
 
+interface CombatLogEntry {
+  text: string;
+  type: 'hit' | 'miss' | 'critical' | 'info';
+  timestamp: number;
+}
+
+
 interface CombatSystemProps {
   playerCharacter: Character;
   opponent: Character;
@@ -21,7 +28,7 @@ interface CombatSystemProps {
     round: 1 | 2;
     playerModifier: number;
     opponentModifier: number;
-    roundLog: string[];
+    roundLog: CombatLogEntry[];
   };
 }
 
@@ -71,7 +78,7 @@ export const CombatSystem: React.FC<CombatSystemProps> = ({
       
       <div className="combat-log mt-4">
         {brawlingState?.roundLog?.map((log, index) => (
-          <div key={index} className="text-sm mb-1 even:text-right">{log}</div>
+          <div key={index} className="text-sm mb-1 even:text-right">{log.text}</div>
         ))}
       </div>
     </div>

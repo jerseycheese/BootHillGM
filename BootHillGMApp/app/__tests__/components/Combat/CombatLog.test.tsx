@@ -4,8 +4,16 @@ import { CombatLog } from '../../../components/Combat/CombatLog';
 
 describe('CombatLog', () => {
   const mockEntries = [
-    'Player hits Opponent with Colt Revolver for 5 damage!',
-    'Opponent misses Player! [Roll: 85/62]'
+    {
+      text: 'Player hits Opponent with Colt Revolver for 5 damage!',
+      type: 'hit' as const,
+      timestamp: 1234567890
+    },
+    {
+      text: 'Opponent misses Player! [Roll: 85/62]',
+      type: 'miss' as const,
+      timestamp: 1234567891
+    }
   ];
 
   test('renders combat log with entries', () => {
@@ -16,7 +24,7 @@ describe('CombatLog', () => {
     expect(screen.getByTestId('combat-log')).toHaveAttribute('aria-label', 'Combat log');
     
     mockEntries.forEach((entry, index) => {
-      expect(screen.getByTestId(`combat-log-entry-${index}`)).toHaveTextContent(entry);
+      expect(screen.getByTestId(`combat-log-entry-${index}`)).toHaveTextContent(entry.text);
     });
   });
 

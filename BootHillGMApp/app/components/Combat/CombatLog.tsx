@@ -1,21 +1,13 @@
-import React from 'react';
-
-/**
- * Props for the CombatLog component
- */
-interface CombatLogProps {
-  /** Array of combat log messages to display */
-  entries: string[];
+interface CombatLogEntry {
+  text: string;
+  type: 'hit' | 'miss' | 'critical' | 'info';
+  timestamp: number;
 }
 
-/**
- * Displays a scrollable list of combat actions and their outcomes.
- * Features:
- * - Auto-scrolling container with max height
- * - Accessible log role and label
- * - Test IDs for automated testing
- * - Individual entry keys for React reconciliation
- */
+interface CombatLogProps {
+  entries: CombatLogEntry[];
+}
+
 export const CombatLog: React.FC<CombatLogProps> = ({ entries }) => {
   return (
     <div 
@@ -26,11 +18,16 @@ export const CombatLog: React.FC<CombatLogProps> = ({ entries }) => {
     >
       {entries.map((entry, index) => (
         <p 
-          key={`${entry}-${index}`}
-          className="text-sm"
+          key={`${entry.timestamp}-${index}`}
+          className={`text-sm my-1 px-2 py-1 rounded ${
+            entry.type === 'hit' ? 'bg-green-100' :
+            entry.type === 'miss' ? 'bg-gray-100' :
+            entry.type === 'critical' ? 'bg-yellow-100' :
+            ''
+          }`}
           data-testid={`combat-log-entry-${index}`}
         >
-          {entry}
+          {entry.text}
         </p>
       ))}
     </div>

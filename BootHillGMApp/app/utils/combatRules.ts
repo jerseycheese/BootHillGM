@@ -30,3 +30,7 @@ export const calculateHitChance = (character: Character): number => {
 export const rollD100 = (): number => {
   return Math.floor(Math.random() * 100) + 1;
 };
+
+export const isCritical = (roll: number): boolean => {
+  return roll === 1 || roll === 2;
+};

@@ -3,6 +3,13 @@ import { Character } from '../types/character';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { addCombatJournalEntry } from '../utils/JournalManager';
 
+interface CombatLogEntry {
+  text: string;
+  type: 'hit' | 'miss' | 'critical' | 'info';
+  timestamp: number;
+}
+
+
 /**
  * Interface defining the return value of the useCombatManager hook
  */
@@ -35,7 +42,7 @@ interface CombatState {
   playerStrength: number;
   opponentStrength: number;
   currentTurn: 'player' | 'opponent';
-  combatLog: string[];
+  combatLog: CombatLogEntry[];
 }
 
 /**
@@ -72,14 +79,7 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
         // Update combat state with proper type conversion
         dispatch({
           type: 'UPDATE_COMBAT_STATE',
-          payload: {
-            playerStrength: Number(state.combatState.playerStrength),
-            opponentStrength: Number(state.combatState.opponentStrength),
-            currentTurn: state.combatState.currentTurn,
-            combatLog: Array.isArray(state.combatState.combatLog) 
-              ? [...state.combatState.combatLog] 
-              : []
-          }
+          payload: state.combatState
         });
       }
     }
@@ -185,15 +185,7 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
       // Update combat state with proper type conversion
       dispatch({
         type: 'UPDATE_COMBAT_STATE',
-        payload: {
-          ...combatState,
-          playerStrength: Number(combatState.playerStrength),
-          opponentStrength: Number(combatState.opponentStrength),
-          currentTurn: combatState.currentTurn,
-          combatLog: Array.isArray(combatState.combatLog) 
-            ? [...combatState.combatLog] 
-            : []
-        }
+        payload: combatState
       });
     } finally {
       isUpdatingRef.current = false;

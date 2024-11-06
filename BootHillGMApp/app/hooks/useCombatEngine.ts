@@ -19,7 +19,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { debounce } from 'lodash';
 import { Character } from '../types/character';
-import { calculateHitChance, rollD100 } from '../utils/combatRules';
+import { calculateHitChance, rollD100, isCritical } from '../utils/combatRules';
 import { 
   cleanCharacterName,
   getWeaponName,
@@ -39,9 +39,16 @@ interface UseCombatEngineProps {
     playerHealth: number;
     opponentHealth: number;
     currentTurn: 'player' | 'opponent';
-    combatLog: string[];
+    combatLog: CombatLogEntry[];
   };
 }
+
+interface CombatLogEntry {
+  text: string;
+  type: 'hit' | 'miss' | 'critical' | 'info';
+  timestamp: number;
+}
+
 
 export const useCombatEngine = ({
   playerCharacter,
@@ -54,17 +61,18 @@ export const useCombatEngine = ({
   const [playerHealth, setPlayerHealth] = useState(initialState?.playerHealth ?? 100);
   const [opponentHealth, setOpponentHealth] = useState(initialState?.opponentHealth ?? 100);
   const [currentTurn, setCurrentTurn] = useState<'player' | 'opponent'>(initialState?.currentTurn ?? 'player');
-  const [combatLog, setCombatLog] = useState<string[]>(initialState?.combatLog ?? []);
+  const [combatLog, setCombatLog] = useState<CombatLogEntry[]>(initialState?.combatLog ?? []);
   const [isProcessing, setIsProcessing] = useState(false);
   const combatEndRef = useRef(false);
 
   /**
-   * Adds a new message to the combat log.
-   * Messages are displayed in chronological order, showing combat actions and results.
+   * Manages combat log entries with type-based styling.
+   * Types can be: hit, miss, critical, or info
+   * Each entry includes a timestamp for ordering.
    */
-  const addToCombatLog = useCallback((message: string) => {
-    setCombatLog(prev => [...prev, message]);
-  }, []);
+  const addToCombatLog = useCallback((message: string, type: CombatLogEntry['type'] = 'info') => {
+    setCombatLog(prev => [...prev, { text: message, type, timestamp: Date.now() }]);
+  }, [setCombatLog]);
 
   /**
    * Processes an attack turn, handling:
@@ -77,6 +85,8 @@ export const useCombatEngine = ({
     const hitChance = calculateHitChance(attacker);
     const roll = rollD100();
     const hit = roll <= hitChance;
+    const critical = isCritical(roll);
+
 
     if (hit) {
       const damage = calculateCombatDamage();
@@ -90,7 +100,7 @@ export const useCombatEngine = ({
         hitChance
       });
       
-      addToCombatLog(message);
+      addToCombatLog(message, critical ? 'critical' : 'hit');
 
       if (isPlayer) {
         const newHealth = Math.max(0, opponentHealth - damage);
@@ -119,11 +129,12 @@ export const useCombatEngine = ({
           cleanCharacterName(defender.name),
           roll,
           hitChance
-        )
+        ),
+        'miss'
       );
     }
     return false;
-  }, [playerHealth, opponentHealth, addToCombatLog, onCombatEnd, onPlayerHealthChange]);
+  }, [playerHealth, opponentHealth, addToCombatLog, onCombatEnd, onPlayerHealthChange, setPlayerHealth, setOpponentHealth]);
 
   /**
    * Handles player's combat turn.

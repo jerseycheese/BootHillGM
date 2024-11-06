@@ -16,6 +16,30 @@ export interface CombatModifiers {
 }
 
 /**
+ * Calculate brawling damage based on strength and current condition
+ * Ensures combat can end with knockouts
+ */
+export const calculateBrawlingDamage = (
+  baseRoll: number,
+  strength: number,
+  currentStrength: number
+): number => {
+  // Ensure minimum damage can be dealt even at low strength
+  const minimumDamage = 1;
+  const maximumDamage = Math.max(
+    minimumDamage,
+    Math.floor((strength * baseRoll) / 10)
+  );
+
+  // If current strength is very low, ensure we can still end combat
+  if (currentStrength <= 3) {
+    return Math.max(minimumDamage, maximumDamage);
+  }
+
+  return maximumDamage;
+};
+
+/**
  * Calculate combat modifiers based on character's bravery score
  * From Boot Hill v2 rules table
  */

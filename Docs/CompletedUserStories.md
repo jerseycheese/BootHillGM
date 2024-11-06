@@ -133,6 +133,13 @@
   - Item quantities and descriptions included
   - Full state management for inventory changes
 
+[x] As a player, I want more detailed combat log formatting, so that I can better understand what's happening in combat.
+  **Implementation:**
+  - Added visual distinction between hits, misses, and critical hits
+  - Improved message formatting and clarity
+  - Added timestamps for proper message ordering
+  - Enhanced accessibility with semantic markup
+
 ## Technical Improvements
 - As a developer, I want to use a dispatch function for state updates so that I can manage game state more efficiently and consistently.
   **Test Plan:**

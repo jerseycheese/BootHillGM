@@ -24,8 +24,14 @@ export interface GameState {
     playerStrength: number;
     opponentStrength: number;
     currentTurn: 'player' | 'opponent';
-    combatLog: string[];
+    combatLog: CombatLogEntry[];
   };
+}
+
+interface CombatLogEntry {
+  text: string;
+  type: 'hit' | 'miss' | 'critical' | 'info';
+  timestamp: number;
 }
 
 // Define all possible actions that can be dispatched to update the game state
@@ -54,7 +60,7 @@ export type GameEngineAction =
       playerStrength: number;
       opponentStrength: number;
       currentTurn: 'player' | 'opponent';
-      combatLog: string[];
+      combatLog: CombatLogEntry[];
     }};
 
 // Initial state of the game
@@ -163,20 +169,15 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       return { ...state, opponent: action.payload };
     case 'UPDATE_COMBAT_STATE':
       if (!action.payload) return state;
-      
-      // Update combat state while ensuring type consistency
       return {
         ...state,
-        isCombatActive: true, // Ensure combat flag is set when updating state
+        isCombatActive: true,
         combatState: {
-          ...action.payload,
-          playerStrength: Number(action.payload.playerStrength),
-          opponentStrength: Number(action.payload.opponentStrength),
-          currentTurn: action.payload.currentTurn,
-          combatLog: [...(action.payload.combatLog || [])]
+          ...state.combatState,
+          ...action.payload
         }
       };
-    
+      
     // Inventory management
     case 'UPDATE_ITEM_QUANTITY':
       return {

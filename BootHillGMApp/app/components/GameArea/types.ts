@@ -1,6 +1,26 @@
 import { GameState, GameEngineAction } from '../../utils/gameEngine';
 import { Character } from '../../types/character';
 
+interface CombatLogEntry {
+  text: string;
+  type: 'hit' | 'miss' | 'critical' | 'info';
+  timestamp: number;
+}
+
+export interface CombatSystemProps {
+  playerCharacter: Character;
+  opponent: Character;
+  onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
+  dispatch: React.Dispatch<GameEngineAction>;
+  initialCombatState?: {
+    round: 1 | 2;
+    playerModifier: number;
+    opponentModifier: number;
+    roundLog: CombatLogEntry[];
+  };
+}
+
+
 export interface GameSessionProps {
   state: GameState;
   dispatch: React.Dispatch<GameEngineAction>;

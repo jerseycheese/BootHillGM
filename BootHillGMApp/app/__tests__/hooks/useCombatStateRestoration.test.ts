@@ -59,7 +59,7 @@ describe('useCombatStateRestoration', () => {
       playerStrength: 100,
       opponentStrength: 100,
       currentTurn: 'player' as const,
-      combatLog: ['Combat started']
+      combatLog: [{ text: 'Combat started', type: 'info', timestamp: Date.now() }]
     }
   };
 
@@ -101,7 +101,7 @@ describe('useCombatStateRestoration', () => {
         playerStrength: 100,
         opponentStrength: 100,
         currentTurn: 'player',
-        combatLog: ['Combat started']
+        combatLog: [{ text: 'Combat started', type: 'info', timestamp: expect.any(Number) }]
       })
     );
   });

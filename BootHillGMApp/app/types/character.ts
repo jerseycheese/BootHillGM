@@ -42,6 +42,13 @@ export interface Wound {
   turnReceived: number;
 }
 
+export interface CombatLogEntry {
+  text: string;
+  type: 'hit' | 'miss' | 'critical' | 'info';
+  timestamp: number;
+}
+
+
 export interface Character {
   /** Character's full name */
   name: string;
@@ -84,17 +91,5 @@ export interface Character {
   weapon?: {
     name: string;
     damage: string;
-  };
-
-  /** Optional combat state for saving/restoring combat */
-  combatState?: {
-    /** Current health of the player */
-    playerHealth: number;
-    /** Current health of the opponent */
-    opponentHealth: number;
-    /** Current turn in combat */
-    currentTurn: 'player' | 'opponent';
-    /** Combat log entries */
-    combatLog: string[];
   };
 }

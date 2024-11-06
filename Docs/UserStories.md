@@ -55,13 +55,7 @@
   - Improved button disabled states
   - Clear turn indicator messages
   - Proper cursor feedback
-
-- [ ] As a player, I want more detailed combat log formatting, so that I can better understand what's happening in combat.
-  **Test Plan:**
-  - Implement enhanced formatting for combat log entries
-  - Add clear visual distinction between different types of combat actions
-  - Ensure important information stands out
-  **Status:** Not yet implemented.
+  - Enhanced combat log with visual feedback for different message types
 
 - [ ] As a player, I want weapon-specific combat modifiers, so that my choice of weapon matters more in combat.
   **Test Plan:**
@@ -254,3 +248,8 @@
   - Verify that the combat entry includes relevant details (opponent, outcome, any significant events)
   - Check that the journal entry is formatted consistently with other entries
   **Status:** Not yet implemented.
+
+### Future Enhancements
++ [ ] As a player, I want a visual representation of my character that shows wound locations and severity, so I can better understand my character's condition.
++ [ ] As a player, I want clearer item usage prompts when my intentions aren't clear, so I can specify how I want to use items like rope.
++ [ ] As a player, I want a clear understanding of what happens when my character reaches 0 strength, based on Boot Hill rules.
