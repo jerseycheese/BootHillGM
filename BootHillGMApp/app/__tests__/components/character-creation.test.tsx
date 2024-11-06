@@ -205,17 +205,17 @@ describe('Character Creation', () => {
     });
 
     // Submit the form to move to the next step
-    const form = screen.getByTestId('character-form');
+    const creationForm = screen.getByTestId('character-creation-form');
     await act(async () => {
-      fireEvent.submit(form);
+      fireEvent.submit(creationForm);
       // Wait for summary to load
       await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     // Now at summary step, submit the form again to finish
-    const finalForm = screen.getByTestId('character-form');
+    const summaryForm = screen.getByTestId('character-summary-form');
     await act(async () => {
-      fireEvent.submit(finalForm);
+      fireEvent.submit(summaryForm);
       // Wait for cleanup to complete
       await new Promise(resolve => setTimeout(resolve, 100));
     });
