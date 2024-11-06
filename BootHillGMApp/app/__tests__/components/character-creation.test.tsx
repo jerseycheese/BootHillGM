@@ -33,12 +33,12 @@ jest.mock('../../utils/aiService', () => {
     generateFieldValue: jest.fn().mockResolvedValue('10'),
     generateCompleteCharacter: jest.fn().mockResolvedValue({
       name: 'Test Character',
-      health: 100,
       attributes: {
         speed: 10,
         gunAccuracy: 10,
         throwingAccuracy: 10,
         strength: 10,
+        baseStrength: 10,
         bravery: 10,
         experience: 5
       },
@@ -46,7 +46,9 @@ jest.mock('../../utils/aiService', () => {
         shooting: 50,
         riding: 50,
         brawling: 50
-      }
+      },
+      wounds: [],
+      isUnconscious: false
     }),
     generateCharacterSummary,
   };
@@ -84,23 +86,26 @@ describe('Character Creation', () => {
   });
 
   test('loads saved progress and allows input', async () => {
+    // Mock initial state at step 0 (name input)
     mockLocalStorage.getItem.mockReturnValueOnce(JSON.stringify({
       character: {
-        name: 'Saved Character',
-        health: 100,
+        name: '',
         attributes: {
-          speed: 8,
-          gunAccuracy: 7,
-          throwingAccuracy: 6,
-          strength: 9,
-          bravery: 8,
-          experience: 5
+          speed: 0,
+          gunAccuracy: 0,
+          throwingAccuracy: 0,
+          strength: 0,
+          baseStrength: 0,
+          bravery: 0,
+          experience: 0
         },
         skills: {
-          shooting: 45,
-          riding: 40,
-          brawling: 35
-        }
+          shooting: 0,
+          riding: 0,
+          brawling: 0
+        },
+        wounds: [],
+        isUnconscious: false
       },
       currentStep: 0,
       lastUpdated: Date.now()
@@ -110,7 +115,7 @@ describe('Character Creation', () => {
       render(<CharacterCreation />);
     });
 
-    const input = screen.getByLabelText(/your response/i);
+    const input = screen.getByRole('textbox');
     await act(async () => {
       fireEvent.change(input, { target: { value: 'Test Input' } });
     });
@@ -119,11 +124,36 @@ describe('Character Creation', () => {
   });
 
   test('auto-saves progress after field update', async () => {
+    // Mock initial state at step 0
+    mockLocalStorage.getItem.mockReturnValueOnce(JSON.stringify({
+      character: {
+        name: '',
+        attributes: {
+          speed: 0,
+          gunAccuracy: 0,
+          throwingAccuracy: 0,
+          strength: 0,
+          baseStrength: 0,
+          bravery: 0,
+          experience: 0
+        },
+        skills: {
+          shooting: 0,
+          riding: 0,
+          brawling: 0
+        },
+        wounds: [],
+        isUnconscious: false
+      },
+      currentStep: 0,
+      lastUpdated: Date.now()
+    }));
+
     await act(async () => {
       render(<CharacterCreation />);
     });
 
-    const input = screen.getByLabelText(/your response/i);
+    const input = screen.getByRole('textbox');
     await act(async () => {
       fireEvent.change(input, { target: { value: 'New Character' } });
     });
@@ -140,26 +170,28 @@ describe('Character Creation', () => {
   });
 
   test('clears saved progress on completion', async () => {
-    // Mock initial state at the Brawling step
-    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({
+    // Mock initial state at step 0
+    mockLocalStorage.getItem.mockReturnValueOnce(JSON.stringify({
       character: {
-        name: 'Test Character',
-        health: 100,
+        name: '',
         attributes: {
-          speed: 10,
-          gunAccuracy: 10,
-          throwingAccuracy: 10,
-          strength: 10,
-          bravery: 10,
-          experience: 5
+          speed: 0,
+          gunAccuracy: 0,
+          throwingAccuracy: 0,
+          strength: 0,
+          baseStrength: 0,
+          bravery: 0,
+          experience: 0
         },
         skills: {
-          shooting: 50,
-          riding: 50,
-          brawling: 50
-        }
+          shooting: 0,
+          riding: 0,
+          brawling: 0
+        },
+        wounds: [],
+        isUnconscious: false
       },
-      currentStep: 9,
+      currentStep: 0,
       lastUpdated: Date.now()
     }));
 
@@ -167,10 +199,9 @@ describe('Character Creation', () => {
       render(<CharacterCreation />);
     });
 
-    // First, fill in the brawling value
-    const input = screen.getByLabelText(/your response/i);
+    const input = screen.getByRole('textbox');
     await act(async () => {
-      fireEvent.change(input, { target: { value: '50' } });
+      fireEvent.change(input, { target: { value: 'Test Character' } });
     });
 
     // Submit the form to move to the next step
@@ -196,6 +227,31 @@ describe('Character Creation', () => {
   });
 
   test('handles localStorage errors gracefully', async () => {
+    // Mock initial state at step 0
+    mockLocalStorage.getItem.mockReturnValueOnce(JSON.stringify({
+      character: {
+        name: '',
+        attributes: {
+          speed: 0,
+          gunAccuracy: 0,
+          throwingAccuracy: 0,
+          strength: 0,
+          baseStrength: 0,
+          bravery: 0,
+          experience: 0
+        },
+        skills: {
+          shooting: 0,
+          riding: 0,
+          brawling: 0
+        },
+        wounds: [],
+        isUnconscious: false
+      },
+      currentStep: 0,
+      lastUpdated: Date.now()
+    }));
+
     mockLocalStorage.setItem.mockImplementationOnce(() => {
       throw new Error('Storage full');
     });
@@ -204,7 +260,7 @@ describe('Character Creation', () => {
       render(<CharacterCreation />);
     });
 
-    const input = screen.getByLabelText(/your response/i);
+    const input = screen.getByRole('textbox');
     await act(async () => {
       fireEvent.change(input, { target: { value: 'Test Character' } });
     });
@@ -213,6 +269,31 @@ describe('Character Creation', () => {
   });
 
   test('generates random character and updates form', async () => {
+    // Mock initial state at step 0
+    mockLocalStorage.getItem.mockReturnValueOnce(JSON.stringify({
+      character: {
+        name: '',
+        attributes: {
+          speed: 0,
+          gunAccuracy: 0,
+          throwingAccuracy: 0,
+          strength: 0,
+          baseStrength: 0,
+          bravery: 0,
+          experience: 0
+        },
+        skills: {
+          shooting: 0,
+          riding: 0,
+          brawling: 0
+        },
+        wounds: [],
+        isUnconscious: false
+      },
+      currentStep: 0,
+      lastUpdated: Date.now()
+    }));
+
     await act(async () => {
       render(<CharacterCreation />);
     });
@@ -236,8 +317,43 @@ describe('Character Creation', () => {
       render(<CharacterCreation />);
     });
 
-    const input = screen.getByLabelText(/your response/i);
-    expect(input).toHaveValue(null);
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveValue('');
   });
 
+  test('strength and wound handling', async () => {
+    mockLocalStorage.getItem.mockReturnValueOnce(JSON.stringify({
+      character: {
+        name: 'Test Character',
+        attributes: {
+          speed: 10,
+          gunAccuracy: 10,
+          throwingAccuracy: 10,
+          strength: 10,
+          baseStrength: 10,
+          bravery: 10,
+          experience: 5
+        },
+        skills: {
+          shooting: 50,
+          riding: 50,
+          brawling: 50
+        },
+        wounds: [],
+        isUnconscious: false
+      },
+      currentStep: 9, // Mock being at the summary step
+      lastUpdated: Date.now()
+    }));
+
+    await act(async () => {
+      render(<CharacterCreation />);
+    });
+
+    // Find the exact strength field (not base strength) and verify its value
+    const strengthElements = screen.getAllByText(/^Strength:$/);
+    const strengthElement = strengthElements.find(el => !el.textContent?.includes('Base'));
+    expect(strengthElement).toBeTruthy();
+    expect(strengthElement?.closest('p')).toHaveTextContent('10');
+  });
 });

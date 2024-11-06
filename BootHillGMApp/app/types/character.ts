@@ -1,7 +1,11 @@
 /**
- * Represents a character in the Boot Hill game world.
- * Contains all essential information about a character including
- * their attributes, skills, and equipment.
+ * Character type definitions following Boot Hill v2 rules
+ * 
+ * Core mechanics:
+ * - Strength-based combat system
+ * - Wound tracking with locations
+ * - Separate base and current strength
+ * - Unconsciousness state
  */
 
 /** Storage keys for character-related data */
@@ -26,14 +30,23 @@ export const CHARACTER_CREATION_STEPS = [
   { key: 'summary', type: 'review' }
 ] as const;
 
+/** Represents a wound sustained by a character */
+export interface Wound {
+  /** Location of the wound on the body */
+  location: 'head' | 'chest' | 'abdomen' | 'leftArm' | 'rightArm' | 'leftLeg' | 'rightLeg';
+  /** Severity level of the wound */
+  severity: 'light' | 'serious' | 'mortal';
+  /** Amount of strength reduction caused by the wound */
+  strengthReduction: number;
+  /** Combat turn when the wound was received */
+  turnReceived: number;
+}
+
 export interface Character {
   /** Character's full name */
   name: string;
 
-  /** Current health points (0-100) */
-  health: number;
-
-  /** Core character attributes that determine capabilities */
+  /** Core character attributes */
   attributes: {
     /** Movement and reaction capability (1-10) */
     speed: number;
@@ -41,32 +54,35 @@ export interface Character {
     gunAccuracy: number;
     /** Accuracy with thrown weapons (1-10) */
     throwingAccuracy: number;
-    /** Physical power and melee damage (1-10) */
+    /** Current strength after wound penalties (1-10) */
     strength: number;
-    /** Courage and resistance to fear effects (1-10) */
+    /** Maximum/starting strength value (8-20) */
+    baseStrength: number;
+    /** Courage under fire (1-10) */
     bravery: number;
-    /** Level of expertise and knowledge (1-10) */
+    /** Combat experience (0-11) */
     experience: number;
   };
 
-  /** Learned abilities that can improve over time */
+  /** Character skills per Boot Hill v2 */
   skills: {
-    /** Proficiency with firearms (1-100) */
+    /** Firearm proficiency (1-100) */
     shooting: number;
-    /** Horse handling and mounted combat ability (1-100) */
+    /** Mounted combat ability (1-100) */
     riding: number;
-    /** Hand-to-hand combat capability (1-100) */
+    /** Hand-to-hand combat skill (1-100) */
     brawling: number;
   };
 
-  /**
-   * Optional weapon equipped by the character.
-   * If undefined, character uses fists in combat.
-   */
+  /** Track active wounds and their effects */
+  wounds: Wound[];
+
+  /** Unconscious state from strength loss */
+  isUnconscious: boolean;
+
+  /** Optional weapon data */
   weapon?: {
-    /** Name of the weapon (e.g., "Colt Revolver", "Winchester Rifle") */
     name: string;
-    /** Damage rating in dice notation (e.g., "1d6", "2d6") */
     damage: string;
   };
 

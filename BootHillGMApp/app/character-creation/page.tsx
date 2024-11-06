@@ -12,15 +12,18 @@ import { LoadingScreen } from '../components/GameArea/LoadingScreen';
 // Storage key for character creation progress
 const STORAGE_KEY = 'character-creation-progress';
 
-// Initial character state with default values
+/**
+ * Initial character state following Boot Hill v2 rules.
+ * Uses strength-based system instead of health points.
+ */
 const initialCharacter: Character = {
   name: '',
-  health: 50,  // Changed from 0 to a reasonable starting value
   attributes: {
     speed: 0,
     gunAccuracy: 0,
     throwingAccuracy: 0,
     strength: 0,
+    baseStrength: 0,
     bravery: 0,
     experience: 0,
   },
@@ -29,10 +32,9 @@ const initialCharacter: Character = {
     riding: 0,
     brawling: 0,
   },
+  wounds: [],
+  isUnconscious: false
 };
-
-// Add debug logging after initialCharacter is declared
-console.log('Character health during creation:', initialCharacter.health);
 
 // Add new interface for step descriptions
 interface StepDescription {
@@ -72,6 +74,12 @@ const STEP_DESCRIPTIONS: Record<string, StepDescription> = {
   strength: {
     title: "Strength",
     description: "Physical power affecting melee damage and carrying capacity.",
+    min: 8,
+    max: 20
+  },
+  baseStrength: {
+    title: "Base Strength",
+    description: "Maximum physical power. This value represents your character's peak condition.",
     min: 8,
     max: 20
   },
@@ -220,9 +228,12 @@ export default function GameSession() {
 
   // Synchronously get step prompt without API call to avoid loading flashes
   const getStepPrompt = useCallback((currentStep: number) => {
+    if (currentStep < 0 || currentStep >= steps.length) {
+      return '';
+    }
+
     const { key } = steps[currentStep];
     const stepInfo = STEP_DESCRIPTIONS[key];
-
 
     if (!stepInfo) {
       return '';
@@ -267,6 +278,15 @@ export default function GameSession() {
     }
   }, [currentStep, steps.length, characterSummary, generateSummary]);
 
+  // useEffect to synchronize currentStep with character changes
+  useEffect(() => {
+    // Check if character has been generated (has a name)
+    if (character.name) {
+      setCurrentStep(steps.length - 1);
+    }
+  }, [character, steps.length]);
+
+
   // Handle user input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserResponse(e.target.value);
@@ -295,6 +315,10 @@ export default function GameSession() {
 
   // Validate user input based on current step
   const validateInput = () => {
+    if (currentStep < 0 || currentStep >= steps.length) {
+      return false;
+    }
+    
     const { key, type } = steps[currentStep];
     if (type === 'number') {
       const value = parseInt(userResponse);
@@ -309,15 +333,17 @@ export default function GameSession() {
     return true;
   };
 
+  /**
+   * Generates a complete character using Boot Hill v2 rules.
+   * Uses AI to suggest appropriate values while ensuring
+   * all attributes stay within Boot Hill's defined ranges.
+   */
   const generateCharacter = async () => {
     setIsGeneratingCharacter(true);
     setError('');
     try {
-      // Attempt to generate a complete character using the AI
       const generatedCharacter = await generateCompleteCharacter();
       setCharacter(generatedCharacter);
-      // Move to the summary step to display the generated character
-      setCurrentStep(steps.length - 1);
     } catch {
       setError('Failed to generate character. Please try again.');
     } finally {
@@ -327,6 +353,10 @@ export default function GameSession() {
 
   // Update character state based on current step and user response
   const updateCharacter = async () => {
+    if (currentStep < 0 || currentStep >= steps.length) {
+      return;
+    }
+    
     const { key, type } = steps[currentStep];
     const value = type === 'number' ? parseInt(userResponse) : userResponse;
 
@@ -351,7 +381,7 @@ export default function GameSession() {
   const finishCharacterCreation = () => {
     const newCharacterData = JSON.stringify(character);
     localStorage.setItem('lastCreatedCharacter', newCharacterData);
-    localStorage.removeItem(STORAGE_KEY); // Add this line back
+    localStorage.removeItem(STORAGE_KEY);
 
     // Create clean initial state with new character
     const initialState = {
@@ -370,6 +400,10 @@ export default function GameSession() {
     setIsGeneratingField(true);
     setError('');
     try {
+      if (currentStep < 0 || currentStep >= steps.length) {
+        throw new Error('Invalid step');
+      }
+      
       const { key } = steps[currentStep];
       if (key !== 'summary') {
         // Use AI service to generate a value for the current field
@@ -393,10 +427,21 @@ export default function GameSession() {
  * - Summary view with AI-generated background for final step
  */
   const renderInput = () => {
+    // Early return if currentStep is invalid
+    if (currentStep < 0 || currentStep >= steps.length || !steps[currentStep]) {
+      console.error('Invalid step:', currentStep);
+      return null;
+    }
+
     const step = steps[currentStep];
+    // Additional safety check for step type
+    if (!step || typeof step.type === 'undefined') {
+      console.error('Invalid step object:', step);
+      return null;
+    }
 
     if (step.type === 'review') {
-      // Display character summary and details at the final step
+      // Rest of the review rendering logic remains unchanged
       return (
         <div className="space-y-2">
           <h2 className="text-xl font-bold">Character Summary</h2>
@@ -419,7 +464,7 @@ export default function GameSession() {
                   <h3 className="text-lg font-bold">Attributes</h3>
                   {Object.entries(character.attributes).map(([attr, value]) => (
                     <p key={attr}>
-                      <strong>{STEP_DESCRIPTIONS[attr].title}:</strong> {value}
+                      <strong>{STEP_DESCRIPTIONS[attr]?.title || attr}:</strong> {Array.isArray(value) ? value.join(', ') : value}
                     </p>
                   ))}
                 </div>
@@ -428,7 +473,7 @@ export default function GameSession() {
                   <h3 className="text-lg font-bold">Skills</h3>
                   {Object.entries(character.skills).map(([skill, value]) => (
                     <p key={skill}>
-                      <strong>{STEP_DESCRIPTIONS[skill].title}:</strong> {value}
+                      <strong>{STEP_DESCRIPTIONS[skill]?.title || skill}:</strong> {value}
                     </p>
                   ))}
                 </div>
@@ -474,6 +519,18 @@ export default function GameSession() {
     );
   };
 
+  // Get current step info safely
+  const getCurrentStepInfo = () => {
+    if (currentStep < 0 || currentStep >= steps.length) {
+      return { title: "Loading...", step: 0 };
+    }
+    const stepKey = steps[currentStep].key;
+    const stepInfo = STEP_DESCRIPTIONS[stepKey];
+    return {
+      title: stepInfo?.title || stepKey,
+      step: currentStep + 1
+    };
+  };
 
   // Render the character creation form
   return (
@@ -490,7 +547,7 @@ export default function GameSession() {
       )}
       <h1 className="wireframe-title">Create Your Character</h1>
       <div className="wireframe-section relative">
-        <p className="wireframe-text mb-4">Step {currentStep + 1}: {STEP_DESCRIPTIONS[steps[currentStep].key].title}</p>
+        <p className="wireframe-text mb-4">Step {getCurrentStepInfo().step}: {getCurrentStepInfo().title}</p>
         <p className="wireframe-text">{aiPrompt}</p>
       </div>
       <form onSubmit={handleSubmit} className="wireframe-section" data-testid="character-form">

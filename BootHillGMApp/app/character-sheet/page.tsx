@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useGame } from '../utils/gameEngine';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { debugStorage } from '../utils/debugHelpers';
+import { Wound } from '../types/wound';
 
 export default function CharacterSheet() {
   const { state, dispatch } = useGame();
@@ -29,14 +30,14 @@ export default function CharacterSheet() {
           try {
             const lastCharacter = JSON.parse(lastCharacterJSON);
             console.log('Found last created character:', lastCharacter);
-            
+
             // Create a new game state with this character
             const newState = {
               ...state,
               character: lastCharacter,
               savedTimestamp: Date.now()
             };
-            
+
             // Save and update the state
             saveGame(newState);
             dispatch({ type: 'SET_STATE', payload: newState });
@@ -58,6 +59,13 @@ export default function CharacterSheet() {
       </div>
     );
   }
+
+  const renderWound = (wound: Wound) => (
+    <li key={`${wound.location}-${wound.severity}`} className="wireframe-text">
+      {wound.location.charAt(0).toUpperCase() + wound.location.slice(1)}: {wound.severity} ({wound.strengthReduction})
+    </li>
+  );
+
 
   return (
     <div className="wireframe-container">
@@ -85,6 +93,14 @@ export default function CharacterSheet() {
           ))}
         </ul>
       </div>
+      {character.wounds && character.wounds.length > 0 && (
+        <div className="wireframe-section">
+          <h3 className="wireframe-subtitle">Wounds</h3>
+          <ul className="wireframe-list">
+            {character.wounds.map(renderWound)}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

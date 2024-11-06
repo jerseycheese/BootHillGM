@@ -3,7 +3,7 @@
  * Switches between normal input mode and combat system based on game state.
  * Handles loading states and suggested actions during gameplay.
  */
-import CombatSystem from '../CombatSystem';
+import { CombatSystem } from '../CombatSystem';
 import InputManager from '../InputManager';
 import type { GameplayControlsProps } from './types';
 
@@ -14,12 +14,20 @@ export function GameplayControls({
   state,
   onUserInput,
   onCombatEnd,
-  onPlayerHealthChange,
   dispatch,
 }: GameplayControlsProps) {
   if (!state.character) {
     return null;
   }
+
+  // Transform combat state to match CombatSystem's expected format
+  const transformedCombatState = state.combatState ? {
+    round: 1 as const,  // Default to round 1 if not specified
+    playerModifier: state.combatState.playerStrength,
+    opponentModifier: state.combatState.opponentStrength,
+    roundLog: state.combatState.combatLog,
+  } : undefined;
+
 
   return (
     <div className="mt-4 shrink-0">
@@ -28,9 +36,8 @@ export function GameplayControls({
           playerCharacter={state.character}
           opponent={opponent}
           onCombatEnd={onCombatEnd}
-          onPlayerHealthChange={onPlayerHealthChange}
           dispatch={dispatch}
-          initialCombatState={state.combatState}
+          initialCombatState={transformedCombatState}
         />
       ) : (
         <InputManager

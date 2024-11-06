@@ -1,56 +1,177 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CombatStatus } from '../../../components/Combat/CombatStatus';
+import { Character, Wound } from '../../../types/character';
+
+// Mock combat utils
+jest.mock('../../../utils/combatUtils', () => ({
+  cleanCharacterName: jest.fn((name: string) => name),
+  calculateCurrentStrength: jest.requireActual('../../../utils/strengthSystem').calculateCurrentStrength
+}));
+
+// Import the mocked module
+import * as combatUtils from '../../../utils/combatUtils';
 
 describe('CombatStatus', () => {
-  test('renders health values correctly', () => {
-    render(
-      <CombatStatus
-        playerHealth={100}
-        opponentHealth={80}
-      />
-    );
+  const mockPlayer: Character = {
+    name: 'Test Player',
+    attributes: {
+      speed: 10,
+      gunAccuracy: 10,
+      throwingAccuracy: 10,
+      strength: 15,
+      baseStrength: 15,
+      bravery: 10,
+      experience: 5,
+      wounds: []
+    },
+    skills: {
+      shooting: 50,
+      riding: 50,
+      brawling: 50
+    },
+    wounds: [],
+    isUnconscious: false
+  };
 
-    expect(screen.getByText('100')).toBeInTheDocument();
-    expect(screen.getByText('80')).toBeInTheDocument();
+  const mockOpponent: Character = {
+    ...mockPlayer,
+    name: 'Test Opponent'
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  test('applies red text class for low player health', () => {
+  test('renders strength values correctly', () => {
     render(
       <CombatStatus
-        playerHealth={20}
-        opponentHealth={100}
+        playerCharacter={mockPlayer}
+        opponent={mockOpponent}
       />
     );
 
-    const playerHealthValue = screen.getByText('20');
-    expect(playerHealthValue).toHaveClass('text-red-600');
+    expect(screen.getByTestId('player-strength-value')).toHaveTextContent('15/15');
+    expect(screen.getByTestId('opponent-strength-value')).toHaveTextContent('15/15');
+    expect(combatUtils.cleanCharacterName).toHaveBeenCalledWith(mockPlayer.name);
+    expect(combatUtils.cleanCharacterName).toHaveBeenCalledWith(mockOpponent.name);
   });
 
-  test('applies red text class for low opponent health', () => {
+  test('applies red text class for low player strength', () => {
+    const weakPlayer = {
+      ...mockPlayer,
+      wounds: [
+        { location: 'chest' as const, severity: 'serious' as const, strengthReduction: 10, turnReceived: 1 }
+      ],
+      attributes: {
+        ...mockPlayer.attributes,
+        wounds: [
+          { location: 'chest' as const, severity: 'serious' as const, strengthReduction: 10, turnReceived: 1 }
+        ]
+      }
+    };
+
     render(
       <CombatStatus
-        playerHealth={100}
-        opponentHealth={25}
+        playerCharacter={weakPlayer}
+        opponent={mockOpponent}
       />
     );
 
-    const opponentHealthValue = screen.getByText('25');
-    expect(opponentHealthValue).toHaveClass('text-red-600');
+    const playerStrengthValue = screen.getByTestId('player-strength-value');
+    expect(playerStrengthValue).toHaveClass('text-red-600');
+    expect(playerStrengthValue).toHaveTextContent('5/15');
   });
 
-  test('does not apply red text class for normal health values', () => {
+  test('displays wounds correctly', () => {
+    const wounds: Wound[] = [
+      { location: 'leftArm', severity: 'light', strengthReduction: 3, turnReceived: 1 },
+      { location: 'chest', severity: 'serious', strengthReduction: 7, turnReceived: 2 }
+    ];
+
+    const woundedPlayer = {
+      ...mockPlayer,
+      wounds,
+      attributes: {
+        ...mockPlayer.attributes,
+        wounds
+      }
+    };
+
     render(
       <CombatStatus
-        playerHealth={75}
-        opponentHealth={85}
+        playerCharacter={woundedPlayer}
+        opponent={mockOpponent}
       />
     );
 
-    const playerHealthValue = screen.getByText('75');
-    const opponentHealthValue = screen.getByText('85');
-    
-    expect(playerHealthValue).not.toHaveClass('text-red-600');
-    expect(opponentHealthValue).not.toHaveClass('text-red-600');
+    expect(screen.getByText('leftArm - light (-3 STR)')).toBeInTheDocument();
+    expect(screen.getByText('chest - serious (-7 STR)')).toBeInTheDocument();
+  });
+
+  test('shows unconscious status', () => {
+    const unconsciousPlayer = {
+      ...mockPlayer,
+      isUnconscious: true
+    };
+
+    render(
+      <CombatStatus
+        playerCharacter={unconsciousPlayer}
+        opponent={mockOpponent}
+      />
+    );
+
+    expect(screen.getByText('(Unconscious)')).toBeInTheDocument();
+  });
+
+  test('applies correct color classes to wound severity', () => {
+    const wounds: Wound[] = [
+      { location: 'leftArm', severity: 'light', strengthReduction: 3, turnReceived: 1 },
+      { location: 'chest', severity: 'serious', strengthReduction: 7, turnReceived: 2 }
+    ];
+
+    const woundedPlayer = {
+      ...mockPlayer,
+      wounds,
+      attributes: {
+        ...mockPlayer.attributes,
+        wounds
+      }
+    };
+
+    render(
+      <CombatStatus
+        playerCharacter={woundedPlayer}
+        opponent={mockOpponent}
+      />
+    );
+
+    const lightWound = screen.getByText('leftArm - light (-3 STR)');
+    const seriousWound = screen.getByText('chest - serious (-7 STR)');
+
+    expect(lightWound).toHaveClass('text-orange-600');
+    expect(seriousWound).toHaveClass('text-red-600');
+  });
+
+  test('cleans character names', () => {
+    const playerWithMetadata = {
+      ...mockPlayer,
+      name: 'Test Player ACQUIRED_ITEMS: REMOVED_ITEMS:'
+    };
+    const opponentWithMetadata = {
+      ...mockOpponent,
+      name: 'Test Opponent ACQUIRED_ITEMS: REMOVED_ITEMS:'
+    };
+
+    render(
+      <CombatStatus
+        playerCharacter={playerWithMetadata}
+        opponent={opponentWithMetadata}
+      />
+    );
+
+    expect(combatUtils.cleanCharacterName).toHaveBeenCalledWith(playerWithMetadata.name);
+    expect(combatUtils.cleanCharacterName).toHaveBeenCalledWith(opponentWithMetadata.name);
   });
 });

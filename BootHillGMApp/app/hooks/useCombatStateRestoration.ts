@@ -8,8 +8,8 @@ interface CombatInitiator extends GameSessionWithoutState {
   initiateCombat: (
     opponent: Character,
     combatState: {
-      playerHealth: number;
-      opponentHealth: number;
+      playerStrength: number;
+      opponentStrength: number;
       currentTurn: 'player' | 'opponent';
       combatLog: string[];
     }
@@ -20,8 +20,8 @@ interface CombatInitiator extends GameSessionWithoutState {
  * Hook to handle combat state restoration after page refreshes or navigation.
  * Ensures combat can resume exactly where it left off by:
  * - Restoring opponent data with proper type conversion
- * - Maintaining exact health values and turn state
- * - Preserving combat log history
+ * - Maintaining exact strength values and turn state
+ * - Preserving combat log history and wounds
  */
 export function useCombatStateRestoration(
   state: GameSessionProps['state'],
@@ -38,12 +38,12 @@ export function useCombatStateRestoration(
     if (shouldRestoreCombat && state.opponent && state.combatState) {
       const restoredOpponent: Character = {
         name: state.opponent.name,
-        health: Number(state.opponent.health),
         attributes: {
           speed: state.opponent.attributes?.speed ?? 5,
           gunAccuracy: state.opponent.attributes?.gunAccuracy ?? 5,
           throwingAccuracy: state.opponent.attributes?.throwingAccuracy ?? 5,
           strength: state.opponent.attributes?.strength ?? 5,
+          baseStrength: state.opponent.attributes?.baseStrength ?? 5,
           bravery: state.opponent.attributes?.bravery ?? 5,
           experience: state.opponent.attributes?.experience ?? 5
         },
@@ -55,14 +55,16 @@ export function useCombatStateRestoration(
         weapon: state.opponent.weapon ? {
           name: state.opponent.weapon.name,
           damage: state.opponent.weapon.damage
-        } : undefined
+        } : undefined,
+        wounds: state.opponent.wounds ?? [],
+        isUnconscious: state.opponent.isUnconscious ?? false
       };
 
       gameSession.initiateCombat(
         restoredOpponent,
         {
-          playerHealth: Number(state.combatState.playerHealth),
-          opponentHealth: Number(state.combatState.opponentHealth),
+          playerStrength: Number(state.combatState.playerStrength),
+          opponentStrength: Number(state.combatState.opponentStrength),
           currentTurn: state.combatState.currentTurn,
           combatLog: Array.isArray(state.combatState.combatLog) 
             ? [...state.combatState.combatLog] 

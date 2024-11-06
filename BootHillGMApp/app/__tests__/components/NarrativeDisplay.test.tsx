@@ -39,6 +39,26 @@ Regular narrative text
     expect(screen.getByText('Regular narrative text')).toHaveClass('narrative-line');
   });
 
+  test('renders item update notifications correctly', () => {
+    const narrativeWithItems = `
+Player: Acquired some items
+ACQUIRED_ITEMS: Gun, Knife
+Game Master: You now have a Gun and Knife.
+Player: Used a knife
+REMOVED_ITEMS: Knife
+    `;
+
+    render(<NarrativeDisplay narrative={narrativeWithItems} />);
+
+    // Find the item update elements within their containers
+    const acquiredUpdate = screen.getByText(/Acquired:/).closest('.item-update');
+    const usedUpdate = screen.getByText(/Used:/).closest('.item-update');
+
+    expect(acquiredUpdate).toHaveTextContent('Gun');
+    expect(acquiredUpdate).toHaveTextContent('Knife');
+    expect(usedUpdate).toHaveTextContent('Knife');
+  });
+
   test('auto-scrolls when new content is added', () => {
     const { rerender } = render(<NarrativeDisplay narrative="Initial content" />);
     

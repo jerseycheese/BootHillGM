@@ -170,8 +170,8 @@ export const useCombatEngine = ({
    */
   useEffect(() => {
     const combatState = {
-      playerHealth,
-      opponentHealth,
+      playerStrength: playerHealth,
+      opponentStrength: opponentHealth,
       currentTurn,
       combatLog
     };

@@ -5,8 +5,6 @@ import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
 import { SuggestedAction } from '../types/campaign';
 
-// TODO: Improve formatting of AI messages for better readability and engagement
-
 // Configuration for the AI model, including safety settings set to BLOCK_NONE
 const AI_CONFIG = {
   modelName: "gemini-1.5-pro",
@@ -147,12 +145,12 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       // Create a basic opponent Character object
       opponent = {
         name: opponentName,
-        health: 100,
         attributes: {
           speed: 10,
           gunAccuracy: 10,
           throwingAccuracy: 10,
           strength: 10,
+          baseStrength: 10,
           bravery: 10,
           experience: 5
         },
@@ -160,7 +158,9 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
           shooting: 50,
           riding: 50,
           brawling: 50
-        }
+        },
+        wounds: [],
+        isUnconscious: false
       };
     }
     
@@ -218,6 +218,7 @@ export function validateAttributeValue(attribute: string, value: number): boolea
     gunAccuracy: [1, 20],
     throwingAccuracy: [1, 20],
     strength: [8, 20],
+    baseStrength: [8, 20],
     bravery: [1, 20],
     experience: [0, 11],
     shooting: [1, 100],
@@ -238,11 +239,11 @@ export async function generateCompleteCharacter(): Promise<Character> {
   const prompt = `
     Generate a complete character for the Boot Hill RPG. Provide values for the following attributes and skills:
     - Name
-    - Health (50-100)
     - Speed (1-20)
     - GunAccuracy (1-20)
     - ThrowingAccuracy (1-20)
     - Strength (8-20)
+    - BaseStrength (8-20)
     - Bravery (1-20)
     - Experience (0-11)
     - Shooting (1-100)
@@ -262,11 +263,11 @@ export async function generateCompleteCharacter(): Promise<Character> {
     let characterData: Partial<{
       Name: string;
       name: string;
-      Health: string | number;
       Speed: string | number;
       GunAccuracy: string | number;
       ThrowingAccuracy: string | number;
       Strength: string | number;
+      BaseStrength: string | number;
       Bravery: string | number;
       Experience: string | number;
       Shooting: string | number;
@@ -295,12 +296,12 @@ export async function generateCompleteCharacter(): Promise<Character> {
     // Create a Character object from the parsed data
     const character: Character = {
       name: characterData.Name || characterData.name || 'Unknown',
-      health: Number(characterData.Health) || 75,
       attributes: {
         speed: Number(characterData.Speed) || 10,
         gunAccuracy: Number(characterData.GunAccuracy) || 10,
         throwingAccuracy: Number(characterData.ThrowingAccuracy) || 10,
         strength: Number(characterData.Strength) || 10,
+        baseStrength: Number(characterData.BaseStrength) || 10,
         bravery: Number(characterData.Bravery) || 10,
         experience: Number(characterData.Experience) || 5
       },
@@ -308,17 +309,19 @@ export async function generateCompleteCharacter(): Promise<Character> {
         shooting: Number(characterData.Shooting) || 50,
         riding: Number(characterData.Riding) || 50,
         brawling: Number(characterData.Brawling) || 50
-      }
+      },
+      wounds: [],
+      isUnconscious: false
     };
     
     // Validate that all character attributes and skills are present and are valid numbers
     const isValid = (
       character.name !== 'Unknown' &&
-      !isNaN(character.health) &&
       !isNaN(character.attributes.speed) &&
       !isNaN(character.attributes.gunAccuracy) &&
       !isNaN(character.attributes.throwingAccuracy) &&
       !isNaN(character.attributes.strength) &&
+      !isNaN(character.attributes.baseStrength) &&
       !isNaN(character.attributes.bravery) &&
       !isNaN(character.attributes.experience) &&
       !isNaN(character.skills.shooting) &&
@@ -336,12 +339,12 @@ export async function generateCompleteCharacter(): Promise<Character> {
     // Return a default character if parsing fails
     return {
       name: 'John Doe',
-      health: 75,
       attributes: {
         speed: 10,
         gunAccuracy: 10,
         throwingAccuracy: 10,
         strength: 10,
+        baseStrength: 10,
         bravery: 10,
         experience: 5
       },
@@ -349,7 +352,9 @@ export async function generateCompleteCharacter(): Promise<Character> {
         shooting: 50,
         riding: 50,
         brawling: 50
-      }
+      },
+      wounds: [],
+      isUnconscious: false
     };
   }
 }
@@ -357,14 +362,12 @@ export async function generateCompleteCharacter(): Promise<Character> {
 // Generate a field value for character creation
 // Uses AI for character name and random generation for attributes and skills
 export async function generateFieldValue(
-  key: keyof Character['attributes'] | keyof Character['skills'] | 'name' | 'health'
+  key: keyof Character['attributes'] | keyof Character['skills'] | 'name'
 ): Promise<string | number> {
   if (key === 'name') {
     const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name.";
     const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
     return response.narrative.trim();
-  } else if (key === 'health') {
-    return Math.floor(Math.random() * (100 - 50 + 1)) + 50; // Random health between 50 and 100
   } else {
     return generateRandomValue(key as keyof Character['attributes'] | keyof Character['skills']);
   }
@@ -378,6 +381,7 @@ function generateRandomValue(key: keyof Character['attributes'] | keyof Characte
     gunAccuracy: [1, 20],
     throwingAccuracy: [1, 20],
     strength: [8, 20],
+    baseStrength: [8, 20],
     bravery: [1, 20],
     experience: [0, 11],
     shooting: [1, 100],
@@ -438,7 +442,6 @@ export async function generateCharacterSummary(character: Character): Promise<st
   const prompt = `
     Generate a brief, engaging summary for a character in a Western-themed RPG based on the following attributes:
     Name: ${character.name}
-    Health: ${character.health}
     Attributes:
     ${Object.entries(character.attributes).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
     Skills:

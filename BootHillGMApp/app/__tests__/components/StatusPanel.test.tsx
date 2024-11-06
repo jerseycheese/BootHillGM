@@ -6,12 +6,12 @@ import { Character } from '../../types/character';
 describe('StatusPanel', () => {
   const mockCharacter: Character = {
     name: 'Test Character',
-    health: 100,
     attributes: {
       speed: 10,
       gunAccuracy: 10,
       throwingAccuracy: 10,
       strength: 10,
+      baseStrength: 10,
       bravery: 10,
       experience: 5
     },
@@ -19,7 +19,9 @@ describe('StatusPanel', () => {
       shooting: 50,
       riding: 50,
       brawling: 50
-    }
+    },
+    wounds: [],
+    isUnconscious: false
   };
 
   const mockSave = jest.fn();
@@ -33,7 +35,6 @@ describe('StatusPanel', () => {
     
     expect(screen.getByText(/Name: Test Character/)).toBeInTheDocument();
     expect(screen.getByText(/Location: Test Town/)).toBeInTheDocument();
-    expect(screen.getByText(/Health: 100/)).toBeInTheDocument();
   });
 
   test('displays "Unknown" when location is null', () => {

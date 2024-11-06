@@ -88,12 +88,12 @@ export function parseAIResponse(text: string): AIResponse {
       
       opponent = {
         name: opponentName,
-        health: 100,
         attributes: {
           speed: 10,
           gunAccuracy: 10,
           throwingAccuracy: 10,
           strength: 10,
+          baseStrength: 10,
           bravery: 10,
           experience: 5
         },
@@ -101,7 +101,9 @@ export function parseAIResponse(text: string): AIResponse {
           shooting: 50,
           riding: 50,
           brawling: 50
-        }
+        },
+        wounds: [],
+        isUnconscious: false
       };
     }
 

@@ -32,8 +32,8 @@ interface UseCombatManagerProps {
  * Interface defining the structure of combat state
  */
 interface CombatState {
-  playerHealth: number;
-  opponentHealth: number;
+  playerStrength: number;
+  opponentStrength: number;
   currentTurn: 'player' | 'opponent';
   combatLog: string[];
 }
@@ -73,8 +73,8 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
         dispatch({
           type: 'UPDATE_COMBAT_STATE',
           payload: {
-            playerHealth: Number(state.combatState.playerHealth),
-            opponentHealth: Number(state.combatState.opponentHealth),
+            playerStrength: Number(state.combatState.playerStrength),
+            opponentStrength: Number(state.combatState.opponentStrength),
             currentTurn: state.combatState.currentTurn,
             combatLog: Array.isArray(state.combatState.combatLog) 
               ? [...state.combatState.combatLog] 
@@ -117,8 +117,8 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
       dispatch({ 
         type: 'UPDATE_COMBAT_STATE', 
         payload: {
-          playerHealth: state.character?.health ?? 0,
-          opponentHealth: 0,
+          playerStrength: 0,
+          opponentStrength: 0,
           currentTurn: 'player' as const,
           combatLog: []
         }
@@ -126,22 +126,25 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
     } finally {
       isUpdatingRef.current = false;
     }
-  }, [dispatch, onUpdateNarrative, state.character?.health, state.character?.name, state.opponent?.name, state.journal]);
+  }, [dispatch, onUpdateNarrative, state.character?.name, state.opponent?.name, state.journal]);
 
   /**
-   * Updates the player's health during combat.
-   * Dispatches the new health value to the campaign state.
+   * Updates the player's strength during combat.
+   * Dispatches the new strength value to the campaign state.
    * 
-   * @param newHealth - The updated health value for the player
+   * @param newStrength - The updated strength value for the player
    */
-  const handlePlayerHealthChange = useCallback((newHealth: number) => {
-    if (!isUpdatingRef.current) {
+  const handlePlayerHealthChange = useCallback((newStrength: number) => {
+    if (!isUpdatingRef.current && state.character) {
       dispatch({
         type: 'UPDATE_CHARACTER',
-        payload: { health: Number(newHealth) }
+        payload: { 
+          ...state.character,
+          attributes: { ...state.character.attributes, strength: Number(newStrength) }
+         }
       });
     }
-  }, [dispatch]);
+  }, [dispatch, state.character]);
 
   /**
    * Initiates or restores a combat encounter.
@@ -173,8 +176,8 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
 
       // Initialize or restore combat state
       const combatState = existingCombatState || {
-        playerHealth: Number(state.character?.health ?? 100),
-        opponentHealth: Number(newOpponent.health),
+        playerStrength: state.character ? state.character.attributes.strength : 0,
+        opponentStrength: newOpponent.attributes.strength,
         currentTurn: 'player' as const,
         combatLog: []
       };
@@ -184,8 +187,8 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
         type: 'UPDATE_COMBAT_STATE',
         payload: {
           ...combatState,
-          playerHealth: Number(combatState.playerHealth),
-          opponentHealth: Number(combatState.opponentHealth),
+          playerStrength: Number(combatState.playerStrength),
+          opponentStrength: Number(combatState.opponentStrength),
           currentTurn: combatState.currentTurn,
           combatLog: Array.isArray(combatState.combatLog) 
             ? [...combatState.combatLog] 
@@ -195,7 +198,7 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
     } finally {
       isUpdatingRef.current = false;
     }
-  }, [dispatch, state.character?.health, state.isCombatActive, state.combatState, state.opponent]);
+  }, [dispatch, state.isCombatActive, state.combatState, state.opponent, state.character]);
 
   /**
    * Retrieves the current opponent in combat.

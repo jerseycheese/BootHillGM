@@ -1,39 +1,83 @@
 /**
- * CombatStatus displays health information for both combatants.
- * Shows health values with visual indicators for low health (<=30).
- * Uses a grid layout for clear health status presentation.
+ * CombatStatus displays strength and wound information for both combatants.
+ * Shows strength values with visual indicators for low strength (<=50% of base).
+ * Displays wounds with severity indicators following Boot Hill v2 rules.
  */
 import React from 'react';
+import { Character } from '../../types/character';
+import { calculateCurrentStrength } from '../../utils/strengthSystem';
+import { cleanCharacterName } from '../../utils/combatUtils';
 
 interface CombatStatusProps {
-  playerHealth: number;
-  opponentHealth: number;
+  playerCharacter: Character;
+  opponent: Character;
 }
 
 export const CombatStatus: React.FC<CombatStatusProps> = ({
-  playerHealth,
-  opponentHealth
+  playerCharacter,
+  opponent
 }) => {
+  // Calculate current strength for both characters
+  const playerStrength = calculateCurrentStrength(playerCharacter);
+  const maxPlayerStrength = playerCharacter.attributes.baseStrength;
+  const opponentStrength = calculateCurrentStrength(opponent);
+  const maxOpponentStrength = opponent.attributes.baseStrength;
+
+  // Clean character names for display
+  const playerName = cleanCharacterName(playerCharacter.name);
+  const opponentName = cleanCharacterName(opponent.name);
+
   return (
-    <div className="health-bars mb-4">
+    <div className="health-bars mb-4" aria-label="Combat Strength and Wound Status">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <span className="font-medium" data-testid="player-health-label">Player Health: </span>
-          <span 
-            className={`${playerHealth <= 30 ? 'text-red-600' : ''}`}
-            data-testid="player-health-value"
-          >
-            {playerHealth}
+          <span className="font-medium" data-testid="player-strength-label">
+            {playerName} Strength: 
           </span>
+          <span 
+            className={`${playerStrength <= maxPlayerStrength / 2 ? 'text-red-600' : ''}`}
+            data-testid="player-strength-value"
+            aria-label={`Player Strength: ${playerStrength} out of ${maxPlayerStrength}`}
+          >
+            {playerStrength}/{maxPlayerStrength}
+          </span>
+          {playerCharacter.isUnconscious && <span className="ml-2">(Unconscious)</span>}
         </div>
         <div>
-          <span className="font-medium" data-testid="opponent-health-label">Opponent Health: </span>
-          <span 
-            className={`${opponentHealth <= 30 ? 'text-red-600' : ''}`}
-            data-testid="opponent-health-value"
-          >
-            {opponentHealth}
+          <span className="font-medium" data-testid="opponent-strength-label">
+            {opponentName} Strength: 
           </span>
+          <span 
+            className={`${opponentStrength <= maxOpponentStrength / 2 ? 'text-red-600' : ''}`}
+            data-testid="opponent-strength-value"
+            aria-label={`Opponent Strength: ${opponentStrength} out of ${maxOpponentStrength}`}
+          >
+            {opponentStrength}/{maxOpponentStrength}
+          </span>
+          {opponent.isUnconscious && <span className="ml-2">(Unconscious)</span>}
+        </div>
+      </div>
+      {/* Add wounds display */}
+      <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
+        <div>
+          <strong aria-label={`${playerName} Wounds`}>{playerName} Wounds:</strong>
+          <ul className="list-disc pl-4" aria-label={`${playerName} Wound List`}>
+            {playerCharacter.wounds.map((wound, index) => (
+              <li key={index} className={`${wound.severity === 'serious' ? 'text-red-600' : wound.severity === 'mortal' ? 'text-black' : 'text-orange-600'}`} aria-label={`${playerName} Wound ${index + 1}: ${wound.location} - ${wound.severity} - Strength Reduction: ${wound.strengthReduction}`}>
+                {wound.location} - {wound.severity} (-{wound.strengthReduction} STR)
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <strong aria-label={`${opponentName} Wounds`}>{opponentName} Wounds:</strong>
+          <ul className="list-disc pl-4" aria-label={`${opponentName} Wound List`}>
+            {opponent.wounds.map((wound, index) => (
+              <li key={index} className={`${wound.severity === 'serious' ? 'text-red-600' : wound.severity === 'mortal' ? 'text-black' : 'text-orange-600'}`} aria-label={`${opponentName} Wound ${index + 1}: ${wound.location} - ${wound.severity} - Strength Reduction: ${wound.strengthReduction}`}>
+                {wound.location} - {wound.severity} (-{wound.strengthReduction} STR)
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>

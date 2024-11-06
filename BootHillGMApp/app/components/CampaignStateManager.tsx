@@ -53,14 +53,13 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
             isCombatActive: Boolean(savedState.isCombatActive),
             opponent: savedState.opponent ? {
               ...savedState.opponent,
-              health: Number(savedState.opponent.health),
               attributes: { ...savedState.opponent.attributes },
               skills: { ...savedState.opponent.skills }
             } : null,
             combatState: savedState.combatState ? {
               ...savedState.combatState,
-              playerHealth: Number(savedState.combatState.playerHealth),
-              opponentHealth: Number(savedState.combatState.opponentHealth),
+              playerStrength: Number(savedState.combatState.playerStrength),
+              opponentStrength: Number(savedState.combatState.opponentStrength),
               currentTurn: savedState.combatState.currentTurn,
               combatLog: [...(savedState.combatState.combatLog || [])]
             } : undefined,
@@ -114,14 +113,13 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
         isCombatActive: Boolean(stateToSave.isCombatActive),
         opponent: stateToSave.opponent ? {
           ...stateToSave.opponent,
-          health: Number(stateToSave.opponent.health),
           attributes: { ...stateToSave.opponent.attributes },
           skills: { ...stateToSave.opponent.skills }
         } : null,
         combatState: stateToSave.combatState ? {
           ...stateToSave.combatState,
-          playerHealth: Number(stateToSave.combatState.playerHealth),
-          opponentHealth: Number(stateToSave.combatState.opponentHealth),
+          playerStrength: Number(stateToSave.combatState.playerStrength),
+          opponentStrength: Number(stateToSave.combatState.opponentStrength),
           currentTurn: stateToSave.combatState.currentTurn,
           combatLog: [...stateToSave.combatState.combatLog]
         } : undefined,
@@ -173,8 +171,8 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [
     isHydrated,
     saveGame,
-    state.combatState?.playerHealth,
-    state.combatState?.opponentHealth,
+    state.combatState?.playerStrength,
+    state.combatState?.opponentStrength,
     state.combatState?.currentTurn,
     state.isCombatActive,
     state
@@ -216,14 +214,13 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
         isCombatActive: Boolean(loadedState.isCombatActive),
         opponent: loadedState.opponent ? {
           ...loadedState.opponent,
-          health: Number(loadedState.opponent.health),
           attributes: { ...loadedState.opponent.attributes },
           skills: { ...loadedState.opponent.skills }
         } : null,
         combatState: loadedState.combatState ? {
           ...loadedState.combatState,
-          playerHealth: Number(loadedState.combatState.playerHealth),
-          opponentHealth: Number(loadedState.combatState.opponentHealth),
+          playerStrength: Number(loadedState.combatState.playerStrength),
+          opponentStrength: Number(loadedState.combatState.opponentStrength),
           currentTurn: loadedState.combatState.currentTurn,
           combatLog: [...(loadedState.combatState.combatLog || [])]
         } : undefined

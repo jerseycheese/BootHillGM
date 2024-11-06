@@ -5,23 +5,27 @@ import { CampaignStateProvider } from '../../components/CampaignStateManager';
 import { Character } from '../../types/character';
 import * as GameInitializationHook from '../../hooks/useGameInitialization';
 import * as GameSessionHook from '../../hooks/useGameSession';
+import { GameSessionProps } from '../../components/GameArea/types';
 
 const mockCharacter: Character = {
   name: 'Test Character',
-  health: 100,
   attributes: {
     speed: 5,
     gunAccuracy: 5,
     throwingAccuracy: 5,
     strength: 5,
+    baseStrength: 5,
     bravery: 5,
-    experience: 0
+    experience: 0,
+    wounds: []
   },
   skills: {
     shooting: 5,
     riding: 5,
     brawling: 5
-  }
+  },
+  wounds: [],
+  isUnconscious: false
 };
 
 const mockGameState = {
@@ -64,7 +68,7 @@ jest.mock('../../hooks/useGameSession');
 // Mock the child components
 jest.mock('../../components/GameArea/MainGameArea', () => ({
   __esModule: true,
-  MainGameArea: (props: any) => (
+  MainGameArea: (props: GameSessionProps) => (
     <div data-testid="main-game-area">
       {props.isCombatActive ? (
         <div data-testid="combat-system" />
@@ -130,20 +134,23 @@ describe('GameSession', () => {
   it('renders combat system when combat is active', () => {
     const enemyCharacter: Character = {
       name: 'Enemy',
-      health: 100,
       attributes: {
         speed: 5,
         gunAccuracy: 5,
         throwingAccuracy: 5,
         strength: 5,
+        baseStrength: 5,
         bravery: 5,
-        experience: 0
+        experience: 0,
+        wounds: []
       },
       skills: {
         shooting: 5,
         riding: 5,
         brawling: 5
-      }
+      },
+      wounds: [],
+      isUnconscious: false
     };
 
     (GameSessionHook.useGameSession as jest.Mock).mockReturnValue({

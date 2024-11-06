@@ -36,15 +36,17 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
     isAutoScrollEnabled.current = isAtBottom;
   };
 
-  // Shows a notification when items are acquired or used
-  // Acquired items appear in amber with a package emoji
-  // Used items appear in gray with a recycle emoji
+  /**
+   * Creates a notification element for acquired or used items.
+   * @param {ItemUpdate} param0 - An object containing the items and update type.
+   * @returns {JSX.Element} The notification element.
+   */
   const createItemUpdateNotification = ({ items, type }: ItemUpdate): JSX.Element => {
     const itemList = items.split(',').map(item => item.trim());
     const isAcquired = type === 'acquired';
-    
+
     return (
-      <div className={`item-update my-2 py-2 px-4 rounded border-l-4 ${
+      <div key={`update-${items}`} className={`item-update my-2 py-2 px-4 rounded border-l-4 ${
         isAcquired ? 'bg-amber-50 border-amber-400' : 'bg-gray-50 border-gray-400'
       }`}>
         <span className={isAcquired ? 'text-amber-700' : 'text-gray-700'}>
@@ -52,7 +54,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
         </span>
         <span className={isAcquired ? 'text-amber-900' : 'text-gray-900'}>
           {itemList.map((item, idx) => (
-            <span key={idx}>
+            <span key={`item-${idx}`}>
               {idx > 0 && ", "}
               <span className="font-medium">{item}</span>
             </span>
@@ -62,10 +64,16 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
     );
   };
 
-  // Processes the narrative text and formats it with appropriate styling
-  // - Player actions are shown with a green border
-  // - GM responses are shown with a blue border
-  // - Item updates appear after the relevant action
+  /**
+   * Formats the game narrative text into discrete elements with proper styling.
+   * Handles different types of content:
+   * - Player actions (green border)
+   * - GM responses (blue border)
+   * - Item updates (amber/gray backgrounds)
+   * - Empty lines (spacing)
+   * @param {string} text - The narrative text to format.
+   * @returns {JSX.Element[]} An array of formatted JSX elements.
+   */
   const formatNarrativeContent = (text: string): JSX.Element[] => {
     const elements: JSX.Element[] = [];
     let pendingUpdate: ItemUpdate | null = null;
@@ -94,26 +102,28 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
         pendingUpdate = null;
       }
 
+      const key = `line-${index}`;
+
       if (line.startsWith('Player:')) {
         elements.push(
-          <div key={`line-${index}`} className="player-action my-3 py-2 px-4 rounded border-l-4 border-green-500">
+          <div key={key} className="player-action my-3 py-2 px-4 rounded border-l-4 border-green-500">
             {line}
           </div>
         );
       } else if (line.startsWith('Game Master:')) {
         elements.push(
-          <div key={`line-${index}`} className="gm-response my-3 py-2 px-4 border-l-4 border-blue-500">
+          <div key={key} className="gm-response my-3 py-2 px-4 border-l-4 border-blue-500">
             {line.replace('Game Master:', 'GM:')}
           </div>
         );
       } else if (line.trim()) {
         elements.push(
-          <div key={`line-${index}`} className="narrative-line my-2 py-1">
+          <div key={key} className="narrative-line my-2 py-1">
             {line}
           </div>
         );
       } else {
-        elements.push(<div key={`line-${index}`} className="h-2" />);
+        elements.push(<div key={key} className="h-2" />);
       }
     });
 

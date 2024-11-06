@@ -26,7 +26,6 @@ const StatusPanel: React.FC<StatusPanelProps> = ({
           <p className="font-medium">Location: {location || 'Unknown'}</p>
         </div>
         <div>
-          <p className="font-medium">Health: {character.health}</p>
           <button onClick={onSave} className="wireframe-button mt-2">Save Game</button>
         </div>
       </div>

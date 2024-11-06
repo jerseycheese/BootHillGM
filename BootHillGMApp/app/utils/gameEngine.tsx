@@ -21,8 +21,8 @@ export interface GameState {
   isClient?: boolean;
   suggestedActions: SuggestedAction[];
   combatState?: {
-    playerHealth: number;
-    opponentHealth: number;
+    playerStrength: number;
+    opponentStrength: number;
     currentTurn: 'player' | 'opponent';
     combatLog: string[];
   };
@@ -51,8 +51,8 @@ export type GameEngineAction =
   | { type: 'SET_STATE'; payload: Partial<GameState> }
   | { type: 'SET_SUGGESTED_ACTIONS'; payload: SuggestedAction[] }
   | { type: 'UPDATE_COMBAT_STATE'; payload: {
-      playerHealth: number;
-      opponentHealth: number;
+      playerStrength: number;
+      opponentStrength: number;
       currentTurn: 'player' | 'opponent';
       combatLog: string[];
     }};
@@ -170,20 +170,11 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         isCombatActive: true, // Ensure combat flag is set when updating state
         combatState: {
           ...action.payload,
-          playerHealth: Number(action.payload.playerHealth),
-          opponentHealth: Number(action.payload.opponentHealth),
+          playerStrength: Number(action.payload.playerStrength),
+          opponentStrength: Number(action.payload.opponentStrength),
           currentTurn: action.payload.currentTurn,
           combatLog: [...(action.payload.combatLog || [])]
-        },
-        // Sync character and opponent health with combat state
-        character: state.character ? {
-          ...state.character,
-          health: Number(action.payload.playerHealth)
-        } : null,
-        opponent: state.opponent ? {
-          ...state.opponent,
-          health: Number(action.payload.opponentHealth)
-        } : null
+        }
       };
     
     // Inventory management
@@ -218,14 +209,15 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         isCombatActive: Boolean(action.payload.isCombatActive),
         opponent: action.payload.opponent ? {
           ...action.payload.opponent,
-          health: Number(action.payload.opponent.health),
           attributes: { ...action.payload.opponent.attributes },
-          skills: { ...action.payload.opponent.skills }
+          skills: { ...action.payload.opponent.skills },
+          wounds: [...action.payload.opponent.wounds],
+          isUnconscious: Boolean(action.payload.opponent.isUnconscious)
         } : null,
         combatState: action.payload.combatState ? {
           ...action.payload.combatState,
-          playerHealth: Number(action.payload.combatState.playerHealth),
-          opponentHealth: Number(action.payload.combatState.opponentHealth),
+          playerStrength: Number(action.payload.combatState.playerStrength),
+          opponentStrength: Number(action.payload.combatState.opponentStrength),
           currentTurn: action.payload.combatState.currentTurn,
           combatLog: [...action.payload.combatState.combatLog]
         } : undefined,

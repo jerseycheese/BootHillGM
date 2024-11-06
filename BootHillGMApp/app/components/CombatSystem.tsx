@@ -1,105 +1,79 @@
 /**
- * CombatSystem handles turn-based combat encounters in the game.
- * It uses the useCombatEngine hook to manage combat state and logic while
- * focusing solely on rendering the combat interface.
- * 
- * Key features:
- * - Displays combat status (health, turns)
- * - Manages player and opponent turns
- * - Shows combat log
- * - Auto-processes opponent turns after delay
+ * Implements Boot Hill v2 combat system with:
+ * - Strength-based damage calculation
+ * - Wound location and severity tracking
+ * - Two-round brawling structure
+ * - Punch and grapple options
  */
-import React, { useEffect } from 'react';
+import { useState } from 'react';
 import { Character } from '../types/character';
-import { GameEngineAction } from '../utils/gameEngine';
-import { CombatLog } from './Combat/CombatLog';
-import { CombatControls } from './Combat/CombatControls';
 import { CombatStatus } from './Combat/CombatStatus';
-import { LoadingScreen } from './GameArea/LoadingScreen';
-import { useCombatEngine } from '../hooks/useCombatEngine';
+import { BrawlingControls } from './Combat/BrawlingControls';
+import { useBrawlingCombat } from '../hooks/useBrawlingCombat';
+import { GameEngineAction } from '../utils/gameEngine';
 
 interface CombatSystemProps {
   playerCharacter: Character;
   opponent: Character;
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
-  onPlayerHealthChange: (health: number) => void;
   dispatch: React.Dispatch<GameEngineAction>;
   initialCombatState?: {
-    playerHealth: number;
-    opponentHealth: number;
-    currentTurn: 'player' | 'opponent';
-    combatLog: string[];
+    round: 1 | 2;
+    playerModifier: number;
+    opponentModifier: number;
+    roundLog: string[];
   };
 }
 
-const CombatSystem: React.FC<CombatSystemProps> = ({
+export const CombatSystem: React.FC<CombatSystemProps> = ({
   playerCharacter,
   opponent,
   onCombatEnd,
-  onPlayerHealthChange,
   dispatch,
   initialCombatState
 }) => {
-  const {
-    playerHealth,
-    opponentHealth,
-    currentTurn,
-    combatLog,
-    isProcessing,
-    handlePlayerAttack,
-    handleOpponentAttack
-  } = useCombatEngine({
+  const [isBrawling, setIsBrawling] = useState(false);
+  
+  const { brawlingState, isProcessing, processRound } = useBrawlingCombat({
     playerCharacter,
     opponent,
     onCombatEnd,
-    onPlayerHealthChange,
     dispatch,
-    initialState: initialCombatState
+    initialCombatState
   });
 
-  /**
-   * Triggers opponent's turn after a delay when it becomes their turn.
-   * Prevents immediate attacks and provides visual feedback.
-   */
-  useEffect(() => {
-    if (currentTurn === 'opponent' && !isProcessing) {
-      const timer = setTimeout(handleOpponentAttack, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [currentTurn, isProcessing, handleOpponentAttack]);
+  const handleStartBrawling = () => {
+    setIsBrawling(true);
+  };
 
   return (
     <div className="combat-system wireframe-section space-y-4">
       <CombatStatus
-        playerHealth={playerHealth}
-        opponentHealth={opponentHealth}
+        playerCharacter={playerCharacter}
+        opponent={opponent}
       />
       
-      <div className="relative">
-        <CombatControls
-          currentTurn={currentTurn}
+      {!isBrawling ? (
+        <button 
+          onClick={handleStartBrawling}
+          className="wireframe-button w-full"
+        >
+          Start Brawling
+        </button>
+      ) : (
+        <BrawlingControls
           isProcessing={isProcessing}
-          onAttack={handlePlayerAttack}
+          onPunch={() => processRound(true, true)}
+          onGrapple={() => processRound(false, true)}
+          round={brawlingState?.round || 1}
         />
-        
-        {isProcessing && (
-          <div 
-            className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90" 
-          >
-            <LoadingScreen 
-              message="Processing combat action..." 
-              size="small"
-              fullscreen={false}
-            />
-          </div>
-        )}
-      </div>
+      )}
       
-      <div className="combat-info">
-        <CombatLog entries={combatLog} />
+      <div className="combat-log mt-4">
+        {brawlingState?.roundLog?.map((log, index) => (
+          <div key={index} className="text-sm mb-1 even:text-right">{log}</div>
+        ))}
       </div>
     </div>
   );
 };
-
-export default CombatSystem;

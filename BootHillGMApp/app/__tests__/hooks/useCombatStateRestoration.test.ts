@@ -6,12 +6,12 @@ import { Character } from '../../types/character';
 describe('useCombatStateRestoration', () => {
   const mockOpponent: Character = {
     name: 'Test Opponent',
-    health: 100,
     attributes: {
       speed: 10,
       gunAccuracy: 10,
       throwingAccuracy: 10,
       strength: 10,
+      baseStrength: 10,
       bravery: 10,
       experience: 5
     },
@@ -19,7 +19,9 @@ describe('useCombatStateRestoration', () => {
       shooting: 50,
       riding: 50,
       brawling: 50
-    }
+    },
+    wounds: [],
+    isUnconscious: false
   };
 
   const mockState: GameState = {
@@ -30,12 +32,12 @@ describe('useCombatStateRestoration', () => {
     quests: [],
     character: {
       name: 'Player1',
-      health: 100,
       attributes: {
         speed: 10,
         gunAccuracy: 10,
         throwingAccuracy: 10,
         strength: 10,
+        baseStrength: 10,
         bravery: 10,
         experience: 5
       },
@@ -43,7 +45,9 @@ describe('useCombatStateRestoration', () => {
         shooting: 50,
         riding: 50,
         brawling: 50
-      }
+      },
+      wounds: [],
+      isUnconscious: false
     },
     narrative: '',
     gameProgress: 0,
@@ -52,8 +56,8 @@ describe('useCombatStateRestoration', () => {
     opponent: mockOpponent,
     suggestedActions: [],
     combatState: {
-      playerHealth: 100,
-      opponentHealth: 100,
+      playerStrength: 100,
+      opponentStrength: 100,
       currentTurn: 'player' as const,
       combatLog: ['Combat started']
     }
@@ -84,13 +88,18 @@ describe('useCombatStateRestoration', () => {
     expect(mockGameSession.initiateCombat).toHaveBeenCalledWith(
       expect.objectContaining({
         name: mockOpponent.name,
-        health: mockOpponent.health,
-        attributes: expect.objectContaining(mockOpponent.attributes),
-        skills: expect.objectContaining(mockOpponent.skills)
+        attributes: expect.objectContaining({
+          ...mockOpponent.attributes,
+          baseStrength: 10
+        }),
+        skills: expect.objectContaining(mockOpponent.skills),
+        wounds: [],
+        isUnconscious: false,
+        weapon: undefined
       }),
       expect.objectContaining({
-        playerHealth: 100,
-        opponentHealth: 100,
+        playerStrength: 100,
+        opponentStrength: 100,
         currentTurn: 'player',
         combatLog: ['Combat started']
       })
