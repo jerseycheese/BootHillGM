@@ -122,10 +122,12 @@
 
 ### 9. UI Components
 - **NarrativeDisplay:**
-  - [x] Shows game text with formatting
+  - [x] Shows game text with consistent formatting
   - [x] Auto-scrolls for new content
   - [x] Handles error states
   - [x] Displays item notifications
+  - [x] Implements typed content processing
+  - [x] Provides consistent styling for different content types
 - **InputManager:**
   - [x] Processes player input
   - [x] Shows loading states

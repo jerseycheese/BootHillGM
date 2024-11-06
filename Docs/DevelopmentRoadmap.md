@@ -59,6 +59,9 @@
 - [ ] Separate action suggestions from narrative
 - [x] Extract status display into separate component
 - [x] Add visual distinction for player actions
+- [x] Implement typed narrative content processing
+- [ ] Implement contextual action buttons
+- [ ] Separate action suggestions from narrative
 
 3.2 State Management Improvements
 - [ ] Implement progressive state saving
