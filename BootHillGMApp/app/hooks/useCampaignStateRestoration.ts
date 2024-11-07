@@ -9,15 +9,18 @@ interface RestoreStateOptions {
 }
 
 /**
- * Hook to handle game state restoration from storage.
- * Manages initialization of new games and restoration of saved games,
- * ensuring proper type conversion and data structure preservation.
+ * Hook for restoring game state from storage with proper type conversion.
+ * Handles both new game initialization and saved game restoration.
  * 
- * @param options.isInitializing - Whether a new game is being initialized
- * @param options.savedStateJSON - Saved game state JSON from localStorage
- * @returns Restored GameState with proper type conversions
+ * Key responsibilities:
+ * - Proper type conversion of saved data
+ * - Deep copying of complex objects (inventory, combat state)
+ * - Validation of restored data
+ * - Error handling for corrupt or invalid saves
+ * 
+ * Used by CampaignStateManager to handle state initialization.
  */
-export const useStateRestoration = ({ 
+export const useCampaignStateRestoration = ({ 
   isInitializing, 
   savedStateJSON 
 }: RestoreStateOptions): GameState => {
@@ -71,8 +74,8 @@ export const useStateRestoration = ({
 };
 
 /**
- * Helper function to properly restore a character's data structure,
- * ensuring all nested objects and arrays are correctly copied.
+ * Creates a fresh copy of character data with all nested objects properly copied.
+ * Ensures that all required character properties are present and correctly typed.
  */
 const restoreCharacter = (character: Partial<Character>): Character => ({
   ...character,

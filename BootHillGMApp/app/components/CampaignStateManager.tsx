@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useCallback, useEffect, useState, useRef, useMemo } from 'react';
 import { GameState, GameEngineAction, gameReducer, initialState as initialGameState } from '../utils/gameEngine';
-import { useStateRestoration } from '../hooks/useCampaignStateRestoration';
+import { useCampaignStateRestoration } from '../hooks/useCampaignStateRestoration';
 import { InventoryItem } from '../types/inventory';
 
 export const CampaignStateContext = createContext<{
@@ -32,7 +32,7 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
     return localStorage.getItem('campaignState');
   }, []);
 
-  const initialState = useStateRestoration({ 
+  const initialState = useCampaignStateRestoration({ 
     isInitializing, 
     savedStateJSON 
   });

@@ -217,7 +217,7 @@ This ADR will be reviewed and updated as the project progresses beyond the MVP p
 We needed to simplify the complex state restoration logic in the CampaignStateManager component while ensuring proper type safety and data structure preservation.
 
 ## Decision
-Extracted state restoration logic into a dedicated hook (useStateRestoration) and implemented a clear separation between state initialization and restoration.
+Extracted state restoration logic into a dedicated hook (useCampaignStateRestoration) and implemented a clear separation between state initialization and restoration.
 
 ## Rationale
 - Improves code organization and maintainability

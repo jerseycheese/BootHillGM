@@ -55,7 +55,7 @@
   - Improved button disabled states
   - Clear turn indicator messages
   - Proper cursor feedback
-  - Enhanced combat log with visual feedback for different message types
+  - Enhanced combat log with visual feedback for different message typesgi
 
 - [ ] As a player, I want weapon-specific combat modifiers, so that my choice of weapon matters more in combat.
   **Test Plan:**
