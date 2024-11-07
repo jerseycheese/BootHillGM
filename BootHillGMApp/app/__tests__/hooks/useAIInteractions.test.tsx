@@ -1,45 +1,28 @@
 import { renderHook, act } from '@testing-library/react';
+import { useAIInteractions } from '../../hooks/useAIInteractions';
+import { AIService } from '../../services/ai';
 import { GameState } from '../../types/campaign';
-import { GameEngineAction } from '../../utils/gameEngine';
+import { generateNarrativeSummary } from '../../utils/aiService';
+import { Character } from '../../types/character';
 
-// Mock the GoogleGenerativeAI dependency first
-jest.mock('@google/generative-ai', () => ({
-  GoogleGenerativeAI: jest.fn()
+const mockGetResponse = jest.fn();
+
+// Mock the AIService and narrative summary generation
+jest.mock('../../services/ai', () => {
+  return {
+    AIService: jest.fn().mockImplementation(() => {
+      return {
+        getResponse: () => mockGetResponse()
+      };
+    })
+  };
+});
+
+jest.mock('../../utils/aiService', () => ({
+  generateNarrativeSummary: jest.fn().mockResolvedValue('Test summary')
 }));
 
-// Mock process.env
-process.env.NEXT_PUBLIC_GEMINI_API_KEY = 'mock-api-key';
-
 describe('useAIInteractions', () => {
-  // Set up mocks before importing the modules that use them
-  const mockAIServiceInstance = {
-    getResponse: jest.fn(),
-    retryLastAction: jest.fn(),
-  };
-
-  // Use doMock to avoid hoisting issues
-  jest.doMock('../../services/ai', () => ({
-    AIService: jest.fn().mockImplementation(() => mockAIServiceInstance),
-    __esModule: true
-  }));
-
-  let useAIInteractions: (
-    state: GameState,
-    dispatch: React.Dispatch<GameEngineAction>,
-    onInventoryChange: (acquired: string[], removed: string[]) => void
-  ) => {
-    handleUserInput: (input: string) => Promise<void>;
-    retryLastAction: () => Promise<void>;
-    isLoading: boolean;
-    error: string | null;
-  };
-
-  beforeAll(async () => {
-    // Import the hook after setting up mocks
-    const hookModule = await import('../../hooks/useAIInteractions');
-    useAIInteractions = hookModule.useAIInteractions;
-  });
-
   const mockDispatch = jest.fn();
   const mockOnInventoryChange = jest.fn();
   const mockInitialState: GameState = {
@@ -54,103 +37,231 @@ describe('useAIInteractions', () => {
     quests: [],
     isCombatActive: false,
     opponent: null,
-    isClient: false
+    isClient: false,
+    suggestedActions: []
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset mock implementations
-    mockAIServiceInstance.getResponse.mockReset();
-    mockAIServiceInstance.retryLastAction.mockReset();
   });
 
-  it('should process user input and update state', async () => {
-    const userInput = 'Hello AI';
-    const mockResponse = {
-      narrative: 'AI response narrative',
-      location: 'New Location',
-      acquiredItems: ['item1'],
-      removedItems: [],
-    };
+  describe('handleUserInput', () => {
+    it('should process user input and update state with all response elements', async () => {
+      const userInput = 'Hello AI';
+      const mockResponse = {
+        narrative: 'AI response narrative',
+        location: 'New Location',
+        acquiredItems: ['item1'],
+        removedItems: [],
+        suggestedActions: [
+          { text: 'Action 1', type: 'basic' as const, context: 'Test context' }
+        ]
+      };
 
-    mockAIServiceInstance.getResponse.mockResolvedValueOnce(mockResponse);
+      mockGetResponse.mockResolvedValueOnce(mockResponse);
 
-    const { result } = renderHook(() => useAIInteractions(
-      mockInitialState,
-      mockDispatch,
-      mockOnInventoryChange
-    ));
+      const { result } = renderHook(() => useAIInteractions(
+        mockInitialState,
+        mockDispatch,
+        mockOnInventoryChange
+      ));
 
-    await act(async () => {
-      await result.current.handleUserInput(userInput);
+      await act(async () => {
+        await result.current.handleUserInput(userInput);
+      });
+
+      // Verify AI service call
+      expect(mockGetResponse).toHaveBeenCalled();
+
+      // Verify narrative update
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'SET_NARRATIVE',
+        payload: expect.stringContaining('AI response narrative')
+      });
+
+      // Verify journal update
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'UPDATE_JOURNAL',
+        payload: expect.objectContaining({
+          type: 'narrative',
+          content: userInput,
+          narrativeSummary: 'Test summary'
+        })
+      });
+
+      // Verify location update
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'SET_LOCATION',
+        payload: mockResponse.location
+      });
+
+      // Verify inventory changes
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'ADD_ITEM',
+        payload: expect.objectContaining({
+          name: 'item1',
+          quantity: 1
+        })
+      });
+
+      // Verify suggested actions update
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'SET_SUGGESTED_ACTIONS',
+        payload: mockResponse.suggestedActions
+      });
+
+      // Verify onInventoryChange callback
+      expect(mockOnInventoryChange).toHaveBeenCalledWith(['item1'], []);
+      
+      // Verify no errors
+      expect(result.current.error).toBeNull();
     });
 
-    expect(mockAIServiceInstance.getResponse).toHaveBeenCalledWith(
-      userInput,
-      '',
-      {
-        inventory: [],
-        character: undefined,
-        location: 'Test Location'
-      }
-    );
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'SET_NARRATIVE',
-      payload: mockResponse.narrative
+    it('should handle combat initiation correctly', async () => {
+      const mockOpponent: Character = {
+        name: 'Test Opponent',
+        attributes: {
+          speed: 10,
+          gunAccuracy: 8,
+          throwingAccuracy: 7,
+          strength: 10,
+          baseStrength: 10,
+          bravery: 8,
+          experience: 5
+        },
+        skills: {
+          shooting: 50,
+          riding: 40,
+          brawling: 45
+        },
+        wounds: [],
+        isUnconscious: false
+      };
+
+      const mockResponse = {
+        narrative: 'Combat starts',
+        combatInitiated: true,
+        opponent: mockOpponent,
+        acquiredItems: [],
+        removedItems: [],
+        suggestedActions: [
+          { text: 'Fight', type: 'combat' as const, context: 'Combat initiated' }
+        ]
+      };
+
+      mockGetResponse.mockResolvedValueOnce(mockResponse);
+
+      const { result } = renderHook(() => useAIInteractions(
+        mockInitialState,
+        mockDispatch,
+        mockOnInventoryChange
+      ));
+
+      await act(async () => {
+        await result.current.handleUserInput('attack');
+      });
+
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'SET_CHARACTER',
+        payload: mockOpponent
+      });
     });
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'SET_LOCATION',
-      payload: mockResponse.location
-    });
-    expect(mockOnInventoryChange).toHaveBeenCalledWith(['item1'], []);
-    expect(result.current.error).toBeNull();
   });
 
-  it('should handle errors during processing', async () => {
-    const userInput = 'Hello AI';
-    const error = new Error('Processing failed');
+  describe('retryLastAction', () => {
+    it('should retry the last action successfully', async () => {
+      const mockResponse = {
+        narrative: 'Retry response',
+        acquiredItems: [],
+        removedItems: [],
+        suggestedActions: [
+          { text: 'Retry Action', type: 'basic' as const, context: 'Retry context' }
+        ]
+      };
 
-    // Mock the rejection properly
-    mockAIServiceInstance.getResponse.mockImplementationOnce(() => Promise.reject(error));
+      mockGetResponse.mockResolvedValue(mockResponse);
 
-    const { result } = renderHook(() => useAIInteractions(
-      mockInitialState,
-      mockDispatch,
-      mockOnInventoryChange
-    ));
+      const { result } = renderHook(() => useAIInteractions(
+        mockInitialState,
+        mockDispatch,
+        mockOnInventoryChange
+      ));
 
-    await act(async () => {
-      await result.current.handleUserInput(userInput);
+      // First, set up a last action
+      await act(async () => {
+        await result.current.handleUserInput('initial action');
+      });
+
+      // Then test retry
+      await act(async () => {
+        await result.current.retryLastAction();
+      });
+
+      expect(mockGetResponse).toHaveBeenCalledTimes(2);
+      expect(result.current.error).toBeNull();
     });
 
-    expect(mockAIServiceInstance.getResponse).toHaveBeenCalled();
-    expect(result.current.error).toBe('Processing failed');
+    it('should not retry if there is no last action', async () => {
+      const { result } = renderHook(() => useAIInteractions(
+        mockInitialState,
+        mockDispatch,
+        mockOnInventoryChange
+      ));
+
+      await act(async () => {
+        await result.current.retryLastAction();
+      });
+
+      expect(mockGetResponse).not.toHaveBeenCalled();
+    });
   });
 
-  it('should handle retry last action', async () => {
-    const mockResponse = {
-      narrative: 'Retry response',
-      acquiredItems: [],
-      removedItems: []
-    };
+  describe('error handling', () => {
+    it('should handle AI service errors gracefully', async () => {
+      const error = new Error('AI service error');
+      mockGetResponse.mockRejectedValueOnce(error);
 
-    mockAIServiceInstance.retryLastAction.mockResolvedValueOnce(mockResponse);
+      const { result } = renderHook(() => useAIInteractions(
+        mockInitialState,
+        mockDispatch,
+        mockOnInventoryChange
+      ));
 
-    const { result } = renderHook(() => useAIInteractions(
-      mockInitialState,
-      mockDispatch,
-      mockOnInventoryChange
-    ));
+      await act(async () => {
+        const response = await result.current.handleUserInput('test input');
+        expect(response).toBeNull();
+      });
 
-    await act(async () => {
-      await result.current.retryLastAction();
+      expect(result.current.error).toBe('AI service error');
+      expect(mockOnInventoryChange).not.toHaveBeenCalled();
     });
 
-    expect(mockAIServiceInstance.retryLastAction).toHaveBeenCalled();
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'SET_NARRATIVE',
-      payload: mockResponse.narrative
+    it('should handle undefined response values', async () => {
+      const mockResponse = {
+        narrative: 'Test narrative',
+        acquiredItems: [],
+        removedItems: [],
+        suggestedActions: [] // Empty but present array of suggested actions
+      };
+
+      mockGetResponse.mockResolvedValueOnce(mockResponse);
+
+      const { result } = renderHook(() => useAIInteractions(
+        mockInitialState,
+        mockDispatch,
+        mockOnInventoryChange
+      ));
+
+      await act(async () => {
+        await result.current.handleUserInput('test input');
+      });
+
+      // Verify that undefined optional values don't cause issues
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'SET_LOCATION'
+        })
+      );
     });
-    expect(result.current.error).toBeNull();
   });
 });
