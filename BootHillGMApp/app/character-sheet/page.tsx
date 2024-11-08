@@ -13,15 +13,12 @@ export default function CharacterSheet() {
 
   useEffect(() => {
     // Debug current state
-    console.log('Current game state:', state);
-    console.log('Character data:', character);
     debugStorage();
 
     // Try to load game if character is not present
     if (!character) {
       // First try to load from campaign state
       const loadedState = loadGame();
-      console.log('Loaded campaign state:', loadedState);
 
       // If no campaign state, check for last created character
       if (!loadedState?.character && typeof window !== 'undefined') {
@@ -29,7 +26,6 @@ export default function CharacterSheet() {
         if (lastCharacterJSON) {
           try {
             const lastCharacter = JSON.parse(lastCharacterJSON);
-            console.log('Found last created character:', lastCharacter);
 
             // Create a new game state with this character
             const newState = {
@@ -41,8 +37,8 @@ export default function CharacterSheet() {
             // Save and update the state
             saveGame(newState);
             dispatch({ type: 'SET_STATE', payload: newState });
-          } catch (error) {
-            console.error('Error loading last created character:', error);
+          } catch {
+            console.error('Error loading last created character.');
           }
         }
       }
@@ -69,7 +65,6 @@ export default function CharacterSheet() {
 
   return (
     <div className="wireframe-container">
-      <h1 className="wireframe-title">Character Sheet</h1>
       <div className="wireframe-section">
         <h2 className="wireframe-subtitle">Name: {character.name}</h2>
       </div>

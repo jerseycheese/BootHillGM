@@ -13,15 +13,12 @@ export default function Navigation() {
   const { state, dispatch } = useGame();
 
   useEffect(() => {
-    // Debug current state
-    console.log('Navigation - Current game state:', state);
     debugStorage();
 
     // Load game state if no character is present
     if (!state.character) {
       const loadedState = loadGame();
       if (loadedState) {
-        console.log('Navigation - Loaded state:', loadedState);
         dispatch({ type: 'SET_STATE', payload: loadedState });
       }
     }

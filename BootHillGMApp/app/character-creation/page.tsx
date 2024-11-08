@@ -30,13 +30,12 @@ export default function CharacterCreation() {
         <button
           type="button"
           onClick={generateCharacter}
-          className={`wireframe-button mb-4 float-right ${isGeneratingCharacter ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`wireframe-button mb-4 ${isGeneratingCharacter ? 'opacity-50 cursor-not-allowed' : ''}`}
           disabled={isGeneratingCharacter}
         >
           Generate Random Character
         </button>
       )}
-      <h1 className="wireframe-title">Create Your Character</h1>
       
       {currentStep === steps.length - 1 ? (
         <CharacterSummary

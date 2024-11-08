@@ -1,4 +1,5 @@
 import { useRef, useEffect, useMemo } from 'react';
+import { cleanMetadataMarkers, toSentenceCase, extractItemUpdates } from '../utils/textCleaningUtils';
 
 export interface NarrativeDisplayProps {
   narrative: string;
@@ -10,11 +11,6 @@ export interface NarrativeDisplayProps {
 type ContentType = 'player-action' | 'gm-response' | 'narrative' | 'item-update';
 type UpdateType = 'acquired' | 'used';
 
-interface PendingUpdate {
-  items: string;
-  type: UpdateType;
-}
-
 interface NarrativeItem {
   type: ContentType;
   content: string;
@@ -24,94 +20,141 @@ interface NarrativeItem {
   };
 }
 
-// Parses a single line of text into a structured narrative item with appropriate type
-const parseNarrativeLine = (line: string): NarrativeItem => {
-  if (line.startsWith('Player:')) {
-    return { type: 'player-action', content: line };
-  } else if (line.startsWith('Game Master:')) {
-    return { 
-      type: 'gm-response', 
-      content: line.replace('Game Master:', 'GM:') 
-    };
+const processPlayerAction = (text: string): string => {
+  const parts = text.split(':');
+  if (parts.length !== 2 || !parts[1].trim()) {
+    return text; // Return original if no valid content after colon
   }
-  return { type: 'narrative', content: line };
+  return `Player: ${toSentenceCase(parts[1].trim())}`;
 };
 
-// Creates a formatted item update entry for inventory changes
-const createItemUpdate = (items: string, type: UpdateType): NarrativeItem => {
-  const itemList = items.split(',').map(item => item.trim());
-  return {
-    type: 'item-update',
-    content: `${type === 'acquired' ? 'Acquired' : 'Used'}: ${itemList.join(', ')}`,
-    metadata: { items: itemList, updateType: type }
-  };
-};
-
-// Processes the full narrative text into structured content items
-// Handles special markers like ACQUIRED_ITEMS and REMOVED_ITEMS
-// Returns an array of typed narrative items for consistent rendering
+/**
+ * Processes narrative text into structured content, identifying:
+ * - Player actions and GM responses
+ * - Inventory changes (acquisitions and removals)
+ * - Maintains proper formatting and spacing
+ * 
+ * Handles both explicit metadata markers and natural language patterns
+ * for better game state tracking.
+ */
 const processNarrativeContent = (text: string): NarrativeItem[] => {
+  console.log('Processing narrative:', text);
   const items: NarrativeItem[] = [];
-  let pendingUpdate: PendingUpdate | null = null;
+  let currentInteraction = '';
+  let lastProcessedLine = '';
 
+  // Split the text into lines
   const lines = text.split('\n');
-  for (let i = 0; i < lines.length; i++) {
-    const trimmedLine = lines[i].trim();
-    
-    if (trimmedLine.startsWith('ACQUIRED_ITEMS:')) {
-      pendingUpdate = {
-        items: trimmedLine.replace('ACQUIRED_ITEMS:', '').trim(),
-        type: 'acquired' as const
-      };
-      continue;
-    }
-    
-    if (trimmedLine.startsWith('REMOVED_ITEMS:')) {
-      pendingUpdate = {
-        items: trimmedLine.replace('REMOVED_ITEMS:', '').trim(),
-        type: 'used' as const
-      };
-      continue;
-    }
 
-    if (pendingUpdate && trimmedLine.length > 0 && 
-        !trimmedLine.startsWith('ACQUIRED_ITEMS:') && 
-        !trimmedLine.startsWith('REMOVED_ITEMS:')) {
-      items.push(createItemUpdate(pendingUpdate.items, pendingUpdate.type));
-      pendingUpdate = null;
-    }
+  // Process each line
+  for (const line of lines) {
+    const trimmedLine = line.trim();
 
-    if (trimmedLine.length > 0) {
-      items.push(parseNarrativeLine(trimmedLine));
-    } else {
+    // Skip empty lines
+    if (!trimmedLine) {
       items.push({ type: 'narrative', content: '' });
+      continue;
     }
-  }
 
-  if (pendingUpdate) {
-    items.push(createItemUpdate(pendingUpdate.items, pendingUpdate.type));
+    // Add line to current interaction context
+    currentInteraction += trimmedLine + '\n';
+
+    console.log('Current line:', trimmedLine);
+    console.log('Current interaction context:', currentInteraction);
+
+    // Skip rendering of pure metadata lines
+    if (/^(?:ACQUIRED_ITEMS|REMOVED_ITEMS|SUGGESTED_ACTIONS):/i.test(trimmedLine)) {
+      console.log('Processing metadata line:', trimmedLine);
+      // If this is a REMOVED_ITEMS line and the last processed line was a player action
+      if (/^REMOVED_ITEMS:/i.test(trimmedLine) && lastProcessedLine.startsWith('Player:')) {
+        const updates = extractItemUpdates(currentInteraction);
+        console.log('Updates from metadata after player action:', updates);
+        if (updates.removed.length > 0) {
+          console.log('Adding removed items from metadata:', updates.removed);
+          items.push({
+            type: 'item-update',
+            content: `Used/Removed Items: ${updates.removed.join(', ')}`,
+            metadata: {
+              items: updates.removed,
+              updateType: 'used',
+            },
+          });
+        }
+      }
+      continue;
+    }
+
+    const cleanedLine = cleanMetadataMarkers(trimmedLine);
+
+    if (cleanedLine.startsWith('Player:')) {
+      const processedAction = processPlayerAction(cleanedLine);
+      if (processedAction !== 'Player: undefined') {
+        items.push({ type: 'player-action', content: processedAction });
+        lastProcessedLine = processedAction;
+      }
+    } else if (cleanedLine.startsWith('GM:') || cleanedLine.startsWith('Game Master:')) {
+      items.push({
+        type: 'gm-response',
+        content: cleanedLine.replace('Game Master:', 'GM:'),
+      });
+      lastProcessedLine = cleanedLine;
+
+      // Extract item updates from currentInteraction
+      const updates = extractItemUpdates(currentInteraction);
+      console.log('Updates after GM response:', updates);
+
+      // Add acquired items if any
+      if (updates.acquired.length > 0) {
+        items.push({
+          type: 'item-update',
+          content: `Acquired Items: ${updates.acquired.join(', ')}`,
+          metadata: {
+            items: updates.acquired,
+            updateType: 'acquired',
+          },
+        });
+      }
+
+      // Reset currentInteraction after processing GM response
+      currentInteraction = '';
+    } else {
+      items.push({ type: 'narrative', content: cleanedLine });
+      lastProcessedLine = cleanedLine;
+    }
   }
 
   return items;
 };
 
-// Renders individual narrative items with consistent styling based on their type
+// Content render component
 const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) => {
   const baseClasses = 'my-2 py-1';
   
   switch (item.type) {
     case 'player-action':
       return <div className={`${baseClasses} player-action border-l-4 border-green-500 pl-4`}>{item.content}</div>;
+      
     case 'gm-response':
       return <div className={`${baseClasses} gm-response border-l-4 border-blue-500 pl-4`}>{item.content}</div>;
+      
     case 'item-update':
-      const bgColor = item.metadata?.updateType === 'acquired' ? 'bg-amber-50' : 'bg-gray-50';
-      const borderColor = item.metadata?.updateType === 'acquired' ? 'border-amber-400' : 'border-gray-400';
+      console.log('Rendering item-update:', {
+        content: item.content,
+        updateType: item.metadata?.updateType,
+      });
       return (
-        <div className={`${baseClasses} item-update py-2 px-4 rounded border-l-4 ${bgColor} ${borderColor}`}>
+        <div
+          data-testid={`item-update-${item.metadata?.updateType}`}
+          className={`${baseClasses} item-update p-2 px-4 rounded border-l-4 ${
+            item.metadata?.updateType === 'acquired'
+              ? 'bg-amber-50 border-amber-400'
+              : 'bg-gray-50 border-gray-400'
+          }`}
+        >
           {item.content}
         </div>
       );
+      
     default:
       return item.content ? (
         <div className={`${baseClasses} narrative-line`}>{item.content}</div>

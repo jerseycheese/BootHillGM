@@ -32,27 +32,29 @@ export const CombatStatus: React.FC<CombatStatusProps> = ({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <span className="font-medium" data-testid="player-strength-label">
-            {playerName} Strength: 
-          </span>
-          <span 
-            className={`${playerStrength <= maxPlayerStrength / 2 ? 'text-red-600' : ''}`}
-            data-testid="player-strength-value"
-            aria-label={`Player Strength: ${playerStrength} out of ${maxPlayerStrength}`}
-          >
-            {playerStrength}/{maxPlayerStrength}
+            {playerName} <br />
+            <div className="text-sm">Strength: <span 
+              className={`${playerStrength <= maxPlayerStrength / 2 ? 'text-red-600' : ''}`}
+              data-testid="player-strength-value"
+              aria-label={`Player Strength: ${playerStrength} out of ${maxPlayerStrength}`}
+            >
+              {playerStrength}/{maxPlayerStrength}
+              </span>
+            </div>
           </span>
           {playerCharacter.isUnconscious && <span className="ml-2">(Unconscious)</span>}
         </div>
         <div>
           <span className="font-medium" data-testid="opponent-strength-label">
-            {opponentName} Strength: 
-          </span>
-          <span 
-            className={`${opponentStrength <= maxOpponentStrength / 2 ? 'text-red-600' : ''}`}
-            data-testid="opponent-strength-value"
-            aria-label={`Opponent Strength: ${opponentStrength} out of ${maxOpponentStrength}`}
-          >
-            {opponentStrength}/{maxOpponentStrength}
+            {opponentName} <br />
+            <div className="text-sm">Strength: <span 
+              className={`${opponentStrength <= maxOpponentStrength / 2 ? 'text-red-600' : ''}`}
+              data-testid="opponent-strength-value"
+              aria-label={`Opponent Strength: ${opponentStrength} out of ${maxOpponentStrength}`}
+            >
+              {opponentStrength}/{maxOpponentStrength}
+              </span>
+            </div>
           </span>
           {opponent.isUnconscious && <span className="ml-2">(Unconscious)</span>}
         </div>
@@ -60,8 +62,8 @@ export const CombatStatus: React.FC<CombatStatusProps> = ({
       {/* Add wounds display */}
       <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
         <div>
-          <strong aria-label={`${playerName} Wounds`}>{playerName} Wounds:</strong>
-          <ul className="list-disc pl-4" aria-label={`${playerName} Wound List`}>
+          <strong aria-label={`${playerName} Wounds`}>Wounds:</strong>
+          <ul className="list-none" aria-label={`${playerName} Wound List`}>
             {playerCharacter.wounds.map((wound, index) => (
               <li key={index} className={`${wound.severity === 'serious' ? 'text-red-600' : wound.severity === 'mortal' ? 'text-black' : 'text-orange-600'}`} aria-label={`${playerName} Wound ${index + 1}: ${wound.location} - ${wound.severity} - Strength Reduction: ${wound.strengthReduction}`}>
                 {wound.location} - {wound.severity} (-{wound.strengthReduction} STR)
@@ -70,8 +72,8 @@ export const CombatStatus: React.FC<CombatStatusProps> = ({
           </ul>
         </div>
         <div>
-          <strong aria-label={`${opponentName} Wounds`}>{opponentName} Wounds:</strong>
-          <ul className="list-disc pl-4" aria-label={`${opponentName} Wound List`}>
+          <strong aria-label={`${opponentName} Wounds`}>Wounds:</strong>
+          <ul className="list-none" aria-label={`${opponentName} Wound List`}>
             {opponent.wounds.map((wound, index) => (
               <li key={index} className={`${wound.severity === 'serious' ? 'text-red-600' : wound.severity === 'mortal' ? 'text-black' : 'text-orange-600'}`} aria-label={`${opponentName} Wound ${index + 1}: ${wound.location} - ${wound.severity} - Strength Reduction: ${wound.strengthReduction}`}>
                 {wound.location} - {wound.severity} (-{wound.strengthReduction} STR)

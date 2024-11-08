@@ -1,6 +1,5 @@
 import {
   cleanCharacterName,
-  cleanMetadataMarkers,
   getWeaponName,
   isCritical,
   formatHitMessage,
@@ -10,28 +9,6 @@ import {
 import { Character } from '../../types/character';
 
 describe('Combat Utilities', () => {
-  describe('cleanMetadataMarkers', () => {
-    it('removes suggested actions from text', () => {
-      const text = 'Player SUGGESTED_ACTIONS: [{"text": "action"}] hits enemy';
-      expect(cleanMetadataMarkers(text)).toBe('Player hits enemy');
-    });
-
-    it('removes empty brackets', () => {
-      const text = 'Player [] [] hits enemy';
-      expect(cleanMetadataMarkers(text)).toBe('Player hits enemy');
-    });
-
-    it('removes important markers', () => {
-      const text = 'Player important: Fight started with enemy. hits target';
-      expect(cleanMetadataMarkers(text)).toBe('Player hits target');
-    });
-
-    it('removes all metadata markers while preserving combat text', () => {
-      const text = 'Player [] [] SUGGESTED_ACTIONS: [{"text": "action"}] important: Fight started. hits enemy with sword for 5 damage!';
-      expect(cleanMetadataMarkers(text)).toBe('Player hits enemy with sword for 5 damage!');
-    });
-  });
-
   describe('cleanCharacterName', () => {
     it('removes metadata markers from character names', () => {
       const name = 'John ACQUIRED_ITEMS: REMOVED_ITEMS: Smith';
@@ -48,12 +25,12 @@ describe('Combat Utilities', () => {
     it('returns weapon name when present', () => {
       const character: Character = {
         name: 'Test',
-        health: 100,
         attributes: {
           speed: 5,
           gunAccuracy: 5,
           throwingAccuracy: 5,
           strength: 5,
+          baseStrength: 5,
           bravery: 5,
           experience: 5
         },
@@ -62,6 +39,8 @@ describe('Combat Utilities', () => {
           riding: 50,
           brawling: 50
         },
+        wounds: [],
+        isUnconscious: false,
         weapon: { name: 'Revolver', damage: '1d6' }
       };
       expect(getWeaponName(character)).toBe('Revolver');
@@ -70,12 +49,12 @@ describe('Combat Utilities', () => {
     it('returns "fists" when no weapon present', () => {
       const character: Character = {
         name: 'Test',
-        health: 100,
         attributes: {
           speed: 5,
           gunAccuracy: 5,
           throwingAccuracy: 5,
           strength: 5,
+          baseStrength: 5,
           bravery: 5,
           experience: 5
         },
@@ -83,7 +62,9 @@ describe('Combat Utilities', () => {
           shooting: 50,
           riding: 50,
           brawling: 50
-        }
+        },
+        wounds: [],
+        isUnconscious: false
       };
       expect(getWeaponName(character)).toBe('fists');
     });

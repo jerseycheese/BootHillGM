@@ -1,12 +1,40 @@
 import React from 'react';
-import { JournalEntry } from '../types/journal';
+import { JournalEntry, InventoryJournalEntry, CombatJournalEntry } from '../types/journal';
+import { cleanMetadataMarkers, toSentenceCase } from '../utils/textCleaningUtils';
 
 interface JournalViewerProps {
   entries: JournalEntry[];
 }
 
 const JournalViewer: React.FC<JournalViewerProps> = ({ entries }) => {
-  // Format date in a consistent MM/DD/YYYY format, with fallback for invalid dates
+  const formatJournalEntry = (entry: JournalEntry): string => {
+    let entryContent = cleanMetadataMarkers(entry.content);
+    
+    // Apply sentence case to the content
+    entryContent = toSentenceCase(entryContent);
+    
+    // For inventory entries, format them nicely
+    if (entry.type === 'inventory' && 'items' in entry) {
+      const invEntry = entry as InventoryJournalEntry;
+      if (invEntry.items.acquired.length > 0) {
+        entryContent += ` (Acquired: ${invEntry.items.acquired.join(', ')})`;
+      }
+      if (invEntry.items.removed.length > 0) {
+        entryContent += ` (Used: ${invEntry.items.removed.join(', ')})`;
+      }
+    }
+
+    // For combat entries, format the outcome
+    if (entry.type === 'combat' && 'outcome' in entry) {
+      const combatEntry = entry as CombatJournalEntry;
+      const outcome = combatEntry.outcome.charAt(0).toUpperCase() + 
+                     combatEntry.outcome.slice(1).toLowerCase();
+      entryContent += ` - ${outcome}`;
+    }
+
+    return entryContent;
+  };
+
   const formatDate = (timestamp: number): string => {
     try {
       if (!timestamp || isNaN(timestamp)) {
@@ -20,7 +48,6 @@ const JournalViewer: React.FC<JournalViewerProps> = ({ entries }) => {
         return 'Invalid date';
       }
 
-      // Use Intl.DateTimeFormat for consistent date formatting across timezones
       return new Intl.DateTimeFormat('en-US', {
         month: '2-digit',
         day: '2-digit',
@@ -32,22 +59,6 @@ const JournalViewer: React.FC<JournalViewerProps> = ({ entries }) => {
     }
   };
 
-  const renderEntry = (entry: JournalEntry, index: number) => {
-    if (!entry) {
-      console.warn('Invalid entry received:', entry);
-      return null;
-    }
-
-    const dateStr = formatDate(entry.timestamp);
-    const content = entry.narrativeSummary || entry.content;
-
-    return (
-      <li key={`${entry.timestamp}-${index}`} className="wireframe-text mb-2">
-        <strong>{dateStr}</strong>: {content}
-      </li>
-    );
-  };
-
   return (
     <div className="wireframe-section">
       <h2 className="wireframe-subtitle mb-2">Journal</h2>
@@ -56,7 +67,14 @@ const JournalViewer: React.FC<JournalViewerProps> = ({ entries }) => {
           <p>No journal entries yet.</p>
         ) : (
           <ul className="space-y-2">
-            {entries.slice().reverse().map((entry, index) => renderEntry(entry, index))}
+            {entries.slice().reverse().map((entry, index) => (
+              <li 
+                key={`${entry.timestamp}-${index}`} 
+                className="wireframe-text mb-2"
+              >
+                <strong>{formatDate(entry.timestamp)}</strong>: {formatJournalEntry(entry)}
+              </li>
+            ))}
           </ul>
         )}
       </div>

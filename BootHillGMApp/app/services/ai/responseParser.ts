@@ -1,38 +1,21 @@
 import { AIResponse } from './types';
 import { Character } from '../../types/character';
 import { SuggestedAction } from '../../types/campaign';
-
-// Helper function to clean metadata markers from any text
-function cleanMetadataMarkers(text: string): string {
-  // First clean any metadata between character names and actions
-  text = text
-    // Clean metadata between character name and action
-    .replace(/(\w+)\s+ACQUIRED_ITEMS:\s*REMOVED_ITEMS:\s*(\w+|hits|misses)/g, '$1 $2')
-    .replace(/(\w+)\s+ACQUIRED_ITEMS:\s*REMOVED_ITEMS:!/g, '$1!')
-    // Clean standalone metadata markers
-    .replace(/ACQUIRED_ITEMS:\s*(?:\[[^\]]*\]|\s*[^\n]*)/g, '')
-    .replace(/REMOVED_ITEMS:\s*(?:\[[^\]]*\]|\s*[^\n]*)/g, '')
-    .replace(/SUGGESTED_ACTIONS:\s*\[[^\]]*\]/g, '')
-    // Clean any remaining markers
-    .replace(/\s*ACQUIRED_ITEMS:\s*/g, '')
-    .replace(/\s*REMOVED_ITEMS:\s*/g, '')
-    .replace(/\s*SUGGESTED_ACTIONS:\s*/g, '')
-    // Clean up extra whitespace
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-    
-  return text;
-}
+import { cleanMetadataMarkers } from '../../utils/textCleaningUtils';
+import { debugTextCleaning } from '../../utils/debugHelpers';
 
 export function parseAIResponse(text: string): AIResponse {
   const defaultResponse: AIResponse = {
     narrative: '',
+    location: '',
     acquiredItems: [],
     removedItems: [],
+    combatInitiated: false,
+    opponent: undefined,
     suggestedActions: []
   };
 
-  if (!text) {
+  if (!text || text.trim().length === 0) {
     return defaultResponse;
   }
 
@@ -40,6 +23,7 @@ export function parseAIResponse(text: string): AIResponse {
     // First extract all metadata before cleaning the text
     const locationMatch = text.match(/LOCATION:\s*([^:\n\[\]]+)/);
     const location = locationMatch ? locationMatch[1].trim() : undefined;
+    debugTextCleaning('Extracted Location', location || 'none');
 
     const acquiredItemsMatch = text.match(/ACQUIRED_ITEMS:(?:\s*\[([^\]]*)\]|\s*([^\n]*))/);
     const removedItemsMatch = text.match(/REMOVED_ITEMS:(?:\s*\[([^\]]*)\]|\s*([^\n]*))/);
@@ -50,6 +34,7 @@ export function parseAIResponse(text: string): AIResponse {
           .map(item => item.trim())
           .filter(Boolean)
       : [];
+    debugTextCleaning('Extracted Acquired Items', JSON.stringify(acquiredItems));
       
     const removedItems = removedItemsMatch
       ? (removedItemsMatch[1] || removedItemsMatch[2] || '')
@@ -57,6 +42,7 @@ export function parseAIResponse(text: string): AIResponse {
           .map(item => item.trim())
           .filter(Boolean)
       : [];
+    debugTextCleaning('Extracted Removed Items', JSON.stringify(removedItems));
 
     // Parse suggested actions
     let suggestedActions: SuggestedAction[] = [];
@@ -75,6 +61,7 @@ export function parseAIResponse(text: string): AIResponse {
         console.warn('Failed to parse suggested actions:', e);
       }
     }
+    debugTextCleaning('Extracted Suggested Actions', JSON.stringify(suggestedActions));
 
     let combatInitiated = false;
     let opponent: Character | undefined;
@@ -85,6 +72,7 @@ export function parseAIResponse(text: string): AIResponse {
       combatInitiated = true;
       // Clean the opponent name before creating the opponent object
       const opponentName = cleanMetadataMarkers(combatMatch[1].trim());
+      debugTextCleaning('Extracted Combat Opponent', opponentName);
       
       opponent = {
         name: opponentName,
@@ -112,19 +100,17 @@ export function parseAIResponse(text: string): AIResponse {
       // First remove standalone metadata lines
       .split('\n')
       .map(line => {
-        // Skip lines that are pure metadata
-        const lowerLine = line.toLowerCase();
-        if (lowerLine.includes('acquired_items:') && lowerLine.trim().startsWith('acquired_items:')) return '';
-        if (lowerLine.includes('removed_items:') && lowerLine.trim().startsWith('removed_items:')) return '';
-        if (lowerLine.includes('location:') && lowerLine.trim().startsWith('location:')) return '';
-        if (lowerLine.includes('combat:') && lowerLine.trim().startsWith('combat:')) return '';
-        if (lowerLine.includes('suggested_actions:') && lowerLine.trim().startsWith('suggested_actions:')) return '';
-        
-        // Clean any remaining metadata markers from the line
+        const lowerLine = line.toLowerCase().trim();
+        // Remove lines that are only metadata
+        if (/^(acquired_items|removed_items|location|combat|suggested_actions):\s*(\[[^\]]*\]|\s*)$/i.test(lowerLine)) {
+          return '';
+        }
+        // Clean any remaining metadata markers from the line using the shared utility
         return cleanMetadataMarkers(line);
       })
       .filter(Boolean) // Remove empty lines
-      .join('\n')
+      .join(' ')
+      .replace(/\s+/g, ' ')
       .trim();
 
     return {
@@ -137,6 +123,7 @@ export function parseAIResponse(text: string): AIResponse {
       suggestedActions
     };
   } catch (error) {
+    debugTextCleaning('Error in parseAIResponse', error instanceof Error ? error.message : 'Unknown error');
     // If it's an API error, let it propagate
     if (error instanceof Error && 
        (error.message.includes('API Error') || error.message.includes('response'))) {

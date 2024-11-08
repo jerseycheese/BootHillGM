@@ -41,23 +41,25 @@ Regular narrative text
 
   test('renders item update notifications correctly', () => {
     const narrativeWithItems = `
-Player: Acquired some items
-ACQUIRED_ITEMS: Gun, Knife
-Game Master: You now have a Gun and Knife.
-Player: Used a knife
-REMOVED_ITEMS: Knife
-    `;
+      Player: Acquired some items
+      ACQUIRED_ITEMS: [Gun, Knife]
+      GM: You now have a Gun and Knife.
+      Player: Used a knife
+      REMOVED_ITEMS: [Knife]
+      `;
+  
+    console.log('Test narrative:', narrativeWithItems);
 
     render(<NarrativeDisplay narrative={narrativeWithItems} />);
-
-    // Find the item update elements within their containers
-    const acquiredUpdate = screen.getByText(/Acquired:/).closest('.item-update');
-    const usedUpdate = screen.getByText(/Used:/).closest('.item-update');
-
-    expect(acquiredUpdate).toHaveTextContent('Gun');
-    expect(acquiredUpdate).toHaveTextContent('Knife');
-    expect(usedUpdate).toHaveTextContent('Knife');
+  
+    // Use getByTestId to select the item update elements
+    const acquiredUpdate = screen.getByTestId('item-update-acquired');
+    expect(acquiredUpdate).toHaveTextContent('Acquired Items: Gun, Knife');
+  
+    const usedUpdate = screen.getByTestId('item-update-used');
+    expect(usedUpdate).toHaveTextContent('Used/Removed Items: Knife');
   });
+  
 
   test('auto-scrolls when new content is added', () => {
     const { rerender } = render(<NarrativeDisplay narrative="Initial content" />);
@@ -108,9 +110,14 @@ REMOVED_ITEMS: Knife
 
   test('maintains empty line spacing', () => {
     const narrativeWithEmptyLines = `Line 1\n\nLine 2`;
-    render(<NarrativeDisplay narrative={narrativeWithEmptyLines} />);
-    
-    const emptySpacers = document.getElementsByClassName('h-2');
-    expect(emptySpacers.length).toBe(1);
+    const { container } = render(<NarrativeDisplay narrative={narrativeWithEmptyLines} />);
+  
+    // Check for the number of narrative lines
+    const narrativeLines = container.getElementsByClassName('narrative-line');
+    expect(narrativeLines.length).toBe(2); // Line 1 and Line 2
+  
+    // Check for empty spacers
+    const emptySpacers = container.getElementsByClassName('h-2');
+    expect(emptySpacers.length).toBe(1); // The empty line spacer
   });
 });

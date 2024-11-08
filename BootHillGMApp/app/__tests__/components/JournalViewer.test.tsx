@@ -25,17 +25,14 @@ describe('JournalViewer', () => {
   test('displays journal entries in reverse chronological order', () => {
     render(<JournalViewer entries={mockEntries} />);
     const entries = screen.getAllByRole('listitem');
-    
+  
     // Verify order (newest to oldest)
-    expect(entries[0]).toHaveTextContent('Third narrative');
-    expect(entries[1]).toHaveTextContent('Second narrative');
-    expect(entries[2]).toHaveTextContent('First narrative');
-
-    // Verify entries follow date: content format without exact date matching
-    entries.forEach(entry => {
-      expect(entry.textContent).toMatch(/^\d{2}\/\d{2}\/\d{4}: .+/);
-    });
+    expect(entries[0]).toHaveTextContent('04/02/2021: Third entry');
+    expect(entries[1]).toHaveTextContent('04/01/2021: Second entry');
+    expect(entries[2]).toHaveTextContent('03/31/2021: First entry');
   });
+  
+  
 
   test('displays a message when there are no entries', () => {
     render(<JournalViewer entries={[]} />);

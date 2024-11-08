@@ -70,12 +70,6 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
     if (!hasInitializedRef.current) {
       hasInitializedRef.current = true;
       if (state.isCombatActive && state.opponent && state.combatState) {
-        console.log('Combat Manager - Restoring combat state:', {
-          opponent: state.opponent,
-          combatState: state.combatState,
-          isCombatActive: state.isCombatActive
-        });
-
         // Update combat state with proper type conversion
         dispatch({
           type: 'UPDATE_COMBAT_STATE',

@@ -4,6 +4,7 @@ import { isCharacterDefeated } from '../utils/strengthSystem';
 import { resolveBrawlingRound, BrawlingResult } from '../utils/brawlingSystem';
 import { calculateBrawlingDamage } from '../utils/bootHillCombat';
 import { GameEngineAction } from '../utils/gameEngine';
+import { cleanCombatLogEntry, cleanMetadataMarkers } from '../utils/textCleaningUtils';
 
 interface UseBrawlingCombatProps {
   playerCharacter: Character;
@@ -79,7 +80,9 @@ export const useBrawlingCombat = ({
 
   const formatBrawlingMessage = (attacker: string, result: BrawlingResult, isPunching: boolean): string => {
     const moveType = isPunching ? 'punches' : 'grapples';
-    return `${attacker} ${moveType} with ${result.result} (Roll: ${result.roll}) dealing ${result.damage} damage to ${result.location}`;
+    // Clean the attacker name before using it in the message
+    const cleanedAttackerName = cleanMetadataMarkers(attacker);
+    return `${cleanedAttackerName} ${moveType} with ${result.result} (Roll: ${result.roll}) dealing ${result.damage} damage to ${result.location}`;
   };
 
   const handleCombatAction = useCallback((isPlayer: boolean, isPunching: boolean) => {
@@ -97,7 +100,8 @@ export const useBrawlingCombat = ({
 
     // Add new log entry
     const message = formatBrawlingMessage(isPlayer ? playerCharacter.name : opponent.name, result, isPunching);
-    const newLogEntry = { text: message, type: 'info' as const, timestamp: Date.now() };
+    const cleanedMessage = cleanCombatLogEntry(message); // Clean the message before adding to log
+    const newLogEntry = { text: cleanedMessage, type: 'info' as const, timestamp: Date.now() };
     
     setBrawlingState(prev => ({
       ...prev,
@@ -113,9 +117,10 @@ export const useBrawlingCombat = ({
       // Check for knockout
       if (updatedTarget.attributes.strength === 0) {
         const winner = isPlayer ? 'player' : 'opponent';
-        const loser = isPlayer ? opponent.name : playerCharacter.name;
-        const attacker = isPlayer ? playerCharacter.name : opponent.name;
-        const summary = `${attacker} knocks out ${loser} with a ${isPunching ? 'devastating punch' : 'powerful grapple'}!`;
+        // Clean names before using in knockout message
+        const loser = cleanMetadataMarkers(isPlayer ? opponent.name : playerCharacter.name);
+        const attackerName = cleanMetadataMarkers(isPlayer ? playerCharacter.name : opponent.name);
+        const summary = `${attackerName} knocks out ${loser} with a ${isPunching ? 'devastating punch' : 'powerful grapple'}!`;
         onCombatEnd(winner, summary);
         return true;
       }

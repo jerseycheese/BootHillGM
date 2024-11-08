@@ -6,6 +6,7 @@
 import React from 'react';
 import { Character } from '../types/character';
 import { calculateCurrentStrength } from '../utils/strengthSystem';
+import { cleanMetadataMarkers } from '../utils/textCleaningUtils';
 
 interface StatusDisplayManagerProps {
   character: Character;
@@ -26,10 +27,11 @@ const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <p className="font-medium" aria-label="Character name">
-            Name: {character.name}
+            {character.name}
           </p>
           <p className="font-medium" aria-label="Current location">
-            Location: {location || 'Unknown'}
+            Location: 
+            <div className="text-sm font-normal">{cleanMetadataMarkers(location) || 'Unknown'}</div>
           </p>
         </div>
         <div className="space-y-2">
@@ -40,16 +42,17 @@ const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
             )}
           </p>
           {character.wounds.length > 0 && (
-            <div className="text-sm">
-              <p className="font-medium">Wounds:</p>
-              <ul className="list-disc pl-4">
+            <>
+              <p className="text-sm font-medium">Wounds:</p>
+              <ul className="list-none">
                 {character.wounds.map((wound, index) => (
                   <li key={index} className={`${wound.severity === 'serious' ? 'text-red-600' : 'text-orange-600'}`}>
-                    {wound.location} - {wound.severity} (-{wound.strengthReduction} STR)
+                    {wound.location} - {wound.severity}<br />
+                    <div className="text-xs">(-{wound.strengthReduction} STR)</div>
                   </li>
                 ))}
               </ul>
-            </div>
+            </>
           )}
           <button 
             onClick={onManualSave}

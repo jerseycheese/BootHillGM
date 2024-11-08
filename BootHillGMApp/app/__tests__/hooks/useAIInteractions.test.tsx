@@ -1,8 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { useAIInteractions } from '../../hooks/useAIInteractions';
-import { AIService } from '../../services/ai';
 import { GameState } from '../../types/campaign';
-import { generateNarrativeSummary } from '../../utils/aiService';
 import { Character } from '../../types/character';
 
 const mockGetResponse = jest.fn();

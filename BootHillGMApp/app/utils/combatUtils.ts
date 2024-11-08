@@ -1,4 +1,5 @@
 import { Character } from '../types/character';
+import { cleanMetadataMarkers } from './textCleaningUtils';
 
 export interface CombatMessageParams {
   attackerName: string;
@@ -8,24 +9,6 @@ export interface CombatMessageParams {
   roll: number;
   hitChance: number;
 }
-
-export const cleanMetadataMarkers = (text: string): string => {
-  return text
-    // Remove suggested actions JSON
-    .replace(/\s*SUGGESTED_ACTIONS:\s*\[[^\]]*\]/g, '')
-    // Remove empty brackets
-    .replace(/\[\s*\]/g, '')
-    // Remove important markers
-    .replace(/\s*important:\s*[^.!?]*[.!?]/g, '')
-    // Clean up location markers
-    .replace(/\s*LOCATION:\s*[^.!?\n]*/g, '')
-    // Remove acquired/removed items markers while preserving text after them
-    .replace(/\s*ACQUIRED_ITEMS:\s*(?:\[[^\]]*\]|\s*[^\s]*)\s*/g, ' ')
-    .replace(/\s*REMOVED_ITEMS:\s*(?:\[[^\]]*\]|\s*[^\s]*)\s*/g, ' ')
-    // Clean up extra whitespace
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-};
 
 export const cleanCharacterName = (name: string): string => {
   return cleanMetadataMarkers(name);

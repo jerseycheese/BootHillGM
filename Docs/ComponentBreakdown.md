@@ -132,7 +132,11 @@
   - [x] Handles error states
   - [x] Displays item notifications
   - [x] Implements typed content processing
-  - [x] Provides consistent styling for different content types
+  - [x] Centralized text cleaning utilities
+  - [x] Enhanced metadata removal
+  - [x] Natural language item detection
+  - [x] Improved combat log formatting
+
 - **InputManager:**
   - [x] Processes player input
   - [x] Shows loading states

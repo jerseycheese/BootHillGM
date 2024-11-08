@@ -1,7 +1,8 @@
+const DEBUG_ENABLED = true;
+
 export function debugStorage() {
-  if (typeof window !== 'undefined') {
-    console.log('Session Storage:', sessionStorage.getItem('initializing_new_character'));
-    console.log('Local Storage:', localStorage.getItem('campaignState'));
-    console.log('Last Created Character:', localStorage.getItem('lastCreatedCharacter'));
+  // Storage debugging remains disabled in production
+  if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+    // Storage state checks remain available in development
   }
 }

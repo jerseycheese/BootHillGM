@@ -5,6 +5,7 @@
  * track important game events.
  */
 import { generateNarrativeSummary } from './aiService';
+import { cleanMetadataMarkers } from './textCleaningUtils';
 import {
   JournalEntry,
   NarrativeJournalEntry,
@@ -43,23 +44,22 @@ export const filterJournal = (journal: JournalEntry[], filter: JournalFilter): J
 };
 
 export class JournalManager {
-  /**
-   * Creates a narrative entry for standard player actions and game events
-   * Generates a summary using AI for concise event description
-   */
   static async addNarrativeEntry(
     journal: JournalEntry[],
     content: string,
     context: string = ''
   ): Promise<JournalEntry[]> {
     try {
-      const narrativeSummary = await generateNarrativeSummary(content, context);
+      const cleanedContent = cleanMetadataMarkers(content);
+      const narrativeSummary = await generateNarrativeSummary(cleanedContent, context);
+      
       const newEntry: NarrativeJournalEntry = {
         type: 'narrative',
         timestamp: Date.now(),
-        content,
+        content: cleanedContent,
         narrativeSummary
       };
+      
       return [...journal, newEntry];
     } catch (error) {
       console.error('Error adding narrative entry:', error);
@@ -67,10 +67,6 @@ export class JournalManager {
     }
   }
 
-  /**
-   * Records combat encounters with details about participants and outcome
-   * Used automatically by the combat system when battles conclude
-   */
   static addCombatEntry(
     journal: JournalEntry[],
     playerName: string,
@@ -78,24 +74,23 @@ export class JournalManager {
     outcome: CombatJournalEntry['outcome'],
     summary: string
   ): JournalEntry[] {
+    const cleanedSummary = cleanMetadataMarkers(summary);
+    
     const newEntry: CombatJournalEntry = {
       type: 'combat',
       timestamp: Date.now(),
-      content: summary,
+      content: cleanedSummary,
       combatants: {
         player: playerName,
         opponent: opponentName
       },
       outcome,
-      narrativeSummary: summary
+      narrativeSummary: cleanedSummary
     };
+    
     return [...journal, newEntry];
   }
 
-  /**
-   * Tracks inventory changes from item acquisition and usage
-   * Only creates entries when items are actually added or removed
-   */
   static addInventoryEntry(
     journal: JournalEntry[],
     acquiredItems: string[],
@@ -109,13 +104,14 @@ export class JournalManager {
     const newEntry: InventoryJournalEntry = {
       type: 'inventory',
       timestamp: Date.now(),
-      content: context,
+      content: cleanMetadataMarkers(context),
       items: {
         acquired: acquiredItems,
         removed: removedItems
       },
       narrativeSummary: this.generateInventorySummary(acquiredItems, removedItems)
     };
+    
     return [...journal, newEntry];
   }
 

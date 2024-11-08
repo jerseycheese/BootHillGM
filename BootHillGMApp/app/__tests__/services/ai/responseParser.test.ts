@@ -66,4 +66,21 @@ Player ACQUIRED_ITEMS: REMOVED_ITEMS: attacks with (Roll: 75, Target: 70)
     expect(result.narrative).not.toContain('ACQUIRED_ITEMS:');
     expect(result.narrative).not.toContain('REMOVED_ITEMS:');
   });
+
+  test('should handle multiline metadata blocks after character names', () => {
+    const input = `Prospector
+
+ACQUIRED_ITEMS: []
+REMOVED_ITEMS: []
+SUGGESTED_ACTIONS: [{"text": "Throw a punch", "type": "combat", "context": "Attack the prospector"}, {"text": "Search the prospector's pockets", "type": "interaction", "context": "Attempt to rob the prospector"}, {"text": "Run back into the saloon", "type": "basic", "context": "Escape the fight"}] punches with Miss (Roll: 2) dealing 0 damage to head`;
+
+    const result = parseAIResponse(input);
+
+    expect(result.narrative).toBe('Prospector punches with Miss (Roll: 2) dealing 0 damage to head');
+    expect(result.narrative).not.toContain('ACQUIRED_ITEMS:');
+    expect(result.narrative).not.toContain('REMOVED_ITEMS:');
+    expect(result.narrative).not.toContain('SUGGESTED_ACTIONS:');
+    expect(result.suggestedActions).toHaveLength(3);
+    expect(result.suggestedActions?.[0].text).toBe('Throw a punch');
+  });
 });
