@@ -140,6 +140,21 @@
   - Added timestamps for proper message ordering
   - Enhanced accessibility with semantic markup
 
+- [x] As a player, I want visual feedback during combat turns, so that I can better understand the flow of battle.
+  **Implementation:**
+  - Added loading states for combat actions
+  - Improved button disabled states
+  - Clear turn indicator messages
+  - Proper cursor feedback
+  - Enhanced combat log with visual feedback for different message types
+
+### UI/UX Improvements
+- [x] As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
+  **Implementation:**
+  - Added loading states during character generation
+  - Clear button state transitions
+  - Processing feedback in button text
+
 ## Technical Improvements
 - As a developer, I want to use a dispatch function for state updates so that I can manage game state more efficiently and consistently.
   **Test Plan:**
