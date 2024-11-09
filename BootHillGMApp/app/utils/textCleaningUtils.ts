@@ -4,8 +4,8 @@
  */
 
 /**
- * Regex patterns for identifying and removing various types of metadata
- * from game text while preserving important game information.
+ * Regex patterns for identifying and cleaning various types of metadata
+ * from game text while preserving important information.
  */
 const METADATA_PATTERNS = {
   // Matches metadata markers at line start or after whitespace
@@ -69,7 +69,7 @@ export const cleanCombatLogEntry = (text: string): string => {
     .replace(METADATA_PATTERNS.TRAILING_NEWLINES, '');
 
 
-  cleaned = cleaned.replace(METADATA_PATTERNS.MARKERS, (match) => {
+  cleaned = cleaned.replace(METADATA_PATTERNS.MARKERS, () => {
     return '';
   });
 
@@ -109,26 +109,13 @@ export const toSentenceCase = (text: string): string => {
 
 
 /**
- * Detects items being acquired or removed from both explicit metadata
- * and natural language descriptions. Supports various verb forms and
- * complex item names.
+ * Extracts item updates from both explicit metadata markers and natural language.
+ * Handles both bracketed and unbracketed item lists.
  */
 export const extractItemUpdates = (text: string): { acquired: string[]; removed: string[] } => {
   const updates = {
     acquired: [] as string[],
     removed: [] as string[],
-  };
-
-  const processMetadataMatches = (matches: RegExpMatchArray[], array: string[]) => {
-    for (const match of matches) {
-      if (match[1]) {
-        const items = match[1]
-          .split(',')
-          .map((item) => item.trim())
-          .filter(Boolean);
-        array.push(...items);
-      }
-    }
   };
 
   const processNaturalLanguageMatches = (matches: RegExpMatchArray[], array: string[]) => {
@@ -144,14 +131,20 @@ export const extractItemUpdates = (text: string): { acquired: string[]; removed:
     }
   };
 
-  // Extract from metadata markers - these are explicit and should be prioritized
-  const acquiredMatches = Array.from(text.matchAll(/ACQUIRED_ITEMS:\s*\[(.*?)\]/g));
-  const removedMatches = Array.from(text.matchAll(/REMOVED_ITEMS:\s*\[(.*?)\]/g));
-
+  // Extract from metadata markers - handle both bracketed and non-bracketed formats
+  const acquiredMatches = Array.from(text.matchAll(/ACQUIRED_ITEMS:\s*(?:\[(.*?)\]|(.+?)(?:\n|$))/g));
+  const removedMatches = Array.from(text.matchAll(/REMOVED_ITEMS:\s*(?:\[(.*?)\]|(.+?)(?:\n|$))/g));
 
   // Process explicit metadata first
-  processMetadataMatches(acquiredMatches, updates.acquired);
-  processMetadataMatches(removedMatches, updates.removed);
+  acquiredMatches.forEach(match => {
+    const items = (match[1] || match[2] || '').split(',').map(item => item.trim()).filter(Boolean);
+    updates.acquired.push(...items);
+  });
+
+  removedMatches.forEach(match => {
+    const items = (match[1] || match[2] || '').split(',').map(item => item.trim()).filter(Boolean);
+    updates.removed.push(...items);
+  });
 
   // Process natural language patterns
   // Player direct commands

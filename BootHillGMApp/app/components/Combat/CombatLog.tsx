@@ -1,5 +1,4 @@
 import { cleanCombatLogEntry } from '../../utils/textCleaningUtils';
-import { debugTextCleaning } from '../../utils/debugHelpers';
 
 interface CombatLogEntry {
   text: string;
@@ -20,9 +19,7 @@ export const CombatLog: React.FC<CombatLogProps> = ({ entries }) => {
       data-testid="combat-log"
     >
       {entries.map((entry, index) => {
-        debugTextCleaning('Combat Log - Before Cleaning', entry.text);
         const cleanedText = cleanCombatLogEntry(entry.text);
-        debugTextCleaning('Combat Log - After Cleaning', cleanedText);
         
         return (
           <p 

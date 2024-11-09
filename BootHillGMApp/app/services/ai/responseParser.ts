@@ -2,8 +2,12 @@ import { AIResponse } from './types';
 import { Character } from '../../types/character';
 import { SuggestedAction } from '../../types/campaign';
 import { cleanMetadataMarkers } from '../../utils/textCleaningUtils';
-import { debugTextCleaning } from '../../utils/debugHelpers';
 
+/**
+ * Parses AI response text to extract structured game information.
+ * Handles: narrative text, metadata markers, combat initiation, and suggested actions.
+ * Cleans and formats content for game state updates.
+ */
 export function parseAIResponse(text: string): AIResponse {
   const defaultResponse: AIResponse = {
     narrative: '',
@@ -23,7 +27,6 @@ export function parseAIResponse(text: string): AIResponse {
     // First extract all metadata before cleaning the text
     const locationMatch = text.match(/LOCATION:\s*([^:\n\[\]]+)/);
     const location = locationMatch ? locationMatch[1].trim() : undefined;
-    debugTextCleaning('Extracted Location', location || 'none');
 
     const acquiredItemsMatch = text.match(/ACQUIRED_ITEMS:(?:\s*\[([^\]]*)\]|\s*([^\n]*))/);
     const removedItemsMatch = text.match(/REMOVED_ITEMS:(?:\s*\[([^\]]*)\]|\s*([^\n]*))/);
@@ -34,7 +37,6 @@ export function parseAIResponse(text: string): AIResponse {
           .map(item => item.trim())
           .filter(Boolean)
       : [];
-    debugTextCleaning('Extracted Acquired Items', JSON.stringify(acquiredItems));
       
     const removedItems = removedItemsMatch
       ? (removedItemsMatch[1] || removedItemsMatch[2] || '')
@@ -42,7 +44,6 @@ export function parseAIResponse(text: string): AIResponse {
           .map(item => item.trim())
           .filter(Boolean)
       : [];
-    debugTextCleaning('Extracted Removed Items', JSON.stringify(removedItems));
 
     // Parse suggested actions
     let suggestedActions: SuggestedAction[] = [];
@@ -61,7 +62,6 @@ export function parseAIResponse(text: string): AIResponse {
         console.warn('Failed to parse suggested actions:', e);
       }
     }
-    debugTextCleaning('Extracted Suggested Actions', JSON.stringify(suggestedActions));
 
     let combatInitiated = false;
     let opponent: Character | undefined;
@@ -72,7 +72,6 @@ export function parseAIResponse(text: string): AIResponse {
       combatInitiated = true;
       // Clean the opponent name before creating the opponent object
       const opponentName = cleanMetadataMarkers(combatMatch[1].trim());
-      debugTextCleaning('Extracted Combat Opponent', opponentName);
       
       opponent = {
         name: opponentName,
@@ -123,7 +122,6 @@ export function parseAIResponse(text: string): AIResponse {
       suggestedActions
     };
   } catch (error) {
-    debugTextCleaning('Error in parseAIResponse', error instanceof Error ? error.message : 'Unknown error');
     // If it's an API error, let it propagate
     if (error instanceof Error && 
        (error.message.includes('API Error') || error.message.includes('response'))) {

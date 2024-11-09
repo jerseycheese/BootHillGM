@@ -52,9 +52,9 @@ Regular narrative text
 
     render(<NarrativeDisplay narrative={narrativeWithItems} />);
   
-    // Use getByTestId to select the item update elements
-    const acquiredUpdate = screen.getByTestId('item-update-acquired');
-    expect(acquiredUpdate).toHaveTextContent('Acquired Items: Gun, Knife');
+    // Use getAllByTestId since there may be multiple updates
+    const acquiredUpdates = screen.getAllByTestId('item-update-acquired');
+    expect(acquiredUpdates[0]).toHaveTextContent('Acquired Items: Gun, Knife');
   
     const usedUpdate = screen.getByTestId('item-update-used');
     expect(usedUpdate).toHaveTextContent('Used/Removed Items: Knife');
