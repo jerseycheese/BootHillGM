@@ -157,7 +157,7 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
     } finally {
       isUpdatingRef.current = false;
     }
-  }, [dispatch, state.isCombatActive, state.combatState, state.opponent, state.character]);
+  }, [dispatch, state.character]);
 
   /**
    * Retrieves the current opponent in combat.

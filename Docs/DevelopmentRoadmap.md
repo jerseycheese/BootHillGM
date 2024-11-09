@@ -90,10 +90,11 @@
 - [x] Implement automatic journal entry creation
 - [x] Update CombatSystem to trigger journal updates
 - [x] Modify GameSession to handle combat journal entries
-- [ ] Enhance journal system with narrative summaries
-  - [ ] Modify AIService to generate narrative summaries for player actions
-  - [ ] Update GameSession component to use narrative summaries
-  - [ ] Adjust JournalViewer component to display narrative summaries
+- [x] Enhance journal system with narrative summaries
+  - [x] Type-safe journal entries
+  - [x] Virtualized scrolling for performance
+  - [x] Enhanced entry formatting
+  - [x] Comprehensive test coverage
 
 ## Phase 4: Polish and Testing (Next Phase)
 
