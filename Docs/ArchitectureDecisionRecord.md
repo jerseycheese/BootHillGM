@@ -241,3 +241,43 @@ Extracted state restoration logic into a dedicated hook (useCampaignStateRestora
 - Uses TypeScript for type safety
 - Maintains existing state structure
 - Preserves combat state restoration
+
+## ADR 7: State Protection Pattern
+
+### Date: 11/9/2024
+
+### Status: Accepted
+
+## Context
+We needed to prevent race conditions and ensure safe state updates during complex operations like combat resolution.
+
+## Decision
+Implemented a reusable StateProtection utility that provides:
+- Protected state updates with operation queueing
+- Timeout handling for long-running operations
+- Error recovery for failed state updates
+
+## Rationale
+- Prevents race conditions in complex state updates
+- Provides consistent error handling
+- Makes state protection reusable across the application
+- Supports operation queueing for better user experience
+
+## Consequences
+
+### Positive
+- More reliable state updates
+- Better error handling and recovery
+- Reusable state protection pattern
+- Clear operation queuing behavior
+
+### Negative
+- Slight increase in complexity
+- Need to consider operation timeouts
+- Additional testing requirements
+
+### Implementation Notes
+- Uses TypeScript for type safety
+- Implements queue management for concurrent operations
+- Provides timeout protection
+- Maintains error handling consistency

@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Character } from '../types/character';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { addCombatJournalEntry } from '../utils/JournalManager';
+import { createStateProtection } from '../utils/stateProtection';
 
 interface CombatLogEntry {
   text: string;
   type: 'hit' | 'miss' | 'critical' | 'info';
   timestamp: number;
 }
-
 
 /**
  * Interface defining the return value of the useCombatManager hook
@@ -20,12 +20,8 @@ interface UseCombatManagerResult {
   handlePlayerHealthChange: (newHealth: number) => void;
   initiateCombat: (newOpponent: Character, existingCombatState?: CombatState) => void;
   getCurrentOpponent: () => Character | null;
-  _debug: {
-    currentState: {
-      isCombatActive: boolean;
-      opponent: Character | null;
-    }
-  };
+  isProcessing: boolean;
+  combatQueueLength: number;
 }
 
 /**
@@ -46,79 +42,65 @@ interface CombatState {
 }
 
 /**
- * Hook to manage combat state within the game session.
- * Uses campaign state for persistence and maintains combat status across page navigation.
+ * Manages combat state and operations with protection against race conditions.
+ * Uses StateProtection to ensure combat operations execute safely and in sequence.
  * 
- * Key features:
- * - Syncs combat state with campaign state for persistence
- * - Manages opponent data and combat status
- * - Handles combat initiation and conclusion
- * - Updates player health during combat
- * - Maintains debug information for development
- * - Supports restoration of existing combat state
- * 
- * @param onUpdateNarrative - Callback to update game narrative with combat events
- * @returns Combat state and handlers for managing combat encounters
+ * Features:
+ * - Protected state updates during combat
+ * - Operation queueing for concurrent requests
+ * - Automatic state cleanup after combat
+ * - Error recovery with user feedback
  */
 export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): UseCombatManagerResult => {
   const { dispatch, state } = useCampaignState();
+  const stateProtection = useRef(createStateProtection());
+  const [isProcessing, setIsProcessing] = useState(false);
   const isUpdatingRef = useRef(false);
-  const hasInitializedRef = useRef(false);
 
-  // Enhanced initialization effect with combat state restoration
-  useEffect(() => {
-    if (!hasInitializedRef.current) {
-      hasInitializedRef.current = true;
-      if (state.isCombatActive && state.opponent && state.combatState) {
-        // Update combat state with proper type conversion
-        dispatch({
-          type: 'UPDATE_COMBAT_STATE',
-          payload: state.combatState
-        });
-      }
-    }
-  }, [state.isCombatActive, state.opponent, state.combatState, dispatch]);
-
-  const handleCombatEnd = useCallback((winner: 'player' | 'opponent', combatSummary: string) => {
-    if (isUpdatingRef.current) return;
-    isUpdatingRef.current = true;
-    
+  /**
+   * Safely ends combat with state protection.
+   * Handles victory/defeat message, journal updates, and state cleanup.
+   * Provides error recovery if state updates fail.
+   */
+  const handleCombatEnd = useCallback(async (winner: 'player' | 'opponent', combatSummary: string) => {
+    setIsProcessing(true);
     try {
-      const endMessage = winner === 'player' 
-        ? "You have emerged victorious from the combat!" 
-        : "You have been defeated in combat.";
-    
-      // Update narrative first
-      onUpdateNarrative(`${endMessage}\n\n${combatSummary}\n\nWhat would you like to do now?`);
-    
-      // Update journal with all required parameters
-      dispatch({ 
-        type: 'UPDATE_JOURNAL', 
-        payload: addCombatJournalEntry(
-          state.journal || [],
-          state.character?.name || 'Player',
-          state.opponent?.name || 'Unknown Opponent',
-          winner === 'player' ? 'victory' : 'defeat',
-          combatSummary
-        )
-      });
-
-      // Clear combat state in campaign state first
-      dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
-      dispatch({ type: 'SET_OPPONENT', payload: null });
+      await stateProtection.current.withProtection('combat-end', async () => {
+        const endMessage = winner === 'player' 
+          ? "You have emerged victorious from the combat!" 
+          : "You have been defeated in combat.";
       
-      // Reset combat state with default values
-      dispatch({ 
-        type: 'UPDATE_COMBAT_STATE', 
-        payload: {
-          playerStrength: 0,
-          opponentStrength: 0,
-          currentTurn: 'player' as const,
-          combatLog: []
-        }
+        onUpdateNarrative(`${endMessage}\n\n${combatSummary}\n\nWhat would you like to do now?`);
+      
+        dispatch({ 
+          type: 'UPDATE_JOURNAL', 
+          payload: addCombatJournalEntry(
+            state.journal || [],
+            state.character?.name || 'Player',
+            state.opponent?.name || 'Unknown Opponent',
+            winner === 'player' ? 'victory' : 'defeat',
+            combatSummary
+          )
+        });
+
+        dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
+        dispatch({ type: 'SET_OPPONENT', payload: null });
+        
+        dispatch({ 
+          type: 'UPDATE_COMBAT_STATE', 
+          payload: {
+            playerStrength: 0,
+            opponentStrength: 0,
+            currentTurn: 'player' as const,
+            combatLog: []
+          }
+        });
       });
+    } catch (error) {
+      console.error('Error ending combat:', error);
+      onUpdateNarrative('There was an error processing the combat end. Please try again.');
     } finally {
-      isUpdatingRef.current = false;
+      setIsProcessing(false);
     }
   }, [dispatch, onUpdateNarrative, state.character?.name, state.opponent?.name, state.journal]);
 
@@ -152,15 +134,6 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
     isUpdatingRef.current = true;
 
     try {
-      console.log('Combat Manager - Starting combat with:', {
-        opponent: newOpponent,
-        existingState: existingCombatState,
-        currentState: {
-          isCombatActive: state.isCombatActive,
-          hasCombatState: !!state.combatState,
-          hasOpponent: !!state.opponent
-        }
-      });
 
       // Set combat active first
       dispatch({ type: 'SET_COMBAT_ACTIVE', payload: true });
@@ -194,17 +167,12 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
   const getCurrentOpponent = useCallback(() => state.opponent, [state.opponent]);
 
   return {
-    isCombatActive: state.isCombatActive,
-    opponent: state.opponent,
+    ...state,
     handleCombatEnd,
     handlePlayerHealthChange,
     initiateCombat,
     getCurrentOpponent,
-    _debug: {
-      currentState: { 
-        isCombatActive: state.isCombatActive, 
-        opponent: state.opponent 
-      }
-    }
+    isProcessing,
+    combatQueueLength: stateProtection.current.getQueueLength('combat-end')
   };
 };

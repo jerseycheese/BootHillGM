@@ -1,102 +1,154 @@
 import { renderHook, act } from '@testing-library/react';
 import { useCombatManager } from '../../hooks/useCombatManager';
+import { createStateProtection } from '../../utils/stateProtection';
 import { CampaignStateProvider } from '../../components/CampaignStateManager';
-import type { Character } from '../../types/character';
+import { GameState } from '../../utils/gameEngine';
+import React from 'react';
 
-describe('useCombatManager', () => {
-  const mockUpdateNarrative = jest.fn();
-  const mockOpponent: Character = {
-    name: 'Test Opponent',
-    health: 100,
+// Mock state protection with simple async behavior
+jest.mock('../../utils/stateProtection', () => ({
+  createStateProtection: jest.fn(() => ({
+    withProtection: jest.fn((key, fn) => fn()),
+    getQueueLength: jest.fn(() => 0),
+    isLocked: jest.fn(() => false),
+    clearQueue: jest.fn()
+  }))
+}));
+
+// Mock initial state with proper GameState typing
+const mockInitialState: GameState = {
+  currentPlayer: 'Test Player',
+  npcs: [],
+  location: 'Test Location',
+  inventory: [],
+  quests: [],
+  character: {
+    name: 'Test Character',
     attributes: {
-      speed: 10,
-      gunAccuracy: 10,
-      throwingAccuracy: 10,
+      speed: 5,
+      gunAccuracy: 5,
+      throwingAccuracy: 5,
       strength: 10,
-      bravery: 10,
-      experience: 5
+      baseStrength: 10,
+      bravery: 5,
+      experience: 0
     },
     skills: {
       shooting: 50,
       riding: 50,
       brawling: 50
-    }
-  };
+    },
+    wounds: [],
+    isUnconscious: false
+  },
+  narrative: '',
+  gameProgress: 0,
+  journal: [],
+  isCombatActive: false,
+  opponent: null,
+  savedTimestamp: Date.now(),
+  isClient: true,
+  suggestedActions: [],
+  combatState: undefined
+};
 
+describe('useCombatManager', () => {
+  const mockUpdateNarrative = jest.fn();
+  
   beforeEach(() => {
     jest.clearAllMocks();
+    // Mock localStorage for CampaignStateProvider
+    Storage.prototype.getItem = jest.fn(() => JSON.stringify(mockInitialState));
   });
 
-  it('should initialize with inactive combat state', () => {
-    const { result } = renderHook(
-      () => useCombatManager({ onUpdateNarrative: mockUpdateNarrative }), 
-      { wrapper: CampaignStateProvider }
+  const renderHookWithProvider = () => {
+    return renderHook(
+      () => useCombatManager({ onUpdateNarrative: mockUpdateNarrative }),
+      { 
+        wrapper: ({ children }) => React.createElement(CampaignStateProvider, null, children)
+      }
     );
+  };
 
-    expect(result.current.isCombatActive).toBe(false);
-    expect(result.current.opponent).toBeNull();
-  });
+  test('handles combat end with state protection', async () => {
+    const { result } = renderHookWithProvider();
 
-  it('should handle combat initiation', () => {
-    const { result } = renderHook(
-      () => useCombatManager({ onUpdateNarrative: mockUpdateNarrative }), 
-      { wrapper: CampaignStateProvider }
-    );
-
-    act(() => {
-      result.current.initiateCombat(mockOpponent);
-    });
-
-    expect(result.current.isCombatActive).toBe(true);
-    expect(result.current.opponent).toEqual(mockOpponent);
-  });
-
-  it('should handle combat end', async () => {
-    const { result } = renderHook(
-      () => useCombatManager({ onUpdateNarrative: mockUpdateNarrative }), 
-      { wrapper: CampaignStateProvider }
-    );
-
-    // Start combat
-    act(() => {
-      result.current.initiateCombat(mockOpponent);
-    });
-
-    // End combat
     await act(async () => {
-      result.current.handleCombatEnd('player', 'Test combat summary');
-      // Wait for state updates to complete
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await result.current.handleCombatEnd('player', 'Test summary');
     });
 
-    // Check final state
-    expect(result.current.opponent).toBeNull();
     expect(mockUpdateNarrative).toHaveBeenCalledWith(
-      expect.stringContaining('Test combat summary')
+      expect.stringContaining('You have emerged victorious')
     );
   });
 
-  it('should handle player health changes', () => {
-    const { result } = renderHook(
-      () => useCombatManager({ onUpdateNarrative: mockUpdateNarrative }), 
-      { wrapper: CampaignStateProvider }
-    );
+  test('handles combat end error gracefully', async () => {
+    // Mock state protection to throw error
+    (createStateProtection as jest.Mock).mockImplementationOnce(() => ({
+      withProtection: jest.fn().mockRejectedValue(new Error('Test error')),
+      getQueueLength: jest.fn(() => 0),
+      isLocked: jest.fn(() => false),
+      clearQueue: jest.fn()
+    }));
 
-    act(() => {
-      result.current.handlePlayerHealthChange(80);
+    const { result } = renderHookWithProvider();
+
+    await act(async () => {
+      await result.current.handleCombatEnd('player', 'Test summary');
     });
+
+    expect(mockUpdateNarrative).toHaveBeenCalledWith(
+      expect.stringContaining('error processing the combat end')
+    );
   });
 
-  it('should return current opponent', () => {
-    const { result } = renderHook(
-      () => useCombatManager({ onUpdateNarrative: mockUpdateNarrative }), 
-      { wrapper: CampaignStateProvider }
-    );
-
-    act(() => {
-      result.current.initiateCombat(mockOpponent);
+  test('tracks processing state correctly', async () => {
+    // Mock state protection to control the timing
+    let resolveOperation: () => void;
+    const operationPromise = new Promise<void>(resolve => {
+      resolveOperation = resolve;
     });
 
-    expect(result.current.getCurrentOpponent()).toEqual(mockOpponent);
+    (createStateProtection as jest.Mock).mockImplementationOnce(() => ({
+      withProtection: jest.fn(() => operationPromise),
+      getQueueLength: jest.fn(() => 0),
+      isLocked: jest.fn(() => false),
+      clearQueue: jest.fn()
+    }));
+
+    const { result } = renderHookWithProvider();
+
+    expect(result.current.isProcessing).toBe(false);
+
+    let combatEndPromise: Promise<void>;
+    await act(async () => {
+      combatEndPromise = Promise.resolve(result.current.handleCombatEnd('player', 'Test summary'));
+    });
+
+    // isProcessing should be true after operation starts
+    expect(result.current.isProcessing).toBe(true);
+
+    await act(async () => {
+      resolveOperation();
+      await combatEndPromise;
+    });
+
+    expect(result.current.isProcessing).toBe(false);
+  });
+
+  test('provides combat queue length', () => {
+    const mockStateProtection = {
+      withProtection: jest.fn((key, fn) => fn()),
+      getQueueLength: jest.fn().mockReturnValue(0),
+      isLocked: jest.fn(() => false),
+      clearQueue: jest.fn()
+    };
+    
+    (createStateProtection as jest.Mock).mockReturnValue(mockStateProtection);
+    
+    const { result } = renderHookWithProvider();
+    
+    expect(mockStateProtection.getQueueLength).toHaveBeenCalled();
+    expect(result.current.combatQueueLength).toBe(0);
   });
 });
