@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import Inventory from '../../components/Inventory';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { Inventory } from '../../components/Inventory';
 import { CampaignStateContext } from '../../components/CampaignStateManager';
 import { CampaignState } from '../../types/campaign';
 
@@ -16,7 +16,25 @@ describe('Inventory', () => {
   const mockState: CampaignState = {
     currentPlayer: '',
     npcs: [],
-    character: null,
+    character: {
+      name: 'Test Character',
+      attributes: {
+        speed: 5,
+        gunAccuracy: 5,
+        throwingAccuracy: 5,
+        strength: 10,
+        baseStrength: 10,
+        bravery: 5,
+        experience: 0
+      },
+      skills: {
+        shooting: 50,
+        riding: 50,
+        brawling: 50
+      },
+      wounds: [],
+      isUnconscious: false
+    },
     location: '',
     savedTimestamp: undefined,
     gameProgress: 0,
@@ -30,6 +48,7 @@ describe('Inventory', () => {
     isCombatActive: false,
     opponent: null,
     isClient: false,
+    suggestedActions: []
   };
 
   const mockDispatch = jest.fn();
@@ -143,8 +162,8 @@ describe('Inventory', () => {
     renderWithContext(<Inventory onUseItem={mockOnUseItem} />);
     
     // Find and click the Use button for Health Potion
-    const useButtons = screen.getAllByText('Use');
-    fireEvent.click(useButtons[0]); // First Use button (Health Potion)
+    const useButton = screen.getByLabelText('Use Health Potion');
+    fireEvent.click(useButton);
     
     // Check if onUseItem was called with the correct item ID
     expect(mockOnUseItem).toHaveBeenCalledWith('1');
@@ -162,7 +181,7 @@ describe('Inventory', () => {
     renderWithContext(<Inventory onUseItem={mockOnUseItem} />, stateWithMultipleItems);
     
     // Find and click the Use button
-    const useButton = screen.getByText('Use');
+    const useButton = screen.getByLabelText('Use Health Potion');
     fireEvent.click(useButton);
     
     // Check if onUseItem was called with the correct item ID
@@ -170,5 +189,96 @@ describe('Inventory', () => {
     
     // The item should still be visible since quantity was > 1
     expect(screen.getByText(/Health Potion \(x3\)/)).toBeInTheDocument();
+  });
+
+  // New tests
+  test('displays error message when item validation fails', () => {
+    const invalidItem = {
+      id: 'heavy-item',
+      name: 'Heavy Item',
+      quantity: 1,
+      description: 'Too heavy to use',
+      requirements: {
+        minStrength: 20
+      }
+    };
+
+    const stateWithInvalidItem = {
+      ...mockState,
+      inventory: [invalidItem]
+    };
+
+    renderWithContext(<Inventory />, stateWithInvalidItem);
+    
+    const useButton = screen.getByLabelText('Use Heavy Item');
+    fireEvent.click(useButton);
+
+    expect(screen.getByTestId('inventory-error')).toHaveTextContent('Requires 20 strength');
+  });
+
+  test('clears error message after timeout', async () => {
+    const invalidItem = {
+      id: 'combat-item',
+      name: 'Combat Item',
+      quantity: 1,
+      description: 'Combat only',
+      requirements: {
+        combatOnly: true
+      }
+    };
+
+    const stateWithInvalidItem = {
+      ...mockState,
+      inventory: [invalidItem]
+    };
+
+    renderWithContext(<Inventory />, stateWithInvalidItem);
+    
+    const useButton = screen.getByLabelText('Use Combat Item');
+    fireEvent.click(useButton);
+
+    expect(screen.getByTestId('inventory-error')).toBeInTheDocument();
+    
+    // Wait for error to clear using waitFor instead of setTimeout
+    await waitFor(() => {
+      expect(screen.queryByTestId('inventory-error')).not.toBeInTheDocument();
+    }, { timeout: 4000 }); // Slightly longer than the component's timeout
+  });
+
+  test('handles missing character gracefully', () => {
+    const stateWithoutCharacter = {
+      ...mockState,
+      character: null
+    };
+
+    renderWithContext(<Inventory />, stateWithoutCharacter);
+    
+    const useButton = screen.getByLabelText('Use Health Potion');
+    fireEvent.click(useButton);
+
+    expect(screen.getByTestId('inventory-error')).toHaveTextContent('Unable to use item');
+  });
+
+  test('calls onUseItem only when validation passes', () => {
+    const validItem = {
+      id: 'valid-item',
+      name: 'Valid Item',
+      quantity: 1,
+      description: 'Can use this'
+    };
+
+    const stateWithValidItem = {
+      ...mockState,
+      inventory: [validItem]
+    };
+
+    const mockOnUseItem = jest.fn();
+    renderWithContext(<Inventory onUseItem={mockOnUseItem} />, stateWithValidItem);
+    
+    const useButton = screen.getByLabelText('Use Valid Item');
+    fireEvent.click(useButton);
+
+    expect(mockOnUseItem).toHaveBeenCalledWith('valid-item');
+    expect(screen.queryByTestId('inventory-error')).not.toBeInTheDocument();
   });
 });

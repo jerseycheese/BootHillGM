@@ -4,7 +4,7 @@
  * Positioned on the right side of the game interface.
  */
 import StatusDisplayManager from '../StatusDisplayManager';
-import Inventory from '../Inventory';
+import { Inventory } from '../Inventory';
 import JournalViewer from '../JournalViewer';
 import type { GameSessionProps } from './types';
 
