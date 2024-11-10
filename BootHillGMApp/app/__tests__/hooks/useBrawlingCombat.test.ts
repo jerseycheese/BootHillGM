@@ -1,12 +1,16 @@
 import { renderHook, act } from '@testing-library/react';
 import { useBrawlingCombat } from '../../hooks/useBrawlingCombat';
 import { Character } from '../../types/character';
-import * as brawlingSystem from '../../utils/brawlingSystem';
 
-// Mock the brawlingSystem module
 jest.mock('../../utils/brawlingSystem', () => ({
   ...jest.requireActual('../../utils/brawlingSystem'),
-  resolveBrawlingRound: jest.fn()
+  resolveBrawlingRound: jest.fn().mockReturnValue({
+    roll: 4,
+    result: 'Light Hit',
+    damage: 1,
+    location: 'chest',
+    nextRoundModifier: 0
+  })
 }));
 
 const mockPlayer: Character = {
@@ -15,7 +19,7 @@ const mockPlayer: Character = {
     speed: 0,
     gunAccuracy: 0,
     throwingAccuracy: 0,
-    strength: 10,  // Added proper strength value
+    strength: 10,
     baseStrength: 10,
     bravery: 0,
     experience: 0
@@ -35,7 +39,7 @@ const mockOpponent: Character = {
     speed: 0,
     gunAccuracy: 0,
     throwingAccuracy: 0,
-    strength: 8,  // Added proper strength value
+    strength: 8,
     baseStrength: 8,
     bravery: 0,
     experience: 0
@@ -56,14 +60,6 @@ describe('useBrawlingCombat', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
-    // Mock resolveBrawlingRound to return a light hit that won't cause knockout
-    (brawlingSystem.resolveBrawlingRound as jest.Mock).mockReturnValue({
-      roll: 4,
-      result: 'Light Hit',
-      damage: 1,  // Reduced damage to prevent knockout
-      location: 'chest',
-      nextRoundModifier: 0
-    });
   });
 
   afterEach(() => {
@@ -99,33 +95,24 @@ describe('useBrawlingCombat', () => {
       })
     );
 
-    // Process player's action
     await act(async () => {
-      // Start the combat round
       const processPromise = result.current.processRound(true, true);
-      
-      // Let React process state updates
+
       await Promise.resolve();
-      
-      // Advance timer to trigger opponent's response
+
       jest.advanceTimersByTime(1000);
-      
-      // Wait for the processRound to complete
+
       await processPromise;
-      
-      // Let React process any final state updates
+
       await Promise.resolve();
     });
 
-    // Verify both player's action and opponent's response are logged
     expect(result.current.brawlingState.roundLog).toHaveLength(2);
-    
-    // Verify the log entries
+
     const [playerEntry, opponentEntry] = result.current.brawlingState.roundLog;
     expect(playerEntry.text).toContain('Player punches with Light Hit');
     expect(opponentEntry.text).toContain('Opponent');
-    
-    // Verify wound application
+
     expect(mockDispatch).toHaveBeenCalledWith({
       type: 'SET_OPPONENT',
       payload: expect.objectContaining({
@@ -138,7 +125,5 @@ describe('useBrawlingCombat', () => {
         ])
       })
     });
-  }, 10000); // Increase timeout to 10 seconds
-
-  // Add more tests for different combat scenarios and edge cases
+  }, 10000);
 });

@@ -281,3 +281,38 @@ Implemented a reusable StateProtection utility that provides:
 - Implements queue management for concurrent operations
 - Provides timeout protection
 - Maintains error handling consistency
+
+
+## ADR 8: Brawling Combat System Refactoring
+
+### Date: 2024-11-09
+### Status: Accepted
+
+## Context
+The brawling combat system contained mixed concerns between state management and combat rules logic, making it difficult to test and maintain.
+
+## Decision
+Implemented a dedicated BrawlingEngine class to handle pure combat calculations and rules, separate from state management.
+
+## Rationale
+- Separates pure combat logic from state management
+- Improves testability of combat rules
+- Makes the code more maintainable
+- Follows single responsibility principle
+
+## Consequences
+
+### Positive
+- Cleaner separation of concerns
+- Better testability
+- More maintainable combat rules
+- Easier to modify combat logic
+
+### Negative
+- Additional layer of abstraction
+- Need to maintain backwards compatibility
+
+### Implementation Notes
+- Extracted combat calculations to BrawlingEngine class
+- Updated tests to use new structure
+- Maintained existing hook interface

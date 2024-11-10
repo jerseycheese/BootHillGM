@@ -72,7 +72,7 @@ export const CombatSystem: React.FC<CombatSystemProps> = ({
           isProcessing={isProcessing}
           onPunch={() => processRound(true, true)}
           onGrapple={() => processRound(false, true)}
-          round={brawlingState?.round || 1}
+          round={(brawlingState?.round === 1 || brawlingState?.round === 2) ? brawlingState.round : 1}
         />
       )}
       
