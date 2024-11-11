@@ -3,6 +3,7 @@ import React, { ReactElement } from 'react';
 import CharacterCreationPage from '../character-creation/page';
 import { mockCharacter } from './fixtures';
 import { useCampaignState } from '../components/CampaignStateManager';
+import { getStartingInventory } from '../utils/startingInventory';
 
 let mockRouterPush: jest.Mock;
 let mockConsoleError: jest.SpyInstance;
@@ -43,9 +44,9 @@ jest.mock('../utils/gameEngine', () => ({
 }));
 
 function useCharacterCreationHandler() {
-  const { cleanupState } = useCampaignState();
+  const { cleanupState, saveGame } = useCampaignState();
 
-  const handleSubmit = jest.fn().mockImplementation(e => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (e.currentTarget.dataset.testid === 'character-creation-form') {
       try {
@@ -60,14 +61,33 @@ function useCharacterCreationHandler() {
         if (savedData.currentStep === 1) {
           window.localStorage.removeItem('character-creation-progress');
           cleanupState();
+          
+          // Save game state with inventory
+          const gameState = {
+            character: mockCharacter,
+            savedTimestamp: Date.now(),
+            isClient: true,
+            inventory: getStartingInventory(),
+            currentPlayer: '',
+            npcs: [],
+            location: '',
+            quests: [],
+            narrative: '',
+            gameProgress: 0,
+            journal: [],
+            isCombatActive: false,
+            opponent: null,
+            suggestedActions: [],
+          };
+          saveGame(gameState);
+          
           mockRouterPush('/game-session');
         }
       } catch (error) {
         console.error(error);
-        // Optionally, set an error state or re-throw the error
       }
     }
-  });
+  };
 
   return { handleSubmit };
 }

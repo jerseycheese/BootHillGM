@@ -48,6 +48,8 @@ export const useGameInitialization = () => {
       if (sessionStorage.getItem('initializing_new_character')) {
         sessionStorage.removeItem('initializing_new_character');
 
+        const startingInventory = INITIAL_INVENTORY;
+
         // Generate initial narrative and actions considering character background
         const response = await getAIResponse(
           `Initialize a new game session for ${characterData?.name}. 
@@ -55,19 +57,26 @@ export const useGameInitialization = () => {
           Consider the character's background and skills.
           Include suggestions for what they might do next.`,
           '',
-          []
+          startingInventory // Pass starting inventory to AI for context
         );
 
-        return {
+        const initialState = {
           ...initialGameState,
           character: characterData,
           narrative: response.narrative,
           location: response.location || 'Unknown Location',
-          inventory: INITIAL_INVENTORY,
+          inventory: startingInventory,
           savedTimestamp: Date.now(),
           isClient: true,
           suggestedActions: response.suggestedActions || []
         };
+
+        /**
+         * Initializes a new game session with starting inventory and narrative context.
+         * Generates appropriate starting items and initial narrative based on character background.
+         */
+
+        return initialState;
       }
 
       // Use existing state if available

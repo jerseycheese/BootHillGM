@@ -7,6 +7,7 @@ import { validateAttributeValue, generateFieldValue, generateCompleteCharacter, 
 import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from '../types/character';
 import { initialGameState } from '../types/campaign';
+import { initializeCharacterInventory, getStartingInventory } from '../utils/startingInventory';
 
 // Storage key for character creation progress
 const STORAGE_KEY = 'character-creation-progress';
@@ -117,7 +118,6 @@ export interface Step {
   type: StepType;
 }
 
-
 /**
  * Custom hook managing the Boot Hill character creation process.
  * Handles:
@@ -129,7 +129,7 @@ export interface Step {
  */
 export function useCharacterCreation() {
   const router = useRouter();
-  useGame();
+  const { dispatch: gameDispatch } = useGame();
   const { saveGame, cleanupState } = useCampaignState();
 
   const [character, setCharacter] = useState<Character>(() => {
@@ -356,10 +356,26 @@ export function useCharacterCreation() {
       ...initialGameState,
       character,
       savedTimestamp: Date.now(),
-      isClient: true
+      isClient: true,
+      inventory: getStartingInventory(),
+      currentPlayer: '',
+      npcs: [],
+      location: '',
+      quests: [],
+      narrative: '',
+      gameProgress: 0,
+      journal: [],
+      isCombatActive: false,
+      opponent: null,
+      suggestedActions: [],
     };
 
+    // Save complete initial state
     saveGame(initialState);
+    
+    // Initialize inventory in game state through dispatch
+    initializeCharacterInventory(gameDispatch);
+    
     router.push('/game-session');
   };
 

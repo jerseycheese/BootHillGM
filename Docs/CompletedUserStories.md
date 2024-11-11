@@ -148,12 +148,18 @@
   - Proper cursor feedback
   - Enhanced combat log with visual feedback for different message types
 
+- [x] As a player, I want to see short descriptions of items in my inventory, so I can understand their purpose and any gameplay-relevant stats.
+  **Status:** Implemented with starting inventory system including detailed item descriptions and initialization during character creation.
+
 ### UI/UX Improvements
 - [x] As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
   **Implementation:**
   - Added loading states during character generation
   - Clear button state transitions
   - Processing feedback in button text
+
+- [x] As a player, I want to start with 4-5 genre-appropriate, inexpensive (non-combat) items, so that I have a realistic and thematic starting inventory.
+  **Status:** Implemented with period-appropriate items like canteens, bedrolls, and other frontier essentials.
 
 ## Technical Improvements
 - As a developer, I want to use a dispatch function for state updates so that I can manage game state more efficiently and consistently.

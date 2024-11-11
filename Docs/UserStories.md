@@ -76,12 +76,6 @@
   **Status:** Not yet implemented.
 
 ### Inventory and Economy
-- [ ] As a player, I want to see short descriptions of items in my inventory, so I can understand their purpose and any gameplay-relevant stats.
-  **Test Plan:**
-  - Verify that each item in the inventory has a short description
-  - Verify that item effects are applied correctly
-  - Ensure used items are removed from the inventory when appropriate
-  **Status:** Not yet implemented.
 
 - [ ] As a player, I want to buy and sell basic goods so that I can experience a simple economy system.
   **Test Plan:**
@@ -143,13 +137,6 @@
 
 
 ### UI/UX Improvements
-- [ ] As a player, I want to start with 4-5 genre-appropriate, inexpensive (non-combat) items, so that I have a realistic and thematic starting inventory.
-  **Test Plan:**
-  - Verify that each new character starts with 4-5 items
-  - Check that the items are appropriate for the Western genre
-  - Ensure the items are non-combat and relatively inexpensive
-  - Confirm that the items are displayed correctly in the character's inventory
-  **Status:** Not yet implemented.
 
 - [ ] As a developer, I want to add identifying IDs/classes to page markup, including specific classes for Boot Hill rules tables and dice roll results.
   **Test Plan:**
