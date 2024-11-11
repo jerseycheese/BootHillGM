@@ -16,8 +16,7 @@ const mockCharacter: Character = {
     strength: 5,
     baseStrength: 5,
     bravery: 5,
-    experience: 0,
-    wounds: []
+    experience: 0
   },
   skills: {
     shooting: 5,
@@ -141,8 +140,7 @@ describe('GameSession', () => {
         strength: 5,
         baseStrength: 5,
         bravery: 5,
-        experience: 0,
-        wounds: []
+        experience: 0
       },
       skills: {
         shooting: 5,

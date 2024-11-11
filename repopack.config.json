@@ -11,6 +11,11 @@
   "ignore": {
     "useGitignore": true,
     "useDefaultPatterns": true,
-    "customPatterns": ["BootHillGMApp/package-lock.json", "Docs/ClosedBugs.md", "Docs/CompletedUserStories.md"]
+    "customPatterns": [
+      "BootHillGMApp/package-lock.json",
+      "Docs/ClosedBugs.md",
+      "Docs/CompletedUserStories.md",
+      "Docs/BootHillRules/*.md"
+    ]
   }
 }

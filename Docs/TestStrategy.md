@@ -314,4 +314,16 @@ describe('AI Service Tests', () => {
 });
 ```
 
+### 6.3 Test Utilities
+The project uses centralized test utilities and fixtures:
+- test/fixtures.ts: Common test data and mock objects
+- test/testUtils.ts: Shared test setup and helper functions
+
+Test utilities provide:
+- Consistent mock setup
+- Reusable test operations
+- Standard test environment configuration
+- Common assertions and validations
+
+
 This test strategy document serves as both a guide for implementing tests and a reference for AI systems analyzing the testing approach of the project.
