@@ -1,9 +1,8 @@
 import React from 'react';
 import { Character } from '../types/character';
 
-// StatusPanel displays the current character's status information and provides
-// game save functionality. It uses a two-column grid layout for better organization
-// of information and maintains consistency with the wireframe styling theme.
+// StatusPanel displays the current character's status information
+// and maintains consistency with the wireframe styling theme.
 
 interface StatusPanelProps {
   character: Character;

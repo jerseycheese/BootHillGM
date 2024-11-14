@@ -1,7 +1,7 @@
 /**
- * Displays current game state information and save functionality.
+ * Displays current game state information.
  * Shows character name, location, strength, and wounds.
- * Provides manual save capability with visual feedback.
+ * Provides visual feedback for character status.
  */
 import React from 'react';
 import { Character } from '../types/character';
