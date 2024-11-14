@@ -23,7 +23,6 @@ export function SidePanel({
         <StatusDisplayManager
           character={state.character}
           location={state.location}
-          onManualSave={handleManualSave}
         />
         <Inventory onUseItem={handleUseItem} />
         <JournalViewer entries={state.journal || []} />
