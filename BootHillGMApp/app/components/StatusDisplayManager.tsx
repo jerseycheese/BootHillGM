@@ -11,13 +11,11 @@ import { cleanMetadataMarkers } from '../utils/textCleaningUtils';
 interface StatusDisplayManagerProps {
   character: Character;
   location: string;
-  onManualSave: () => void;
 }
 
 const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
   character,
-  location,
-  onManualSave
+  location
 }) => {
   const currentStrength = calculateCurrentStrength(character);
   const maxStrength = character.attributes.baseStrength;
@@ -52,13 +50,6 @@ const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
           </ul>
         </>
       )}
-      <button 
-        onClick={onManualSave}
-        className="wireframe-button w-full mt-4"
-        aria-label="Save game"
-      >
-        Save Game
-      </button>
     </div>
   );
 };

@@ -8,26 +8,19 @@ import { Character } from '../types/character';
 interface StatusPanelProps {
   character: Character;
   location: string | null;
-  onSave: () => void;
 }
 
 const StatusPanel: React.FC<StatusPanelProps> = ({ 
   character, 
-  location, 
-  onSave 
+  location 
 }) => {
   return (
     // Wireframe-styled section with grid layout for organized status display
     <div className="wireframe-section">
       <h2 className="wireframe-subtitle">Character Status</h2>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p className="font-medium">Name: {character.name}</p>
-          <p className="font-medium">Location: {location || 'Unknown'}</p>
-        </div>
-        <div>
-          <button onClick={onSave} className="wireframe-button mt-2">Save Game</button>
-        </div>
+      <div>
+        <p className="font-medium">Name: {character.name}</p>
+        <p className="font-medium">Location: {location || 'Unknown'}</p>
       </div>
     </div>
   );
