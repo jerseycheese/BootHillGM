@@ -439,6 +439,9 @@ export async function generateNarrativeSummary(action: string, context: string):
 }
 
 export async function determineIfWeapon(name: string, description: string): Promise<boolean> {
+  console.log(`[WeaponCheck] Starting weapon analysis for: "${name}"`);
+  console.log(`[WeaponCheck] Item description: "${description}"`);
+
   const prompt = `
     Analyze if this item would likely be used as a weapon in an Old West setting:
     Name: ${name}
@@ -450,12 +453,17 @@ export async function determineIfWeapon(name: string, description: string): Prom
 
   try {
     const model = getAIModel();
+    console.log('[WeaponCheck] AI model initialized, sending prompt...');
+    
     const result = await retryAIRequest(() => model.generateContent(prompt));
     const response = await result.response;
     const text = response.text().trim().toLowerCase();
+    
+    console.log(`[WeaponCheck] AI response for "${name}": ${text}`);
     return text === 'true';
   } catch (error) {
-    console.warn('Failed to determine weapon status:', error);
+    console.warn('[WeaponCheck] Failed to determine weapon status:', error);
+    console.log(`[WeaponCheck] Defaulting "${name}" to non-weapon status`);
     // Default to false if AI fails
     return false;
   }

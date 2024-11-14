@@ -92,12 +92,19 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         // For new items, determine if it's a weapon if category isn't already set
         const newItem = { ...action.payload };
         if (!newItem.category) {
+          console.log(`[Inventory] Processing new item: "${newItem.name}"`);
+          console.log('[Inventory] No category set, starting weapon determination');
+          
           // We'll set it as general by default, but the async check will update it if needed
           newItem.category = 'general';
+          console.log(`[Inventory] Set default category for "${newItem.name}" to: general`);
+          
           // Start the async check immediately
           determineIfWeapon(newItem.name, newItem.description)
             .then(isWeapon => {
+              console.log(`[Inventory] Weapon determination complete for "${newItem.name}": ${isWeapon}`);
               if (isWeapon) {
+                console.log(`[Inventory] Updating "${newItem.name}" to weapon category`);
                 // Dispatch an update to change the category to weapon if determined to be one
                 dispatch({
                   type: 'UPDATE_ITEM_QUANTITY',
@@ -109,7 +116,11 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
                 });
               }
             })
-            .catch(console.error);
+            .catch(error => {
+              console.error(`[Inventory] Error during weapon determination for "${newItem.name}":`, error);
+            });
+        } else {
+          console.log(`[Inventory] New item "${newItem.name}" already has category: ${newItem.category}`);
         }
         return { ...state, inventory: [...state.inventory, newItem] };
       }
