@@ -76,7 +76,7 @@ const formatDate = (timestamp: number): string => {
   return (
     <div className="wireframe-section">
       <h2 className="wireframe-subtitle mb-2">Journal</h2>
-      <ul className="max-h-[400px] overflow-y-auto">
+      <ul className="h-[calc(100vh-12rem)] overflow-y-auto">
         {sortedEntries.map((entry) => (
           <JournalEntry
             key={entry.timestamp}
