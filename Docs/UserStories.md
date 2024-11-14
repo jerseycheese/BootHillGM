@@ -130,7 +130,7 @@ Copy
   - Ensure combat log formatting remains consistent
   - Test readability of weapon-related combat entries
   **Status:** Not yet implemented.
-  
+
 - [ ] As a player, I want weapon-specific combat modifiers, so that my choice of weapon matters more in combat.
   **Priority:** High
   **Test Plan:**
@@ -277,6 +277,11 @@ Copy
 - As a player, I want to consider positioning and environmental factors in combat so that battles feel more realistic.
 - As a player, I want to experience critical hits and misses in combat to add more excitement and unpredictability to fights.
 - As a player, I want to use different weapons and items during combat to add more tactical depth to battles.
+- As a player, I want weapon-specific combat modifiers (range, accuracy, speed), so that weapon choice provides tactical depth.
+- As a player, I want to be able to switch weapons during combat, so that I can adapt to changing combat situations.
+- As a player, I want weapons to have special properties (two-handed, reload required, etc.), so that combat feels more authentic to the Western setting.
+- As a player, I want different ammunition types to affect combat, so that I have more tactical options in gunfights.
+- As a player, I want weapon condition and reliability to factor into combat, so that equipment maintenance feels important.
 
 ### NPC Interaction
 - As a player, I want to form relationships with NPCs so that the game world feels more dynamic and responsive to my actions.

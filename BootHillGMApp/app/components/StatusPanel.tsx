@@ -7,11 +7,13 @@ import { Character } from '../types/character';
 interface StatusPanelProps {
   character: Character;
   location: string | null;
+  onSave: () => void; // Adjust the type as needed
 }
 
 const StatusPanel: React.FC<StatusPanelProps> = ({ 
   character, 
-  location 
+  location,
+  onSave 
 }) => {
   return (
     // Wireframe-styled section with grid layout for organized status display
