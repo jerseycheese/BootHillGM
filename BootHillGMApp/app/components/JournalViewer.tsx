@@ -1,5 +1,4 @@
 import React, { memo, useMemo } from 'react';
-import { FixedSizeList as List } from 'react-window';
 import type { JournalEntry } from '../types/journal';
 import { isNarrativeEntry, isCombatEntry, isInventoryEntry, isQuestEntry } from '../types/journal';
 
@@ -7,20 +6,10 @@ interface JournalViewerProps {
   entries: JournalEntry[];
 }
 
-interface ItemData {
-  entries: JournalEntry[];
+const JournalEntry = memo(({ entry, formatDate }: { 
+  entry: JournalEntry;
   formatDate: (timestamp: number) => string;
-}
-
-const JournalEntry = memo(({ data, index, style }: { 
-  data: ItemData; 
-  index: number; 
-  style: React.CSSProperties;
 }) => {
-  const entry = data.entries[index];
-  
-  // Format journal entry based on its type using type guards
-  // Returns appropriate display text with consistent formatting
   const formattedContent = useMemo(() => {
     if (isNarrativeEntry(entry)) {
       return entry.narrativeSummary || entry.content;
@@ -33,13 +22,13 @@ const JournalEntry = memo(({ data, index, style }: {
     } else if (isQuestEntry(entry)) {
       return `${entry.questTitle}: ${entry.status}`;
     }
-    return 'Unknown Entry Type'; // Fallback for unknown entry types
+    return 'Unknown Entry Type';
   }, [entry]);
 
   return (
-    <div style={style} className="wireframe-text p-2">
-      <strong>{data.formatDate(entry.timestamp)}</strong>: {formattedContent}
-    </div>
+    <li className="wireframe-text p-2">
+      <strong>{formatDate(entry.timestamp)}</strong>: {formattedContent}
+    </li>
   );
 });
 
@@ -75,11 +64,6 @@ const formatDate = (timestamp: number): string => {
     }
   };
 
-  const itemData = useMemo(() => ({
-    entries: sortedEntries,
-    formatDate
-  }), [sortedEntries]);
-
   if (!Array.isArray(entries) || entries.length === 0) {
     return (
       <div className="wireframe-section">
@@ -92,15 +76,15 @@ const formatDate = (timestamp: number): string => {
   return (
     <div className="wireframe-section">
       <h2 className="wireframe-subtitle mb-2">Journal</h2>
-      <List
-        height={200}
-        itemCount={sortedEntries.length}
-        itemSize={50}
-        width="100%"
-        itemData={itemData}
-      >
-        {JournalEntry}
-      </List>
+      <ul className="max-h-[400px] overflow-y-auto">
+        {sortedEntries.map((entry) => (
+          <JournalEntry
+            key={entry.timestamp}
+            entry={entry}
+            formatDate={formatDate}
+          />
+        ))}
+      </ul>
     </div>
   );
 };
