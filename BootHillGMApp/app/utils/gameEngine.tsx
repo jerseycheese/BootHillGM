@@ -89,7 +89,29 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           )
         };
       } else {
-        return { ...state, inventory: [...state.inventory, action.payload] };
+        // For new items, determine if it's a weapon if category isn't already set
+        const newItem = { ...action.payload };
+        if (!newItem.category) {
+          // We'll set it as general by default, but the async check will update it if needed
+          newItem.category = 'general';
+          // Start the async check immediately
+          determineIfWeapon(newItem.name, newItem.description)
+            .then(isWeapon => {
+              if (isWeapon) {
+                // Dispatch an update to change the category to weapon if determined to be one
+                dispatch({
+                  type: 'UPDATE_ITEM_QUANTITY',
+                  payload: {
+                    id: newItem.id,
+                    quantity: newItem.quantity,
+                    category: 'weapon'
+                  }
+                });
+              }
+            })
+            .catch(console.error);
+        }
+        return { ...state, inventory: [...state.inventory, newItem] };
       }
     }
     case 'REMOVE_ITEM':

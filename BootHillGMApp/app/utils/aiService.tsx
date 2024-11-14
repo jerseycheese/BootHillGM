@@ -438,6 +438,29 @@ export async function generateNarrativeSummary(action: string, context: string):
   }
 }
 
+export async function determineIfWeapon(name: string, description: string): Promise<boolean> {
+  const prompt = `
+    Analyze if this item would likely be used as a weapon in an Old West setting:
+    Name: ${name}
+    Description: ${description}
+
+    Consider both conventional weapons (guns, knives, etc) and potential improvised weapons.
+    Respond with ONLY "true" or "false" - no other text.
+  `;
+
+  try {
+    const model = getAIModel();
+    const result = await retryAIRequest(() => model.generateContent(prompt));
+    const response = await result.response;
+    const text = response.text().trim().toLowerCase();
+    return text === 'true';
+  } catch (error) {
+    console.warn('Failed to determine weapon status:', error);
+    // Default to false if AI fails
+    return false;
+  }
+}
+
 export async function generateCharacterSummary(character: Character): Promise<string> {
   const prompt = `
     Generate a brief, engaging summary for a character in a Western-themed RPG based on the following attributes:
