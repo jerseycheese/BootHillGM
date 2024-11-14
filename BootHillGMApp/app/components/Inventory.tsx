@@ -66,7 +66,12 @@ export function Inventory({ onUseItem }: { onUseItem?: (itemId: string) => void 
               onMouseLeave={() => setHoveredItem(null)}
             >
               <div className="flex-grow">
-                <span>{item.name} (x{item.quantity})</span>
+                <span>
+                  {item.name} (x{item.quantity})
+                  <span className="ml-2 text-xs px-2 py-0.5 bg-gray-200 rounded-full">
+                    {item.category}
+                  </span>
+                </span>
                 {hoveredItem === item.id && item.description && (
                   <div className="absolute z-10 bg-black text-white p-2 rounded shadow-lg mt-1 text-sm">
                     {item.description}
