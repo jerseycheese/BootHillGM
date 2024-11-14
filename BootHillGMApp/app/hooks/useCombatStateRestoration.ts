@@ -1,13 +1,7 @@
 import { useEffect } from 'react';
 import { GameSessionProps } from '../components/GameArea/types';
 import { Character } from '../types/character';
-
-interface CombatLogEntry {
-  text: string;
-  type: 'hit' | 'miss' | 'critical' | 'info';
-  timestamp: number;
-}
-
+import { LogEntry, ensureCombatState } from '../types/combat';
 
 type GameSessionWithoutState = Omit<GameSessionProps, 'state'>;
 
@@ -18,7 +12,7 @@ interface CombatInitiator extends GameSessionWithoutState {
       playerStrength: number;
       opponentStrength: number;
       currentTurn: 'player' | 'opponent';
-      combatLog: CombatLogEntry[];
+      combatLog: LogEntry[];
     }
   ) => void;
 }
@@ -67,15 +61,26 @@ export function useCombatStateRestoration(
         isUnconscious: state.opponent.isUnconscious ?? false
       };
 
+      const ensuredCombatState = ensureCombatState(state.combatState);
+
       gameSession.initiateCombat(
         restoredOpponent,
         {
-          playerStrength: Number(state.combatState.playerStrength),
-          opponentStrength: Number(state.combatState.opponentStrength),
-          currentTurn: state.combatState.currentTurn,
-          combatLog: state.combatState.combatLog
+          playerStrength: Number(ensuredCombatState.playerStrength ?? 0),
+          opponentStrength: Number(ensuredCombatState.opponentStrength ?? 0),
+          currentTurn: ensuredCombatState.currentTurn ?? 'player',
+          combatLog: ensuredCombatState.combatLog ?? []
         }
       );
     }
-  }, [state, gameSession]);
+  }, [
+    gameSession,
+    state,
+    state?.isCombatActive,
+    state?.opponent?.name,
+    state?.combatState?.playerStrength,
+    state?.combatState?.opponentStrength,
+    state?.combatState?.currentTurn,
+    gameSession?.isCombatActive
+  ]);
 }

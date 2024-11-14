@@ -8,27 +8,32 @@ const STARTING_ITEMS: Omit<InventoryItem, 'id'>[] = [
   {
     name: 'Leather Canteen',
     quantity: 1,
-    description: 'A sturdy canteen for carrying water, essential for survival in the frontier.'
+    description: 'A sturdy canteen for carrying water, essential for survival in the frontier.',
+    category: 'general'
   },
   {
     name: 'Hemp Rope (50ft)',
     quantity: 1,
-    description: 'Strong rope useful for climbing, tying up horses, or securing loads.'
+    description: 'Strong rope useful for climbing, tying up horses, or securing loads.',
+    category: 'general'
   },
   {
     name: 'Matchbox',
     quantity: 1,
-    description: 'A box of waterproof matches for starting fires or lighting lamps.'
+    description: 'A box of waterproof matches for starting fires or lighting lamps.',
+    category: 'general'
   },
   {
     name: 'Wool Blanket',
     quantity: 1,
-    description: 'A warm blanket for cold nights on the trail or rough sleeping in towns.'
+    description: 'A warm blanket for cold nights on the trail or rough sleeping in towns.',
+    category: 'general'
   },
   {
     name: 'Tobacco Pouch',
     quantity: 1,
-    description: 'A small pouch of tobacco, useful for trade or socializing in saloons.'
+    description: 'A small pouch of tobacco, useful for trade or socializing in saloons.',
+    category: 'general'
   }
 ];
 

@@ -51,14 +51,6 @@
   **Status:** Not yet implemented.
 
 ### Combat System
-- [ ] As a player, I want weapon-specific combat modifiers, so that my choice of weapon matters more in combat.
-  **Priority:** High
-  **Test Plan:**
-  - Implement weapon-specific bonuses and penalties
-  - Test different weapons in combat scenarios
-  - Verify modifiers affect combat outcomes appropriately
-  **Status:** Not yet implemented.
-
 - [ ] As a player, I want an enhanced critical hit system, so that combat has more exciting moments.
   **Priority:** Medium
   **Test Plan:**
@@ -73,6 +65,78 @@
   - Implement a "Call Truce" button in the combat interface
   - Verify that using this option prompts the AI to consider ending the combat
   - Ensure that combat can end early if the AI agrees to the truce
+  **Status:** Not yet implemented.
+
+JH
+Before we get to implementation or tests, I want you to supply a set of user stories that follow the model for those in my Docs, categorized as MVP or post-MVP. I will add those to my docs first. Give them priorities/risk levels.
+"allowing the player to choose between brawling and weapon combat when a fight starts" sounds like a good first step/task, as well.
+
+
+2 / 2
+
+I'll create a set of weapon combat user stories following your documentation format, organized by MVP and post-MVP phases. These will build upon your existing combat system stories and provide a clear progression path.
+markdown
+
+Copy
+## MVP Features
+
+### Weapon Combat System - Core
+- [ ] As a player, I want to choose between brawling and weapon combat when a fight starts, so that I have control over my combat approach.
+  **Priority:** High
+  **Risk Level:** Medium
+  **Test Plan:**
+  - Verify combat type selection appears when combat is initiated
+  - Ensure selection is only shown when both options are valid
+  - Test that the correct combat system activates based on selection
+  - Check that the choice is clearly presented in the UI
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want to see what weapons (if any) both myself and my opponent have available during combat initiation, so that I can make informed combat decisions.
+  **Priority:** High
+  **Risk Level:** Low
+  **Test Plan:**
+  - Confirm available weapons are displayed for both combatants
+  - Verify weapon availability matches inventory state
+  - Ensure UI clearly distinguishes between player and opponent weapons
+  - Test cases where either combatant has no weapons
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want to make basic attacks with weapons using Boot Hill's base combat rules, so that I can engage in armed combat.
+  **Priority:** High
+  **Risk Level:** Medium
+  **Test Plan:**
+  - Verify attack rolls follow Boot Hill base rules
+  - Test basic hit/miss calculations
+  - Ensure combat flow matches Boot Hill turn structure
+  - Check that combat log records weapon attacks properly
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want weapons to have distinct base damage values, so that different weapons feel meaningful in combat.
+  **Priority:** High
+  **Risk Level:** Low
+  **Test Plan:**
+  - Verify each weapon type has appropriate damage values
+  - Test damage calculation for different weapons
+  - Ensure damage values affect combat outcomes
+  - Check that damage is properly logged in combat records
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want to see weapon information in the combat log, so that I can follow the flow of combat clearly.
+  **Priority:** Medium
+  **Risk Level:** Low
+  **Test Plan:**
+  - Verify weapon names appear in combat log entries
+  - Check that weapon-specific results are clearly communicated
+  - Ensure combat log formatting remains consistent
+  - Test readability of weapon-related combat entries
+  **Status:** Not yet implemented.
+  
+- [ ] As a player, I want weapon-specific combat modifiers, so that my choice of weapon matters more in combat.
+  **Priority:** High
+  **Test Plan:**
+  - Implement weapon-specific bonuses and penalties
+  - Test different weapons in combat scenarios
+  - Verify modifiers affect combat outcomes appropriately
   **Status:** Not yet implemented.
 
 ### Inventory and Economy

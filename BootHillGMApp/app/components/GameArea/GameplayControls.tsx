@@ -6,6 +6,7 @@
 import { CombatSystem } from '../CombatSystem';
 import InputManager from '../InputManager';
 import type { GameplayControlsProps } from './types';
+import { ensureCombatState } from '../../types/combat';
 
 export function GameplayControls({
   isLoading,
@@ -21,13 +22,18 @@ export function GameplayControls({
   }
 
   // Transform combat state to match CombatSystem's expected format
-  const transformedCombatState = state.combatState ? {
-    round: 1 as const,  // Default to round 1 if not specified
-    playerModifier: state.combatState.playerStrength,
-    opponentModifier: state.combatState.opponentStrength,
-    roundLog: state.combatState.combatLog,
-  } : undefined;
-
+  const transformedCombatState = state.combatState
+    ? ensureCombatState({
+        ...state.combatState,
+        isActive: true,
+        brawling: {
+          round: 1,
+          playerModifier: state.combatState.playerStrength ?? 0,
+          opponentModifier: state.combatState.opponentStrength ?? 0,
+          roundLog: state.combatState.combatLog ?? []
+        }
+      })
+    : undefined;
 
   return (
     <div className="mt-4 shrink-0">

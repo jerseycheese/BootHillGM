@@ -22,7 +22,7 @@ export default function Navigation() {
         dispatch({ type: 'SET_STATE', payload: loadedState });
       }
     }
-  }, [state.character, loadGame, state, dispatch]);
+  }, [state.character, loadGame, dispatch]);
 
   return (
     <nav className="bg-gray-800 p-4">

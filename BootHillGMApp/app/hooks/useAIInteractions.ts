@@ -57,17 +57,50 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
   }
 
   if (response.combatInitiated && response.opponent) {
+    // Set opponent first
+    dispatch({
+      type: 'SET_OPPONENT',
+      payload: response.opponent
+    });
+    
+    // Initialize combat state with null combat type to trigger selection
+    dispatch({
+      type: 'UPDATE_COMBAT_STATE',
+      payload: {
+        isActive: true,
+        combatType: null,
+        playerStrength: state.character?.attributes.strength ?? 0,
+        opponentStrength: response.opponent.attributes.strength,
+        currentTurn: 'player',
+        winner: null,
+        summary: null,
+        combatLog: []
+      }
+    });
+    
+    dispatch({
+      type: 'SET_COMBAT_ACTIVE',
+      payload: true
+    });
+
     dispatch({ type: 'SET_CHARACTER', payload: response.opponent });
   }
 
+  const WEAPON_KEYWORDS = ['gun', 'rifle', 'pistol', 'revolver', 'peacemaker'];
+
   response.acquiredItems.forEach(itemName => {
+    const isWeapon = WEAPON_KEYWORDS.some(keyword => 
+      itemName.toLowerCase().includes(keyword.toLowerCase())
+    );
+    
     dispatch({
       type: 'ADD_ITEM',
       payload: {
         id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: itemName,
         description: itemName,
-        quantity: 1
+        quantity: 1,
+        category: isWeapon ? 'weapon' : 'general'
       }
     });
   });

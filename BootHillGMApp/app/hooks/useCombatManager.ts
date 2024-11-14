@@ -3,43 +3,7 @@ import { Character } from '../types/character';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { addCombatJournalEntry } from '../utils/JournalManager';
 import { createStateProtection } from '../utils/stateProtection';
-
-interface CombatLogEntry {
-  text: string;
-  type: 'hit' | 'miss' | 'critical' | 'info';
-  timestamp: number;
-}
-
-/**
- * Interface defining the return value of the useCombatManager hook
- */
-interface UseCombatManagerResult {
-  isCombatActive: boolean;
-  opponent: Character | null;
-  handleCombatEnd: (winner: 'player' | 'opponent', combatSummary: string) => void;
-  handlePlayerHealthChange: (newHealth: number) => void;
-  initiateCombat: (newOpponent: Character, existingCombatState?: CombatState) => void;
-  getCurrentOpponent: () => Character | null;
-  isProcessing: boolean;
-  combatQueueLength: number;
-}
-
-/**
- * Props required by the useCombatManager hook
- */
-interface UseCombatManagerProps {
-  onUpdateNarrative: (text: string) => void;
-}
-
-/**
- * Interface defining the structure of combat state
- */
-interface CombatState {
-  playerStrength: number;
-  opponentStrength: number;
-  currentTurn: 'player' | 'opponent';
-  combatLog: CombatLogEntry[];
-}
+import { CombatState, ensureCombatState } from '../types/combat';
 
 /**
  * Manages combat state and operations with protection against race conditions.
@@ -51,11 +15,21 @@ interface CombatState {
  * - Automatic state cleanup after combat
  * - Error recovery with user feedback
  */
-export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): UseCombatManagerResult => {
+export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (text: string) => void }) => {
   const { dispatch, state } = useCampaignState();
   const stateProtection = useRef(createStateProtection());
   const [isProcessing, setIsProcessing] = useState(false);
   const isUpdatingRef = useRef(false);
+  const characterNameRef = useRef(state.character?.name);
+  const opponentNameRef = useRef(state.opponent?.name);
+
+  // Update refs when character or opponent changes
+  if (characterNameRef.current !== state.character?.name) {
+    characterNameRef.current = state.character?.name;
+  }
+  if (opponentNameRef.current !== state.opponent?.name) {
+    opponentNameRef.current = state.opponent?.name;
+  }
 
   /**
    * Safely ends combat with state protection.
@@ -72,12 +46,13 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
       
         onUpdateNarrative(`${endMessage}\n\n${combatSummary}\n\nWhat would you like to do now?`);
       
+        const currentJournal = state.journal || [];
         dispatch({ 
           type: 'UPDATE_JOURNAL', 
           payload: addCombatJournalEntry(
-            state.journal || [],
-            state.character?.name || 'Player',
-            state.opponent?.name || 'Unknown Opponent',
+            currentJournal,
+            characterNameRef.current || 'Player',
+            opponentNameRef.current || 'Unknown Opponent',
             winner === 'player' ? 'victory' : 'defeat',
             combatSummary
           )
@@ -88,12 +63,12 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
         
         dispatch({ 
           type: 'UPDATE_COMBAT_STATE', 
-          payload: {
-            playerStrength: 0,
-            opponentStrength: 0,
-            currentTurn: 'player' as const,
-            combatLog: []
-          }
+          payload: ensureCombatState({
+            isActive: false,
+            combatType: null,
+            winner: winner,
+            summary: combatSummary
+          })
         });
       });
     } catch (error) {
@@ -102,7 +77,7 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
     } finally {
       setIsProcessing(false);
     }
-  }, [dispatch, onUpdateNarrative, state.character?.name, state.opponent?.name, state.journal]);
+  }, [dispatch, state.journal, onUpdateNarrative]);
 
   /**
    * Updates the player's strength during combat.
@@ -112,12 +87,12 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
    */
   const handlePlayerHealthChange = useCallback((newStrength: number) => {
     if (!isUpdatingRef.current && state.character) {
+      const currentAttributes = state.character.attributes;
       dispatch({
         type: 'UPDATE_CHARACTER',
         payload: { 
-          ...state.character,
-          attributes: { ...state.character.attributes, strength: Number(newStrength) }
-         }
+          attributes: { ...currentAttributes, strength: Number(newStrength) }
+        }
       });
     }
   }, [dispatch, state.character]);
@@ -129,12 +104,11 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
    * @param newOpponent - The opponent character to fight against
    * @param existingCombatState - Optional existing combat state to restore
    */
-  const initiateCombat = useCallback((newOpponent: Character, existingCombatState?: CombatState) => {
+  const initiateCombat = useCallback((newOpponent: Character, existingCombatState?: Partial<CombatState>) => {
     if (isUpdatingRef.current) return;
     isUpdatingRef.current = true;
 
     try {
-
       // Set combat active first
       dispatch({ type: 'SET_COMBAT_ACTIVE', payload: true });
       
@@ -142,12 +116,17 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
       dispatch({ type: 'SET_OPPONENT', payload: newOpponent });
 
       // Initialize or restore combat state
-      const combatState = existingCombatState || {
-        playerStrength: state.character ? state.character.attributes.strength : 0,
+      const playerStrength = state.character?.attributes.strength ?? 0;
+      const combatState = ensureCombatState({
+        ...existingCombatState,
+        isActive: true,
+        combatType: null, // Will be selected later
+        playerStrength,
         opponentStrength: newOpponent.attributes.strength,
-        currentTurn: 'player' as const,
-        combatLog: []
-      };
+        currentTurn: 'player',
+        winner: null,
+        summary: null
+      });
 
       // Update combat state with proper type conversion
       dispatch({
@@ -157,7 +136,7 @@ export const useCombatManager = ({ onUpdateNarrative }: UseCombatManagerProps): 
     } finally {
       isUpdatingRef.current = false;
     }
-  }, [dispatch, state.character]);
+  }, [dispatch, state.character?.attributes]);
 
   /**
    * Retrieves the current opponent in combat.

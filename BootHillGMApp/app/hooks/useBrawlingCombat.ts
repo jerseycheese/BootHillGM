@@ -1,9 +1,18 @@
 import { useState, useCallback } from 'react';
 import { BrawlingEngine } from '../utils/brawlingEngine';
-import { BrawlingState } from '../types/combat';
+import { BrawlingState, LogEntry, ensureCombatState } from '../types/combat';
 import { Wound } from '../types/character';
-import { UseBrawlingCombatProps } from '../types/hooks';
+import { GameEngineAction } from '../utils/gameEngine';
+import { Character } from '../types/character';
 import * as brawlingSystem from '../utils/brawlingSystem';
+
+interface UseBrawlingCombatProps {
+  playerCharacter: Character;
+  opponent: Character;
+  onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
+  dispatch: React.Dispatch<GameEngineAction>;
+  initialCombatState?: BrawlingState;
+}
 
 /**
  * Manages brawling combat state and coordinates combat actions
@@ -17,13 +26,14 @@ export const useBrawlingCombat = ({
   playerCharacter,
   opponent,
   onCombatEnd,
-  dispatch
+  dispatch,
+  initialCombatState
 }: UseBrawlingCombatProps) => {
   const [brawlingState, setBrawlingState] = useState<BrawlingState>({
-    round: 1,
-    playerModifier: 0,
-    opponentModifier: 0,
-    roundLog: []
+    round: initialCombatState?.round || 1,
+    playerModifier: initialCombatState?.playerModifier || 0,
+    opponentModifier: initialCombatState?.opponentModifier || 0,
+    roundLog: initialCombatState?.roundLog || []
   });
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -74,9 +84,9 @@ export const useBrawlingCombat = ({
       isPunching
     );
     
-    const newLogEntry = { 
+    const newLogEntry: LogEntry = { 
       text: message, 
-      type: 'info' as const, 
+      type: 'info', 
       timestamp: Date.now() 
     };
     
@@ -94,12 +104,25 @@ export const useBrawlingCombat = ({
       if (BrawlingEngine.isKnockout(updatedTarget.attributes.strength, result.damage)) {
         const winner = isPlayer ? 'player' : 'opponent';
         const summary = `${attacker.name} knocks out ${defender.name} with a ${isPunching ? 'devastating punch' : 'powerful grapple'}!`;
+        
+        // Update combat state before ending
+        dispatch({
+          type: 'UPDATE_COMBAT_STATE',
+          payload: ensureCombatState({
+            isActive: false,
+            combatType: 'brawling',
+            winner,
+            summary,
+            brawling: brawlingState
+          })
+        });
+
         onCombatEnd(winner, summary);
         return true;
       }
     }
     return false;
-  }, [brawlingState, opponent, playerCharacter, onCombatEnd, applyWound]);
+  }, [brawlingState, opponent, playerCharacter, onCombatEnd, applyWound, dispatch]);
 
   const processRound = useCallback(async (isPlayer: boolean, isPunching: boolean) => {
     setIsProcessing(true);
@@ -113,7 +136,7 @@ export const useBrawlingCombat = ({
       if (!opponentKnockout) {
         setBrawlingState((prev: BrawlingState) => ({
           ...prev,
-          round: prev.round + 1
+          round: prev.round === 1 ? 2 : 1 // Ensure round stays within 1 | 2
         }));
       }
     } finally {

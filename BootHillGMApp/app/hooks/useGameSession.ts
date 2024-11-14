@@ -3,7 +3,7 @@ import { useCampaignState } from '../components/CampaignStateManager';
 import { getAIResponse } from '../utils/aiService';
 import { getJournalContext, addJournalEntry } from '../utils/JournalManager';
 import { useCombatManager } from './useCombatManager';
-import { InventoryItem } from '../types/inventory';
+import { InventoryItem, ItemCategory } from '../types/inventory';
 
 // Parameters for updating the narrative display
 type UpdateNarrativeParams = {
@@ -39,7 +39,6 @@ export const useGameSession = () => {
   // Updates the game narrative with new text and any item changes
   // Handles both regular narrative updates and item notifications
   const updateNarrative = useCallback((textOrParams: string | UpdateNarrativeParams) => {
-    let updatedNarrative = '';
     let text: string;
     let playerInput: string | undefined;
     let acquiredItems: string[] | undefined;
@@ -55,6 +54,7 @@ export const useGameSession = () => {
       removedItems = textOrParams.removedItems;
     }
     
+    let updatedNarrative = '';
     if (state.narrative) {
       // We have existing narrative, append to it
       updatedNarrative = `${state.narrative}\n\nPlayer: ${playerInput}\n\nGame Master: ${text}`;
@@ -73,10 +73,7 @@ export const useGameSession = () => {
       updatedNarrative = `${text}\n\nPlayer: ${playerInput}`;
     }
     
-    dispatch({
-      type: 'SET_NARRATIVE',
-      payload: updatedNarrative
-    });
+    dispatch({ type: 'SET_NARRATIVE', payload: updatedNarrative });
   }, [dispatch, state.narrative]);
 
   const combatManager = useCombatManager({
@@ -90,13 +87,20 @@ export const useGameSession = () => {
     setLastAction(input);
 
     try {
-      const response = await getAIResponse(input, getJournalContext(state.journal || []), state.inventory || []);
+      const currentJournal = state.journal || [];
+      const currentInventory = state.inventory || [];
+      
+      const response = await getAIResponse(
+        input, 
+        getJournalContext(currentJournal), 
+        currentInventory
+      );
       
       // Update journal with the new action
       const updatedJournal = await addJournalEntry(
-        state.journal || [],
+        currentJournal,
         input,
-        getJournalContext(state.journal || [])
+        getJournalContext(currentJournal)
       );
       
       // Update campaign state with new journal
@@ -129,7 +133,8 @@ export const useGameSession = () => {
             id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: itemName,
             description: itemName,
-            quantity: 1
+            quantity: 1,
+            category: 'general' as ItemCategory // Default category
           };
           dispatch({ type: 'ADD_ITEM', payload: newItem });
         });
@@ -138,7 +143,7 @@ export const useGameSession = () => {
       // Skip item removal if using an item through the Use button
       if (!isUsingItem && response.removedItems?.length > 0) {
         response.removedItems.forEach(itemName => {
-          const itemToRemove = state.inventory?.find(item => item.name === itemName);
+          const itemToRemove = currentInventory.find(item => item.name === itemName);
           if (itemToRemove) {
             dispatch({ type: 'REMOVE_ITEM', payload: itemToRemove.id });
           }
@@ -159,7 +164,7 @@ export const useGameSession = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [state, dispatch, updateNarrative, isUsingItem, combatManager]);
+  }, [dispatch, state.inventory, state.journal, updateNarrative, isUsingItem, combatManager]);
 
   /**
    * Manually saves the current game state.
@@ -169,7 +174,7 @@ export const useGameSession = () => {
     if (state) {
       saveGame(state);
     }
-  }, [state, saveGame]);
+  }, [saveGame, state]);
 
   /**
    * Retries the last user action in case of errors or unexpected results.

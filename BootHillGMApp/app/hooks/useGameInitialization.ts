@@ -71,11 +71,6 @@ export const useGameInitialization = () => {
           suggestedActions: response.suggestedActions || []
         };
 
-        /**
-         * Initializes a new game session with starting inventory and narrative context.
-         * Generates appropriate starting items and initial narrative based on character background.
-         */
-
         return initialState;
       }
 
@@ -162,7 +157,15 @@ export const useGameInitialization = () => {
     }
 
     initGame();
-  }, [isClient, state, dispatch, saveGame, initializeGameSession]);
+  }, [
+    isClient,
+    state,
+    state?.character?.name,  // Only depend on character name instead of full state
+    state?.narrative,      // Only re-run if narrative changes
+    dispatch,
+    saveGame,
+    initializeGameSession
+  ]);
 
   return { isInitializing, isClient };
 };

@@ -1,5 +1,7 @@
 // BootHillGMApp/app/types/inventory.ts
 
+export type ItemCategory = 'weapon' | 'general' | 'consumable';
+
 export interface ItemRequirements {
   minStrength?: number;
   location?: string[];
@@ -17,6 +19,7 @@ export interface InventoryItem {
   name: string;
   quantity: number;
   description: string;
+  category: ItemCategory;
   requirements?: ItemRequirements;
   effect?: ItemEffect;
   usePrompt?: string;

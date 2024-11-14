@@ -4,6 +4,7 @@ import React, { createContext, useContext, useReducer, useCallback, useEffect, u
 import { GameState, GameEngineAction, gameReducer, initialState as initialGameState } from '../utils/gameEngine';
 import { useCampaignStateRestoration } from '../hooks/useCampaignStateRestoration';
 import { InventoryItem } from '../types/inventory';
+import { ensureCombatState } from '../types/combat';
 
 export const CampaignStateContext = createContext<{
   state: GameState;
@@ -22,6 +23,12 @@ export const useCampaignState = () => {
 };
 
 export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const initializationRef = useRef(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const lastSavedRef = useRef<number>(0);
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const stateRef = useRef<GameState | null>(null);
+
   const isInitializing = useMemo(() => {
     if (typeof window === 'undefined') return false;
     return Boolean(sessionStorage.getItem('initializing_new_character'));
@@ -38,17 +45,25 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   const [state, baseDispatch] = useReducer(gameReducer, initialState);
-  const [isHydrated, setIsHydrated] = useState(false);
-  const lastSavedRef = useRef<number>(0);
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
+  // Keep stateRef updated with latest state
   useEffect(() => {
-    setIsHydrated(true);
-    // Clear any stale initialization flags
-    sessionStorage.removeItem('initializing_new_character');
-  }, []);
+    stateRef.current = state;
+  }, [state]);
 
-  const dispatch: React.Dispatch<GameEngineAction> = useCallback((action) => {
+  // Handle hydration once on mount
+  useEffect(() => {
+    if (!initializationRef.current) {
+      initializationRef.current = true;
+      setIsHydrated(true);
+      // Clear initialization flag only if we're not actively initializing
+      if (!isInitializing) {
+        sessionStorage.removeItem('initializing_new_character');
+      }
+    }
+  }, [isInitializing]);
+
+  const dispatch = useCallback((action: GameEngineAction) => {
     baseDispatch(action);
   }, []);
 
@@ -63,24 +78,18 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
       // Create a clean state with properly preserved combat information
       const cleanState = {
         ...stateToSave,
-        // Deep clone arrays to avoid reference issues
         inventory: stateToSave.inventory.map((item: InventoryItem) => ({ ...item })),
         npcs: [...stateToSave.npcs],
         journal: [...stateToSave.journal],
-        // Maintain combat state for ongoing battles
         isCombatActive: Boolean(stateToSave.isCombatActive),
         opponent: stateToSave.opponent ? {
           ...stateToSave.opponent,
           attributes: { ...stateToSave.opponent.attributes },
           skills: { ...stateToSave.opponent.skills }
         } : null,
-        combatState: stateToSave.combatState ? {
-          ...stateToSave.combatState,
-          playerStrength: Number(stateToSave.combatState.playerStrength),
-          opponentStrength: Number(stateToSave.combatState.opponentStrength),
-          currentTurn: stateToSave.combatState.currentTurn,
-          combatLog: [...stateToSave.combatState.combatLog]
-        } : undefined,
+        combatState: stateToSave.combatState 
+          ? ensureCombatState(stateToSave.combatState)
+          : undefined,
         savedTimestamp: timestamp,
         isClient: false
       };
@@ -98,51 +107,51 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Auto-save effect for narrative changes
   useEffect(() => {
-    if (isHydrated && state.narrative) {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
+    if (!isHydrated || !state.narrative) return;
 
-      saveTimeoutRef.current = setTimeout(() => {
-        const currentTimestamp = state.savedTimestamp || 0;
-        if (currentTimestamp > lastSavedRef.current) {
-          saveGame(state);
-        }
-      }, 1000);
-
-      return () => {
-        if (saveTimeoutRef.current) {
-          clearTimeout(saveTimeoutRef.current);
-        }
-      };
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
-  }, [isHydrated, saveGame, state]);
 
-  // Combat state persistence effect
-  useEffect(() => {
-    if (state.combatState && isHydrated) {
-      const currentTimestamp = Date.now();
+    saveTimeoutRef.current = setTimeout(() => {
+      const currentTimestamp = state.savedTimestamp || 0;
       if (currentTimestamp > lastSavedRef.current) {
         saveGame(state);
       }
+    }, 1000);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [isHydrated, saveGame, state, state.narrative, state.savedTimestamp]);
+
+  // Combat state persistence effect
+  useEffect(() => {
+    if (!state.combatState || !isHydrated) return;
+
+    const currentTimestamp = Date.now();
+    if (currentTimestamp > lastSavedRef.current) {
+      saveGame(state);
     }
   }, [
     isHydrated,
     saveGame,
+    state,
     state.combatState?.playerStrength,
     state.combatState?.opponentStrength,
     state.combatState?.currentTurn,
-    state.isCombatActive,
-    state
+    state.isCombatActive
   ]);
 
   // Add beforeunload handler for combat state
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (state.isCombatActive && state.combatState) {
-        // Force immediate save before unload
+      const currentState = stateRef.current;
+      if (currentState?.isCombatActive && currentState?.combatState) {
         localStorage.setItem('campaignState', JSON.stringify({
-          ...state,
+          ...currentState,
           savedTimestamp: Date.now(),
           isClient: false
         }));
@@ -151,12 +160,8 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [state]);
+  }, []);
 
-  /**
-   * Loads the game state from local storage.
-   * @returns The restored GameState object, or null if loading fails.
-   */
   const loadGame = useCallback((): GameState | null => {
     try {
       const serializedState = localStorage.getItem('campaignState');
@@ -182,13 +187,9 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
           wounds: [...(loadedState.opponent.wounds || [])],
           isUnconscious: Boolean(loadedState.opponent.isUnconscious)
         } : null,
-        combatState: loadedState.combatState ? {
-          ...loadedState.combatState,
-          playerStrength: Number(loadedState.combatState.playerStrength),
-          opponentStrength: Number(loadedState.combatState.opponentStrength),
-          currentTurn: loadedState.combatState.currentTurn,
-          combatLog: [...(loadedState.combatState.combatLog || [])]
-        } : undefined,
+        combatState: loadedState.combatState 
+          ? ensureCombatState(loadedState.combatState)
+          : undefined,
         inventory: loadedState.inventory?.map((item: InventoryItem) => ({ ...item })) || [],
         journal: loadedState.journal || []
       };
@@ -202,15 +203,11 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [dispatch]);
 
   const cleanupState = useCallback(() => {
-    try {
-      sessionStorage.setItem('initializing_new_character', 'true');
-      localStorage.removeItem('campaignState');
-      const cleanState = { ...initialGameState, isClient: true };
-      dispatch({ type: 'SET_STATE', payload: cleanState });
-    } finally {
-      // Remove the initialization flag after cleanup is complete
-      sessionStorage.removeItem('initializing_new_character');
-    }
+    // Set initialization flag before state cleanup
+    sessionStorage.setItem('initializing_new_character', 'true');
+    localStorage.removeItem('campaignState');
+    const cleanState = { ...initialGameState, isClient: true };
+    dispatch({ type: 'SET_STATE', payload: cleanState });
   }, [dispatch]);
 
   if (!isHydrated) {

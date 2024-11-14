@@ -3,6 +3,7 @@ import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
 import { JournalEntry } from '../types/journal';
 import { SuggestedAction } from '../types/campaign';
+import { CombatType, CombatState, ensureCombatState } from '../types/combat';
 
 // Define the structure of the game state
 export interface GameState {
@@ -20,18 +21,7 @@ export interface GameState {
   savedTimestamp?: number;
   isClient?: boolean;
   suggestedActions: SuggestedAction[];
-  combatState?: {
-    playerStrength: number;
-    opponentStrength: number;
-    currentTurn: 'player' | 'opponent';
-    combatLog: CombatLogEntry[];
-  };
-}
-
-interface CombatLogEntry {
-  text: string;
-  type: 'hit' | 'miss' | 'critical' | 'info';
-  timestamp: number;
+  combatState?: CombatState;
 }
 
 // Define all possible actions that can be dispatched to update the game state
@@ -56,12 +46,8 @@ export type GameEngineAction =
   | { type: 'SET_SAVED_TIMESTAMP'; payload: number }
   | { type: 'SET_STATE'; payload: Partial<GameState> }
   | { type: 'SET_SUGGESTED_ACTIONS'; payload: SuggestedAction[] }
-  | { type: 'UPDATE_COMBAT_STATE'; payload: {
-      playerStrength: number;
-      opponentStrength: number;
-      currentTurn: 'player' | 'opponent';
-      combatLog: CombatLogEntry[];
-    }};
+  | { type: 'UPDATE_COMBAT_STATE'; payload: Partial<CombatState> }
+  | { type: 'SET_COMBAT_TYPE'; payload: CombatType };
 
 // Initial state of the game
 export const initialState: GameState = {
@@ -154,30 +140,44 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'UPDATE_JOURNAL':
       return { ...state, journal: Array.isArray(action.payload) ? action.payload : [...state.journal, action.payload] };
     
+    // Add direct SET_OPPONENT case
+    case 'SET_OPPONENT':
+      return { ...state, opponent: action.payload };
+    
     // Combat-related state updates
     case 'SET_COMBAT_ACTIVE':
       return {
         ...state,
-        isCombatActive: Boolean(action.payload),
-        // Clear combat state only when combat is ending
+        isCombatActive: action.payload,
+        // Reset combat state when combat ends
         ...((!action.payload) && {
           opponent: null,
           combatState: undefined
         })
       };
-    case 'SET_OPPONENT':
-      return { ...state, opponent: action.payload };
+
     case 'UPDATE_COMBAT_STATE':
-      if (!action.payload) return state;
       return {
         ...state,
-        isCombatActive: true,
-        combatState: {
-          ...state.combatState,
-          ...action.payload
-        }
+        combatState: action.payload 
+          ? ensureCombatState({
+              ...state.combatState,
+              ...action.payload,
+              isActive: true
+            })
+          : state.combatState
       };
-      
+
+    case 'SET_COMBAT_TYPE':
+      return {
+        ...state,
+        combatState: ensureCombatState({
+          ...state.combatState,
+          combatType: action.payload,
+          isActive: true
+        })
+      };
+
     // Inventory management
     case 'UPDATE_ITEM_QUANTITY':
       return {
@@ -200,7 +200,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       return { ...state, inventory: action.payload };
     case 'SET_SAVED_TIMESTAMP':
       return { ...state, savedTimestamp: action.payload };
-    
+
     // Full state restoration with proper type handling
     case 'SET_STATE':
       return {
@@ -215,13 +215,9 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           wounds: [...action.payload.opponent.wounds],
           isUnconscious: Boolean(action.payload.opponent.isUnconscious)
         } : null,
-        combatState: action.payload.combatState ? {
-          ...action.payload.combatState,
-          playerStrength: Number(action.payload.combatState.playerStrength),
-          opponentStrength: Number(action.payload.combatState.opponentStrength),
-          currentTurn: action.payload.combatState.currentTurn,
-          combatLog: [...action.payload.combatState.combatLog]
-        } : undefined,
+        combatState: action.payload.combatState 
+          ? ensureCombatState(action.payload.combatState)
+          : undefined,
         isClient: true
       };
     case 'SET_SUGGESTED_ACTIONS':

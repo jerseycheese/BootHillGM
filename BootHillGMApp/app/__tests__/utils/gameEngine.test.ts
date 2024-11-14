@@ -1,7 +1,7 @@
 import { gameReducer, GameState, GameEngineAction } from '../../utils/gameEngine';
 import { Character } from '../../types/character';
-import { InventoryItem } from '../../types/inventory';
-import { JournalEntry } from '../../types/journal';
+import { InventoryItem, ItemCategory } from '../../types/inventory';
+import { NarrativeJournalEntry } from '../../types/journal';
 
 describe('gameReducer', () => {
   let initialState: GameState;
@@ -19,6 +19,7 @@ describe('gameReducer', () => {
       journal: [],
       isCombatActive: false,
       opponent: null,
+      suggestedActions: [],
     };
   });
 
@@ -31,12 +32,12 @@ describe('gameReducer', () => {
   it('should set character', () => {
     const mockCharacter: Character = {
       name: 'John',
-      health: 100,
       attributes: {
         speed: 5,
         gunAccuracy: 7,
         throwingAccuracy: 6,
         strength: 8,
+        baseStrength: 8,  // Added baseStrength
         bravery: 7,
         experience: 3
       },
@@ -44,7 +45,9 @@ describe('gameReducer', () => {
         shooting: 6,
         riding: 5,
         brawling: 7
-      }
+      },
+      wounds: [],
+      isUnconscious: false
     };
     const action: GameEngineAction = { type: 'SET_CHARACTER', payload: mockCharacter };
     const newState = gameReducer(initialState, action);
@@ -70,7 +73,12 @@ describe('gameReducer', () => {
   });
 
   it('should update journal', () => {
-    const newEntry: JournalEntry = { timestamp: Date.now(), content: 'Started the journey' };
+    const newEntry: NarrativeJournalEntry = { 
+      type: 'narrative',
+      timestamp: Date.now(), 
+      content: 'Started the journey',
+      narrativeSummary: 'A new adventure begins'
+    };
     const action: GameEngineAction = { type: 'UPDATE_JOURNAL', payload: newEntry };
     const newState = gameReducer(initialState, action);
     expect(newState.journal).toContainEqual(newEntry);
@@ -85,12 +93,12 @@ describe('gameReducer', () => {
   it('should set opponent', () => {
     const mockOpponent: Character = {
       name: 'Bandit',
-      health: 80,
       attributes: {
         speed: 6,
         gunAccuracy: 6,
         throwingAccuracy: 5,
         strength: 7,
+        baseStrength: 7,
         bravery: 6,
         experience: 4
       },
@@ -98,7 +106,9 @@ describe('gameReducer', () => {
         shooting: 5,
         riding: 6,
         brawling: 6
-      }
+      },
+      wounds: [],
+      isUnconscious: false
     };
     const action: GameEngineAction = { type: 'SET_OPPONENT', payload: mockOpponent };
     const newState = gameReducer(initialState, action);
@@ -106,14 +116,14 @@ describe('gameReducer', () => {
   });
 
   it('should add an item to the inventory', () => {
-    const newItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health' };
+    const newItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health', category: 'general' as ItemCategory };
     const action: GameEngineAction = { type: 'ADD_ITEM', payload: newItem };
     const newState = gameReducer(initialState, action);
     expect(newState.inventory).toContainEqual(newItem);
   });
 
   it('should remove an item from the inventory', () => {
-    const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health' };
+    const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health', category: 'general' as ItemCategory };
     const stateWithItem: GameState = { ...initialState, inventory: [item] };
     const action: GameEngineAction = { type: 'REMOVE_ITEM', payload: '1' };
     const newState = gameReducer(stateWithItem, action);
@@ -121,7 +131,7 @@ describe('gameReducer', () => {
   });
 
   it('should update item quantity when adding an existing item', () => {
-    const existingItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health' };
+    const existingItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health', category: 'general' as ItemCategory };
     const stateWithItem: GameState = { ...initialState, inventory: [existingItem] };
     const action: GameEngineAction = { type: 'ADD_ITEM', payload: { ...existingItem, quantity: 2 } };
     const newState = gameReducer(stateWithItem, action);
@@ -129,7 +139,7 @@ describe('gameReducer', () => {
   });
 
   it('should handle USE_ITEM action', () => {
-    const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health' };
+    const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health', category: 'general' as ItemCategory };
     const stateWithItem: GameState = { ...initialState, inventory: [item] };
     const action: GameEngineAction = { type: 'USE_ITEM', payload: '1' };
     const newState = gameReducer(stateWithItem, action);
@@ -137,7 +147,7 @@ describe('gameReducer', () => {
   });
 
   it('should remove item when quantity reaches 0 after USE_ITEM', () => {
-    const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health' };
+    const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health', category: 'general' as ItemCategory };
     const stateWithItem: GameState = { ...initialState, inventory: [item] };
     const action: GameEngineAction = { type: 'USE_ITEM', payload: '1' };
     const newState = gameReducer(stateWithItem, action);
@@ -145,7 +155,7 @@ describe('gameReducer', () => {
   });
 
   it('should handle UPDATE_ITEM_QUANTITY action', () => {
-    const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health' };
+    const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health', category: 'general' as ItemCategory };
     const stateWithItem: GameState = { ...initialState, inventory: [item] };
     const action: GameEngineAction = { type: 'UPDATE_ITEM_QUANTITY', payload: { id: '1', quantity: 5 } };
     const newState = gameReducer(stateWithItem, action);
@@ -153,8 +163,8 @@ describe('gameReducer', () => {
   });
 
   it('should handle CLEAN_INVENTORY action', () => {
-    const validItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health' };
-    const invalidItem: InventoryItem = { id: '2', name: 'REMOVED_ITEMS: Invalid Item', quantity: 0, description: 'Should be removed' };
+    const validItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health', category: 'general' as ItemCategory };
+    const invalidItem: InventoryItem = { id: '2', name: 'REMOVED_ITEMS: Invalid Item', quantity: 0, description: 'Should be removed', category: 'general' as ItemCategory };
     const stateWithItems: GameState = { ...initialState, inventory: [validItem, invalidItem] };
     const action: GameEngineAction = { type: 'CLEAN_INVENTORY' };
     const newState = gameReducer(stateWithItems, action);
@@ -164,8 +174,8 @@ describe('gameReducer', () => {
 
   it('should handle SET_INVENTORY action', () => {
     const newInventory: InventoryItem[] = [
-      { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health' },
-      { id: '2', name: 'Sword', quantity: 1, description: 'Sharp weapon' }
+      { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health', category: 'general' as ItemCategory },
+      { id: '2', name: 'Sword', quantity: 1, description: 'Sharp weapon', category: 'general' as ItemCategory }
     ];
     const action: GameEngineAction = { type: 'SET_INVENTORY', payload: newInventory };
     const newState = gameReducer(initialState, action);

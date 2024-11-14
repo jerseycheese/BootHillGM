@@ -3,11 +3,21 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { CombatSystem } from '../../components/CombatSystem';
 import { Character } from '../../types/character';
 import * as combatUtils from '../../utils/combatUtils';
+import { CampaignStateProvider } from '../../components/CampaignStateManager';
 
 // Mock combat utils
 jest.mock('../../utils/combatUtils', () => ({
   cleanCharacterName: jest.fn(name => name.split(' ACQUIRED_ITEMS:')[0])
 }));
+
+// Mock localStorage
+const mockLocalStorage = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
 
 describe('CombatSystem', () => {
   const mockPlayer: Character = {
@@ -50,39 +60,100 @@ describe('CombatSystem', () => {
     isUnconscious: false
   };
 
+  // Mock campaign state with character and weapon
+  const mockCampaignState = JSON.stringify({
+    character: mockPlayer,
+    inventory: [{
+      id: 'test-weapon',
+      name: 'Test Weapon',
+      category: 'weapon',
+      quantity: 1
+    }],
+    journal: [],
+    isCombatActive: false,
+    opponent: null,
+    combatState: null,
+    savedTimestamp: Date.now()
+  });
+
   const mockOnCombatEnd = jest.fn();
   const mockDispatch = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLocalStorage.getItem.mockReturnValue(null);
   });
 
   const renderCombatSystem = (props: Partial<Parameters<typeof CombatSystem>[0]> = {}) => {
     return render(
-      <CombatSystem
-        playerCharacter={mockPlayer}
-        opponent={mockOpponent}
-        onCombatEnd={mockOnCombatEnd}
-        dispatch={mockDispatch}
-        {...props}
-      />
+      <CampaignStateProvider>
+        <CombatSystem
+          playerCharacter={mockPlayer}
+          opponent={mockOpponent}
+          onCombatEnd={mockOnCombatEnd}
+          dispatch={mockDispatch}
+          {...props}
+        />
+      </CampaignStateProvider>
     );
   };
 
-  test('renders combat interface when opponent is present', () => {
+  test('renders combat interface with combat type selection initially', () => {
     renderCombatSystem();
-
+    
+    // Check strength displays
     expect(screen.getByTestId('player-strength-label')).toHaveTextContent('Player Strength:');
     expect(screen.getByTestId('player-strength-value')).toHaveTextContent('10/10');
     expect(screen.getByTestId('opponent-strength-label')).toHaveTextContent('Opponent Strength:');
     expect(screen.getByTestId('opponent-strength-value')).toHaveTextContent('10/10');
-    expect(screen.getByText('Start Brawling')).toBeInTheDocument();
+    
+    // Check combat type selection is present
+    expect(screen.getByText('Choose Combat Type')).toBeInTheDocument();
+    expect(screen.getByText('Brawling')).toBeInTheDocument();
+    expect(screen.getByText('Weapon Combat')).toBeInTheDocument();
   });
 
-  test('shows brawling controls after starting combat', async () => {
+  test('shows combat type selection when initialCombatState has null combatType', () => {
+    renderCombatSystem({
+      initialCombatState: {
+        isActive: true,
+        combatType: null,
+        winner: null,
+        summary: null
+      }
+    });
+    
+    expect(screen.getByText('Choose Combat Type')).toBeInTheDocument();
+  });
+
+  test('shows brawling controls when initialCombatState has brawling combatType', () => {
+    renderCombatSystem({
+      initialCombatState: {
+        isActive: true,
+        combatType: 'brawling',
+        winner: null,
+        summary: null,
+        brawling: {
+          round: 1,
+          playerModifier: 0,
+          opponentModifier: 0,
+          roundLog: []
+        }
+      }
+    });
+    
+    expect(screen.getByText('Punch')).toBeInTheDocument();
+    expect(screen.getByText('Grapple')).toBeInTheDocument();
+  });
+
+  test('shows brawling controls after selecting brawling combat', async () => {
     renderCombatSystem();
 
-    fireEvent.click(screen.getByText('Start Brawling'));
+    // Find and click the Brawling button (with its description)
+    const brawlingButton = screen.getByRole('button', {
+      name: /Brawling.*hand-to-hand combat/i
+    });
+    fireEvent.click(brawlingButton);
 
     expect(screen.getByText('Punch')).toBeInTheDocument();
     expect(screen.getByText('Grapple')).toBeInTheDocument();
@@ -91,27 +162,69 @@ describe('CombatSystem', () => {
   test('handles player punch action', async () => {
     renderCombatSystem();
 
-    fireEvent.click(screen.getByText('Start Brawling'));
+    // Select brawling combat
+    const brawlingButton = screen.getByRole('button', {
+      name: /Brawling.*hand-to-hand combat/i
+    });
+    fireEvent.click(brawlingButton);
     
     await act(async () => {
       fireEvent.click(screen.getByText('Punch'));
     });
 
-    // Combat log entries will be handled by the useBrawlingCombat hook
-    // which is tested separately
+    // Additional assertions can be added here to verify combat log updates
   });
 
   test('handles player grapple action', async () => {
     renderCombatSystem();
 
-    fireEvent.click(screen.getByText('Start Brawling'));
+    // Select brawling combat
+    const brawlingButton = screen.getByRole('button', {
+      name: /Brawling.*hand-to-hand combat/i
+    });
+    fireEvent.click(brawlingButton);
     
     await act(async () => {
       fireEvent.click(screen.getByText('Grapple'));
     });
 
-    // Combat log entries will be handled by the useBrawlingCombat hook
-    // which is tested separately
+    // Additional assertions can be added here to verify combat log updates
+  });
+
+  test('weapon combat option is disabled when no weapons available', () => {
+    renderCombatSystem();
+
+    const weaponButton = screen.getByRole('button', { name: /Weapon Combat/i });
+    expect(weaponButton).toBeDisabled();
+    expect(screen.getByText('No weapons available for combat')).toBeInTheDocument();
+  });
+
+  test('shows weapon not implemented message when weapon combat selected', async () => {
+    // Mock campaign state with weapon
+    mockLocalStorage.getItem.mockReturnValue(mockCampaignState);
+
+    // Render with mock character that has a weapon
+    const characterWithWeapon = {
+      ...mockPlayer,
+      weapon: { name: 'Test Weapon', damage: '1d6' }
+    };
+
+    render(
+      <CampaignStateProvider>
+        <CombatSystem
+          playerCharacter={characterWithWeapon}
+          opponent={mockOpponent}
+          onCombatEnd={mockOnCombatEnd}
+          dispatch={mockDispatch}
+        />
+      </CampaignStateProvider>
+    );
+
+    const weaponButton = screen.getByRole('button', { name: /Weapon Combat/i });
+    expect(weaponButton).not.toBeDisabled();
+    
+    fireEvent.click(weaponButton);
+    expect(screen.getByText('Weapon combat coming soon...')).toBeInTheDocument();
   });
 
   test('cleans metadata from character names', async () => {
