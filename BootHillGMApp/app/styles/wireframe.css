@@ -21,11 +21,6 @@
   border: 2px solid var(--leather-brown);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   padding: 1.5rem;
-  height: 100vh;
-  max-height: 100vh;
-  overflow-y: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
 /* Section Styling */

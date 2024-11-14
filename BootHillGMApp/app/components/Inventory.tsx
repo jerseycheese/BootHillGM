@@ -45,7 +45,7 @@ export function Inventory({ onUseItem }: { onUseItem?: (itemId: string) => void 
   }, [state, onUseItem, clearError]);
 
   return (
-    <div className="wireframe-section h-[calc(100vh-12rem)] flex flex-col">
+    <div className="wireframe-section">
       <h2 className="wireframe-subtitle">Inventory</h2>
       {error && (
         <div 
@@ -56,7 +56,7 @@ export function Inventory({ onUseItem }: { onUseItem?: (itemId: string) => void 
           {error}
         </div>
       )}
-      <ul className="wireframe-list flex-1 overflow-y-auto">
+      <ul className="wireframe-list">
         {state.inventory?.map((item) => (
           item && item.id && item.name && item.quantity > 0 ? (
             <li 
