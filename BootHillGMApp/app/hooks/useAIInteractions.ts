@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { AIService } from '../services/ai';
+import { isWeapon } from '../utils/itemCategories';
 import { GameState, SuggestedAction } from '../types/campaign';
 import { GameEngineAction } from '../utils/gameEngine';
 import { JournalEntry } from '../types/journal';
@@ -86,13 +87,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
     dispatch({ type: 'SET_CHARACTER', payload: response.opponent });
   }
 
-  const WEAPON_KEYWORDS = ['gun', 'rifle', 'pistol', 'revolver', 'peacemaker'];
-
   response.acquiredItems.forEach(itemName => {
-    const isWeapon = WEAPON_KEYWORDS.some(keyword => 
-      itemName.toLowerCase().includes(keyword.toLowerCase())
-    );
-    
     dispatch({
       type: 'ADD_ITEM',
       payload: {
@@ -100,7 +95,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
         name: itemName,
         description: itemName,
         quantity: 1,
-        category: isWeapon ? 'weapon' : 'general'
+        category: isWeapon(itemName) ? 'weapon' : 'general'
       }
     });
   });
