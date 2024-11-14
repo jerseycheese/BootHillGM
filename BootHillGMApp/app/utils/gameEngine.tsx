@@ -89,7 +89,29 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           )
         };
       } else {
-        return { ...state, inventory: [...state.inventory, action.payload] };
+        // For new items, we'll keep the existing category if specified,
+        // otherwise we'll use the AI categorization
+        const newItem = { ...action.payload };
+        if (!newItem.category) {
+          // The categorization is async, but we need to return synchronously
+          // So we'll add it as 'general' and update it once the AI responds
+          newItem.category = 'general';
+          categorizeItemWithAI(newItem.name, newItem.description)
+            .then(category => {
+              if (category === 'weapon') {
+                // Update the item category if AI determined it's a weapon
+                dispatch({
+                  type: 'UPDATE_ITEM_QUANTITY',
+                  payload: { 
+                    id: newItem.id, 
+                    quantity: newItem.quantity,
+                    category: 'weapon'
+                  }
+                });
+              }
+            });
+        }
+        return { ...state, inventory: [...state.inventory, newItem] };
       }
     }
     case 'REMOVE_ITEM':
