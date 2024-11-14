@@ -19,9 +19,11 @@ export function buildGamePrompt(
     ${inventory.map(item => `- ${item.name} (x${item.quantity})`).join('\n')}
 
     Remember to:
-    1. When the player acquires items, list them after "ACQUIRED_ITEMS:" on a new line
+    1. When the player acquires items, list them in JSON format after "ACQUIRED_ITEMS:" on a new line
+       Format: [{"name": "item name", "isWeapon": boolean}]
     2. When the player uses or loses items, list them after "REMOVED_ITEMS:" on a new line
-    3. Always specify these lists even if empty
+    3. For acquired items, evaluate if each item could potentially be used as a weapon
+       Consider both obvious weapons (guns, knives) and improvised weapons (tools, heavy objects)
     4. After your narrative response, provide "SUGGESTED_ACTIONS:" followed by a JSON array of 3 contextually appropriate actions
        Format: [{"text": "action description", "type": "action type", "context": "tooltip explanation"}]
        Types must be one of: "basic" (look, move), "combat" (fight, defend), "interaction" (talk, trade)

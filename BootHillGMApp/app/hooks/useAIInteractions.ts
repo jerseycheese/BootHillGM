@@ -14,7 +14,7 @@ type AIResponse = {
   location?: string;
   combatInitiated?: boolean;
   opponent?: Character;
-  acquiredItems: string[];
+  acquiredItems: Array<{name: string; isWeapon: boolean}>;
   removedItems: string[];
   suggestedActions?: SuggestedAction[];
 };
@@ -86,21 +86,15 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
     dispatch({ type: 'SET_CHARACTER', payload: response.opponent });
   }
 
-  const WEAPON_KEYWORDS = ['gun', 'rifle', 'pistol', 'revolver', 'peacemaker'];
-
-  response.acquiredItems.forEach(itemName => {
-    const isWeapon = WEAPON_KEYWORDS.some(keyword => 
-      itemName.toLowerCase().includes(keyword.toLowerCase())
-    );
-    
+  response.acquiredItems.forEach(item => {
     dispatch({
       type: 'ADD_ITEM',
       payload: {
         id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        name: itemName,
-        description: itemName,
+        name: item.name,
+        description: item.name,
         quantity: 1,
-        category: isWeapon ? 'weapon' : 'general'
+        category: item.isWeapon ? 'weapon' : 'general'
       }
     });
   });
