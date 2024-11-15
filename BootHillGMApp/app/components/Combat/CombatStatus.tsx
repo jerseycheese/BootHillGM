@@ -59,29 +59,35 @@ export const CombatStatus: React.FC<CombatStatusProps> = ({
           {opponent.isUnconscious && <span className="ml-2">(Unconscious)</span>}
         </div>
       </div>
-      {/* Add wounds display */}
-      <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
-        <div>
-          <strong aria-label={`${playerName} Wounds`}>Wounds:</strong>
-          <ul className="list-none" aria-label={`${playerName} Wound List`}>
-            {playerCharacter.wounds.map((wound, index) => (
-              <li key={index} className={`${wound.severity === 'serious' ? 'text-red-600' : wound.severity === 'mortal' ? 'text-black' : 'text-orange-600'}`} aria-label={`${playerName} Wound ${index + 1}: ${wound.location} - ${wound.severity} - Strength Reduction: ${wound.strengthReduction}`}>
-                {wound.location} - {wound.severity} (-{wound.strengthReduction} STR)
-              </li>
-            ))}
-          </ul>
+      {/* Add wounds display only when wounds exist */}
+      {(playerCharacter.wounds.length > 0 || opponent.wounds.length > 0) && (
+        <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
+          {playerCharacter.wounds.length > 0 && (
+            <div>
+              <span className="font-medium" aria-label={`${playerName} Wounds`}>Wounds:</span>
+              <ul className="list-none" aria-label={`${playerName} Wound List`}>
+                {playerCharacter.wounds.map((wound, index) => (
+                  <li key={index} className={`${wound.severity === 'serious' ? 'text-red-600' : wound.severity === 'mortal' ? 'text-black' : 'text-orange-600'}`} aria-label={`${playerName} Wound ${index + 1}: ${wound.location} - ${wound.severity} - Strength Reduction: ${wound.strengthReduction}`}>
+                    {wound.location} - {wound.severity} (-{wound.strengthReduction} STR)
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {opponent.wounds.length > 0 && (
+            <div>
+              <span className="font-medium" aria-label={`${opponentName} Wounds`}>Wounds:</span>
+              <ul className="list-none" aria-label={`${opponentName} Wound List`}>
+                {opponent.wounds.map((wound, index) => (
+                  <li key={index} className={`${wound.severity === 'serious' ? 'text-red-600' : wound.severity === 'mortal' ? 'text-black' : 'text-orange-600'}`} aria-label={`${opponentName} Wound ${index + 1}: ${wound.location} - ${wound.severity} - Strength Reduction: ${wound.strengthReduction}`}>
+                    {wound.location} - {wound.severity} (-{wound.strengthReduction} STR)
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-        <div>
-          <strong aria-label={`${opponentName} Wounds`}>Wounds:</strong>
-          <ul className="list-none" aria-label={`${opponentName} Wound List`}>
-            {opponent.wounds.map((wound, index) => (
-              <li key={index} className={`${wound.severity === 'serious' ? 'text-red-600' : wound.severity === 'mortal' ? 'text-black' : 'text-orange-600'}`} aria-label={`${opponentName} Wound ${index + 1}: ${wound.location} - ${wound.severity} - Strength Reduction: ${wound.strengthReduction}`}>
-                {wound.location} - {wound.severity} (-{wound.strengthReduction} STR)
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
