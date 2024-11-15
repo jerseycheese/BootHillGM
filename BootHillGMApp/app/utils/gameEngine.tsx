@@ -106,16 +106,8 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
             .then(isWeapon => {
               console.log(`[Inventory] Weapon determination complete for "${newItem.name}": ${isWeapon}`);
               if (isWeapon) {
-                console.log(`[Inventory] Updating "${newItem.name}" to weapon category`);
-                // Dispatch an update to change the category to weapon if determined to be one
-                dispatch({
-                  type: 'UPDATE_ITEM_QUANTITY',
-                  payload: {
-                    id: newItem.id,
-                    quantity: newItem.quantity,
-                    category: 'weapon'
-                  }
-                });
+                console.log(`[Inventory] Setting "${newItem.name}" as weapon category`);
+                newItem.category = 'weapon';
               }
             })
             .catch(error => {
@@ -128,15 +120,8 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
             determineIfWeapon(newItem.name, newItem.description)
               .then(isWeapon => {
                 if (isWeapon) {
-                  console.log(`[Inventory] Updating pre-categorized "${newItem.name}" to weapon category`);
-                  dispatch({
-                    type: 'UPDATE_ITEM_QUANTITY',
-                    payload: {
-                      id: newItem.id,
-                      quantity: newItem.quantity,
-                      category: 'weapon'
-                    }
-                  });
+                  console.log(`[Inventory] Setting pre-categorized "${newItem.name}" as weapon category`);
+                  newItem.category = 'weapon';
                 }
               })
               .catch(error => {
