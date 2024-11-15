@@ -61,24 +61,27 @@ export const cleanMetadataMarkers = (text: string | undefined): string => {
 export const cleanCombatLogEntry = (text: string): string => {
   if (!text?.trim()) return '';
 
-
   // First normalize newlines and clean leading/trailing ones
   let cleaned = text
     .replace(/\r\n/g, '\n')
     .replace(METADATA_PATTERNS.LEADING_NEWLINES, '')
     .replace(METADATA_PATTERNS.TRAILING_NEWLINES, '');
 
-
-  cleaned = cleaned.replace(METADATA_PATTERNS.MARKERS, () => {
-    return '';
-  });
-
-
-  // Clean any remaining metadata
+  // Remove status and metadata in specific order
   cleaned = cleaned
+    // Remove unconscious status
+    .replace(METADATA_PATTERNS.UNCONSCIOUS_STATUS, '')
+    // Remove combat status and important tags
+    .replace(METADATA_PATTERNS.COMBAT_STATUS, '')
+    // Remove roll information
+    .replace(METADATA_PATTERNS.ROLL_INFO, '')
+    // Remove any JSON metadata
     .replace(METADATA_PATTERNS.JSON_METADATA, '')
+    // Remove empty brackets
     .replace(METADATA_PATTERNS.EMPTY_BRACKETS, '')
-    .replace(METADATA_PATTERNS.COMBAT_METADATA, ' $1')
+    // Clean up any remaining metadata markers
+    .replace(METADATA_PATTERNS.MARKERS, '')
+    // Normalize whitespace
     .replace(METADATA_PATTERNS.EXTRA_WHITESPACE, ' ')
     .trim();
 
