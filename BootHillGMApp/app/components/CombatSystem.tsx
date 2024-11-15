@@ -114,11 +114,13 @@ export const CombatSystem: React.FC<{
       
       {renderCombatContent()}
       
-      <div className="combat-log mt-4">
-        {brawlingState?.roundLog?.map((log, index) => (
-          <div key={index} className="text-sm mb-1 even:text-right">{log.text}</div>
-        ))}
-      </div>
+      {brawlingState?.roundLog?.length > 0 && (
+        <div className="combat-log mt-4">
+          {brawlingState.roundLog.map((log, index) => (
+            <div key={index} className="text-sm mb-1 even:text-right">{log.text}</div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
