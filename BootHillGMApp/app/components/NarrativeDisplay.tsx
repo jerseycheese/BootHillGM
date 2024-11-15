@@ -75,19 +75,14 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
     // Add line to current interaction context
     currentInteraction += trimmedLine + '\n';
 
-    // Process metadata markers directly
+    // Process metadata markers and collect items
+    let acquiredItems: string[] = [];
+    let removedItems: string[] = [];
+    
     if (/^ACQUIRED_ITEMS:/i.test(trimmedLine)) {
       const itemMatch = trimmedLine.match(/^ACQUIRED_ITEMS:\s*(.+)/i);
       if (itemMatch && itemMatch[1]) {
-        const acquiredItems = cleanItemList(itemMatch[1]);
-        items.push({
-          type: 'item-update',
-          content: `Acquired Items: ${acquiredItems.join(', ')}`,
-          metadata: {
-            items: acquiredItems,
-            updateType: 'acquired',
-          },
-        });
+        acquiredItems = cleanItemList(itemMatch[1]);
       }
       continue;
     }
@@ -95,15 +90,7 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
     if (/^REMOVED_ITEMS:/i.test(trimmedLine)) {
       const itemMatch = trimmedLine.match(/^REMOVED_ITEMS:\s*(.+)/i);
       if (itemMatch && itemMatch[1]) {
-        const removedItems = cleanItemList(itemMatch[1]);
-        items.push({
-          type: 'item-update',
-          content: `Used/Removed Items: ${removedItems.join(', ')}`,
-          metadata: {
-            items: removedItems,
-            updateType: 'used',
-          },
-        });
+        removedItems = cleanItemList(itemMatch[1]);
       }
       continue;
     }
