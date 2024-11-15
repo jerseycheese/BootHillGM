@@ -76,13 +76,20 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
     currentInteraction += trimmedLine + '\n';
 
     // Process metadata markers and collect items
-    let acquiredItems: string[] = [];
-    let removedItems: string[] = [];
-    
     if (/^ACQUIRED_ITEMS:/i.test(trimmedLine)) {
       const itemMatch = trimmedLine.match(/^ACQUIRED_ITEMS:\s*(.+)/i);
       if (itemMatch && itemMatch[1]) {
-        acquiredItems = cleanItemList(itemMatch[1]);
+        const acquiredItems = cleanItemList(itemMatch[1]);
+        if (acquiredItems.length > 0) {
+          items.push({
+            type: 'item-update',
+            content: `Acquired Items: ${acquiredItems.join(', ')}`,
+            metadata: {
+              items: acquiredItems,
+              updateType: 'acquired',
+            },
+          });
+        }
       }
       continue;
     }
@@ -90,7 +97,17 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
     if (/^REMOVED_ITEMS:/i.test(trimmedLine)) {
       const itemMatch = trimmedLine.match(/^REMOVED_ITEMS:\s*(.+)/i);
       if (itemMatch && itemMatch[1]) {
-        removedItems = cleanItemList(itemMatch[1]);
+        const removedItems = cleanItemList(itemMatch[1]);
+        if (removedItems.length > 0) {
+          items.push({
+            type: 'item-update',
+            content: `Used Items: ${removedItems.join(', ')}`,
+            metadata: {
+              items: removedItems,
+              updateType: 'used',
+            },
+          });
+        }
       }
       continue;
     }
@@ -112,22 +129,7 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
         type: 'gm-response',
         content: cleanedLine.replace('Game Master:', 'GM:'),
       });
-
-      // Extract item updates from currentInteraction
-      const updates = extractItemUpdates(currentInteraction);
-
-      // Add acquired items if any
-      if (updates.acquired.length > 0) {
-        items.push({
-          type: 'item-update',
-          content: `Acquired Items: ${updates.acquired.join(', ')}`,
-          metadata: {
-            items: updates.acquired,
-            updateType: 'acquired',
-          },
-        });
-      }
-
+      
       // Reset currentInteraction after processing GM response
       currentInteraction = '';
     } else {
