@@ -105,8 +105,8 @@ export const cleanLocationText = (text: string | null | undefined): string => {
   // First remove any LOCATION: prefix
   let cleaned = text.replace(/^LOCATION:\s*/i, '');
 
-  // Split on first sentence boundary or narrative break
-  cleaned = cleaned.split(/[.!?\n]/)[0].trim();
+  // Split on first sentence boundary, narrative break, or capital letter after lowercase
+  cleaned = cleaned.split(/(?:[.!?\n]|(?<=[a-z])(?=[A-Z]))/)[0].trim();
 
   // Remove any remaining metadata markers
   cleaned = cleanMetadataMarkers(cleaned);
