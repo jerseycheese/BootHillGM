@@ -103,7 +103,7 @@ export const useBrawlingCombat = ({
       
       if (BrawlingEngine.isKnockout(updatedTarget.attributes.strength, result.damage)) {
         const winner = isPlayer ? 'player' : 'opponent';
-        const summary = `${attacker.name} knocks out ${defender.name} with a ${isPunching ? 'devastating punch' : 'powerful grapple'}!`;
+        const summary = `${attacker.name} emerges victorious, defeating ${defender.name} with a ${isPunching ? 'devastating punch' : 'powerful grapple'} to the ${result.location}!`;
         
         // Update combat state before ending
         dispatch({
