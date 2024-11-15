@@ -22,6 +22,7 @@ const StatusPanel: React.FC<StatusPanelProps> = ({
       <h2 className="wireframe-subtitle">Character Status</h2>
       <div>
         <p className="font-medium">Name: {character.name}</p>
+        {location && console.log('Raw location value:', location)}
         <p className="font-medium">Location: {cleanLocationText(location) || 'Unknown'}</p>
       </div>
     </div>
