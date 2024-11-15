@@ -19,8 +19,14 @@ export const CombatLog: React.FC<CombatLogProps> = ({ entries }) => {
       data-testid="combat-log"
     >
       {entries.map((entry, index) => {
-        // Clean and extract just the narrative part of the combat log entry
-        const cleanedText = cleanCombatLogEntry(entry.text.split(/[{:\n]/)[0].trim());
+        // Clean and extract just the combat action, removing metadata and status updates
+        const cleanedText = cleanCombatLogEntry(
+          entry.text
+            .split(/[{:\n]|important:/)[0] // Split on metadata markers
+            .replace(/\([^)]*\)/g, '') // Remove parenthetical content
+            .replace(/\s+/g, ' ') // Normalize whitespace
+            .trim()
+        );
         
         return (
           <p 
