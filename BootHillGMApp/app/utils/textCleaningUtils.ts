@@ -12,7 +12,7 @@ const METADATA_PATTERNS = {
   MARKERS: /(?:^|\s+)(SUGGESTED_ACTIONS|ACQUIRED_ITEMS|REMOVED_ITEMS):\s*(\[[^\]]*\]|[^\s]+)/gm,
   EMPTY_BRACKETS: /\[\s*\]/g,
   IMPORTANT: /\s*important:\s*[^]*?(?=[A-Z][a-z]+\s|$)/g,
-  LOCATION: /\s*LOCATION:\s*[^.!?\n]*/g,
+  LOCATION: /\s*LOCATION:\s*([^.!?\n]*)[.!?\n]?.*/g,
   JSON_METADATA: /\{[^{}]*\}/g,
   DESCRIPTIVE: /(?:^|\s+)The\s+(?:room|area|place|location)\s+(?:is|appears|seems)\s+[^.!?]*[.!?]/gi,
   EXTRA_WHITESPACE: /[\s\n]{2,}/g,
@@ -95,6 +95,25 @@ export const cleanCombatLogEntry = (text: string): string => {
 /**
  * Converts text to sentence case, capitalizing the first letter of each sentence.
  */
+/**
+ * Cleans location text by removing metadata and separating location from narrative content.
+ * Handles cases where narrative content is appended to location text.
+ */
+export const cleanLocationText = (text: string | null | undefined): string => {
+  if (!text?.trim()) return '';
+
+  // First remove any LOCATION: prefix
+  let cleaned = text.replace(/^LOCATION:\s*/i, '');
+
+  // Split on first sentence boundary or narrative break
+  cleaned = cleaned.split(/[.!?\n]/)[0].trim();
+
+  // Remove any remaining metadata markers
+  cleaned = cleanMetadataMarkers(cleaned);
+
+  return cleaned;
+};
+
 export const toSentenceCase = (text: string): string => {
   if (!text?.trim()) return '';
 
