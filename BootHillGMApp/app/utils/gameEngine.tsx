@@ -120,7 +120,29 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
               console.error(`[Inventory] Error during weapon determination for "${newItem.name}":`, error);
             });
         } else {
-          console.log(`[Inventory] New item "${newItem.name}" already has category: ${newItem.category}`);
+          // Even if category is set, we should still verify if it should be a weapon
+          if (newItem.category === 'general') {
+            console.log(`[Inventory] Verifying weapon status for "${newItem.name}" with category: ${newItem.category}`);
+            determineIfWeapon(newItem.name, newItem.description)
+              .then(isWeapon => {
+                if (isWeapon) {
+                  console.log(`[Inventory] Updating pre-categorized "${newItem.name}" to weapon category`);
+                  dispatch({
+                    type: 'UPDATE_ITEM_QUANTITY',
+                    payload: {
+                      id: newItem.id,
+                      quantity: newItem.quantity,
+                      category: 'weapon'
+                    }
+                  });
+                }
+              })
+              .catch(error => {
+                console.error(`[Inventory] Error during weapon verification for "${newItem.name}":`, error);
+              });
+          } else {
+            console.log(`[Inventory] Keeping existing category for "${newItem.name}": ${newItem.category}`);
+          }
         }
         return { ...state, inventory: [...state.inventory, newItem] };
       }
