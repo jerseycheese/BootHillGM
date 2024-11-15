@@ -19,6 +19,10 @@ const METADATA_PATTERNS = {
   COMBAT_METADATA: /\s*(\[Roll: \d+\/\d+(?:\s*-\s*Critical!)?\])/g,
   LEADING_NEWLINES: /^\n+/,
   TRAILING_NEWLINES: /\n+$/,
+  // New patterns for combat log cleaning
+  UNCONSCIOUS_STATUS: /\s*\([^)]*Unconscious[^)]*\)/gi,
+  ROLL_INFO: /\s*\(Roll:\s*\d+\)/gi,
+  COMBAT_STATUS: /\s*\([^)]*\)\s*important:[^.!?]*\./gi,
 };
 
 /**
