@@ -4,6 +4,7 @@ import { InventoryItem } from '../types/inventory';
 import { JournalEntry } from '../types/journal';
 import { SuggestedAction } from '../types/campaign';
 import { CombatType, CombatState, ensureCombatState } from '../types/combat';
+import { determineIfWeapon } from './aiService';
 
 // Define the structure of the game state
 export interface GameState {
@@ -98,8 +99,9 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           // We'll set it as general by default, but the async check will update it if needed
           newItem.category = 'general';
           console.log(`[Inventory] Set default category for "${newItem.name}" to: general`);
+          console.log(`[Inventory] Starting weapon determination for "${newItem.name}"`);
           
-          // Start the async check immediately
+          // Start the async check immediately and ensure proper error handling
           determineIfWeapon(newItem.name, newItem.description)
             .then(isWeapon => {
               console.log(`[Inventory] Weapon determination complete for "${newItem.name}": ${isWeapon}`);
