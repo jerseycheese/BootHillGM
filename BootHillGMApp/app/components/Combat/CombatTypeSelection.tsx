@@ -56,12 +56,13 @@ export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
         <div className="mt-4 text-sm">
           <p>Available Weapons:</p>
           <ul className="list-disc pl-5">
-            {playerCharacter.weapon && (
-              <li>You: {playerCharacter.weapon.name}</li>
-            )}
-            {opponent.weapon && (
-              <li>Opponent: {opponent.weapon.name}</li>
-            )}
+            {state.inventory
+              .filter(item => item.category === 'weapon')
+              .map(weapon => (
+                <li key={weapon.id}>You: {weapon.name}</li>
+              ))
+            }
+            {/* Opponent weapons to be implemented in future work */}
           </ul>
         </div>
       )}
