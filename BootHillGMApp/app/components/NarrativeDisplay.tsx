@@ -113,22 +113,33 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
         content: cleanedLine.replace('Game Master:', 'GM:'),
       });
 
-      // Extract item updates from currentInteraction
-      const updates = extractItemUpdates(currentInteraction);
-
       // Add acquired items if any
-      if (updates.acquired.length > 0) {
+      if (acquiredItems.length > 0) {
         items.push({
           type: 'item-update',
-          content: `Acquired Items: ${updates.acquired.join(', ')}`,
+          content: `Acquired Items: ${acquiredItems.join(', ')}`,
           metadata: {
-            items: updates.acquired,
+            items: acquiredItems,
             updateType: 'acquired',
           },
         });
       }
 
-      // Reset currentInteraction after processing GM response
+      // Add removed items if any
+      if (removedItems.length > 0) {
+        items.push({
+          type: 'item-update',
+          content: `Used/Removed Items: ${removedItems.join(', ')}`,
+          metadata: {
+            items: removedItems,
+            updateType: 'used',
+          },
+        });
+      }
+
+      // Reset item tracking
+      acquiredItems = [];
+      removedItems = [];
       currentInteraction = '';
     } else {
       items.push({ type: 'narrative', content: cleanedLine });
