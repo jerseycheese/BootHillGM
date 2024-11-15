@@ -19,7 +19,8 @@ export const CombatLog: React.FC<CombatLogProps> = ({ entries }) => {
       data-testid="combat-log"
     >
       {entries.map((entry, index) => {
-        const cleanedText = cleanCombatLogEntry(entry.text);
+        // Clean and extract just the narrative part of the combat log entry
+        const cleanedText = cleanCombatLogEntry(entry.text.split(/[{:\n]/)[0].trim());
         
         return (
           <p 
