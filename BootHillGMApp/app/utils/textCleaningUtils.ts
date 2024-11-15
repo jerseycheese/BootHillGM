@@ -102,11 +102,10 @@ export const cleanCombatLogEntry = (text: string): string => {
 export const cleanLocationText = (text: string | null | undefined): string => {
   if (!text?.trim()) return '';
 
-  // First remove any LOCATION: prefix
-  let cleaned = text.replace(/^LOCATION:\s*/i, '');
-
-  // Split on first sentence boundary, narrative break, or capital letter after lowercase
-  cleaned = cleaned.split(/(?:[.!?\n]|(?<=[a-z])(?=[A-Z]))/)[0].trim();
+  // First remove any LOCATION: prefix and any narrative content after the location
+  let cleaned = text.replace(/^LOCATION:\s*/i, '')
+                   .replace(/(?:has|is|was|were|will|had|have)\s+.*$/, '')
+                   .replace(/[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:has|is|was|were|will|had|have)\s+.*$/, '');
 
   // Remove any remaining metadata markers
   cleaned = cleanMetadataMarkers(cleaned);
