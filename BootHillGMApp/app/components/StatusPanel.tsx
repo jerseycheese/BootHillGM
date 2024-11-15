@@ -1,5 +1,6 @@
 import React from 'react';
 import { Character } from '../types/character';
+import { cleanLocationText } from '../utils/textCleaningUtils';
 
 // StatusPanel displays the current character's status information
 // and maintains consistency with the wireframe styling theme.
@@ -21,7 +22,7 @@ const StatusPanel: React.FC<StatusPanelProps> = ({
       <h2 className="wireframe-subtitle">Character Status</h2>
       <div>
         <p className="font-medium">Name: {character.name}</p>
-        <p className="font-medium">Location: {location || 'Unknown'}</p>
+        <p className="font-medium">Location: {cleanLocationText(location) || 'Unknown'}</p>
       </div>
     </div>
   );
