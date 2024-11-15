@@ -102,13 +102,26 @@ export const cleanCombatLogEntry = (text: string): string => {
 export const cleanLocationText = (text: string | null | undefined): string => {
   if (!text?.trim()) return '';
 
-  // First remove any LOCATION: prefix and any narrative content after the location
-  let cleaned = text.replace(/^LOCATION:\s*/i, '')
-                   .replace(/(?:has|is|was|were|will|had|have)\s+.*$/, '')
-                   .replace(/[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:has|is|was|were|will|had|have)\s+.*$/, '');
+  // Log the incoming text to help debug
+  console.log('cleanLocationText input:', text);
+
+  // First remove any LOCATION: prefix
+  let cleaned = text.replace(/^LOCATION:\s*/i, '');
+
+  // Split on narrative breaks and take only the location part
+  cleaned = cleaned.split(/[.!?\n]|\s+(?=[A-Z][a-z]+\s+(?:has|is|was|were|will|had|have))/)[0];
 
   // Remove any remaining metadata markers
   cleaned = cleanMetadataMarkers(cleaned);
+
+  // Final cleanup of any remaining narrative indicators
+  cleaned = cleaned
+    .replace(/(?:has|is|was|were|will|had|have)\s+.*$/, '')
+    .replace(/[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:has|is|was|were|will|had|have)\s+.*$/, '')
+    .trim();
+
+  // Log the cleaned output to help debug
+  console.log('cleanLocationText output:', cleaned);
 
   return cleaned;
 };
