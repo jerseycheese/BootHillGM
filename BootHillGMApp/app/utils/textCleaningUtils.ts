@@ -14,7 +14,7 @@ const METADATA_PATTERNS = {
   IMPORTANT: /\s*important:\s*[^]*?(?=[A-Z][a-z]+\s|$)/g,
   LOCATION: /\s*LOCATION:\s*[^.!?\n]*/g,
   JSON_METADATA: /\{[^{}]*\}/g,
-  DESCRIPTIVE: /\s+The\s+[^.!?]*(?:is|are)\s+[^.!?]*[.!?]/gi,
+  DESCRIPTIVE: /(?:^|\s+)The\s+(?:room|area|place|location)\s+(?:is|appears|seems)\s+[^.!?]*[.!?]/gi,
   EXTRA_WHITESPACE: /[\s\n]{2,}/g,
   COMBAT_METADATA: /\s*(\[Roll: \d+\/\d+(?:\s*-\s*Critical!)?\])/g,
   LEADING_NEWLINES: /^\n+/,
