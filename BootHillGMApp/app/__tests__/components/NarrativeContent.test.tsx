@@ -39,9 +39,10 @@ describe('NarrativeContent', () => {
 
   it('renders narrative text without special styling', () => {
     const narrativeText = 'The room is dark and cold.';
-    render(<NarrativeDisplay narrative={narrativeText} />);
-    const narrative = screen.getByText(narrativeText);
-    expect(narrative).toHaveClass('narrative-line');
+    const { container } = render(<NarrativeDisplay narrative={narrativeText} />);
+    const narrative = container.querySelector('.narrative-line');
+    expect(narrative).toBeInTheDocument();
+    expect(narrative).toHaveTextContent(narrativeText);
   });
 
   it('handles empty lines with spacing', () => {
