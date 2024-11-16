@@ -39,14 +39,8 @@ describe('NarrativeContent', () => {
 
   it('renders narrative text without special styling', () => {
     const narrativeText = 'The room is dark and cold.';
-    console.log('Testing narrative text:', narrativeText);
     const { container } = render(<NarrativeDisplay narrative={narrativeText} />);
     const narrativeElement = container.querySelector('.narrative-line');
-    console.log('Found narrative element:', {
-      exists: !!narrativeElement,
-      className: narrativeElement?.className,
-      content: narrativeElement?.textContent
-    });
     expect(narrativeElement).toBeInTheDocument();
     expect(narrativeElement?.textContent).toBe(narrativeText);
   });
