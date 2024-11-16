@@ -1,5 +1,4 @@
-import { NarrativeItem, normalizeItemList } from './NarrativeDisplay';
-import { useRef, useEffect } from 'react';
+import { NarrativeItem } from './NarrativeDisplay';
 
 interface NarrativeContentProps {
   item: NarrativeItem;
@@ -7,65 +6,32 @@ interface NarrativeContentProps {
 }
 
 export const NarrativeContent: React.FC<NarrativeContentProps> = ({ 
-  item, 
-  processedUpdates 
+  item
 }) => {
   const baseClasses = 'my-2 py-1';
   
-  if (item.type === 'item-update') {
-    console.log('Processing item update:', item);
+  if (item.type === 'item-update' && item.metadata?.items) {
     
     // Skip if content contains SUGGESTED_ACTIONS
     if (item.content.includes('SUGGESTED_ACTIONS')) {
       return null;
     }
     
-    // Normalize the items in metadata if they exist
-    const normalizedMetadata = item.metadata?.items 
-      ? {
-          ...item.metadata,
-          items: normalizeItemList(item.metadata.items)
-            .filter(Boolean)
-            .sort()
-        }
-      : item.metadata;
+    // Create normalized content for display
+    const displayContent = `${item.metadata.updateType === 'acquired' ? 'Acquired' : 'Used/Removed'} Items: ${item.metadata.items.join(', ')}`;
     
-    console.log('Normalized metadata:', normalizedMetadata);
-    
-    // Create a unique key for this update using normalized metadata
-    const updateKey = `item-update-${JSON.stringify(normalizedMetadata)}`;
-    console.log('Update key:', updateKey);
-    console.log('Current processed updates:', Array.from(processedUpdates));
-    
-    // Check if we've already processed this exact update
-    if (processedUpdates.has(updateKey)) {
-      console.log('Skipping duplicate update:', updateKey);
-      return null;
-    }
-    
-    // Only add to processed updates if we actually have items
-    if (normalizedMetadata?.items?.length > 0) {
-      processedUpdates.add(updateKey);
-      
-      // Create normalized content for display
-      const displayContent = `${normalizedMetadata.updateType === 'acquired' ? 'Acquired' : 'Used/Removed'} Items: ${normalizedMetadata.items.join(', ')}`;
-      
-      console.log('Rendering item update:', displayContent);
-      return (
-        <div
-          data-testid={`item-update-${normalizedMetadata.updateType}`}
-          className={`${baseClasses} item-update p-2 px-4 rounded border-l-4 ${
-            normalizedMetadata.updateType === 'acquired'
-              ? 'bg-amber-50 border-amber-400'
-              : 'bg-gray-50 border-gray-400'
-          }`}
-        >
-          {displayContent}
-        </div>
-      );
-    }
-    
-    return null;
+    return (
+      <div
+        data-testid={`item-update-${item.metadata.updateType}`}
+        className={`${baseClasses} item-update p-2 px-4 rounded border-l-4 ${
+          item.metadata.updateType === 'acquired'
+            ? 'bg-amber-50 border-amber-400'
+            : 'bg-gray-50 border-gray-400'
+        }`}
+      >
+        {displayContent}
+      </div>
+    );
   }
   
   switch (item.type) {

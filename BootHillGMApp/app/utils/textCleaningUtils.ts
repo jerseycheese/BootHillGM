@@ -35,7 +35,7 @@ export const cleanMetadataMarkers = (text: string | undefined): string => {
   let cleaned = text;
 
   // Remove metadata markers using the updated MARKERS pattern
-  cleaned = cleaned.replace(METADATA_PATTERNS.MARKERS, (match, p1, p2) => {
+  cleaned = cleaned.replace(METADATA_PATTERNS.MARKERS, (match, p1) => {
     // If the match is at the start of the line, remove it completely
     if (p1.trim() === '') {
       return '';

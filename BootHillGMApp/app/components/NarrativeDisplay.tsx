@@ -82,7 +82,7 @@ const detectNaturalLanguageItems = (text: string): string[] | null => {
     /(?:find|discover|locate|uncover)\s+(?:a|an|the)\s+(?:rusty\s+)?(?:but\s+)?(?:serviceable\s+)?(?:old\s+)?([^,.]+?(?:shotgun|rifle|revolver|pistol|gun|knife|blade)[^,.]*?)(?:(?:'s|\.|\sand\s|,|\s+tucked|\s+beneath))/gi,
   ];
 
-  let weapons: string[] = [];
+  const weapons: string[] = [];
 
   // Process weapon patterns
   for (const pattern of weaponPatterns) {
@@ -105,29 +105,6 @@ const detectNaturalLanguageItems = (text: string): string[] | null => {
 };
 
 /**
- * Helper function to find next metadata items
- */
-const findNextMetadataItems = (lines: string[], currentIndex: number): string[] | null => {
-  // Look ahead up to 3 lines for metadata markers
-  const searchLimit = Math.min(currentIndex + 4, lines.length);
-  
-  for (let i = currentIndex + 1; i < searchLimit; i++) {
-    const line = lines[i].trim();
-    if (/^ACQUIRED_ITEMS:/i.test(line)) {
-      const itemMatch = line.match(/^ACQUIRED_ITEMS:\s*(.+)/i);
-      if (itemMatch && itemMatch[1]) {
-        return cleanItemList(itemMatch[1]);
-      }
-    }
-    // Stop looking if we hit another narrative element
-    if (line.startsWith('Player:') || line.startsWith('GM:')) {
-      break;
-    }
-  }
-  return null;
-};
-
-/**
  * Processes narrative text into content blocks for display.
  * Handles: player actions, GM responses, item updates, and general narrative.
  * Maintains proper spacing and formatting while cleaning metadata markers.
@@ -140,7 +117,6 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
 
   // Split the text into lines
   const lines = text.split('\n');
-  console.log('Processing lines:', lines);
 
   // First pass - check for metadata items
   for (const line of lines) {
@@ -277,14 +253,11 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   // Clear processed updates when narrative changes
   useEffect(() => {
     processedUpdatesRef.current.clear();
-    console.log('Cleared processed updates');
   }, [narrative]);
 
   const narrativeItems = useMemo(
     () => {
-      console.log('Processing narrative:', narrative);
       const items = processNarrativeContent(narrative);
-      console.log('Processed items:', items);
       return items;
     },
     [narrative]
@@ -314,7 +287,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       <div className="narrative-content py-4 space-y-1 relative">
         {narrativeItems.map((item, index) => (
           <NarrativeContent 
-            key={`${item.type}-${index}`} 
+            key={`${item.type}-${index}-${JSON.stringify(item.metadata)}`}
             item={item} 
             processedUpdates={processedUpdatesRef.current}
           />
