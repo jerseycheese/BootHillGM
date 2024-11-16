@@ -63,27 +63,46 @@ const detectNaturalLanguageItems = (text: string): string[] | null => {
   ];
 
   let allItems: string[] = [];
+  let processedText = text;
 
   for (const pattern of findPatterns) {
-    const matches = text.matchAll(pattern);
+    const matches = processedText.matchAll(pattern);
     for (const match of matches) {
       if (match[1]) {
         // Clean up the found items text and split by common separators
         const itemsText = match[1]
           .replace(/\s+(?:and|&)\s+/g, ',')
           .replace(/valuable\s+items?/i, '')
-          .replace(/(?:rusty|discarded|functional)\s+/g, ''); // Remove common adjectives
+          .replace(/(?:rusty|discarded|functional|worn)\s+/g, '') // Remove common adjectives
+          .replace(/,\s*yet\s*/g, ',') // Remove "yet" conjunctions
+          .replace(/\s+holding\s+([^,]+)/g, ', $1'); // Convert "holding X" to ", X"
         
         const items = cleanItemList(itemsText);
         if (items.length > 0) {
+          // Remove the matched text from further processing
+          processedText = processedText.replace(match[0], '');
           allItems.push(...items);
         }
       }
     }
   }
 
-  // Remove duplicates and return
-  return allItems.length > 0 ? [...new Set(allItems)] : null;
+  // Clean and normalize item names
+  const normalizedItems = allItems
+    .map(item => {
+      return item
+        .replace(/^(?:a|an|the)\s+/i, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    })
+    .filter((item, index, self) => 
+      // Remove duplicates case-insensitively
+      index === self.findIndex(t => 
+        t.toLowerCase() === item.toLowerCase()
+      )
+    );
+
+  return normalizedItems.length > 0 ? normalizedItems : null;
 };
 
 /**
