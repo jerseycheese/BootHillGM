@@ -93,20 +93,14 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         // For new items, determine if it's a weapon if category isn't already set
         const newItem = { ...action.payload };
         if (!newItem.category) {
-          console.log(`[Inventory] Processing new item: "${newItem.name}"`);
-          console.log('[Inventory] No category set, starting weapon determination');
           
           // We'll set it as general by default, but the async check will update it if needed
           newItem.category = 'general';
-          console.log(`[Inventory] Set default category for "${newItem.name}" to: general`);
-          console.log(`[Inventory] Starting weapon determination for "${newItem.name}"`);
           
           // Start the async check immediately and ensure proper error handling
           determineIfWeapon(newItem.name, newItem.description)
             .then(isWeapon => {
-              console.log(`[Inventory] Weapon determination complete for "${newItem.name}": ${isWeapon}`);
               if (isWeapon) {
-                console.log(`[Inventory] Setting "${newItem.name}" as weapon category`);
                 newItem.category = 'weapon';
               }
             })
@@ -116,19 +110,16 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         } else {
           // Even if category is set, we should still verify if it should be a weapon
           if (newItem.category === 'general') {
-            console.log(`[Inventory] Verifying weapon status for "${newItem.name}" with category: ${newItem.category}`);
+          
             determineIfWeapon(newItem.name, newItem.description)
               .then(isWeapon => {
                 if (isWeapon) {
-                  console.log(`[Inventory] Setting pre-categorized "${newItem.name}" as weapon category`);
                   newItem.category = 'weapon';
                 }
               })
               .catch(error => {
                 console.error(`[Inventory] Error during weapon verification for "${newItem.name}":`, error);
               });
-          } else {
-            console.log(`[Inventory] Keeping existing category for "${newItem.name}": ${newItem.category}`);
           }
         }
         return { ...state, inventory: [...state.inventory, newItem] };

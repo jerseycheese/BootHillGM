@@ -48,8 +48,6 @@ Regular narrative text
       REMOVED_ITEMS: [Knife]
       `;
   
-    console.log('Test narrative:', narrativeWithItems);
-
     render(<NarrativeDisplay narrative={narrativeWithItems} />);
   
     // Use getAllByTestId since there may be multiple updates

@@ -24,12 +24,11 @@ type UpdateNarrativeParams = {
  * - Handles inventory modifications
  * - Coordinates combat encounters
  * - Provides error handling and retry capabilities
- * - Manages manual save functionality
  * 
  * @returns Object containing game session state and handler functions
  */
 export const useGameSession = () => {
-  const { state, dispatch, saveGame } = useCampaignState();
+  const { state, dispatch } = useCampaignState();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
@@ -167,16 +166,6 @@ export const useGameSession = () => {
   }, [dispatch, state.inventory, state.journal, updateNarrative, isUsingItem, combatManager]);
 
   /**
-   * Manually saves the current game state.
-   * Useful for creating save points at significant moments.
-   */
-  const handleManualSave = useCallback(() => {
-    if (state) {
-      saveGame(state);
-    }
-  }, [saveGame, state]);
-
-  /**
    * Retries the last user action in case of errors or unexpected results.
    */
   const retryLastAction = useCallback(() => {
@@ -221,7 +210,6 @@ export const useGameSession = () => {
     isLoading,
     error,
     handleUserInput,
-    handleManualSave,
     retryLastAction,
     handleUseItem,
     ...combatManager

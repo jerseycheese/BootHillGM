@@ -21,7 +21,6 @@ export interface GameSessionProps {
   retryLastAction: () => void;
   handleCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
   handlePlayerHealthChange: (newHealth: number) => void;
-  handleManualSave: () => void;
   handleUseItem: (itemId: string) => void;
 }
 

@@ -6,11 +6,11 @@
 import React from 'react';
 import { Character } from '../types/character';
 import { calculateCurrentStrength } from '../utils/strengthSystem';
-import { cleanMetadataMarkers } from '../utils/textCleaningUtils';
+import { cleanLocationText } from '../utils/textCleaningUtils';
 
 interface StatusDisplayManagerProps {
   character: Character;
-  location: string;
+  location: string | null;
 }
 
 const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
@@ -28,7 +28,7 @@ const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
       </p>
       <p className="font-medium" aria-label="Current location">
         Location:&nbsp;
-        <span className="text-sm font-normal">{cleanMetadataMarkers(location) || 'Unknown'}</span>
+        <span className="text-sm font-normal">{cleanLocationText(location) || 'Unknown'}</span>
       </p>
 
       <p className="font-medium" aria-label="Character strength">

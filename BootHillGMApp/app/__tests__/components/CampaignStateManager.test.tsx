@@ -75,7 +75,8 @@ describe('CampaignStateManager', () => {
           id: '1', 
           name: 'Test Item', 
           quantity: 1, 
-          description: 'A test item' 
+          description: 'A test item',
+          category: 'general'
         }
       });
       result.current.dispatch({ type: 'ADD_QUEST', payload: 'Test Quest' });
@@ -86,7 +87,8 @@ describe('CampaignStateManager', () => {
       id: '1', 
       name: 'Test Item', 
       quantity: 1, 
-      description: 'A test item' 
+      description: 'A test item',
+      category: 'general'
     });
     expect(result.current.state.quests).toEqual(['Test Quest']);
     expect(result.current.state.isClient).toBe(true);
@@ -102,12 +104,12 @@ describe('CampaignStateManager', () => {
 
     const testCharacter: Character = {
       name: 'Test Character',
-      health: 100,
       attributes: {
         speed: 10,
         gunAccuracy: 10,
         throwingAccuracy: 10,
         strength: 10,
+        baseStrength: 10,
         bravery: 10,
         experience: 5
       },
@@ -115,7 +117,9 @@ describe('CampaignStateManager', () => {
         shooting: 50,
         riding: 50,
         brawling: 50
-      }
+      },
+      wounds: [],
+      isUnconscious: false
     };
 
     act(() => {
@@ -133,12 +137,12 @@ describe('CampaignStateManager', () => {
       currentPlayer: 'Test Player',
       character: {
         name: 'Test Character',
-        health: 100,
         attributes: {
           speed: 10,
           gunAccuracy: 10,
           throwingAccuracy: 10,
           strength: 10,
+          baseStrength: 10,
           bravery: 10,
           experience: 5
         },
@@ -146,7 +150,9 @@ describe('CampaignStateManager', () => {
           shooting: 50,
           riding: 50,
           brawling: 50
-        }
+        },
+        wounds: [],
+        isUnconscious: false
       },
       location: 'Test Town',
       narrative: 'Test narrative',
@@ -154,14 +160,16 @@ describe('CampaignStateManager', () => {
         id: '1', 
         name: 'Test Item', 
         quantity: 1, 
-        description: 'A test item' 
+        description: 'A test item',
+        category: 'general'
       }],
       npcs: ['Test NPC'],
       quests: ['Test Quest'],
       journal: [{ 
         timestamp: Date.now(), 
         content: 'Test entry',
-        narrativeSummary: 'Test summary'
+        narrativeSummary: 'Test summary',
+        type: 'narrative'
       }],
       gameProgress: 5,
       isCombatActive: false,

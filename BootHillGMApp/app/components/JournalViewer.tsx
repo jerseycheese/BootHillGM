@@ -26,7 +26,7 @@ const JournalEntry = memo(({ entry, formatDate }: {
   }, [entry]);
 
   return (
-    <li className="wireframe-text p-2">
+    <li className="wireframe-text mb-2">
       <strong>{formatDate(entry.timestamp)}</strong>: {formattedContent}
     </li>
   );

@@ -22,8 +22,9 @@ describe('Narrative Processing', () => {
       ACQUIRED_ITEMS: gold pouch, silver dagger
     `;
     render(React.createElement(NarrativeDisplay, { narrative }));
-    const itemUpdate = screen.getByTestId('item-update-acquired');
-    expect(itemUpdate).toHaveTextContent('Acquired Items: gold pouch, silver dagger');
+    const itemUpdates = screen.getAllByTestId('item-update-acquired');
+    expect(itemUpdates).toHaveLength(1);
+    expect(itemUpdates[0]).toHaveTextContent('Acquired Items: gold pouch, silver dagger');
   });
 
   it('processes item removals correctly', () => {
@@ -110,10 +111,11 @@ describe('Narrative Processing', () => {
     `;
     render(React.createElement(NarrativeDisplay, { narrative }));
 
-    const acquiredUpdate = screen.getByTestId('item-update-acquired');
+    const itemUpdates = screen.getAllByTestId('item-update-acquired');
     const removedUpdate = screen.getByTestId('item-update-used');
 
-    expect(acquiredUpdate).toHaveTextContent('healing potion, gold coins');
+    expect(itemUpdates).toHaveLength(1);
+    expect(itemUpdates[0]).toHaveTextContent('healing potion, gold coins');
     expect(removedUpdate).toHaveTextContent('healing potion');
   });
 });

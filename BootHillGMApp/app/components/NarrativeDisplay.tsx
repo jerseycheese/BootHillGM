@@ -156,22 +156,14 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
 
     // Clean the line and skip if empty after cleaning
     const cleanedLine = cleanMetadataMarkers(trimmedLine);
-    console.log('Processing line:', { 
-      original: trimmedLine,
-      cleaned: cleanedLine,
-      emptyLineCount
-    });
-
     // If the original line has content but cleaning removed it all,
     // use the original line for narrative content
     if (!cleanedLine && trimmedLine) {
-      console.log('Using original line as narrative:', trimmedLine);
       items.push({ type: 'narrative', content: trimmedLine });
       continue;
     }
     
     if (!cleanedLine) {
-      console.log('Empty line detected:', { emptyLineCount });
       if (emptyLineCount <= 2) {
         items.push({ type: 'narrative', content: '' });
       }

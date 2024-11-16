@@ -59,7 +59,11 @@ describe('useCombatStateRestoration', () => {
       playerStrength: 100,
       opponentStrength: 100,
       currentTurn: 'player' as const,
-      combatLog: [{ text: 'Combat started', type: 'info', timestamp: Date.now() }]
+      combatLog: [{ text: 'Combat started', type: 'info', timestamp: Date.now() }],
+      isActive: true,
+      combatType: 'brawling',
+      winner: null,
+      summary: ''
     }
   };
 
@@ -74,7 +78,6 @@ describe('useCombatStateRestoration', () => {
     retryLastAction: jest.fn(),
     handleCombatEnd: jest.fn(),
     handlePlayerHealthChange: jest.fn(),
-    handleManualSave: jest.fn(),
     handleUseItem: jest.fn()
   };
 

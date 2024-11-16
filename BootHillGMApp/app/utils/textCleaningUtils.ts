@@ -8,8 +8,8 @@
  * from game text while preserving important information.
  */
 const METADATA_PATTERNS = {
-  // Matches metadata markers at line start or after whitespace
-  MARKERS: /(?:^|\s+)(SUGGESTED_ACTIONS|ACQUIRED_ITEMS|REMOVED_ITEMS):\s*(\[[^\]]*\]|[^\s]+)/gm,
+  // Updated to match metadata markers anywhere in the line
+  MARKERS: /(^|\s+)(SUGGESTED_ACTIONS|ACQUIRED_ITEMS|REMOVED_ITEMS|LOCATION|COMBAT):\s*(\[[^\]]*\]|[^.!?]*?)(?=\s|$)/gm,
   EMPTY_BRACKETS: /\[\s*\]/g,
   IMPORTANT: /\s*important:\s*[^]*?(?=[A-Z][a-z]+\s|$)/g,
   LOCATION: /\s*LOCATION:\s*([^.!?\n]*)[.!?\n]?.*/g,
@@ -35,7 +35,14 @@ export const cleanMetadataMarkers = (text: string | undefined): string => {
   let cleaned = text;
 
   // Remove metadata markers using the updated MARKERS pattern
-  cleaned = cleaned.replace(METADATA_PATTERNS.MARKERS, '');
+  cleaned = cleaned.replace(METADATA_PATTERNS.MARKERS, (match, p1, p2) => {
+    // If the match is at the start of the line, remove it completely
+    if (p1.trim() === '') {
+      return '';
+    }
+    // Otherwise, remove only the metadata part, preserving the character name
+    return p1.trim();
+  });
 
   // Clean empty brackets
   cleaned = cleaned.replace(METADATA_PATTERNS.EMPTY_BRACKETS, '');
@@ -52,8 +59,11 @@ export const cleanMetadataMarkers = (text: string | undefined): string => {
   // Clean JSON metadata
   cleaned = cleaned.replace(METADATA_PATTERNS.JSON_METADATA, '');
 
-  // Clean extra whitespace
+  // Clean extra whitespace but preserve spaces around punctuation
   cleaned = cleaned.replace(METADATA_PATTERNS.EXTRA_WHITESPACE, ' ').trim();
+
+  // Preserve spaces around colons and commas in roll information
+  cleaned = cleaned.replace(/(\d+)\s*:\s*(\d+)/g, '$1:$2'); // Remove spaces around colons in roll information
 
   return cleaned;
 };
@@ -71,23 +81,17 @@ export const cleanCombatLogEntry = (text: string): string => {
     .replace(METADATA_PATTERNS.LEADING_NEWLINES, '')
     .replace(METADATA_PATTERNS.TRAILING_NEWLINES, '');
 
-  // Remove status and metadata in specific order
-  cleaned = cleaned
-    // Remove unconscious status
-    .replace(METADATA_PATTERNS.UNCONSCIOUS_STATUS, '')
-    // Remove combat status and important tags
-    .replace(METADATA_PATTERNS.COMBAT_STATUS, '')
-    // Remove roll information
-    .replace(METADATA_PATTERNS.ROLL_INFO, '')
-    // Remove any JSON metadata
-    .replace(METADATA_PATTERNS.JSON_METADATA, '')
-    // Remove empty brackets
-    .replace(METADATA_PATTERNS.EMPTY_BRACKETS, '')
-    // Clean up any remaining metadata markers
-    .replace(METADATA_PATTERNS.MARKERS, '')
-    // Normalize whitespace
-    .replace(METADATA_PATTERNS.EXTRA_WHITESPACE, ' ')
-    .trim();
+  // Remove metadata markers using the updated MARKERS pattern
+  cleaned = cleaned.replace(METADATA_PATTERNS.MARKERS, '');
+
+  // Remove JSON metadata
+  cleaned = cleaned.replace(METADATA_PATTERNS.JSON_METADATA, '');
+
+  // Remove empty brackets
+  cleaned = cleaned.replace(METADATA_PATTERNS.EMPTY_BRACKETS, '');
+
+  // Clean extra whitespace but preserve spaces around punctuation
+  cleaned = cleaned.replace(METADATA_PATTERNS.EXTRA_WHITESPACE, ' ').trim();
 
   return cleaned;
 };
@@ -101,9 +105,6 @@ export const cleanCombatLogEntry = (text: string): string => {
  */
 export const cleanLocationText = (text: string | null | undefined): string => {
   if (!text?.trim()) return '';
-
-  // Log the incoming text to help debug
-  console.log('cleanLocationText input:', text);
 
   // First remove any LOCATION: prefix
   let cleaned = text.replace(/^LOCATION:\s*/i, '');
@@ -119,9 +120,6 @@ export const cleanLocationText = (text: string | null | undefined): string => {
     .replace(/(?:has|is|was|were|will|had|have)\s+.*$/, '')
     .replace(/[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:has|is|was|were|will|had|have)\s+.*$/, '')
     .trim();
-
-  // Log the cleaned output to help debug
-  console.log('cleanLocationText output:', cleaned);
 
   return cleaned;
 };
@@ -144,7 +142,6 @@ export const toSentenceCase = (text: string): string => {
     })
     .join('. ');
 };
-
 
 /**
  * Extracts item updates from both explicit metadata markers and natural language.
@@ -170,8 +167,8 @@ export const extractItemUpdates = (text: string): { acquired: string[]; removed:
   };
 
   // Extract from metadata markers - handle both bracketed and non-bracketed formats
-  const acquiredMatches = Array.from(text.matchAll(/ACQUIRED_ITEMS:\s*(?:\[(.*?)\]|(.+?)(?:\n|$))/g));
-  const removedMatches = Array.from(text.matchAll(/REMOVED_ITEMS:\s*(?:\[(.*?)\]|(.+?)(?:\n|$))/g));
+  const acquiredMatches = Array.from(text.matchAll(/ACQUIRED_ITEMS:\s*(?:\[(.*?)\]|\s*(.+?)(?:\n|$))/g));
+  const removedMatches = Array.from(text.matchAll(/REMOVED_ITEMS:\s*(?:\[(.*?)\]|\s*(.+?)(?:\n|$))/g));
 
   // Process explicit metadata first
   acquiredMatches.forEach(match => {
@@ -213,4 +210,17 @@ export const extractItemUpdates = (text: string): { acquired: string[]; removed:
   updates.removed = Array.from(new Set(updates.removed)).map(cleanMetadataMarkers);
 
   return updates;
+};
+
+/**
+ * Cleans character names by removing metadata markers.
+ */
+export const cleanCharacterName = (name: string): string => {
+  // Remove metadata markers using the updated MARKERS pattern
+  let cleaned = name.replace(METADATA_PATTERNS.MARKERS, '');
+
+  // Clean extra whitespace
+  cleaned = cleaned.replace(METADATA_PATTERNS.EXTRA_WHITESPACE, ' ').trim();
+
+  return cleaned;
 };

@@ -25,8 +25,7 @@ export const CombatStatus: React.FC<CombatStatusProps> = ({
 
   // Clean character names for display
   const playerName = cleanCharacterName(playerCharacter.name);
-  // Extract just the name part before any narrative text
-  const opponentName = cleanCharacterName(opponent.name.split(/[.:\n]/)[0].trim());
+  const opponentName = cleanCharacterName(opponent.name);
 
   return (
     <div className="health-bars mb-4" aria-label="Combat Strength and Wound Status">

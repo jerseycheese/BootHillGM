@@ -22,14 +22,6 @@ export default function GameSession() {
         <MainGameArea {...gameSession} />
         <SidePanel {...gameSession} />
       </div>
-      {process.env.NODE_ENV === 'development' && (
-        <button 
-          onClick={() => console.log('Game State:', state)} 
-          className="fixed bottom-4 right-4 p-2 bg-gray-800 text-white rounded"
-        >
-          Debug State
-        </button>
-      )}
     </div>
   );
 }

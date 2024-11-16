@@ -53,7 +53,6 @@ const mockGameSession = {
   retryLastAction: jest.fn(),
   handleCombatEnd: jest.fn(),
   handlePlayerHealthChange: jest.fn(),
-  handleManualSave: jest.fn(),
   handleUseItem: jest.fn(),
   initiateCombat: jest.fn(),
   getCurrentOpponent: jest.fn(),

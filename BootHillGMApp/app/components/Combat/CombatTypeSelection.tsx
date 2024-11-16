@@ -10,7 +10,6 @@ interface CombatTypeSelectionProps {
 }
 
 export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
-  playerCharacter,
   opponent,
   onSelectType
 }) => {

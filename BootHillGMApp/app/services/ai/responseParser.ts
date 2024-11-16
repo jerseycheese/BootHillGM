@@ -95,21 +95,41 @@ export function parseAIResponse(text: string): AIResponse {
     }
 
     // Clean the narrative text thoroughly
-    const narrative = text
-      // First remove standalone metadata lines
-      .split('\n')
-      .map(line => {
-        const lowerLine = line.toLowerCase().trim();
-        // Remove lines that are only metadata
-        if (/^(acquired_items|removed_items|location|combat|suggested_actions):\s*(\[[^\]]*\]|\s*)$/i.test(lowerLine)) {
-          return '';
-        }
-        // Clean any remaining metadata markers from the line using the shared utility
-        return cleanMetadataMarkers(line);
-      })
-      .filter(Boolean) // Remove empty lines
-      .join(' ')
-      .replace(/\s+/g, ' ')
+    const lines = text.split('\n').map(line => {
+      // Skip lines that are only metadata
+      if (/^(?:ACQUIRED_ITEMS|REMOVED_ITEMS|LOCATION|COMBAT|SUGGESTED_ACTIONS):\s*(\[[^\]]*\]|\s*)$/i.test(line.trim())) {
+        return '';
+      }
+      return cleanMetadataMarkers(line);
+    }).filter(Boolean);
+
+    // Process lines to join character names with their actions
+    const processedLines: string[] = [];
+    for (let i = 0; i < lines.length; i++) {
+      const currentLine = lines[i];
+      const nextLine = lines[i + 1];
+      
+      // If current line is just a name and next line exists and starts with action verbs
+      if (nextLine && /^[A-Z][a-zA-Z\s]+$/.test(currentLine.trim()) && 
+          /^(?:punches|hits|misses|attacks|shoots|throws|dodges|blocks|parries)/i.test(nextLine.trim())) {
+        processedLines.push(`${currentLine} ${nextLine}`);
+        i++; // Skip the next line since we've used it
+      } else {
+        processedLines.push(currentLine);
+      }
+    }
+
+    // Join and clean up the processed lines
+    const narrative = processedLines.join('\n')
+      .replace(/\s+ACQUIRED_ITEMS:\s*REMOVED_ITEMS:\s*/g, ' ')
+      .replace(/\s+:\s+/g, ': ')
+      .replace(/\s+,\s+/g, ', ')
+      .replace(/\s+!/g, '!')
+      .replace(/\s+\./g, '.')
+      .replace(/\s+\?/g, '?')
+      .replace(/\s+\)/g, ')')
+      .replace(/\(\s+/g, '(')
+      .replace(/\s{2,}/g, ' ')
       .trim();
 
     return {

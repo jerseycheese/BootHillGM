@@ -11,7 +11,12 @@ export interface CombatMessageParams {
 }
 
 export const cleanCharacterName = (name: string): string => {
-  return cleanMetadataMarkers(name);
+  let cleanedName = cleanMetadataMarkers(name);
+
+  // Remove suggested actions
+  cleanedName = cleanedName.replace(/SUGGESTED_ACTIONS: \[.*?\]/, '');
+
+  return cleanedName.trim();
 };
 
 export const getWeaponName = (character: Character): string => {
@@ -31,8 +36,8 @@ export const formatHitMessage = ({
   hitChance
 }: CombatMessageParams): string => {
   const isCriticalHit = isCritical(roll);
-  const cleanedAttacker = cleanMetadataMarkers(attackerName);
-  const cleanedDefender = cleanMetadataMarkers(defenderName);
+  const cleanedAttacker = cleanCharacterName(attackerName);
+  const cleanedDefender = cleanCharacterName(defenderName);
   
   return `${cleanedAttacker} hits ${cleanedDefender} with ${weaponName} for ${damage} damage! [Roll: ${roll}/${hitChance}${isCriticalHit ? ' - Critical!' : ''}]`;
 };
@@ -43,8 +48,8 @@ export const formatMissMessage = (
   roll: number,
   hitChance: number
 ): string => {
-  const cleanedAttacker = cleanMetadataMarkers(attackerName);
-  const cleanedDefender = cleanMetadataMarkers(defenderName);
+  const cleanedAttacker = cleanCharacterName(attackerName);
+  const cleanedDefender = cleanCharacterName(defenderName);
   
   return `${cleanedAttacker} misses ${cleanedDefender}! [Roll: ${roll}/${hitChance}]`;
 };
