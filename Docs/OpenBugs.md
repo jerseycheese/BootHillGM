@@ -106,9 +106,3 @@ This document tracks bugs found during development and testing. Each bug entry s
 - Priority: Medium
 - Impact: User Experience
 - Status: Open
-
-[BUG-035] Remove Manual Save Game Button
-- Description: Manual save functionality is redundant with automatic state saving
-- Priority: Low
-- Impact: User Interface Cleanup
-- Status: Open

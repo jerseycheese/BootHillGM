@@ -208,7 +208,6 @@ interface GameError extends Error {
 - Automated retry for AI failures
 - State validation on load
 - Combat state restoration
-- Manual save/load fallback
 
 
 ## 6. Environment Configuration
