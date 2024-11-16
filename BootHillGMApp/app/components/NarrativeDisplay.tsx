@@ -136,17 +136,28 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
   const items: NarrativeItem[] = [];
   let emptyLineCount = 0;
   const foundItemsSet = new Set<string>();
+  let hasMetadataItems = false; // Flag to track if we found metadata items
 
   // Split the text into lines
   const lines = text.split('\n');
   console.log('Processing lines:', lines);
+
+  // First pass - check for metadata items
+  for (const line of lines) {
+    if (/^ACQUIRED_ITEMS:/i.test(line)) {
+      const itemMatch = line.match(/^ACQUIRED_ITEMS:\s*(.+)/i);
+      if (itemMatch && itemMatch[1]) {
+        hasMetadataItems = true;
+        break;
+      }
+    }
+  }
 
   // Process each line
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmedLine = line.trim();
 
-    // Handle empty lines and other basic processing...
     if (!trimmedLine) {
       emptyLineCount++;
       if (emptyLineCount <= 2) {
@@ -161,7 +172,6 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
       const itemMatch = trimmedLine.match(/^ACQUIRED_ITEMS:\s*(.+)/i);
       if (itemMatch && itemMatch[1]) {
         const acquiredItems = cleanItemList(itemMatch[1]);
-        // Only process if we have valid items
         if (acquiredItems && acquiredItems.length > 0) {
           const newItems = acquiredItems.filter(item => !foundItemsSet.has(item));
           if (newItems.length > 0) {
@@ -199,11 +209,11 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
     }
 
     // Skip other metadata markers
-    if (/^SUGGESTED_ACTIONS:/i.test(trimmedLine)) {
+    if (/^(?:REMOVED_ITEMS:|SUGGESTED_ACTIONS:)/i.test(trimmedLine)) {
       continue;
     }
 
-    // Clean the line and process GM responses
+    // Clean the line and process content
     const cleanedLine = cleanMetadataMarkers(trimmedLine);
     if (!cleanedLine && trimmedLine) {
       items.push({ type: 'narrative', content: trimmedLine });
@@ -220,27 +230,26 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
       const gmResponse = cleanedLine.replace('Game Master:', 'GM:');
       items.push({ type: 'gm-response', content: gmResponse });
 
-      // Extract GM text and detect items
-      const gmText = gmResponse.replace(/^GM:\s*/, '');
-      const naturalItems = detectNaturalLanguageItems(gmText);
-      
-      if (naturalItems) {
-        const normalizedItems = normalizeItemList(naturalItems)
-          .sort()
-          .filter(item => !foundItemsSet.has(item));
+      // Only detect natural language items if no metadata items were found
+      if (!hasMetadataItems) {
+        const gmText = gmResponse.replace(/^GM:\s*/, '');
+        const naturalItems = detectNaturalLanguageItems(gmText);
+        
+        if (naturalItems) {
+          const normalizedItems = normalizeItemList(naturalItems)
+            .filter(item => !foundItemsSet.has(item));
 
-        if (normalizedItems.length > 0) {
-          normalizedItems.forEach(item => foundItemsSet.add(item));
-          console.log('Adding item update for:', normalizedItems);
-          
-          items.push({
-            type: 'item-update',
-            content: `Acquired Items: ${normalizedItems.join(', ')}`,
-            metadata: {
-              items: normalizedItems,
-              updateType: 'acquired',
-            },
-          });
+          if (normalizedItems.length > 0) {
+            normalizedItems.forEach(item => foundItemsSet.add(item));
+            items.push({
+              type: 'item-update',
+              content: `Acquired Items: ${normalizedItems.join(', ')}`,
+              metadata: {
+                items: normalizedItems,
+                updateType: 'acquired',
+              },
+            });
+          }
         }
       }
     } else {
