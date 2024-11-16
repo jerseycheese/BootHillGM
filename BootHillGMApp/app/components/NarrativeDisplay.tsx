@@ -54,8 +54,8 @@ export const normalizeItemList = (items: string[]): string[] => {
 };
 
 const cleanItemList = (itemsStr: string): string[] => {
-  // Remove brackets and split by comma
-  const items = itemsStr.replace(/^\[|\]$/g, '')
+  const items = itemsStr
+    .replace(/^\[|\]$/g, '')
     .split(',')
     .map(item => item.trim())
     .filter(item => {
@@ -63,9 +63,25 @@ const cleanItemList = (itemsStr: string): string[] => {
       return item.length > 0 && 
              !['items', 'item', 'things', 'stuff', 'several', 'valuable'].includes(lowerItem) &&
              !lowerItem.endsWith('items') &&
-             !lowerItem.endsWith('stuff');
+             !lowerItem.endsWith('stuff') &&
+             !lowerItem.includes('nothing but') &&
+             !lowerItem.includes('neither of much use') &&
+             !lowerItem.includes('out of sight');
     });
-  return normalizeItemList(items);
+
+  // Normalize ammunition counts
+  const normalizedItems = items.map(item => {
+    if (item.match(/(\d+|\w+)\s+(?:shells?|bullets?|rounds?|cartridges?)/i)) {
+      const quantity = item.match(/(\d+|two|three|four)/i)?.[1].toLowerCase();
+      const number = quantity === 'two' ? '2' : 
+                    quantity === 'three' ? '3' : 
+                    quantity === 'four' ? '4' : quantity;
+      return `Shells (x${number})`;
+    }
+    return item;
+  });
+
+  return normalizeItemList(normalizedItems);
 };
 
 /**
@@ -73,40 +89,52 @@ const cleanItemList = (itemsStr: string): string[] => {
  * Returns items if found, null otherwise.
  */
 const detectNaturalLanguageItems = (text: string): string[] | null => {
-  // Look for patterns indicating item discovery
-  const findPatterns = [
-    /(?:find|discover|acquire|take|contains?|inside\s+(?:are|is|you\s+find)|reveals?|uncover)\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/gi,
-    /inside\s+you\s+find\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/gi,
-    /(?:a|an|the)\s+([^,.]+?(?:shovel|pickaxe|knife|revolver|gun|weapon)[^,.]*?)(?:,|\sand\s|$)/gi
+  // Look for specific weapon-related patterns first
+  const weaponPatterns = [
+    /(?:find|discover|locate)\s+(?:a|an|the)\s+(?:rusty\s+)?but\s+serviceable\s+([^,.]+?(?:shotgun|rifle|revolver|pistol|gun)[^,.]*?)(?:,|\sand\s|$)/gi,
+    /(?:a|an|the)\s+(?:rusty\s+)?but\s+serviceable\s+([^,.]+?(?:shotgun|rifle|revolver|pistol|gun)[^,.]*?)(?:,|\sand\s|$)/gi,
+    /(?:find|discover|locate)\s+(?:a|an|the)\s+([^,.]+?(?:shotgun|rifle|revolver|pistol|gun|knife|blade)[^,.]*?)(?:,|\sand\s|$)/gi
   ];
 
-  let allItems: string[] = [];
-  let processedText = text;
+  // Look for ammunition and related items
+  const ammoPatterns = [
+    /(?:and|with)?\s+(\d+|\w+)\s+(?:shells?|bullets?|rounds?|cartridges?)(?:,|\sand\s|$)/gi
+  ];
 
-  for (const pattern of findPatterns) {
-    const matches = processedText.matchAll(pattern);
+  let weapons: string[] = [];
+  let ammo: string[] = [];
+
+  // Process weapon patterns
+  for (const pattern of weaponPatterns) {
+    const matches = text.matchAll(pattern);
     for (const match of matches) {
       if (match[1]) {
-        // Clean up the found items text and split by common separators
-        const itemsText = match[1]
-          .replace(/\s+(?:and|&)\s+/g, ',')
-          .replace(/valuable\s+items?/i, '')
-          .replace(/(?:rusty|discarded|functional|worn)\s+/g, '') // Remove common adjectives
-          .replace(/,\s*yet\s*/g, ',') // Remove "yet" conjunctions
-          .replace(/\s+holding\s+([^,]+)/g, ', $1'); // Convert "holding X" to ", X"
-        
-        const items = cleanItemList(itemsText);
-        if (items.length > 0) {
-          // Remove the matched text from further processing
-          processedText = processedText.replace(match[0], '');
-          allItems.push(...items);
+        const weapon = match[1]
+          .replace(/(?:rusty|but serviceable|functional)\s+/gi, '')
+          .trim();
+        if (weapon && !weapons.includes(weapon)) {
+          weapons.push(weapon);
         }
       }
     }
   }
 
-  // Clean and normalize item names
-  const normalizedItems = allItems
+  // Process ammo patterns
+  for (const pattern of ammoPatterns) {
+    const matches = text.matchAll(pattern);
+    for (const match of matches) {
+      if (match[1]) {
+        const quantity = match[1].toLowerCase();
+        const number = quantity === 'two' ? '2' : 
+                      quantity === 'three' ? '3' : 
+                      quantity === 'four' ? '4' : quantity;
+        ammo.push(`Shells (x${number})`);
+      }
+    }
+  }
+
+  // Combine and normalize all found items
+  const allItems = [...weapons, ...ammo]
     .map(item => {
       return item
         .replace(/^(?:a|an|the)\s+/i, '')
@@ -114,13 +142,12 @@ const detectNaturalLanguageItems = (text: string): string[] | null => {
         .trim();
     })
     .filter((item, index, self) => 
-      // Remove duplicates case-insensitively
       index === self.findIndex(t => 
         t.toLowerCase() === item.toLowerCase()
       )
     );
 
-  return normalizedItems.length > 0 ? normalizedItems : null;
+  return allItems.length > 0 ? allItems : null;
 };
 
 /**
