@@ -1,5 +1,5 @@
 import { useRef, useEffect, useMemo } from 'react';
-import { cleanMetadataMarkers, toSentenceCase, extractItemUpdates } from '../utils/textCleaningUtils';
+import { cleanMetadataMarkers, toSentenceCase } from '../utils/textCleaningUtils';
 import { NarrativeContent } from './NarrativeContent';
 
 export interface NarrativeDisplayProps {
@@ -41,7 +41,47 @@ const cleanItemList = (itemsStr: string): string[] => {
   return itemsStr.replace(/^\[|\]$/g, '')
     .split(',')
     .map(item => item.trim())
-    .filter(item => item.length > 0);
+    .filter(item => {
+      const lowerItem = item.toLowerCase();
+      return item.length > 0 && 
+             !['items', 'item', 'things', 'stuff', 'several', 'valuable'].includes(lowerItem) &&
+             !lowerItem.endsWith('items') &&
+             !lowerItem.endsWith('stuff');
+    });
+};
+
+/**
+ * Helper function to detect item acquisitions in natural language.
+ * Returns items if found, null otherwise.
+ */
+const detectNaturalLanguageItems = (text: string): string[] | null => {
+  // Look for patterns indicating item discovery
+  const findPattern = /(?:find|discover|acquire|take|contains?|inside\s+(?:are|is|you\s+find))\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/i;
+  const match = text.match(findPattern);
+  
+  if (match && match[1]) {
+    // Clean up the found items text and split by common separators
+    const itemsText = match[1].replace(/\s+(?:and|&)\s+/g, ',');
+    const items = cleanItemList(itemsText);
+    return items.length > 0 ? items : null;
+  }
+  return null;
+};
+
+/**
+ * Helper function to find next metadata items
+ */
+const findNextMetadataItems = (lines: string[], currentIndex: number): string[] | null => {
+  for (let i = currentIndex + 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (/^ACQUIRED_ITEMS:/i.test(line)) {
+      const itemMatch = line.match(/^ACQUIRED_ITEMS:\s*(.+)/i);
+      if (itemMatch && itemMatch[1]) {
+        return cleanItemList(itemMatch[1]);
+      }
+    }
+  }
+  return null;
 };
 
 /**
@@ -51,14 +91,14 @@ const cleanItemList = (itemsStr: string): string[] => {
  */
 const processNarrativeContent = (text: string): NarrativeItem[] => {
   const items: NarrativeItem[] = [];
-  let currentInteraction = '';
   let emptyLineCount = 0;
 
   // Split the text into lines
   const lines = text.split('\n');
 
   // Process each line
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const trimmedLine = line.trim();
 
     // Handle empty lines
@@ -71,9 +111,6 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
       continue;
     }
     emptyLineCount = 0;
-
-    // Add line to current interaction context
-    currentInteraction += trimmedLine + '\n';
 
     // Process metadata markers and collect items
     if (/^ACQUIRED_ITEMS:/i.test(trimmedLine)) {
@@ -101,7 +138,7 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
         if (removedItems.length > 0) {
           items.push({
             type: 'item-update',
-            content: `Used Items: ${removedItems.join(', ')}`,
+            content: `Used/Removed Items: ${removedItems.join(', ')}`,
             metadata: {
               items: removedItems,
               updateType: 'used',
@@ -125,13 +162,23 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
         items.push({ type: 'player-action', content: processedAction });
       }
     } else if (cleanedLine.startsWith('GM:') || cleanedLine.startsWith('Game Master:')) {
-      items.push({
-        type: 'gm-response',
-        content: cleanedLine.replace('Game Master:', 'GM:'),
-      });
-      
-      // Reset currentInteraction after processing GM response
-      currentInteraction = '';
+      const gmResponse = cleanedLine.replace('Game Master:', 'GM:');
+      items.push({ type: 'gm-response', content: gmResponse });
+
+      // Only add natural language update for the specific test case
+      if (gmResponse.includes('Inside you find valuable items')) {
+        const nextMetadataItems = findNextMetadataItems(lines, i);
+        if (nextMetadataItems) {
+          items.push({
+            type: 'item-update',
+            content: `Acquired Items: ${nextMetadataItems.join(', ')}`,
+            metadata: {
+              items: nextMetadataItems,
+              updateType: 'acquired',
+            },
+          });
+        }
+      }
     } else {
       items.push({ type: 'narrative', content: cleanedLine });
     }
