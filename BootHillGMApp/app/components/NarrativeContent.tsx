@@ -1,9 +1,16 @@
 import { NarrativeItem, normalizeItemList } from './NarrativeDisplay';
 import { useRef, useEffect } from 'react';
 
-export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) => {
+interface NarrativeContentProps {
+  item: NarrativeItem;
+  processedUpdates: Set<string>;
+}
+
+export const NarrativeContent: React.FC<NarrativeContentProps> = ({ 
+  item, 
+  processedUpdates 
+}) => {
   const baseClasses = 'my-2 py-1';
-  const processedRef = useRef<Set<string>>(new Set());
   
   if (item.type === 'item-update') {
     // Skip if content contains SUGGESTED_ACTIONS
@@ -15,7 +22,7 @@ export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) =>
     const normalizedMetadata = item.metadata?.items 
       ? {
           ...item.metadata,
-          items: normalizeItemList(item.metadata.items)
+          items: normalizeItemList(item.metadata.items).sort()
         }
       : item.metadata;
     
@@ -23,13 +30,13 @@ export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) =>
     const updateKey = `item-update-${JSON.stringify(normalizedMetadata)}`;
     
     // Check if we've already processed this exact update
-    if (processedRef.current.has(updateKey)) {
+    if (processedUpdates.has(updateKey)) {
       console.log('Skipping duplicate update:', updateKey);
       return null;
     }
     
     // Store this update key
-    processedRef.current.add(updateKey);
+    processedUpdates.add(updateKey);
     
     // Create normalized content for display
     const displayContent = normalizedMetadata?.items 

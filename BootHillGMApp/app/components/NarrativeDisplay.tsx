@@ -325,6 +325,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const lastNarrativeRef = useRef<string>('');
   const isAutoScrollEnabled = useRef<boolean>(true);
+  const processedUpdatesRef = useRef<Set<string>>(new Set());
   const narrativeItems = useMemo(
     () => processNarrativeContent(narrative),
     [narrative]
@@ -353,7 +354,11 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
     >
       <div className="narrative-content py-4 space-y-1 relative">
         {narrativeItems.map((item, index) => (
-          <NarrativeContent key={`${item.type}-${index}`} item={item} />
+          <NarrativeContent 
+            key={`${item.type}-${index}`} 
+            item={item} 
+            processedUpdates={processedUpdatesRef.current}
+          />
         ))}
       </div>
       
