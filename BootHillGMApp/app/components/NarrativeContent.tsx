@@ -13,6 +13,8 @@ export const NarrativeContent: React.FC<NarrativeContentProps> = ({
   const baseClasses = 'my-2 py-1';
   
   if (item.type === 'item-update') {
+    console.log('Processing item update:', item);
+    
     // Skip if content contains SUGGESTED_ACTIONS
     if (item.content.includes('SUGGESTED_ACTIONS')) {
       return null;
@@ -28,8 +30,12 @@ export const NarrativeContent: React.FC<NarrativeContentProps> = ({
         }
       : item.metadata;
     
+    console.log('Normalized metadata:', normalizedMetadata);
+    
     // Create a unique key for this update using normalized metadata
     const updateKey = `item-update-${JSON.stringify(normalizedMetadata)}`;
+    console.log('Update key:', updateKey);
+    console.log('Current processed updates:', Array.from(processedUpdates));
     
     // Check if we've already processed this exact update
     if (processedUpdates.has(updateKey)) {

@@ -174,13 +174,11 @@ const findNextMetadataItems = (lines: string[], currentIndex: number): string[] 
 const processNarrativeContent = (text: string): NarrativeItem[] => {
   const items: NarrativeItem[] = [];
   let emptyLineCount = 0;
-  const processedItems = new Set<string>();
+  const foundItemsSet = new Set<string>();
 
   // Split the text into lines
   const lines = text.split('\n');
-
-  // Track items found in this processing pass
-  let foundItems: string[] = [];
+  console.log('Processing lines:', lines);
 
   // Process each line
   for (let i = 0; i < lines.length; i++) {
@@ -249,30 +247,16 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
       // Extract GM text and detect items
       const gmText = gmResponse.replace(/^GM:\s*/, '');
       const naturalItems = detectNaturalLanguageItems(gmText);
+      
       if (naturalItems) {
-        foundItems = [...foundItems, ...naturalItems];
-      }
-
-      // Check for metadata items in following lines
-      const nextMetadataItems = findNextMetadataItems(lines, i);
-      if (nextMetadataItems) {
-        foundItems = [...foundItems, ...nextMetadataItems];
-      }
-
-      // If we found any items, add them as a single update
-      if (foundItems.length > 0) {
-        // Normalize and deduplicate the items
-        const normalizedItems = normalizeItemList(foundItems)
+        const normalizedItems = normalizeItemList(naturalItems)
           .sort()
-          .filter((item, index, self) => 
-            self.indexOf(item) === index
-          );
+          .filter(item => !foundItemsSet.has(item));
 
-        // Create a unique key for this set of items
-        const itemKey = JSON.stringify(normalizedItems);
-        
-        if (!processedItems.has(itemKey)) {
-          processedItems.add(itemKey);
+        if (normalizedItems.length > 0) {
+          normalizedItems.forEach(item => foundItemsSet.add(item));
+          console.log('Adding item update for:', normalizedItems);
+          
           items.push({
             type: 'item-update',
             content: `Acquired Items: ${normalizedItems.join(', ')}`,
@@ -282,9 +266,6 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
             },
           });
         }
-        
-        // Reset foundItems for the next GM response
-        foundItems = [];
       }
     } else {
       items.push({ type: 'narrative', content: cleanedLine });
@@ -307,8 +288,20 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   const lastNarrativeRef = useRef<string>('');
   const isAutoScrollEnabled = useRef<boolean>(true);
   const processedUpdatesRef = useRef<Set<string>>(new Set());
+
+  // Clear processed updates when narrative changes
+  useEffect(() => {
+    processedUpdatesRef.current.clear();
+    console.log('Cleared processed updates');
+  }, [narrative]);
+
   const narrativeItems = useMemo(
-    () => processNarrativeContent(narrative),
+    () => {
+      console.log('Processing narrative:', narrative);
+      const items = processNarrativeContent(narrative);
+      console.log('Processed items:', items);
+      return items;
+    },
     [narrative]
   );
 
