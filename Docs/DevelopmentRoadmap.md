@@ -60,8 +60,9 @@
 - [x] Extract status display into separate component
 - [x] Add visual distinction for player actions
 - [x] Implement typed narrative content processing
-- [ ] Implement contextual action buttons
-- [ ] Separate action suggestions from narrative
+- [x] Implement BrawlingEngine for combat system
+- [x] Add state protection pattern
+- [x] Enhance campaign state restoration
 
 3.2 State Management Improvements
 - [ ] Implement progressive state saving

@@ -46,6 +46,11 @@
   - [x] Manages turn-based combat flow
   - [x] Handles damage calculation
   - [x] Maintains combat log
+- **BrawlingEngine**: Core combat calculation engine
+  - [x] Handles pure combat logic
+  - [x] Manages damage calculations
+  - [x] Processes combat rules
+  - [x] Provides testable interface
 - **Combat UI Components:**
   - [x] CombatStatus: Health display for both combatants
   - [x] CombatControls: Turn and action management

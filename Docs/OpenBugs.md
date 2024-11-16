@@ -106,3 +106,15 @@ This document tracks bugs found during development and testing. Each bug entry s
 - Priority: Medium
 - Impact: User Experience
 - Status: Open
+
+[BUG-035] State Protection Timeout Handling
+- Description: State protection utility sometimes triggers timeout too early during complex operations
+- Steps to Reproduce:
+  1. Enter combat with multiple opponents
+  2. Perform rapid actions during combat
+  3. Observe state update behavior
+- Expected Behavior: Operations should complete before timeout
+- Actual Behavior: Some operations timeout prematurely
+- Status: Open
+- Priority: High
+- Impact: Combat System Reliability

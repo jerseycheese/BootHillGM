@@ -242,6 +242,46 @@ Extracted state restoration logic into a dedicated hook (useCampaignStateRestora
 - Maintains existing state structure
 - Preserves combat state restoration
 
+## ADR 9: State Protection Pattern Implementation
+
+### Date: 2024-11-10
+### Status: Accepted
+
+## Context
+Complex state updates during combat and AI interactions were causing race conditions and inconsistent state updates.
+
+## Decision
+Implemented a StateProtection utility that provides:
+- Protected state updates with operation queueing
+- Automatic retry mechanism for failed updates
+- Timeout handling for long-running operations
+- Error recovery mechanisms
+
+## Rationale
+- Prevents race conditions in state updates
+- Provides consistent error handling
+- Makes state protection reusable
+- Supports operation queueing
+
+## Consequences
+
+### Positive
+- More reliable state updates
+- Better error recovery
+- Reusable protection pattern
+- Clear operation queuing
+
+### Negative
+- Additional complexity layer
+- Need to manage timeouts
+- Increased testing requirements
+
+### Implementation Notes
+- Uses TypeScript for type safety
+- Implements operation queue
+- Provides timeout protection
+- Maintains error handling consistency
+
 ## ADR 7: State Protection Pattern
 
 ### Date: 11/9/2024
