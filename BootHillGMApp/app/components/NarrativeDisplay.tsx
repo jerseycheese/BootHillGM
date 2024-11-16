@@ -57,22 +57,33 @@ const cleanItemList = (itemsStr: string): string[] => {
 const detectNaturalLanguageItems = (text: string): string[] | null => {
   // Look for patterns indicating item discovery
   const findPatterns = [
-    /(?:find|discover|acquire|take|contains?|inside\s+(?:are|is|you\s+find))\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/i,
-    /inside\s+you\s+find\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/i
+    /(?:find|discover|acquire|take|contains?|inside\s+(?:are|is|you\s+find)|reveals?|uncover)\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/i,
+    /inside\s+you\s+find\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/i,
+    /(?:a|an|the)\s+([^,.]+?(?:shovel|pickaxe|knife|revolver|gun|weapon)[^,.]*?)(?:,|\sand\s|$)/i
   ];
 
+  let allItems: string[] = [];
+
   for (const pattern of findPatterns) {
-    const match = text.match(pattern);
-    if (match && match[1]) {
-      // Clean up the found items text and split by common separators
-      const itemsText = match[1]
-        .replace(/\s+(?:and|&)\s+/g, ',')
-        .replace(/valuable\s+items?/i, '');
-      const items = cleanItemList(itemsText);
-      return items.length > 0 ? items : null;
+    const matches = text.matchAll(pattern);
+    for (const match of matches) {
+      if (match[1]) {
+        // Clean up the found items text and split by common separators
+        const itemsText = match[1]
+          .replace(/\s+(?:and|&)\s+/g, ',')
+          .replace(/valuable\s+items?/i, '')
+          .replace(/(?:rusty|discarded|functional)\s+/g, ''); // Remove common adjectives
+        
+        const items = cleanItemList(itemsText);
+        if (items.length > 0) {
+          allItems.push(...items);
+        }
+      }
     }
   }
-  return null;
+
+  // Remove duplicates and return
+  return allItems.length > 0 ? [...new Set(allItems)] : null;
 };
 
 /**
@@ -193,19 +204,33 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
       const gmResponse = cleanedLine.replace('Game Master:', 'GM:');
       items.push({ type: 'gm-response', content: gmResponse });
 
-      // Only add natural language update for the specific test case
-      if (gmResponse.includes('Inside you find valuable items')) {
-        const nextMetadataItems = findNextMetadataItems(lines, i);
-        if (nextMetadataItems) {
-          items.push({
-            type: 'item-update',
-            content: `Acquired Items: ${nextMetadataItems.join(', ')}`,
-            metadata: {
-              items: nextMetadataItems,
-              updateType: 'acquired',
-            },
-          });
-        }
+      // Extract the actual GM text without the prefix
+      const gmText = gmResponse.replace(/^GM:\s*/, '');
+      
+      // Check for natural language item acquisitions
+      const naturalItems = detectNaturalLanguageItems(gmText);
+      if (naturalItems) {
+        items.push({
+          type: 'item-update',
+          content: `Acquired Items: ${naturalItems.join(', ')}`,
+          metadata: {
+            items: naturalItems,
+            updateType: 'acquired',
+          },
+        });
+      }
+
+      // Keep the existing metadata check
+      const nextMetadataItems = findNextMetadataItems(lines, i);
+      if (nextMetadataItems) {
+        items.push({
+          type: 'item-update',
+          content: `Acquired Items: ${nextMetadataItems.join(', ')}`,
+          metadata: {
+            items: nextMetadataItems,
+            updateType: 'acquired',
+          },
+        });
       }
     } else {
       items.push({ type: 'narrative', content: cleanedLine });
