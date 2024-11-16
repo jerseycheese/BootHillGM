@@ -56,14 +56,21 @@ const cleanItemList = (itemsStr: string): string[] => {
  */
 const detectNaturalLanguageItems = (text: string): string[] | null => {
   // Look for patterns indicating item discovery
-  const findPattern = /(?:find|discover|acquire|take|contains?|inside\s+(?:are|is|you\s+find))\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/i;
-  const match = text.match(findPattern);
-  
-  if (match && match[1]) {
-    // Clean up the found items text and split by common separators
-    const itemsText = match[1].replace(/\s+(?:and|&)\s+/g, ',');
-    const items = cleanItemList(itemsText);
-    return items.length > 0 ? items : null;
+  const findPatterns = [
+    /(?:find|discover|acquire|take|contains?|inside\s+(?:are|is|you\s+find))\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/i,
+    /inside\s+you\s+find\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/i
+  ];
+
+  for (const pattern of findPatterns) {
+    const match = text.match(pattern);
+    if (match && match[1]) {
+      // Clean up the found items text and split by common separators
+      const itemsText = match[1]
+        .replace(/\s+(?:and|&)\s+/g, ',')
+        .replace(/valuable\s+items?/i, '');
+      const items = cleanItemList(itemsText);
+      return items.length > 0 ? items : null;
+    }
   }
   return null;
 };
@@ -72,13 +79,20 @@ const detectNaturalLanguageItems = (text: string): string[] | null => {
  * Helper function to find next metadata items
  */
 const findNextMetadataItems = (lines: string[], currentIndex: number): string[] | null => {
-  for (let i = currentIndex + 1; i < lines.length; i++) {
+  // Look ahead up to 3 lines for metadata markers
+  const searchLimit = Math.min(currentIndex + 4, lines.length);
+  
+  for (let i = currentIndex + 1; i < searchLimit; i++) {
     const line = lines[i].trim();
     if (/^ACQUIRED_ITEMS:/i.test(line)) {
       const itemMatch = line.match(/^ACQUIRED_ITEMS:\s*(.+)/i);
       if (itemMatch && itemMatch[1]) {
         return cleanItemList(itemMatch[1]);
       }
+    }
+    // Stop looking if we hit another narrative element
+    if (line.startsWith('Player:') || line.startsWith('GM:')) {
+      break;
     }
   }
   return null;
