@@ -19,6 +19,11 @@ export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) =>
       );
       
     case 'item-update':
+      console.log('Processing item-update:', {
+        content: item.content,
+        metadata: item.metadata,
+        updateType: item.metadata?.updateType
+      });
       return (
         <div
           data-testid={`item-update-${item.metadata?.updateType}`}

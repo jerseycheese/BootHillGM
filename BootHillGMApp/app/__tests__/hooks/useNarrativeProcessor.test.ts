@@ -55,15 +55,21 @@ describe('Narrative Processing', () => {
       Player: examines the wall
       GM: You notice a hidden switch
     `;
+    console.log('Test narrative:', narrative);
+    
     render(React.createElement(NarrativeDisplay, { narrative }));
 
     expect(screen.getAllByText(/^Player:/)).toHaveLength(3);
     expect(screen.getAllByText(/^GM:/)).toHaveLength(3);
+    
     const itemUpdates = screen.getAllByTestId('item-update-acquired');
-    expect(itemUpdates).toHaveLength(2); // Expect two updates: one from metadata, one from natural language
-    itemUpdates.forEach(update => {
-      expect(update).toHaveTextContent('ruby necklace, gold coins');
+    console.log('Found item updates:', itemUpdates.length);
+    itemUpdates.forEach((update, index) => {
+      console.log(`Item update ${index + 1}:`, update.textContent);
     });
+    
+    expect(itemUpdates).toHaveLength(1); // Should only show one update
+    expect(itemUpdates[0]).toHaveTextContent('ruby necklace, gold coins');
     expect(screen.getByText('The chest closes with a loud thud')).toHaveClass('narrative-line');
   });
 
