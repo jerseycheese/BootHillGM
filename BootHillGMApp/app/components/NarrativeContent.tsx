@@ -1,7 +1,22 @@
 import { NarrativeItem } from './NarrativeDisplay';
+import { useRef } from 'react';
 
 export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) => {
   const baseClasses = 'my-2 py-1';
+  const processedUpdatesRef = useRef<Set<string>>(new Set());
+  
+  // For item updates, create a unique key based on content and type
+  if (item.type === 'item-update' && item.metadata?.updateType) {
+    const updateKey = `${item.metadata.updateType}-${item.content}`;
+    
+    // Skip if we've already processed this exact update
+    if (processedUpdatesRef.current.has(updateKey)) {
+      return null;
+    }
+    
+    // Add to processed set
+    processedUpdatesRef.current.add(updateKey);
+  }
   
   switch (item.type) {
     case 'player-action':
@@ -19,6 +34,11 @@ export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) =>
       );
       
     case 'item-update':
+      // Skip SUGGESTED_ACTIONS
+      if (item.content.includes('SUGGESTED_ACTIONS')) {
+        return null;
+      }
+      
       console.log('Processing item-update:', {
         content: item.content,
         metadata: item.metadata,
