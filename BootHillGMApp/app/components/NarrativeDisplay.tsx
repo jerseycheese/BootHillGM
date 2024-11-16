@@ -54,7 +54,10 @@ export const normalizeItemList = (items: string[]): string[] => {
 };
 
 const cleanItemList = (itemsStr: string): string[] => {
-  const items = itemsStr
+  // First clean up any JSON or metadata markers that might have gotten mixed in
+  const cleanStr = itemsStr.split('SUGGESTED_ACTIONS')[0].trim();
+  
+  const items = cleanStr
     .replace(/^\[|\]$/g, '')
     .split(',')
     .map(item => item.trim())
@@ -63,25 +66,11 @@ const cleanItemList = (itemsStr: string): string[] => {
       return item.length > 0 && 
              !['items', 'item', 'things', 'stuff', 'several', 'valuable'].includes(lowerItem) &&
              !lowerItem.endsWith('items') &&
-             !lowerItem.endsWith('stuff') &&
-             !lowerItem.includes('nothing but') &&
-             !lowerItem.includes('neither of much use') &&
-             !lowerItem.includes('out of sight');
+             !lowerItem.endsWith('stuff');
     });
 
-  // Normalize ammunition counts
-  const normalizedItems = items.map(item => {
-    if (item.match(/(\d+|\w+)\s+(?:shells?|bullets?|rounds?|cartridges?)/i)) {
-      const quantity = item.match(/(\d+|two|three|four)/i)?.[1].toLowerCase();
-      const number = quantity === 'two' ? '2' : 
-                    quantity === 'three' ? '3' : 
-                    quantity === 'four' ? '4' : quantity;
-      return `Shells (x${number})`;
-    }
-    return item;
-  });
-
-  return normalizeItemList(normalizedItems);
+  // Normalize the items
+  return normalizeItemList(items);
 };
 
 /**
@@ -89,19 +78,11 @@ const cleanItemList = (itemsStr: string): string[] => {
  * Returns items if found, null otherwise.
  */
 const detectNaturalLanguageItems = (text: string): string[] | null => {
-  // Look for specific weapon-related patterns first
   const weaponPatterns = [
-    /(?:find|discover|locate|uncover)\s+(?:a|an|the)\s+(?:rusty\s+)?(?:but\s+)?(?:serviceable\s+)?([^,.]+?(?:shotgun|rifle|revolver|pistol|gun)[^,.]*?)(?:(?:'s|\.|\sand\s|$))/gi,
-    /(?:find|discover|locate)\s+(?:a|an|the)\s+([^,.]+?(?:knife|blade)[^,.]*?)(?:(?:with|\.|\sand\s|$))/gi
-  ];
-
-  // Look for ammunition and related items
-  const ammoPatterns = [
-    /(?:and|with)?\s*(?:a\s+)?(?:handful|few|some)\s+(?:of\s+)?(?:loose\s+)?(?:shells?|bullets?|rounds?|cartridges?)(?:,|\sand\s|$)/gi
+    /(?:find|discover|locate|uncover)\s+(?:a|an|the)\s+(?:rusty\s+)?(?:but\s+)?(?:serviceable\s+)?(?:old\s+)?([^,.]+?(?:shotgun|rifle|revolver|pistol|gun|knife|blade)[^,.]*?)(?:(?:'s|\.|\sand\s|,|\s+tucked|\s+beneath))/gi,
   ];
 
   let weapons: string[] = [];
-  let ammo: string[] = [];
 
   // Process weapon patterns
   for (const pattern of weaponPatterns) {
@@ -109,8 +90,9 @@ const detectNaturalLanguageItems = (text: string): string[] | null => {
     for (const match of matches) {
       if (match[1]) {
         const weapon = match[1]
-          .replace(/(?:rusty|but serviceable|functional|stiff|mechanism is)\s+/gi, '')
+          .replace(/(?:rusty|but serviceable|functional|stiff|mechanism is|old)\s+/gi, '')
           .replace(/(?:'s mechanism.*$)/, '')
+          .replace(/\s+tucked.*$/, '')
           .trim();
         if (weapon && !weapons.includes(weapon)) {
           weapons.push(weapon);
@@ -119,28 +101,7 @@ const detectNaturalLanguageItems = (text: string): string[] | null => {
     }
   }
 
-  // Process ammo patterns
-  for (const pattern of ammoPatterns) {
-    if (pattern.test(text)) {
-      ammo.push('Cartridges');
-    }
-  }
-
-  // Combine and normalize all found items
-  const allItems = [...weapons, ...ammo]
-    .map(item => {
-      return item
-        .replace(/^(?:a|an|the)\s+/i, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-    })
-    .filter((item, index, self) => 
-      index === self.findIndex(t => 
-        t.toLowerCase() === item.toLowerCase()
-      )
-    );
-
-  return allItems.length > 0 ? allItems : null;
+  return weapons.length > 0 ? weapons : null;
 };
 
 /**
@@ -200,18 +161,20 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
       const itemMatch = trimmedLine.match(/^ACQUIRED_ITEMS:\s*(.+)/i);
       if (itemMatch && itemMatch[1]) {
         const acquiredItems = cleanItemList(itemMatch[1]);
-        const newItems = acquiredItems.filter(item => !foundItemsSet.has(item));
-        
-        if (newItems.length > 0) {
-          newItems.forEach(item => foundItemsSet.add(item));
-          items.push({
-            type: 'item-update',
-            content: `Acquired Items: ${newItems.join(', ')}`,
-            metadata: {
-              items: newItems,
-              updateType: 'acquired',
-            },
-          });
+        // Only process if we have valid items
+        if (acquiredItems && acquiredItems.length > 0) {
+          const newItems = acquiredItems.filter(item => !foundItemsSet.has(item));
+          if (newItems.length > 0) {
+            newItems.forEach(item => foundItemsSet.add(item));
+            items.push({
+              type: 'item-update',
+              content: `Acquired Items: ${newItems.join(', ')}`,
+              metadata: {
+                items: newItems,
+                updateType: 'acquired',
+              },
+            });
+          }
         }
       }
       continue;
