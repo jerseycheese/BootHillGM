@@ -162,6 +162,14 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
       emptyLineCount
     });
 
+    // If the original line has content but cleaning removed it all,
+    // use the original line for narrative content
+    if (!cleanedLine && trimmedLine) {
+      console.log('Using original line as narrative:', trimmedLine);
+      items.push({ type: 'narrative', content: trimmedLine });
+      continue;
+    }
+    
     if (!cleanedLine) {
       console.log('Empty line detected:', { emptyLineCount });
       if (emptyLineCount <= 2) {
