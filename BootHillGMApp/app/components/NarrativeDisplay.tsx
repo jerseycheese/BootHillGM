@@ -57,9 +57,9 @@ const cleanItemList = (itemsStr: string): string[] => {
 const detectNaturalLanguageItems = (text: string): string[] | null => {
   // Look for patterns indicating item discovery
   const findPatterns = [
-    /(?:find|discover|acquire|take|contains?|inside\s+(?:are|is|you\s+find)|reveals?|uncover)\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/i,
-    /inside\s+you\s+find\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/i,
-    /(?:a|an|the)\s+([^,.]+?(?:shovel|pickaxe|knife|revolver|gun|weapon)[^,.]*?)(?:,|\sand\s|$)/i
+    /(?:find|discover|acquire|take|contains?|inside\s+(?:are|is|you\s+find)|reveals?|uncover)\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/gi,
+    /inside\s+you\s+find\s+(?:a|an|the|some|valuable)?\s*([^.]+?)(?:\.|$)/gi,
+    /(?:a|an|the)\s+([^,.]+?(?:shovel|pickaxe|knife|revolver|gun|weapon)[^,.]*?)(?:,|\sand\s|$)/gi
   ];
 
   let allItems: string[] = [];
