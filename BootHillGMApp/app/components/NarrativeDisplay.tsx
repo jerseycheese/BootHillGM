@@ -199,7 +199,20 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
     if (/^ACQUIRED_ITEMS:/i.test(trimmedLine)) {
       const itemMatch = trimmedLine.match(/^ACQUIRED_ITEMS:\s*(.+)/i);
       if (itemMatch && itemMatch[1]) {
-        foundItems = [...foundItems, ...cleanItemList(itemMatch[1])];
+        const acquiredItems = cleanItemList(itemMatch[1]);
+        const newItems = acquiredItems.filter(item => !foundItemsSet.has(item));
+        
+        if (newItems.length > 0) {
+          newItems.forEach(item => foundItemsSet.add(item));
+          items.push({
+            type: 'item-update',
+            content: `Acquired Items: ${newItems.join(', ')}`,
+            metadata: {
+              items: newItems,
+              updateType: 'acquired',
+            },
+          });
+        }
       }
       continue;
     }
