@@ -22,7 +22,9 @@ export const NarrativeContent: React.FC<NarrativeContentProps> = ({
     const normalizedMetadata = item.metadata?.items 
       ? {
           ...item.metadata,
-          items: normalizeItemList(item.metadata.items).sort()
+          items: normalizeItemList(item.metadata.items)
+            .filter(Boolean)
+            .sort()
         }
       : item.metadata;
     
@@ -35,27 +37,29 @@ export const NarrativeContent: React.FC<NarrativeContentProps> = ({
       return null;
     }
     
-    // Store this update key
-    processedUpdates.add(updateKey);
+    // Only add to processed updates if we actually have items
+    if (normalizedMetadata?.items?.length > 0) {
+      processedUpdates.add(updateKey);
+      
+      // Create normalized content for display
+      const displayContent = `${normalizedMetadata.updateType === 'acquired' ? 'Acquired' : 'Used/Removed'} Items: ${normalizedMetadata.items.join(', ')}`;
+      
+      console.log('Rendering item update:', displayContent);
+      return (
+        <div
+          data-testid={`item-update-${normalizedMetadata.updateType}`}
+          className={`${baseClasses} item-update p-2 px-4 rounded border-l-4 ${
+            normalizedMetadata.updateType === 'acquired'
+              ? 'bg-amber-50 border-amber-400'
+              : 'bg-gray-50 border-gray-400'
+          }`}
+        >
+          {displayContent}
+        </div>
+      );
+    }
     
-    // Create normalized content for display
-    const displayContent = normalizedMetadata?.items 
-      ? `${item.metadata?.updateType === 'acquired' ? 'Acquired' : 'Used/Removed'} Items: ${normalizedMetadata.items.join(', ')}`
-      : item.content;
-    
-    console.log('Rendering item update:', displayContent);
-    return (
-      <div
-        data-testid={`item-update-${item.metadata?.updateType}`}
-        className={`${baseClasses} item-update p-2 px-4 rounded border-l-4 ${
-          item.metadata?.updateType === 'acquired'
-            ? 'bg-amber-50 border-amber-400'
-            : 'bg-gray-50 border-gray-400'
-        }`}
-      >
-        {displayContent}
-      </div>
-    );
+    return null;
   }
   
   switch (item.type) {

@@ -91,14 +91,13 @@ const cleanItemList = (itemsStr: string): string[] => {
 const detectNaturalLanguageItems = (text: string): string[] | null => {
   // Look for specific weapon-related patterns first
   const weaponPatterns = [
-    /(?:find|discover|locate)\s+(?:a|an|the)\s+(?:rusty\s+)?but\s+serviceable\s+([^,.]+?(?:shotgun|rifle|revolver|pistol|gun)[^,.]*?)(?:,|\sand\s|$)/gi,
-    /(?:a|an|the)\s+(?:rusty\s+)?but\s+serviceable\s+([^,.]+?(?:shotgun|rifle|revolver|pistol|gun)[^,.]*?)(?:,|\sand\s|$)/gi,
-    /(?:find|discover|locate)\s+(?:a|an|the)\s+([^,.]+?(?:shotgun|rifle|revolver|pistol|gun|knife|blade)[^,.]*?)(?:,|\sand\s|$)/gi
+    /(?:find|discover|locate|uncover)\s+(?:a|an|the)\s+(?:rusty\s+)?(?:but\s+)?(?:serviceable\s+)?([^,.]+?(?:shotgun|rifle|revolver|pistol|gun)[^,.]*?)(?:(?:'s|\.|\sand\s|$))/gi,
+    /(?:find|discover|locate)\s+(?:a|an|the)\s+([^,.]+?(?:knife|blade)[^,.]*?)(?:(?:with|\.|\sand\s|$))/gi
   ];
 
   // Look for ammunition and related items
   const ammoPatterns = [
-    /(?:and|with)?\s+(\d+|\w+)\s+(?:shells?|bullets?|rounds?|cartridges?)(?:,|\sand\s|$)/gi
+    /(?:and|with)?\s*(?:a\s+)?(?:handful|few|some)\s+(?:of\s+)?(?:loose\s+)?(?:shells?|bullets?|rounds?|cartridges?)(?:,|\sand\s|$)/gi
   ];
 
   let weapons: string[] = [];
@@ -110,7 +109,8 @@ const detectNaturalLanguageItems = (text: string): string[] | null => {
     for (const match of matches) {
       if (match[1]) {
         const weapon = match[1]
-          .replace(/(?:rusty|but serviceable|functional)\s+/gi, '')
+          .replace(/(?:rusty|but serviceable|functional|stiff|mechanism is)\s+/gi, '')
+          .replace(/(?:'s mechanism.*$)/, '')
           .trim();
         if (weapon && !weapons.includes(weapon)) {
           weapons.push(weapon);
@@ -121,15 +121,8 @@ const detectNaturalLanguageItems = (text: string): string[] | null => {
 
   // Process ammo patterns
   for (const pattern of ammoPatterns) {
-    const matches = text.matchAll(pattern);
-    for (const match of matches) {
-      if (match[1]) {
-        const quantity = match[1].toLowerCase();
-        const number = quantity === 'two' ? '2' : 
-                      quantity === 'three' ? '3' : 
-                      quantity === 'four' ? '4' : quantity;
-        ammo.push(`Shells (x${number})`);
-      }
+    if (pattern.test(text)) {
+      ammo.push('Cartridges');
     }
   }
 
