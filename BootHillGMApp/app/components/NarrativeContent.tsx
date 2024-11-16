@@ -46,7 +46,7 @@ export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) =>
             : 'bg-gray-50 border-gray-400'
         }`}
       >
-        {item.content}
+        {displayContent}
       </div>
     );
   }

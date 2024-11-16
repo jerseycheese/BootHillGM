@@ -181,6 +181,7 @@ const findNextMetadataItems = (lines: string[], currentIndex: number): string[] 
 const processNarrativeContent = (text: string): NarrativeItem[] => {
   const items: NarrativeItem[] = [];
   let emptyLineCount = 0;
+  const processedItems = new Set<string>();
 
   // Split the text into lines
   const lines = text.split('\n');
@@ -274,27 +275,35 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
       // Check for natural language item acquisitions
       const naturalItems = detectNaturalLanguageItems(gmText);
       if (naturalItems) {
-        items.push({
-          type: 'item-update',
-          content: `Acquired Items: ${naturalItems.join(', ')}`,
-          metadata: {
-            items: naturalItems,
-            updateType: 'acquired',
-          },
-        });
+        const itemKey = JSON.stringify(naturalItems.sort());
+        if (!processedItems.has(itemKey)) {
+          processedItems.add(itemKey);
+          items.push({
+            type: 'item-update',
+            content: `Acquired Items: ${naturalItems.join(', ')}`,
+            metadata: {
+              items: naturalItems,
+              updateType: 'acquired',
+            },
+          });
+        }
       }
 
       // Keep the existing metadata check
       const nextMetadataItems = findNextMetadataItems(lines, i);
       if (nextMetadataItems) {
-        items.push({
-          type: 'item-update',
-          content: `Acquired Items: ${nextMetadataItems.join(', ')}`,
-          metadata: {
-            items: nextMetadataItems,
-            updateType: 'acquired',
-          },
-        });
+        const itemKey = JSON.stringify(nextMetadataItems.sort());
+        if (!processedItems.has(itemKey)) {
+          processedItems.add(itemKey);
+          items.push({
+            type: 'item-update',
+            content: `Acquired Items: ${nextMetadataItems.join(', ')}`,
+            metadata: {
+              items: nextMetadataItems,
+              updateType: 'acquired',
+            },
+          });
+        }
       }
     } else {
       items.push({ type: 'narrative', content: cleanedLine });
