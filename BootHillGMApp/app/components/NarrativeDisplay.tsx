@@ -186,15 +186,17 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
   // Split the text into lines
   const lines = text.split('\n');
 
+  // Track items found in this processing pass
+  let foundItems: string[] = [];
+
   // Process each line
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmedLine = line.trim();
 
-    // Handle empty lines
+    // Handle empty lines and other basic processing...
     if (!trimmedLine) {
       emptyLineCount++;
-      // Only add a spacer for the first two empty lines
       if (emptyLineCount <= 2) {
         items.push({ type: 'narrative', content: '' });
       }
@@ -206,17 +208,7 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
     if (/^ACQUIRED_ITEMS:/i.test(trimmedLine)) {
       const itemMatch = trimmedLine.match(/^ACQUIRED_ITEMS:\s*(.+)/i);
       if (itemMatch && itemMatch[1]) {
-        const acquiredItems = cleanItemList(itemMatch[1]);
-        if (acquiredItems.length > 0) {
-          items.push({
-            type: 'item-update',
-            content: `Acquired Items: ${acquiredItems.join(', ')}`,
-            metadata: {
-              items: acquiredItems,
-              updateType: 'acquired',
-            },
-          });
-        }
+        foundItems = [...foundItems, ...cleanItemList(itemMatch[1])];
       }
       continue;
     }
@@ -244,66 +236,62 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
       continue;
     }
 
-    // Clean the line and skip if empty after cleaning
+    // Clean the line and process GM responses
     const cleanedLine = cleanMetadataMarkers(trimmedLine);
-    // If the original line has content but cleaning removed it all,
-    // use the original line for narrative content
     if (!cleanedLine && trimmedLine) {
       items.push({ type: 'narrative', content: trimmedLine });
       continue;
     }
-    
-    if (!cleanedLine) {
-      if (emptyLineCount <= 2) {
-        items.push({ type: 'narrative', content: '' });
-      }
-      continue;
-    }
+    if (!cleanedLine) continue;
 
     if (cleanedLine.startsWith('Player:')) {
-      const processedAction = processPlayerAction(cleanedLine);
-      if (processedAction !== 'Player: undefined') {
-        items.push({ type: 'player-action', content: processedAction });
-      }
+      items.push({ 
+        type: 'player-action', 
+        content: processPlayerAction(cleanedLine) 
+      });
     } else if (cleanedLine.startsWith('GM:') || cleanedLine.startsWith('Game Master:')) {
       const gmResponse = cleanedLine.replace('Game Master:', 'GM:');
       items.push({ type: 'gm-response', content: gmResponse });
 
-      // Extract the actual GM text without the prefix
+      // Extract GM text and detect items
       const gmText = gmResponse.replace(/^GM:\s*/, '');
-      
-      // Check for natural language item acquisitions
       const naturalItems = detectNaturalLanguageItems(gmText);
       if (naturalItems) {
-        const itemKey = JSON.stringify(naturalItems.sort());
-        if (!processedItems.has(itemKey)) {
-          processedItems.add(itemKey);
-          items.push({
-            type: 'item-update',
-            content: `Acquired Items: ${naturalItems.join(', ')}`,
-            metadata: {
-              items: naturalItems,
-              updateType: 'acquired',
-            },
-          });
-        }
+        foundItems = [...foundItems, ...naturalItems];
       }
 
-      // Keep the existing metadata check
+      // Check for metadata items in following lines
       const nextMetadataItems = findNextMetadataItems(lines, i);
       if (nextMetadataItems) {
-        const itemKey = JSON.stringify(nextMetadataItems.sort());
+        foundItems = [...foundItems, ...nextMetadataItems];
+      }
+
+      // If we found any items, add them as a single update
+      if (foundItems.length > 0) {
+        // Normalize and deduplicate the items
+        const normalizedItems = normalizeItemList(foundItems)
+          .sort()
+          .filter((item, index, self) => 
+            self.indexOf(item) === index
+          );
+
+        // Create a unique key for this set of items
+        const itemKey = JSON.stringify(normalizedItems);
+        
         if (!processedItems.has(itemKey)) {
           processedItems.add(itemKey);
           items.push({
             type: 'item-update',
-            content: `Acquired Items: ${nextMetadataItems.join(', ')}`,
+            content: `Acquired Items: ${normalizedItems.join(', ')}`,
             metadata: {
-              items: nextMetadataItems,
+              items: normalizedItems,
               updateType: 'acquired',
             },
           });
         }
+        
+        // Reset foundItems for the next GM response
+        foundItems = [];
       }
     } else {
       items.push({ type: 'narrative', content: cleanedLine });
