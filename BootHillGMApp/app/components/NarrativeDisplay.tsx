@@ -12,6 +12,23 @@ export interface NarrativeDisplayProps {
 type ContentType = 'player-action' | 'gm-response' | 'narrative' | 'item-update';
 type UpdateType = 'acquired' | 'used';
 
+export const normalizeItemList = (items: string[]): string[] => {
+  return items.map(item => {
+    return item
+      .replace(/^(?:a|an|the)\s+/i, '')
+      .replace(/(?:rusty|but functional|wicked-looking|still surprisingly sharp)/gi, '')
+      .replace(/\s+/g, ' ')
+      .replace(/\s*,\s*its\s+[^,]+/i, '')
+      .trim();
+  })
+  .filter(item => item.length > 0)
+  .filter((item, index, self) => 
+    index === self.findIndex(t => 
+      t.toLowerCase() === item.toLowerCase()
+    )
+  );
+};
+
 export interface NarrativeItem {
   type: ContentType;
   content: string;
@@ -36,9 +53,26 @@ const processPlayerAction = (text: string): string => {
  * Helper function to clean item lists from metadata markers.
  * Handles both bracketed and unbracketed formats.
  */
+const normalizeItemList = (items: string[]): string[] => {
+  return items.map(item => {
+    return item
+      .replace(/^(?:a|an|the)\s+/i, '')
+      .replace(/(?:rusty|but functional|wicked-looking|still surprisingly sharp)/gi, '')
+      .replace(/\s+/g, ' ')
+      .replace(/\s*,\s*its\s+[^,]+/i, '')
+      .trim();
+  })
+  .filter(item => item.length > 0)
+  .filter((item, index, self) => 
+    index === self.findIndex(t => 
+      t.toLowerCase() === item.toLowerCase()
+    )
+  );
+};
+
 const cleanItemList = (itemsStr: string): string[] => {
   // Remove brackets and split by comma
-  return itemsStr.replace(/^\[|\]$/g, '')
+  const items = itemsStr.replace(/^\[|\]$/g, '')
     .split(',')
     .map(item => item.trim())
     .filter(item => {
@@ -48,6 +82,7 @@ const cleanItemList = (itemsStr: string): string[] => {
              !lowerItem.endsWith('items') &&
              !lowerItem.endsWith('stuff');
     });
+  return normalizeItemList(items);
 };
 
 /**

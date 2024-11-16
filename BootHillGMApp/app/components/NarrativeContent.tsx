@@ -1,4 +1,4 @@
-import { NarrativeItem } from './NarrativeDisplay';
+import { NarrativeItem, normalizeItemList } from './NarrativeDisplay';
 import { useRef, useEffect } from 'react';
 
 export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) => {
@@ -11,8 +11,16 @@ export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) =>
       return null;
     }
     
-    // Create a unique key for this update
-    const updateKey = `${item.type}-${JSON.stringify(item.metadata)}`; // Use metadata instead of content
+    // Normalize the items in metadata if they exist
+    const normalizedMetadata = item.metadata?.items 
+      ? {
+          ...item.metadata,
+          items: normalizeItemList(item.metadata.items)
+        }
+      : item.metadata;
+    
+    // Create a unique key for this update using normalized metadata
+    const updateKey = `item-update-${JSON.stringify(normalizedMetadata)}`;
     
     // Check if we've already processed this exact update
     if (processedRef.current.has(updateKey)) {
@@ -23,7 +31,12 @@ export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) =>
     // Store this update key
     processedRef.current.add(updateKey);
     
-    console.log('Rendering item update:', item.content);
+    // Create normalized content for display
+    const displayContent = normalizedMetadata?.items 
+      ? `${item.metadata?.updateType === 'acquired' ? 'Acquired' : 'Used/Removed'} Items: ${normalizedMetadata.items.join(', ')}`
+      : item.content;
+    
+    console.log('Rendering item update:', displayContent);
     return (
       <div
         data-testid={`item-update-${item.metadata?.updateType}`}
