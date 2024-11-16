@@ -154,7 +154,9 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
       continue;
     }
 
+    // Clean the line and skip if empty after cleaning
     const cleanedLine = cleanMetadataMarkers(trimmedLine);
+    if (!cleanedLine) continue;
 
     if (cleanedLine.startsWith('Player:')) {
       const processedAction = processPlayerAction(cleanedLine);
