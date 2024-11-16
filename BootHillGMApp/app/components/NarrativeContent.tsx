@@ -9,10 +9,22 @@ export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) =>
     console.log('Current processedRef:', processedRef.current);
     console.log('Current item content:', item.content);
     
-    // Only check for SUGGESTED_ACTIONS, don't do any other duplicate checking for now
+    // Check for SUGGESTED_ACTIONS
     if (item.content.includes('SUGGESTED_ACTIONS')) {
       return null;
     }
+    
+    // Create a unique key for this update
+    const updateKey = `${item.type}-${item.content}-${item.metadata?.updateType}`;
+    
+    // Check if we've already processed this exact update
+    if (processedRef.current === updateKey) {
+      console.log('Skipping duplicate update:', updateKey);
+      return null;
+    }
+    
+    // Store this update key
+    processedRef.current = updateKey;
     
     console.log('Rendering item update:', item.content);
     return (
@@ -28,6 +40,9 @@ export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) =>
       </div>
     );
   }
+  
+  // Reset processedRef for non-item-update content
+  processedRef.current = null;
   
   switch (item.type) {
     case 'player-action':
