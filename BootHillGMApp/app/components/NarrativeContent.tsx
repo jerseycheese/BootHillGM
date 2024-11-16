@@ -3,19 +3,17 @@ import { useRef } from 'react';
 
 export const NarrativeContent: React.FC<{ item: NarrativeItem }> = ({ item }) => {
   const baseClasses = 'my-2 py-1';
-  const processedUpdatesRef = useRef<Set<string>>(new Set());
+  const processedRef = useRef<string | null>(null);
   
-  // For item updates, create a unique key based on content and type
+  // For item updates, check if this is a duplicate of the immediately previous update
   if (item.type === 'item-update' && item.metadata?.updateType) {
-    const updateKey = `${item.metadata.updateType}-${item.content}`;
+    const currentKey = `${item.metadata.updateType}-${item.content}`;
     
-    // Skip if we've already processed this exact update
-    if (processedUpdatesRef.current.has(updateKey)) {
+    if (processedRef.current === currentKey) {
       return null;
     }
     
-    // Add to processed set
-    processedUpdatesRef.current.add(updateKey);
+    processedRef.current = currentKey;
   }
   
   switch (item.type) {
