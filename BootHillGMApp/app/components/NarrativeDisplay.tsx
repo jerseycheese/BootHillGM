@@ -149,7 +149,8 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
       if (itemMatch && itemMatch[1]) {
         const acquiredItems = cleanItemList(itemMatch[1]);
         if (acquiredItems && acquiredItems.length > 0) {
-          const newItems = acquiredItems.filter(item => !foundItemsSet.has(item));
+          const normalizedItems = acquiredItems.map(item => item.toLowerCase().trim());
+          const newItems = normalizedItems.filter(item => !foundItemsSet.has(item));
           if (newItems.length > 0) {
             newItems.forEach(item => foundItemsSet.add(item));
             items.push({

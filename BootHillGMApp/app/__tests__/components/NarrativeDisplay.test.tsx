@@ -52,10 +52,10 @@ Regular narrative text
   
     // Use getAllByTestId since there may be multiple updates
     const acquiredUpdates = screen.getAllByTestId('item-update-acquired');
-    expect(acquiredUpdates[0]).toHaveTextContent('Acquired Items: Gun, Knife');
+    expect(acquiredUpdates[0]).toHaveTextContent('Acquired Items: gun, knife');
   
     const usedUpdate = screen.getByTestId('item-update-used');
-    expect(usedUpdate).toHaveTextContent('Used/Removed Items: Knife');
+    expect(usedUpdate).toHaveTextContent('Used/Removed Items: knife');
   });
   
 

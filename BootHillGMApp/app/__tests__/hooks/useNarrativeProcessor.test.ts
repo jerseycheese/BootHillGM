@@ -64,7 +64,7 @@ describe('Narrative Processing', () => {
     const itemUpdates = screen.getAllByTestId('item-update-acquired');
     
     expect(itemUpdates).toHaveLength(1); // Should only show one update
-    expect(itemUpdates[0]).toHaveTextContent('ruby necklace, gold coins');
+    expect(itemUpdates[0]).toHaveTextContent('Acquired Items: gold coins, ruby necklace');
     expect(screen.getByText('The chest closes with a loud thud')).toHaveClass('narrative-line');
   });
 
@@ -116,7 +116,7 @@ describe('Narrative Processing', () => {
     const removedUpdate = screen.getByTestId('item-update-used');
 
     expect(itemUpdates).toHaveLength(1);
-    expect(itemUpdates[0]).toHaveTextContent('healing potion, gold coins');
+    expect(itemUpdates[0]).toHaveTextContent('Acquired Items: gold coins, healing potion');
     expect(removedUpdate).toHaveTextContent('healing potion');
   });
 });

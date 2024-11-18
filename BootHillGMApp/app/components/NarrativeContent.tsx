@@ -17,8 +17,13 @@ export const NarrativeContent: React.FC<NarrativeContentProps> = ({
       return null;
     }
     
+    // Normalize items (case and spacing)
+    const normalizedItems = item.metadata.items.map(item => 
+      item.toLowerCase().trim()
+    ).sort();
+    
     // Create normalized content for display
-    const displayContent = `${item.metadata.updateType === 'acquired' ? 'Acquired' : 'Used/Removed'} Items: ${item.metadata.items.join(', ')}`;
+    const displayContent = `${item.metadata.updateType === 'acquired' ? 'Acquired' : 'Used/Removed'} Items: ${normalizedItems.join(', ')}`;
     
     return (
       <div
