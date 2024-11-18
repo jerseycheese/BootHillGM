@@ -86,3 +86,125 @@ describe('NarrativeContent', () => {
     expect(screen.getByText('The chest creaks as you close it')).toHaveClass('narrative-line');
   });
 });
+
+describe('NarrativeContent - Item Update Deduplication', () => {
+  it('should only render unique item updates once', () => {
+    // Create a narrative with duplicate item updates
+    const narrative = `
+      Player: searches the chest
+      GM: You find a golden key and a silver ring
+      ACQUIRED_ITEMS: golden key, silver ring
+      Player: looks deeper in the chest
+      GM: You find more items
+      ACQUIRED_ITEMS: golden key, silver ring
+      SUGGESTED_ACTIONS: [{"text": "Use the key", "type": "basic"}]
+    `;
+
+    const { container } = render(<NarrativeDisplay narrative={narrative} />);
+
+    // Get all item update elements
+    const itemUpdates = screen.getAllByTestId('item-update-acquired');
+    
+    // Verify only one update is rendered
+    expect(itemUpdates).toHaveLength(1);
+    
+    // Verify the content is correct
+    expect(itemUpdates[0]).toHaveTextContent('Acquired Items: golden key, silver ring');
+
+    // Verify the items are in alphabetical order
+    const updateText = itemUpdates[0].textContent;
+    expect(updateText).toMatch(/golden key.*silver ring/);
+  });
+
+  it('should handle multiple different item updates correctly', () => {
+    const narrative = `
+      Player: searches the chest
+      GM: You find a golden key
+      ACQUIRED_ITEMS: golden key
+      Player: uses the key
+      GM: You use the key to open a door
+      REMOVED_ITEMS: golden key
+      Player: finds a potion
+      GM: You discover a healing potion
+      ACQUIRED_ITEMS: healing potion
+    `;
+
+    render(<NarrativeDisplay narrative={narrative} />);
+
+    // Get all item updates
+    const acquiredUpdates = screen.getAllByTestId('item-update-acquired');
+    const removedUpdates = screen.getAllByTestId('item-update-used');
+
+    // Verify correct number of updates
+    expect(acquiredUpdates).toHaveLength(2); // golden key and healing potion
+    expect(removedUpdates).toHaveLength(1); // golden key removed
+
+    // Verify content and order
+    expect(acquiredUpdates[0]).toHaveTextContent('Acquired Items: golden key');
+    expect(removedUpdates[0]).toHaveTextContent('Used/Removed Items: golden key');
+    expect(acquiredUpdates[1]).toHaveTextContent('Acquired Items: healing potion');
+  });
+
+  it('should handle mixed case and spacing variations in item names', () => {
+    const narrative = `
+      GM: You find some items
+      ACQUIRED_ITEMS: Golden KEY, Silver  Ring
+      Player: searches more
+      GM: You find more items
+      ACQUIRED_ITEMS: golden key,   silver ring
+    `;
+
+    render(<NarrativeDisplay narrative={narrative} />);
+
+    const itemUpdates = screen.getAllByTestId('item-update-acquired');
+    
+    // Verify only one update is rendered despite case/spacing differences
+    expect(itemUpdates).toHaveLength(1);
+    
+    // Verify normalized content
+    expect(itemUpdates[0]).toHaveTextContent('Acquired Items: golden key, silver ring');
+  });
+
+  it('should ignore empty or invalid item updates', () => {
+    const narrative = `
+      GM: You search but find nothing
+      ACQUIRED_ITEMS:
+      REMOVED_ITEMS:
+      ACQUIRED_ITEMS: , ,
+      Player: keeps searching
+      ACQUIRED_ITEMS: golden key
+    `;
+
+    render(<NarrativeDisplay narrative={narrative} />);
+
+    const itemUpdates = screen.getAllByTestId('item-update-acquired');
+    
+    // Verify only valid updates are rendered
+    expect(itemUpdates).toHaveLength(1);
+    expect(itemUpdates[0]).toHaveTextContent('Acquired Items: golden key');
+  });
+
+  it('should handle SUGGESTED_ACTIONS mixed with item updates', () => {
+    const narrative = `
+      GM: You find a weapon
+      ACQUIRED_ITEMS: silver sword
+      SUGGESTED_ACTIONS: [{"text": "Equip the sword", "type": "basic"}]
+      ACQUIRED_ITEMS: silver sword
+      Player: looks around
+      SUGGESTED_ACTIONS: [{"text": "Search more", "type": "basic"}]
+    `;
+
+    render(<NarrativeDisplay narrative={narrative} />);
+
+    const itemUpdates = screen.getAllByTestId('item-update-acquired');
+    
+    // Verify only one update is rendered and SUGGESTED_ACTIONS are ignored
+    expect(itemUpdates).toHaveLength(1);
+    expect(itemUpdates[0]).toHaveTextContent('Acquired Items: silver sword');
+    
+    // Verify SUGGESTED_ACTIONS text is not rendered
+    const narrativeContent = screen.getByTestId('narrative-display');
+    expect(narrativeContent).not.toHaveTextContent('SUGGESTED_ACTIONS');
+    expect(narrativeContent).not.toHaveTextContent('Equip the sword');
+  });
+});
