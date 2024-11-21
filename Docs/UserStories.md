@@ -67,19 +67,6 @@
   - Ensure that combat can end early if the AI agrees to the truce
   **Status:** Not yet implemented.
 
-JH
-Before we get to implementation or tests, I want you to supply a set of user stories that follow the model for those in my Docs, categorized as MVP or post-MVP. I will add those to my docs first. Give them priorities/risk levels.
-"allowing the player to choose between brawling and weapon combat when a fight starts" sounds like a good first step/task, as well.
-
-
-2 / 2
-
-I'll create a set of weapon combat user stories following your documentation format, organized by MVP and post-MVP phases. These will build upon your existing combat system stories and provide a clear progression path.
-markdown
-
-Copy
-## MVP Features
-
 ### Weapon Combat System - Core
 - [ ] As a player, I want to choose between brawling and weapon combat when a fight starts, so that I have control over my combat approach.
   **Priority:** High
@@ -133,6 +120,7 @@ Copy
 
 - [ ] As a player, I want weapon-specific combat modifiers, so that my choice of weapon matters more in combat.
   **Priority:** High
+  **Risk Level:** Low
   **Test Plan:**
   - Implement weapon-specific bonuses and penalties
   - Test different weapons in combat scenarios
@@ -199,7 +187,6 @@ Copy
   - Ensure the game's atmosphere consistently reflects these Western themes
   **Status:** Not yet implemented.
 
-
 ### UI/UX Improvements
 
 - [ ] As a developer, I want to add identifying IDs/classes to page markup, including specific classes for Boot Hill rules tables and dice roll results.
@@ -214,7 +201,6 @@ Copy
   - Verify that progress is saved after each step completion
   - Test recovery of progress after page refresh
   - Ensure partial character data is properly stored and retrieved
-
 
 ### Technical Improvements
 - [ ] As a developer, I want to add identifying IDs/classes to page markup to make debugging and testing easier.
@@ -259,7 +245,99 @@ Copy
   - Verify that player actions are easily identifiable
   - Ensure that the emphasis doesn't disrupt the overall readability of the narrative
 
+### Weapon Combat System
+- [x] As a player, I want to have a weapon combat UI with aim, fire, reload and move actions, so that I can engage in gunfights.
+  **Priority:** High
+  **Risk Level:** Medium
+  **Test Plan:**
+  - Verify all combat actions are available
+  - Test button state management
+  - Ensure proper combat log entries
+  - Check display of weapon information
+  **Status:** Core UI implemented.
+
+- [ ] As a player, I want to be able to equip weapons from my inventory, so that I can use them in combat.
+  **Priority:** High
+  **Risk Level:** Low
+  **Test Plan:**
+  - Verify weapons can be equipped from inventory
+  - Test equip/unequip functionality
+  - Ensure equipped weapon status persists
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want to see what weapon (if any) opponents are wielding during encounters, so I can make informed combat decisions.
+  **Priority:** High
+  **Risk Level:** Low
+  **Test Plan:**
+  - Verify opponent weapon information is visible
+  - Test different opponent weapon configurations
+  - Ensure weapon info updates if opponent changes weapons
+  **Status:** Not yet implemented.
+
+- [ ] As a player, I want the Aim action to provide accuracy bonuses that persist until I fire or move, so that careful aiming is rewarded.
+  **Priority:** Medium
+  **Risk Level:** Low
+  **Test Plan:**
+  - Verify aim bonus is applied correctly
+  - Test bonus reset conditions
+  - Check stacking limits
+  **Status:** Partially implemented - needs testing and balance.
+
+- [ ] As a player, I want the Reload action to restore my weapon's ammunition, so that I can continue fighting after running out.
+  **Priority:** High
+  **Risk Level:** Low
+  **Test Plan:**
+  - Verify reload restores ammunition
+  - Test reload timing/limitations
+  - Check ammunition tracking
+  **Status:** UI implemented, functionality missing.
+
+- [ ] As a player, I want the Move action to affect combat modifiers based on range, so that positioning matters in gunfights.
+  **Priority:** Medium
+  **Risk Level:** Medium
+  **Test Plan:**
+  - Verify range affects accuracy
+  - Test movement limitations
+  - Check range calculation
+  **Status:** UI implemented, effects missing.
+
+- [ ] As a player, I want clear feedback when I cannot use a weapon combat action (like Fire) and why, so that I understand what I need to do.
+  **Priority:** High
+  **Risk Level:** Low
+  **Test Plan:**
+  - Test all button disabled states
+  - Verify helpful error messages
+  - Check state updates
+  **Status:** Partially implemented.
+
+- [ ] As a player, I want weapon combat to properly initialize when triggered from narrative events, so that combat flow feels natural.
+  **Priority:** High
+  **Risk Level:** Medium
+  **Test Plan:**
+  - Test combat initialization from narrative
+  - Verify narrative stops at combat start
+  - Ensure proper state transition
+  **Status:** Needs improvement.
+
+### Ammunition System
+- [ ] As a player, I want to track ammunition for my weapons, so that reloading becomes a tactical consideration.
+  **Priority:** Medium
+  **Risk Level:** Low
+  **Test Plan:**
+  - Implement ammunition counting
+  - Test reload mechanics
+  - Verify ammo persistence
+  **Status:** Not yet implemented.
+
 ## Post-MVP Features
+
+### Advanced Weapon Combat
+- [ ] As a player, I want different weapon types to have unique characteristics (rate of fire, reliability, etc.), so that weapon choice matters more.
+- [ ] As a player, I want the option to draw/holster weapons outside of combat, so that I can be prepared for encounters.
+- [ ] As a player, I want the ability to switch weapons during combat, so that I can adapt to changing situations.
+- [ ] As a player, I want weapon malfunctions to occur occasionally, so that combat feels more realistic.
+- [ ] As a player, I want different ammunition types to affect combat, so that I have more tactical options.
+- [ ] As a player, I want to see a visual representation of range and positioning in weapon combat, so that tactical movement is more intuitive.
 
 ### Advanced Character Creation
 - As a player, I want to choose from multiple character backgrounds so that I can create more diverse characters.

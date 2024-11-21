@@ -61,7 +61,7 @@ describe('CombatSystem', () => {
   };
 
   // Mock campaign state with character and weapon
-  const mockCampaignState = JSON.stringify({
+  const mockCampaignState = JSON.parse(JSON.stringify({
     character: mockPlayer,
     inventory: [{
       id: 'test-weapon',
@@ -74,7 +74,7 @@ describe('CombatSystem', () => {
     opponent: null,
     combatState: null,
     savedTimestamp: Date.now()
-  });
+  }));
 
   const mockOnCombatEnd = jest.fn();
   const mockDispatch = jest.fn();
@@ -199,9 +199,9 @@ describe('CombatSystem', () => {
     expect(screen.getByText('No weapons available for combat')).toBeInTheDocument();
   });
 
-  test('shows weapon not implemented message when weapon combat selected', async () => {
+  test('shows weapon controls when weapon combat selected', async () => {
     // Mock campaign state with weapon
-    mockLocalStorage.getItem.mockReturnValue(mockCampaignState);
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify(mockCampaignState));
 
     // Render with mock character that has a weapon
     const characterWithWeapon = {
@@ -224,7 +224,13 @@ describe('CombatSystem', () => {
     expect(weaponButton).not.toBeDisabled();
     
     fireEvent.click(weaponButton);
-    expect(screen.getByText('Weapon combat coming soon...')).toBeInTheDocument();
+    expect(screen.getByText('Your Weapon')).toBeInTheDocument();
+    expect(screen.getByText('Test Weapon')).toBeInTheDocument();
+    expect(screen.getByText('Damage: 1d6')).toBeInTheDocument();
+    expect(screen.getByText('Range: 20y')).toBeInTheDocument();
+    expect(screen.getByText('Speed: 0')).toBeInTheDocument();
+    expect(screen.getByText('Opponent\'s Weapon')).toBeInTheDocument();
+    expect(screen.getByText('No visible weapon')).toBeInTheDocument();
   });
 
   test('cleans metadata from character names', async () => {
@@ -245,4 +251,29 @@ describe('CombatSystem', () => {
     expect(combatUtils.cleanCharacterName).toHaveBeenCalledWith(playerWithMetadata.name);
     expect(combatUtils.cleanCharacterName).toHaveBeenCalledWith(opponentWithMetadata.name);
   });
+
+  // Test is pending, functionality not in place yet.
+  // test('displays weapon combat log entries', async () => {
+  //   const mockWeaponState = {
+  //     ...mockCampaignState,
+  //     combatType: 'weapon' as const,
+  //     roundLog: [
+  //       { text: 'Test combat log entry', type: 'hit', timestamp: Date.now() }
+  //     ]
+  //   };
+    
+  //   render(
+  //     <CampaignStateProvider>
+  //       <CombatSystem
+  //         playerCharacter={mockPlayer}
+  //         opponent={mockOpponent}
+  //         onCombatEnd={mockOnCombatEnd}
+  //         dispatch={mockDispatch}
+  //         initialCombatState={mockWeaponState}
+  //       />
+  //     </CampaignStateProvider>
+  //   );
+
+  //   expect(screen.getByText('Test combat log entry')).toBeInTheDocument();
+  // });
 });

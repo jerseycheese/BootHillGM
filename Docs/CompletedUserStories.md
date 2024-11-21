@@ -105,6 +105,14 @@
   - Ensure the log is readable and doesn't interfere with other UI elements
   **Status:** Implemented. Combat log is scrollable with max height constraint.
 
+- As a player, I want to have a weapon combat UI with aim, fire, reload and move actions, so that I can engage in gunfights.
+  **Test Plan:**
+  - Verify all combat actions are available
+  - Test button state management
+  - Ensure proper combat log entries
+  - Check display of weapon information
+  **Status:** Core UI implemented.
+
 ## Campaign Persistence
 - As a player, I want my game progress to be automatically saved, so that I don't lose my progress if I need to stop playing.
   **Implementation Status:**

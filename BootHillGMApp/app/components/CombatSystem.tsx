@@ -4,12 +4,15 @@
  * - Wound location and severity tracking
  * - Two-round brawling structure
  * - Punch and grapple options
+ * - Weapon combat actions and display
  */
 import { useState, useEffect } from 'react';
 import { Character } from '../types/character';
 import { CombatStatus } from './Combat/CombatStatus';
 import { BrawlingControls } from './Combat/BrawlingControls';
+import { WeaponCombatControls } from './Combat/WeaponCombatControls';
 import { useBrawlingCombat } from '../hooks/useBrawlingCombat';
+import { useWeaponCombat } from '../hooks/useWeaponCombat';
 import { GameEngineAction } from '../utils/gameEngine';
 import { CombatTypeSelection } from './Combat/CombatTypeSelection';
 import { CombatType, CombatState } from '../types/combat';
@@ -44,6 +47,21 @@ export const CombatSystem: React.FC<{
     initialCombatState: initialCombatState?.brawling
   });
 
+  const { 
+    weaponState, 
+    isProcessing: isWeaponProcessing, 
+    processAction, 
+    canAim, 
+    canFire, 
+    canReload 
+  } = useWeaponCombat({
+    playerCharacter,
+    opponent,
+    onCombatEnd,
+    dispatch,
+    initialState: initialCombatState?.weapon
+  });
+
   const handleCombatTypeSelect = (type: CombatType) => {
     setCombatType(type);
     dispatch({
@@ -61,6 +79,14 @@ export const CombatSystem: React.FC<{
           playerModifier: 0,
           opponentModifier: 0,
           roundLog: []
+        } : undefined,
+        weapon: type === 'weapon' ? {
+          round: 1,
+          playerWeapon: null,
+          opponentWeapon: null,
+          currentRange: 0,
+          roundLog: [],
+          lastAction: undefined
         } : undefined
       }
     });
@@ -88,22 +114,24 @@ export const CombatSystem: React.FC<{
       );
     }
 
-    // Weapon combat will be implemented in next phase
     if (combatType === 'weapon') {
       return (
-        <div className="text-center py-4">
-          <p>Weapon combat coming soon...</p>
-          <button
-            onClick={() => handleCombatTypeSelect(null)}
-            className="wireframe-button mt-2"
-          >
-            Choose Different Combat Type
-          </button>
-        </div>
+        <WeaponCombatControls
+          isProcessing={isWeaponProcessing}
+          currentState={weaponState}
+          onAction={processAction}
+          canAim={canAim}
+          canFire={canFire}
+          canReload={canReload}
+        />
       );
     }
     return null;
   };
+
+  // Debug logs for combat log entries
+  console.log('Brawling Log:', brawlingState?.roundLog);
+  console.log('Weapon Log:', weaponState.roundLog);
 
   return (
     <div className="combat-system wireframe-section space-y-4">
@@ -118,6 +146,16 @@ export const CombatSystem: React.FC<{
         <div className="combat-log mt-4">
           {brawlingState.roundLog.map((log, index) => (
             <div key={index} className="text-sm mb-1 even:text-right">{log.text}</div>
+          ))}
+        </div>
+      )}
+
+      {weaponState.roundLog.length > 0 && (
+        <div className="combat-log mt-4">
+          {weaponState.roundLog.map((log, index) => (
+            <div key={index} className="text-sm mb-1 even:text-right">
+            {log.text}
+          </div>
           ))}
         </div>
       )}

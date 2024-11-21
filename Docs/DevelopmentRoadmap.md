@@ -75,6 +75,7 @@
 - [x] Implement turn-based combat flow
 - [x] Add health tracking for player and opponent
 - [x] Create combat log for narrating fight progression
+- [x] Add initial weapon combat framework
 - [ ] Implement critical hits and misses
 - [ ] Add combat-specific inventory interactions
 

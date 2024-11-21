@@ -13,12 +13,45 @@ export interface BrawlingState {
   roundLog: LogEntry[];
 }
 
+export interface WeaponStats {
+  damage: string;        // e.g. "1d6+1"
+  range: number;         // Range in yards
+  speed: number;        // Speed modifier
+  accuracy: number;     // Accuracy modifier
+  reliability: number;  // Chance of malfunction (1-100)
+}
+
 export interface WeaponCombatState {
   round: number;
-  playerWeapon: string | null;
-  opponentWeapon: string | null;
+  playerWeapon: {
+    id: string;
+    name: string;
+    stats: WeaponStats;
+  } | null;
+  opponentWeapon: {
+    name: string;
+    stats: WeaponStats;
+  } | null;
+  currentRange: number;
   roundLog: LogEntry[];
+  lastAction?: 'aim' | 'fire' | 'reload' | 'move';
 }
+
+export interface WeaponCombatAction {
+  type: 'aim' | 'fire' | 'reload' | 'move';
+  targetRange?: number;  // For move actions
+}
+
+export type WeaponCombatResult = {
+  hit: boolean;
+  damage?: number;
+  critical?: boolean;
+  weaponMalfunction?: boolean;
+  roll: number;
+  modifiedRoll: number;
+  targetNumber: number;
+  message: string;
+};
 
 export interface CombatState {
   isActive: boolean;
@@ -26,18 +59,8 @@ export interface CombatState {
   winner: string | null;
   summary: string | null;
   selection?: CombatSelectionState;
-  brawling?: {
-    round: 1 | 2;
-    playerModifier: number;
-    opponentModifier: number;
-    roundLog: LogEntry[];
-  };
-  weapon?: {
-    round: number;
-    playerWeapon: string | null;
-    opponentWeapon: string | null;
-    roundLog: LogEntry[];
-  };
+  brawling?: BrawlingState;
+  weapon?: WeaponCombatState;
   
   // Additional properties for state restoration and tracking
   playerStrength?: number;
@@ -69,7 +92,9 @@ export function ensureCombatState(state?: Partial<CombatState>): CombatState {
       round: state.weapon.round,
       playerWeapon: state.weapon.playerWeapon,
       opponentWeapon: state.weapon.opponentWeapon,
-      roundLog: state.weapon.roundLog ?? []
+      currentRange: state.weapon.currentRange ?? 0,
+      roundLog: state.weapon.roundLog ?? [],
+      lastAction: state.weapon.lastAction
     } : undefined,
     playerStrength: state?.playerStrength,
     opponentStrength: state?.opponentStrength,
