@@ -4,7 +4,7 @@ import { InventoryItem } from '../types/inventory';
 import { JournalEntry } from '../types/journal';
 import { SuggestedAction } from '../types/campaign';
 import { CombatType, CombatState, ensureCombatState } from '../types/combat';
-import { determineIfWeapon } from './aiService';
+import { determineIfWeapon } from '../services/ai';
 
 // Define the structure of the game state
 export interface GameState {
@@ -99,12 +99,12 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           
           // Start the async check immediately and ensure proper error handling
           determineIfWeapon(newItem.name, newItem.description)
-            .then(isWeapon => {
+            .then((isWeapon: boolean) => {
               if (isWeapon) {
                 newItem.category = 'weapon';
               }
             })
-            .catch(error => {
+            .catch((error: Error) => {
               console.error(`[Inventory] Error during weapon determination for "${newItem.name}":`, error);
             });
         } else {
@@ -112,12 +112,12 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           if (newItem.category === 'general') {
           
             determineIfWeapon(newItem.name, newItem.description)
-              .then(isWeapon => {
+              .then((isWeapon: boolean) => {
                 if (isWeapon) {
                   newItem.category = 'weapon';
                 }
               })
-              .catch(error => {
+              .catch((error: Error) => {
                 console.error(`[Inventory] Error during weapon verification for "${newItem.name}":`, error);
               });
           }

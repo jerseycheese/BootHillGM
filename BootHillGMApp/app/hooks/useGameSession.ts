@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useCampaignState } from '../components/CampaignStateManager';
-import { getAIResponse } from '../utils/aiService';
+import { getAIResponse } from '../services/ai';
 import { getJournalContext, addJournalEntry } from '../utils/JournalManager';
 import { useCombatManager } from './useCombatManager';
 import { InventoryItem, ItemCategory } from '../types/inventory';

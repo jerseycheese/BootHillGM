@@ -11,9 +11,9 @@ import {
   InventoryJournalEntry,
   NarrativeJournalEntry
 } from '../../types/journal';
-import { generateNarrativeSummary } from '../../utils/aiService';
+import { generateNarrativeSummary } from '../../services/ai';
 
-jest.mock('../../utils/aiService', () => ({
+jest.mock('../../services/ai', () => ({
   generateNarrativeSummary: jest.fn().mockResolvedValue('Mocked summary')
 }));
 

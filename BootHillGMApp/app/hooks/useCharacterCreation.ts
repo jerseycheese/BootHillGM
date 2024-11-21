@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { generateFieldValue as aiGenerateFieldValue, generateCompleteCharacter, generateCharacterSummary } from '../utils/aiService';
+import { generateFieldValue as aiGenerateFieldValue, generateCompleteCharacter, generateCharacterSummary } from '../services/ai';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from '../types/character';
 import { initialGameState } from '../types/campaign';

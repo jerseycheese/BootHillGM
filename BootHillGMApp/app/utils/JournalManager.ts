@@ -4,7 +4,7 @@
  * and search capabilities. Journal entries maintain narrative continuity and
  * track important game events.
  */
-import { generateNarrativeSummary } from './aiService';
+import { generateNarrativeSummary } from '../services/ai';
 import { cleanMetadataMarkers } from './textCleaningUtils';
 import {
   JournalEntry,
@@ -53,6 +53,7 @@ export class JournalManager {
       const cleanedContent = cleanMetadataMarkers(content);
       const narrativeSummary = await generateNarrativeSummary(cleanedContent, context);
       
+      // Create a new narrative journal entry
       const newEntry: NarrativeJournalEntry = {
         type: 'narrative',
         timestamp: Date.now(),
@@ -76,6 +77,7 @@ export class JournalManager {
   ): JournalEntry[] {
     const cleanedSummary = cleanMetadataMarkers(summary);
     
+    // Create a new combat journal entry
     const newEntry: CombatJournalEntry = {
       type: 'combat',
       timestamp: Date.now(),
@@ -101,6 +103,7 @@ export class JournalManager {
       return journal;
     }
 
+    // Create a new inventory journal entry
     const newEntry: InventoryJournalEntry = {
       type: 'inventory',
       timestamp: Date.now(),
