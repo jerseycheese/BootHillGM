@@ -41,8 +41,8 @@ export const useGameInitialization = () => {
     setIsInitializing(true);
 
     try {
-      const lastCharacterJSON = localStorage.getItem('lastCreatedCharacter');
-      const characterData = lastCharacterJSON ? JSON.parse(lastCharacterJSON) : null;
+      const lastCharacterJSON = localStorage.getItem('character-creation-progress');
+      const characterData = lastCharacterJSON ? JSON.parse(lastCharacterJSON).character : null;
 
       // New character initialization
       if (sessionStorage.getItem('initializing_new_character')) {
@@ -62,6 +62,7 @@ export const useGameInitialization = () => {
 
         const initialState = {
           ...initialGameState,
+          currentPlayer: characterData?.name || '', // Set currentPlayer to character's name
           character: characterData,
           narrative: response.narrative,
           location: response.location || 'Unknown Location',
@@ -140,7 +141,7 @@ export const useGameInitialization = () => {
         return;
       }
 
-      if (!initializationRef.current || sessionStorage.getItem('initializing_new_character')) {
+      if (!initializationRef.current) {
         initializationRef.current = true;
 
         const initializedState = await initializeGameSession();
@@ -150,11 +151,6 @@ export const useGameInitialization = () => {
         }
       }
     };
-
-    // Reset initialization if state is cleared
-    if (!state.character) {
-      initializationRef.current = false;
-    }
 
     initGame();
   }, [

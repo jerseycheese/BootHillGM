@@ -44,7 +44,19 @@ type GameEngineAction =
   | { type: 'REMOVE_ITEM'; payload: string }
   | { type: 'USE_ITEM'; payload: string }
   | { type: 'UPDATE_JOURNAL'; payload: JournalEntry }
-  | { type: 'SET_STATE'; payload: Partial<GameState> };
+  | { type: 'SET_STATE'; payload: Partial<GameState> }
+  | { type: 'SET_SAVED_TIMESTAMP'; payload: number };
+
+// Character Creation System
+interface CharacterFormProps {
+  character: Character;
+  isGeneratingField: boolean;
+  isProcessingStep: boolean;
+  error?: string;
+  onFieldChange: (field: keyof Character['attributes'] | keyof Character['skills'] | 'name', value: string | number) => void;
+  onGenerateField: (field: keyof Character['attributes'] | keyof Character['skills'] | 'name') => Promise<void>;
+  onSubmit: (e: React.FormEvent) => Promise<void>;
+}
 ```
 
 ### 2.2 AI Integration
@@ -143,10 +155,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
 // Campaign State Manager
 export function CampaignStateProvider({ children }: { children: ReactNode }) {
-  const [state, baseDispatch] = useReducer(gameReducer, getInitialState());
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [state, baseDispatch] = useReducer(gameReducer, initialState);
   const lastSavedRef = useRef<number>(0);
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const stateRef = useRef<GameState | null>(null);
+  const previousNarrativeRef = useRef<string>('');
+  const isInitializedRef = useRef(false);
   // ... state management implementation
+}
+
+// Character Form Component
+export const CharacterForm: React.FC<CharacterFormProps> = ({
+  character,
+  isGeneratingField,
+  isProcessingStep,
+  error,
+  onFieldChange,
+  onGenerateField,
+  onSubmit
+}) => {
+  // Unified form interface for character creation
+  // Supports field-level generation and validation
 }
 ```
 
@@ -165,6 +194,15 @@ export const useCombatEngine = ({
   const [opponentHealth, setOpponentHealth] = useState(initialState?.opponentHealth ?? 100);
   const [currentTurn, setCurrentTurn] = useState<'player' | 'opponent'>(initialState?.currentTurn ?? 'player');
   // ... combat logic implementation
+};
+
+// Character Creation Hook
+export const useCharacterCreation = () => {
+  const [character, setCharacter] = useState<Character>(initialCharacter);
+  const [showSummary, setShowSummary] = useState(false);
+  const [isGeneratingField, setIsGeneratingField] = useState(false);
+  const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
+  // ... character creation logic
 };
 
 // AI Interactions Hook
@@ -186,6 +224,8 @@ export const useAIInteractions = (
 - Memoized component renders using useMemo and useCallback
 - Atomic updates for combat state
 - Selective journal context updates
+- Deduplication of narrative item updates
+- Prevention of rapid consecutive saves
 
 ### 4.2 AI Optimization
 - Retry mechanism with exponential backoff
@@ -208,7 +248,8 @@ interface GameError extends Error {
 - Automated retry for AI failures
 - State validation on load
 - Combat state restoration
-
+- Character creation state persistence
+- Initialization flag management
 
 ## 6. Environment Configuration
 ```typescript

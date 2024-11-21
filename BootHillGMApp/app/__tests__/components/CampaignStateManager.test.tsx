@@ -1,6 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
 import { CampaignStateProvider, useCampaignState } from '../../components/CampaignStateManager';
-import { Character } from '../../types/character';
 import { GameState } from '../../utils/gameEngine';
 
 // Mock localStorage
@@ -18,6 +17,14 @@ beforeEach(() => {
   Storage.prototype.removeItem = jest.fn(key => {
     delete mockLocalStorage[key];
   });
+
+  // Reset initialization flag
+  if (typeof window !== 'undefined') {
+    sessionStorage.removeItem('initializing_new_character');
+  }
+
+  // Reset jest timers
+  jest.useRealTimers();
 });
 
 describe('CampaignStateManager', () => {
@@ -93,43 +100,6 @@ describe('CampaignStateManager', () => {
     expect(result.current.state.quests).toEqual(['Test Quest']);
     expect(result.current.state.isClient).toBe(true);
     expect(result.current.state.suggestedActions).toEqual([]);
-  });
-
-  test('saves state to localStorage', async () => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <CampaignStateProvider>{children}</CampaignStateProvider>
-    );
-
-    const { result } = renderHook(() => useCampaignState(), { wrapper });
-
-    const testCharacter: Character = {
-      name: 'Test Character',
-      attributes: {
-        speed: 10,
-        gunAccuracy: 10,
-        throwingAccuracy: 10,
-        strength: 10,
-        baseStrength: 10,
-        bravery: 10,
-        experience: 5
-      },
-      skills: {
-        shooting: 50,
-        riding: 50,
-        brawling: 50
-      },
-      wounds: [],
-      isUnconscious: false
-    };
-
-    act(() => {
-      result.current.dispatch({ type: 'SET_CHARACTER', payload: testCharacter });
-      result.current.saveGame(result.current.state);
-    });
-
-    expect(result.current.state.character).toEqual(testCharacter);
-    expect(result.current.state.savedTimestamp).toBeDefined();
-    expect(result.current.state.isClient).toBe(true);
   });
 
   test('loads state from localStorage', async () => {
@@ -222,5 +192,80 @@ describe('CampaignStateManager', () => {
       const loadedState = result.current.loadGame();
       expect(loadedState).toBeNull();
     });
+  });
+
+  // Test case: Check if the state is saved to localStorage
+  test('saves state to localStorage', async () => {
+    jest.useFakeTimers();
+    
+    const testState: GameState = {
+      currentPlayer: 'Test Player',
+      character: {
+        name: 'Test Character',
+        attributes: {
+          speed: 10,
+          gunAccuracy: 10,
+          throwingAccuracy: 10,
+          strength: 10,
+          baseStrength: 10,
+          bravery: 10,
+          experience: 5
+        },
+        skills: {
+          shooting: 50,
+          riding: 50,
+          brawling: 50
+        },
+        wounds: [],
+        isUnconscious: false
+      },
+      location: 'Test Town',
+      narrative: 'Test narrative',
+      inventory: [{ 
+        id: '1', 
+        name: 'Test Item', 
+        quantity: 1, 
+        description: 'A test item',
+        category: 'general'
+      }],
+      npcs: ['Test NPC'],
+      quests: ['Test Quest'],
+      journal: [{ 
+        timestamp: Date.now(), 
+        content: 'Test entry',
+        narrativeSummary: 'Test summary',
+        type: 'narrative'
+      }],
+      gameProgress: 5,
+      isCombatActive: false,
+      opponent: null,
+      savedTimestamp: Date.now(),
+      isClient: true,
+      suggestedActions: [],
+      combatState: undefined
+    };
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <CampaignStateProvider>{children}</CampaignStateProvider>
+    );
+
+    const { result } = renderHook(() => useCampaignState(), { wrapper });
+
+    // Set all state at once to avoid debounce issues
+    act(() => {
+      result.current.dispatch({ type: 'SET_STATE', payload: testState });
+      // Force save without waiting for auto-save
+      result.current.saveGame(testState);
+    });
+
+    // Fast-forward timers to handle any debouncing
+    act(() => {
+      jest.runAllTimers();
+    });
+
+    const savedState = JSON.parse(localStorage.getItem('campaignState') || '{}');
+    compareStatesWithoutTimestamp(savedState, testState);
+    expect(savedState.savedTimestamp).toBeDefined();
+    expect(savedState.isClient).toBe(true);
   });
 });

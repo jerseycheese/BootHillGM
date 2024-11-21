@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useGame } from '../utils/gameEngine';
-import { validateAttributeValue, generateFieldValue, generateCompleteCharacter, generateCharacterSummary } from '../utils/aiService';
+import { generateFieldValue as aiGenerateFieldValue, generateCompleteCharacter, generateCharacterSummary } from '../utils/aiService';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from '../types/character';
 import { initialGameState } from '../types/campaign';
-import { initializeCharacterInventory, getStartingInventory } from '../utils/startingInventory';
+import { getStartingInventory } from '../utils/startingInventory';
 
 // Storage key for character creation progress
 const STORAGE_KEY = 'character-creation-progress';
@@ -129,7 +128,6 @@ export interface Step {
  */
 export function useCharacterCreation() {
   const router = useRouter();
-  const { dispatch: gameDispatch } = useGame();
   const { saveGame, cleanupState } = useCampaignState();
 
   const [character, setCharacter] = useState<Character>(() => {
@@ -147,265 +145,150 @@ export function useCharacterCreation() {
     return initialCharacter;
   });
 
-  const [currentStep, setCurrentStep] = useState<number>(() => {
-    if (typeof window === 'undefined') return 0;
-
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        return data.currentStep || 0;
-      } catch {
-        return 0;
-      }
-    }
-    return 0;
-  });
-
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [userResponse, setUserResponse] = useState('');
+  const [showSummary, setShowSummary] = useState(false);
   const [isGeneratingField, setIsGeneratingField] = useState(false);
   const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
   const [isProcessingStep, setIsProcessingStep] = useState(false);
   const [error, setError] = useState('');
   const [characterSummary, setCharacterSummary] = useState('');
 
-  const steps = useMemo(() => [
-    { key: 'name', type: 'string' as const },
-    ...Object.keys(character.attributes).map(attr => ({ key: attr as keyof Character['attributes'], type: 'number' as const })),
-    ...Object.keys(character.skills).map(skill => ({ key: skill as keyof Character['skills'], type: 'number' as const })),
-    { key: 'summary', type: 'review' as const }
-  ] satisfies Step[], [character.attributes, character.skills]);
-
-  /**
-   * Saves creation progress after each change.
-   * Stores character data and current step in localStorage.
-   */
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        character,
-        currentStep,
-        lastUpdated: Date.now()
-      }));
-    } catch (error) {
-      console.error('Failed to save character creation progress:', error);
-      setError('Failed to save progress');
-    }
-  }, [character, currentStep]);
-
-  /**
-   * Generates step-specific prompts based on attributes.
-   * Includes validation ranges for numeric inputs.
-   */
-  const getStepPrompt = useCallback((currentStep: number) => {
-    if (currentStep < 0 || currentStep >= steps.length) {
-      return '';
-    }
-
-    const { key } = steps[currentStep];
-    const stepInfo = STEP_DESCRIPTIONS[key];
-
-    if (!stepInfo) {
-      return '';
-    }
-
-    let prompt = `${stepInfo.title}\n${stepInfo.description}`;
-
-    if (stepInfo.min !== undefined && stepInfo.max !== undefined) {
-      prompt += `\n\nEnter a value between ${stepInfo.min} and ${stepInfo.max}.`;
-    }
-    return prompt;
-  }, [steps]);
-
-  useEffect(() => {
-    if (currentStep < steps.length - 1) {
-      setAiPrompt(getStepPrompt(currentStep));
-    }
-  }, [currentStep, steps.length, getStepPrompt]);
-
-  const generateSummary = useCallback(async () => {
-    setIsGeneratingCharacter(true);
-    try {
-      const summary = await generateCharacterSummary(character);
-      setCharacterSummary(summary);
-    } catch {
-      setCharacterSummary("An error occurred generating your character's background.");
-    } finally {
-      setIsGeneratingCharacter(false);
-      setAiPrompt(STEP_DESCRIPTIONS.summary.description);
-    }
-  }, [character]);
-
-  useEffect(() => {
-    if (currentStep === steps.length - 1 && !characterSummary) {
-      generateSummary();
-    }
-  }, [currentStep, steps.length, characterSummary, generateSummary]);
-
-  useEffect(() => {
-    if (character.name) {
-      setCurrentStep(steps.length - 1);
-    }
-  }, [character, steps.length]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserResponse(e.target.value);
-    setError('');
-  };
-
-  const validateInput = () => {
-    if (currentStep < 0 || currentStep >= steps.length) {
-      return false;
-    }
+  const validateField = useCallback((field: string, value: string | number) => {
+    if (field === 'name') return value.toString().trim() !== '';
     
-    const { key, type } = steps[currentStep];
-    if (type === 'number') {
-      const value = parseInt(userResponse);
-      if (isNaN(value) || !validateAttributeValue(key, value)) {
-        setError(`Invalid value for ${key}. Please enter a valid number within the specified range.`);
-        return false;
-      }
-    } else if (type === 'string' && key === 'name' && userResponse.trim() === '') {
-      setError('Please enter a name for your character.');
-      return false;
-    }
-    return true;
-  };
+    const numValue = Number(value);
+    const fieldInfo = STEP_DESCRIPTIONS[field];
+    if (!fieldInfo?.min || !fieldInfo?.max) return true;
+    
+    return !isNaN(numValue) && numValue >= fieldInfo.min && numValue <= fieldInfo.max;
+  }, []);
 
-  const updateCharacter = async () => {
-    if (currentStep < 0 || currentStep >= steps.length) {
+  const handleFieldChange = useCallback((field: keyof Character['attributes'] | keyof Character['skills'] | 'name', value: string | number) => {
+    setError('');
+    
+    if (!validateField(field, value)) {
+      setError(`Invalid value for ${field}. Please enter a value within the allowed range.`);
       return;
     }
-    
-    const { key, type } = steps[currentStep];
-    const value = type === 'number' ? parseInt(userResponse) : userResponse;
 
     setCharacter(prev => {
-      if (key === 'name') {
-        return { ...prev, name: value as string };
-      } else if (key in prev.attributes) {
-        return { ...prev, attributes: { ...prev.attributes, [key]: value } };
-      } else {
-        return { ...prev, skills: { ...prev.skills, [key]: value } };
+      if (field === 'name') {
+        return { ...prev, name: value.toString() };
       }
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (currentStep < steps.length - 1) {
-      if (validateInput()) {
-        setIsProcessingStep(true);
-        try {
-          await updateCharacter();
-          setCurrentStep((prev: number) => prev + 1);
-          setUserResponse('');
-        } finally {
-          setIsProcessingStep(false);
+      
+      if (field in prev.attributes) {
+        return {
+          ...prev,
+          attributes: {
+            ...prev.attributes,
+            [field]: Number(value)
+          }
+        };
+      }
+      
+      return {
+        ...prev,
+        skills: {
+          ...prev.skills,
+          [field]: Number(value)
         }
-      }
-    } else {
-      cleanupState();
-      finishCharacterCreation();
-    }
-  };
+      };
+    });
+  }, [validateField]);
 
-  const generateCharacter = async () => {
+  const generateFieldValue = useCallback(async (field: keyof Character['attributes'] | keyof Character['skills'] | 'name') => {
+    setIsGeneratingField(true);
+    setError('');
+    
+    try {
+      const value = await aiGenerateFieldValue(field);
+      handleFieldChange(field, value);
+    } catch {
+      setError(`Failed to generate value for ${field}`);
+    } finally {
+      setIsGeneratingField(false);
+    }
+  }, [handleFieldChange]);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsProcessingStep(true);
+    setError('');
+
+    try {
+      if (!showSummary) {
+        // Validate all fields before showing summary
+        const invalidField = Object.entries(STEP_DESCRIPTIONS)
+          .find(([key]) => {
+            if (key === 'summary') return false;
+            const value = key === 'name' ? character.name : 
+              character.attributes[key as keyof Character['attributes']] ?? 
+              character.skills[key as keyof Character['skills']];
+            return !validateField(key, value);
+          });
+
+        if (invalidField) {
+          setError(`Invalid value for ${invalidField[0]}`);
+          return;
+        }
+
+        const summary = await generateCharacterSummary(character);
+        setCharacterSummary(summary);
+        setShowSummary(true);
+      } else {
+        // Complete character creation
+        cleanupState();
+        const startingInventory = getStartingInventory();
+        const gameState = {
+          ...initialGameState,
+          character,
+          inventory: startingInventory,
+          isClient: true,
+        };
+        saveGame(gameState);
+        router.push('/game-session');
+      }
+    } catch {
+      setError('Failed to process character data');
+    } finally {
+      setIsProcessingStep(false);
+    }
+  }, [character, showSummary, cleanupState, saveGame, router, validateField]);
+
+  const generateCharacter = useCallback(async () => {
     setIsGeneratingCharacter(true);
     setError('');
+    
     try {
       const generatedCharacter = await generateCompleteCharacter();
       setCharacter(generatedCharacter);
     } catch {
-      setError('Failed to generate character. Please try again.');
+      setError('Failed to generate character');
     } finally {
       setIsGeneratingCharacter(false);
     }
-  };
+  }, []);
 
-  const generateFieldValueForStep = async () => {
-    setIsGeneratingField(true);
-    setError('');
-    try {
-      if (currentStep < 0 || currentStep >= steps.length) {
-        throw new Error('Invalid step');
-      }
-      
-      const { key } = steps[currentStep];
-      if (key !== 'summary') {
-        const generatedValue = await generateFieldValue(key);
-        setUserResponse(generatedValue.toString());
-      } else {
-        setUserResponse("Character creation complete. Review your character.");
-      }
-    } catch {
-      setError('Failed to generate value. Please try again.');
-    } finally {
-      setIsGeneratingField(false);
+  useEffect(() => {
+    if (character.name) {
+      const dataToSave = {
+        character,
+        lastUpdated: Date.now()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     }
-  };
-
-  const finishCharacterCreation = () => {
-    const newCharacterData = JSON.stringify(character);
-    localStorage.setItem('lastCreatedCharacter', newCharacterData);
-    localStorage.removeItem(STORAGE_KEY);
-
-    const initialState = {
-      ...initialGameState,
-      character,
-      savedTimestamp: Date.now(),
-      isClient: true,
-      inventory: getStartingInventory(),
-      currentPlayer: '',
-      npcs: [],
-      location: '',
-      quests: [],
-      narrative: '',
-      gameProgress: 0,
-      journal: [],
-      isCombatActive: false,
-      opponent: null,
-      suggestedActions: [],
-    };
-
-    // Save complete initial state
-    saveGame(initialState);
-    
-    // Initialize inventory in game state through dispatch
-    initializeCharacterInventory(gameDispatch);
-    
-    router.push('/game-session');
-  };
-
-  const getCurrentStepInfo = () => {
-    if (currentStep < 0 || currentStep >= steps.length) {
-      return { title: "Loading...", step: 0 };
-    }
-    const stepKey = steps[currentStep].key;
-    const stepInfo = STEP_DESCRIPTIONS[stepKey];
-    return {
-      title: stepInfo?.title || stepKey,
-      step: currentStep + 1
-    };
-  };
+  }, [character]);
 
   return {
     character,
-    currentStep,
-    steps,
+    showSummary,
     isGeneratingCharacter,
     isGeneratingField,
     isProcessingStep,
-    aiPrompt,
     characterSummary,
-    userResponse,
     error,
     handleSubmit,
-    handleInputChange,
+    handleFieldChange,
     generateCharacter,
-    generateFieldValueForStep,
-    getCurrentStepInfo,
+    generateFieldValue,
   };
 }

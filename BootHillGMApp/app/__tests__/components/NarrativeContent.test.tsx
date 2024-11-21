@@ -100,6 +100,8 @@ describe('NarrativeContent - Item Update Deduplication', () => {
       SUGGESTED_ACTIONS: [{"text": "Use the key", "type": "basic"}]
     `;
 
+    render(<NarrativeDisplay narrative={narrative} />);
+
     // Get all item update elements
     const itemUpdates = screen.getAllByTestId('item-update-acquired');
     

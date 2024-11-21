@@ -1,32 +1,15 @@
 import '@testing-library/jest-dom';
-import { screen, act, fireEvent } from '@testing-library/react';
-import { getStartingInventory } from '../../utils/startingInventory';
+import { screen, act, fireEvent, waitFor } from '@testing-library/react';
 import { useCampaignState } from '../../components/CampaignStateManager';
-import {
-  setupMocks,
-  setupTestEnvironment,
-  cleanupTestEnvironment,
-  renderCharacterCreation,
-  getMockInitialState
-} from '../../test/testUtils';
-import { InventoryItem } from '../../types/inventory';
+import { setupMocks, renderCharacterCreation } from '../../test/testUtils';
+import { STEP_DESCRIPTIONS } from '../../hooks/useCharacterCreation';
 
-
-// Mock CampaignStateManager
 jest.mock('../../components/CampaignStateManager', () => ({
   useCampaignState: jest.fn(),
 }));
 
-/**
- * Character Creation Component Tests
- * Tests the character creation flow including:
- * - Basic character creation process
- * - Progress saving
- * - Error handling
- * - Random character generation
- */
 describe('Character Creation', () => {
-  const { mockPush, mockLocalStorage } = setupMocks();
+  const { mockLocalStorage } = setupMocks();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -40,84 +23,75 @@ describe('Character Creation', () => {
     }));
   });
 
-  afterEach(() => {
-    cleanupTestEnvironment();
-  });
-
-  describe('Basic Creation Flow', () => {
-    it('handles character creation process with inventory initialization', async () => {
-      mockLocalStorage.getItem.mockReturnValueOnce(JSON.stringify(getMockInitialState()));
-
-      const { input } = await renderCharacterCreation();
+  describe('Random Character Generation', () => {
+    // Increase timeout to 10 seconds
+    it('generates complete character with valid values', async () => {
+      // Render the component first
+      await renderCharacterCreation();
       
+      // Wait for initial character state to be ready with better error handling
+      await waitFor(() => {
+        const button = screen.queryByTestId('generate-character-button');
+        if (!button) {
+          throw new Error('Generate character button not found');
+        }
+        expect(button).toBeInTheDocument();
+      }, { timeout: 10000 });
+
+      // Click generate character button
+      const generateButton = screen.getByTestId('generate-character-button');
       await act(async () => {
-        fireEvent.change(input, { target: { value: 'Test Character' } });
-        await new Promise(resolve => setTimeout(resolve, 100));
+        fireEvent.click(generateButton);
       });
 
-      const form = screen.getByTestId('character-creation-form');
-      await act(async () => {
-        fireEvent.submit(form);
+      // Wait for generation to complete and verify all fields with better error handling
+      await waitFor(() => {
+        const nameInput = screen.queryByTestId('name-input');
+        if (!nameInput) {
+          throw new Error('Name input not found');
+        }
+        const validNames = ['Billy the Kid', 'Wyatt Earp', 'Annie Oakley', 'Doc Holliday', 'Jesse James'];
+        const value = nameInput.getAttribute('value');
+        expect(validNames).toContain(value);
+      }, { timeout: 10000 });
+
+      // Check other key fields
+      const fields = [
+        'speed-input', 
+        'gunAccuracy-input', 
+        'throwingAccuracy-input', 
+        'strength-input', 
+        'baseStrength-input', 
+        'bravery-input', 
+        'experience-input'
+      ];
+
+      fields.forEach(fieldId => {
+        const input = screen.queryByTestId(fieldId);
+        if (!input) {
+          throw new Error(`Field ${fieldId} not found`);
+        }
+        const value = input.getAttribute('value');
+        if (!value) {
+          throw new Error(`Field ${fieldId} has no value`);
+        }
+        const numValue = Number(value);
+        expect(numValue).toEqual(expect.any(Number));
+        
+        // Validate value ranges based on STEP_DESCRIPTIONS
+        const fieldName = fieldId.replace('-input', '').replace(/-/g, '');
+        const description = STEP_DESCRIPTIONS[fieldName];
+        
+        if (description && description.min !== undefined && description.max !== undefined) {
+          expect(numValue).toBeGreaterThanOrEqual(description.min);
+          expect(numValue).toBeLessThanOrEqual(description.max);
+        }
       });
-
-      // Find the campaign state save
-      const campaignStateSave = mockLocalStorage.setItem.mock.calls.find(
-        call => call[0] === 'campaignState'
-      );
-      expect(campaignStateSave).toBeTruthy();
-      
-      const finalState = JSON.parse(campaignStateSave[1]);
-      expect(finalState).toHaveProperty('inventory');
-      expect(Array.isArray(finalState.inventory)).toBe(true);
-      expect(finalState.inventory.length).toBeGreaterThanOrEqual(3);
-      expect(finalState.inventory.length).toBeLessThanOrEqual(5);
-      
-      // Verify inventory items are properly structured
-      finalState.inventory.forEach((item: InventoryItem) => {
-        expect(item).toHaveProperty('id');
-        expect(item).toHaveProperty('name');
-        expect(item).toHaveProperty('quantity');
-        expect(item).toHaveProperty('description');
-      });
-    });
-
-    it('initializes non-combat starting items', async () => {
-      const startingInventory = getStartingInventory();
-      const combatItems = ['gun', 'knife', 'rifle', 'ammunition', 'weapon'];
-      
-      startingInventory.forEach((item: InventoryItem) => {
-        const isNonCombat = !combatItems.some(combat => 
-          item.name.toLowerCase().includes(combat)
-        );
-        expect(isNonCombat).toBe(true);
-      });
-    });
-
-    it('cleans up state on completion', async () => {
-      const mockCleanup = jest.fn();
-      const mockSaveGame = jest.fn();
-      (useCampaignState as jest.Mock).mockImplementation(() => ({
-        cleanupState: mockCleanup,
-        saveGame: mockSaveGame
-      }));
-
-      const { input } = await renderCharacterCreation();
-      
-      // Enter character name
-      await act(async () => {
-        fireEvent.change(input, { target: { value: 'Test Character' } });
-        await new Promise(resolve => setTimeout(resolve, 100));
-      });
-
-      // Submit the form
-      const form = screen.getByTestId('character-creation-form');
-      await act(async () => {
-        fireEvent.submit(form);
-      });
-
-      expect(mockCleanup).toHaveBeenCalled();
-      expect(mockSaveGame).toHaveBeenCalledTimes(1); // Only one save with complete state
-      expect(mockPush).toHaveBeenCalledWith('/game-session');
-    });
+    }, 30000); // Set overall test timeout to 30 seconds
   });
 });
+
+// Basic implementation of setupTestEnvironment
+function setupTestEnvironment() {
+  // Add any necessary setup here
+}

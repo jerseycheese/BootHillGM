@@ -2,42 +2,37 @@
 
 import React from 'react';
 import { useCharacterCreation } from '../hooks/useCharacterCreation';
-import { CharacterCreationForm } from '../components/CharacterCreation/CharacterCreationForm';
+import { CharacterForm } from '../components/CharacterCreation/CharacterForm';
 import { CharacterSummary } from '../components/CharacterCreation/CharacterSummary';
 
 export default function CharacterCreation() {
   const {
     character,
-    currentStep,
-    steps,
+    showSummary,
     isGeneratingCharacter,
     isGeneratingField,
     isProcessingStep,
-    aiPrompt,
     characterSummary,
-    userResponse,
     error,
     handleSubmit,
-    handleInputChange,
+    handleFieldChange,
     generateCharacter,
-    generateFieldValueForStep,
-    getCurrentStepInfo,
+    generateFieldValue,
   } = useCharacterCreation();
 
   return (
     <div className="wireframe-container">
-      {currentStep < steps.length - 1 && (
-        <button
-          type="button"
-          onClick={generateCharacter}
-          className={`wireframe-button mb-4 ${isGeneratingCharacter ? 'opacity-50 cursor-not-allowed' : ''}`}
-          disabled={isGeneratingCharacter}
-        >
-          Generate Random Character
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={generateCharacter}
+        className={`wireframe-button mb-4 ${isGeneratingCharacter ? 'opacity-50 cursor-not-allowed' : ''}`}
+        disabled={isGeneratingCharacter}
+        data-testid="generate-character-button"
+      >
+        Generate Random Character
+      </button>
       
-      {currentStep === steps.length - 1 ? (
+      {showSummary ? (
         <CharacterSummary
           character={character}
           summary={characterSummary}
@@ -45,16 +40,14 @@ export default function CharacterCreation() {
           isLoading={isGeneratingCharacter}
         />
       ) : (
-        <CharacterCreationForm
-          step={getCurrentStepInfo()}
-          aiPrompt={aiPrompt}
-          onSubmit={handleSubmit}
-          isProcessing={isProcessingStep}
-          userResponse={userResponse}
-          error={error}
+        <CharacterForm
+          character={character}
           isGeneratingField={isGeneratingField}
-          onInputChange={handleInputChange}
-          onGenerateField={generateFieldValueForStep}
+          isProcessingStep={isProcessingStep}
+          error={error}
+          onFieldChange={handleFieldChange}
+          onGenerateField={generateFieldValue}
+          onSubmit={handleSubmit}
         />
       )}
     </div>

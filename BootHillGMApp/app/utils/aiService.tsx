@@ -253,8 +253,8 @@ export async function generateCompleteCharacter(): Promise<Character> {
     Respond with a valid JSON object. No additional text or formatting.
   `;
 
-  const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
   try {
+    const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
     // The AI returns both JSON data and narrative text together
     // Extract only the JSON portion between markdown code blocks to ensure clean parsing
     const jsonMatch = response.narrative.match(/```json\n([\s\S]*?)\n```/);
@@ -335,10 +335,12 @@ export async function generateCompleteCharacter(): Promise<Character> {
     
     return character;
   } catch {
+    // Generate a random name using generateFieldValue instead of using a default name
+    const name = await generateFieldValue('name');
     
-    // Return a default character if parsing fails
+    // Return a character with random name and default stats
     return {
-      name: 'John Doe',
+      name: name.toString(),
       attributes: {
         speed: 10,
         gunAccuracy: 10,

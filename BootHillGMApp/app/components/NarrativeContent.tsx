@@ -6,7 +6,8 @@ interface NarrativeContentProps {
 }
 
 export const NarrativeContent: React.FC<NarrativeContentProps> = ({ 
-  item
+  item,
+  processedUpdates
 }) => {
   const baseClasses = 'my-2 py-1';
   
@@ -21,6 +22,17 @@ export const NarrativeContent: React.FC<NarrativeContentProps> = ({
     const normalizedItems = item.metadata.items.map(item => 
       item.toLowerCase().trim()
     ).sort();
+    
+    // Create a unique key for this update
+    const updateKey = `${item.metadata.updateType}-${normalizedItems.join(',')}`;
+    
+    // Skip if we've already processed this exact update
+    if (processedUpdates.has(updateKey)) {
+      return null;
+    }
+    
+    // Add to processed updates
+    processedUpdates.add(updateKey);
     
     // Create normalized content for display
     const displayContent = `${item.metadata.updateType === 'acquired' ? 'Acquired' : 'Used/Removed'} Items: ${normalizedItems.join(', ')}`;

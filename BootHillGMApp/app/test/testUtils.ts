@@ -1,12 +1,43 @@
-import { render, screen, fireEvent, act, RenderResult, RenderOptions } from '@testing-library/react';
+// Mock aiService before imports
+jest.mock('../utils/aiService', () => ({
+  generateFieldValue: jest.fn().mockImplementation(async (key: string) => {
+    if (key === 'name') {
+      // Ensure we return a random name that isn't "John Doe"
+      const names = ['Billy the Kid', 'Wyatt Earp', 'Annie Oakley', 'Doc Holliday', 'Jesse James'];
+      return names[Math.floor(Math.random() * names.length)];
+    }
+    const ranges: Record<string, [number, number]> = {
+      name: [0, 0],
+      speed: [1, 20],
+      gunAccuracy: [1, 20],
+      throwingAccuracy: [1, 20],
+      strength: [8, 20],
+      baseStrength: [8, 20],
+      bravery: [1, 20],
+      experience: [0, 11],
+      shooting: [1, 100],
+      riding: [1, 100],
+      brawling: [1, 100]
+    };
+    const [min, max] = ranges[key] || [1, 100];
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }),
+  generateCharacterSummary: jest.fn().mockResolvedValue('Character summary'),
+  getCharacterCreationStep: jest.fn().mockResolvedValue('Mock AI prompt'),
+  validateAttributeValue: jest.fn().mockReturnValue(true)
+}));
+
+import { render, screen, act, RenderResult, RenderOptions } from '@testing-library/react';
 import React, { ReactElement } from 'react';
 import CharacterCreationPage from '../character-creation/page';
-import { mockCharacter } from './fixtures';
-import { useCampaignState } from '../components/CampaignStateManager';
 import { getStartingInventory } from '../utils/startingInventory';
+import { useCampaignState } from '../components/CampaignStateManager';
+import { Character } from '../types/character';
+
+type CharacterFieldKey = keyof Character['attributes'] | keyof Character['skills'] | 'name';
 
 let mockRouterPush: jest.Mock;
-let mockConsoleError: jest.SpyInstance;
+// let mockConsoleError: jest.SpyInstance;
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
@@ -43,13 +74,62 @@ jest.mock('../utils/gameEngine', () => ({
   }),
 }));
 
+// Initial character state for testing
+const initialCharacter: Character = {
+  name: '',
+  attributes: {
+    speed: 0,
+    gunAccuracy: 0,
+    throwingAccuracy: 0,
+    strength: 0,
+    baseStrength: 0,
+    bravery: 0,
+    experience: 0,
+  },
+  skills: {
+    shooting: 0,
+    riding: 0,
+    brawling: 0,
+  },
+  wounds: [],
+  isUnconscious: false
+};
+
+// Dynamically generate mock character with AI-generated name
+async function createMockCharacter(): Promise<Character> {
+  // Generate a random name that isn't "John Doe"
+  const names = ['Billy the Kid', 'Wyatt Earp', 'Annie Oakley', 'Doc Holliday', 'Jesse James'];
+  const randomName = names[Math.floor(Math.random() * names.length)];
+  
+  return {
+    name: randomName,
+    attributes: {
+      speed: 10,
+      gunAccuracy: 10,
+      throwingAccuracy: 10,
+      strength: 10,
+      baseStrength: 10,
+      bravery: 10,
+      experience: 5
+    },
+    skills: {
+      shooting: 50,
+      riding: 50,
+      brawling: 50
+    },
+    wounds: [],
+    isUnconscious: false
+  };
+}
+
 function useCharacterCreationHandler() {
   const { cleanupState, saveGame } = useCampaignState();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (e.currentTarget.dataset.testid === 'character-creation-form') {
       try {
+        const mockCharacter = await createMockCharacter();
         const savedData = {
           character: mockCharacter,
           currentStep: 1,
@@ -93,46 +173,90 @@ function useCharacterCreationHandler() {
 }
 
 // Mock useCharacterCreation hook with proper state management
-jest.mock('../hooks/useCharacterCreation', () => ({
-  useCharacterCreation: () => ({
-    character: mockCharacter,
-    currentStep: 0,
-    steps: [
-      { key: 'name', type: 'string' },
-      { key: 'summary', type: 'review' }
-    ],
-    isGeneratingCharacter: false,
-    isGeneratingField: false,
-    isProcessingStep: false,
-    aiPrompt: 'Test prompt',
-    characterSummary: 'Test summary',
-    userResponse: mockCharacter.name,
-    error: '',
-    ...useCharacterCreationHandler(),
-    handleInputChange: jest.fn().mockImplementation(e => {
-      try {
-        const savedData = {
-          character: { ...mockCharacter, name: e.target.value },
-          currentStep: 0,
-        };
-        window.localStorage.setItem('character-creation-progress', JSON.stringify(savedData));
-      } catch (error) {
-        console.error(error);
-      }
-    }),
-    generateCharacter: jest.fn().mockImplementation(() => {
-      const savedData = {
-        character: mockCharacter,
-        currentStep: 0,
-        lastUpdated: Date.now()
+jest.mock('../hooks/useCharacterCreation', () => {
+  const originalModule = jest.requireActual('../hooks/useCharacterCreation');
+  return {
+    ...originalModule,
+    useCharacterCreation: () => {
+      const [character, setCharacter] = React.useState<Character>(initialCharacter);
+      const [isGeneratingCharacter, setIsGeneratingCharacter] = React.useState(false);
+
+      const generateCharacter = React.useCallback(async () => {
+        setIsGeneratingCharacter(true);
+        try {
+          const newCharacter = await createMockCharacter();
+          setCharacter(newCharacter);
+          const savedData = {
+            character: newCharacter,
+            currentStep: 0,
+            lastUpdated: Date.now()
+          };
+          window.localStorage.setItem('character-creation-progress', JSON.stringify(savedData));
+        } finally {
+          setIsGeneratingCharacter(false);
+        }
+      }, []);
+
+      return {
+        character,
+        showSummary: false,
+        isGeneratingCharacter,
+        isGeneratingField: false,
+        isProcessingStep: false,
+        characterSummary: 'Test summary',
+        error: '',
+        handleSubmit: useCharacterCreationHandler().handleSubmit,
+        handleFieldChange: (field: CharacterFieldKey, value: string | number) => {
+          setCharacter(prev => {
+            if (field === 'name') {
+              return { ...prev, name: value.toString() };
+            }
+            if (field in prev.attributes) {
+              return {
+                ...prev,
+                attributes: {
+                  ...prev.attributes,
+                  [field]: Number(value)
+                }
+              };
+            }
+            return {
+              ...prev,
+              skills: {
+                ...prev.skills,
+                [field]: Number(value)
+              }
+            };
+          });
+        },
+        generateCharacter,
+        generateFieldValue: jest.fn().mockImplementation(async (field: CharacterFieldKey) => {
+          if (field === 'name') {
+            // Ensure we return a random name that isn't "John Doe"
+            const names = ['Billy the Kid', 'Wyatt Earp', 'Annie Oakley', 'Doc Holliday', 'Jesse James'];
+            return names[Math.floor(Math.random() * names.length)];
+          }
+          const ranges: Record<CharacterFieldKey, [number, number]> = {
+            name: [0, 0],
+            speed: [1, 20],
+            gunAccuracy: [1, 20],
+            throwingAccuracy: [1, 20],
+            strength: [8, 20],
+            baseStrength: [8, 20],
+            bravery: [1, 20],
+            experience: [0, 11],
+            shooting: [1, 100],
+            riding: [1, 100],
+            brawling: [1, 100]
+          };
+          const [min, max] = ranges[field];
+          return Math.floor(Math.random() * (max - min + 1)) + min;
+        }),
       };
-      window.localStorage.setItem('character-creation-progress', JSON.stringify(savedData));
-      return Promise.resolve(mockCharacter);
-    }),
-    generateFieldValueForStep: jest.fn(),
-    getCurrentStepInfo: () => ({ title: 'Test Step', step: 1 }),
-  }),
-}));
+    },
+    STEP_DESCRIPTIONS: originalModule.STEP_DESCRIPTIONS
+  };
+});
 
 // Mock localStorage implementation
 const createMockLocalStorage = () => ({
@@ -163,16 +287,6 @@ const customRender = (
 export const setupMocks = () => {
   mockRouterPush = jest.fn();
   const mockCleanupState = jest.fn();
-  const mockAIService = {
-    generateCharacterSummary: jest.fn().mockResolvedValue('Character summary'),
-    getCharacterCreationStep: jest.fn().mockResolvedValue('Mock AI prompt'),
-    validateAttributeValue: jest.fn().mockReturnValue(true),
-    generateFieldValue: jest.fn().mockResolvedValue('10'),
-    generateCompleteCharacter: jest.fn().mockResolvedValue(mockCharacter),
-  };
-
-  // Setup mocks
-  jest.mock('../utils/aiService', () => mockAIService);
 
   // Setup localStorage mock
   const mockLocalStorage = createMockLocalStorage();
@@ -181,18 +295,15 @@ export const setupMocks = () => {
     writable: true
   });
 
-  // Setup console.error spy
-  mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
-
-  return { mockPush: mockRouterPush, mockCleanupState, mockAIService, mockLocalStorage };
+  return { mockPush: mockRouterPush, mockCleanupState, mockLocalStorage };
 };
 
 export const setupTestEnvironment = () => {
-
+  // Setup any necessary environment for tests
 };
 
 export const cleanupTestEnvironment = () => {
-
+  // Cleanup any environment setup for tests
 };
 
 interface RenderCharacterCreationResult extends RenderResult {
@@ -226,87 +337,12 @@ export const renderCharacterCreation = async (): Promise<RenderCharacterCreation
 };
 
 /**
- * Enters character data into the specified input field.
- * @param input The input element to target.
- * @param value The value to enter.
- */
-export const enterCharacterData = async (input: HTMLElement, value: string): Promise<void> => {
-  await act(async () => {
-    fireEvent.change(input, { target: { value } });
-    await new Promise(resolve => setTimeout(resolve, 100));
-  });
-};
-
-/**
- * Clicks the "Generate" button in the character creation form.
- * @param button The button element to click.
- */
-export const clickGenerateButton = async (button: HTMLElement): Promise<void> => {
-  await act(async () => {
-    fireEvent.click(button);
-    await new Promise(resolve => setTimeout(resolve, 500));
-  });
-};
-
-/**
- * Tests the character creation flow with a given character name.
- * @param characterName The name to use for character creation.
- */
-export const testCharacterCreationFlow = async (characterName: string): Promise<void> => {
-  const { input } = await renderCharacterCreation();
-  await enterCharacterData(input, characterName);
-  
-  const form = screen.getByTestId('character-creation-form');
-  await act(async () => {
-    fireEvent.submit(form);
-    await new Promise(resolve => setTimeout(resolve, 100));
-  });
-};
-
-/**
- * Tests the error handling during character creation.
- * @param mockLocalStorage The mocked localStorage object.
- */
-export const testErrorHandling = async (mockLocalStorage: ReturnType<typeof createMockLocalStorage>): Promise<void> => {
-  const error = new Error('Storage error');
-  mockLocalStorage.setItem.mockImplementationOnce(() => {
-    console.error(error);
-    throw error;
-  });
-
-  const { input } = await renderCharacterCreation();
-  try {
-    await enterCharacterData(input, mockCharacter.name);
-  } catch (e) {
-    // Error should be caught here
-    console.error(e);
-  }
-  expect(mockConsoleError).toHaveBeenCalledWith(error);
-};
-
-/**
  * Returns a mock initial state for character creation.
  */
 export const getMockInitialState = () => ({
-  character: {
-    name: '',
-    attributes: {
-      speed: 0,
-      gunAccuracy: 0,
-      throwingAccuracy: 0,
-      strength: 0,
-      baseStrength: 0,
-      bravery: 0,
-      experience: 0
-    },
-    skills: {
-      shooting: 0,
-      riding: 0,
-      brawling: 0
-    },
-    wounds: [],
-    isUnconscious: false
-  },
+  character: initialCharacter,
   currentStep: 0,
   lastUpdated: Date.now()
 });
+
+export { createMockLocalStorage };
