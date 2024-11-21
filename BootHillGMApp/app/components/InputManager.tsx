@@ -6,32 +6,28 @@
 import React, { useState, useCallback } from 'react';
 import { SuggestedAction } from '../types/campaign';
 
-interface InputManagerProps {
+export default function InputManager({ 
+  onSubmit, 
+  isLoading, 
+  suggestedActions = [] 
+}: { 
   onSubmit: (input: string) => void;
   isLoading: boolean;
   suggestedActions?: SuggestedAction[];
-}
-
-const InputManager: React.FC<InputManagerProps> = ({ 
-  onSubmit, 
-  isLoading, 
-  suggestedActions = [] // Provide default empty array
-}) => {
+}) {
   const [userInput, setUserInput] = useState('');
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    if (userInput.trim() && !isLoading) {
-      onSubmit(userInput);
+  const handleAction = useCallback((text: string) => {
+    if (!isLoading) {
+      onSubmit(text);
       setUserInput('');
     }
-  }, [userInput, isLoading, onSubmit]);
-
-  const handleSuggestedAction = useCallback((action: SuggestedAction) => {
-    if (!isLoading) {
-      onSubmit(action.text);
-    }
   }, [isLoading, onSubmit]);
+
+  const actionClass = (type: string) => 
+    `px-3 py-1 text-sm rounded hover:bg-opacity-80 disabled:opacity-50 text-white bg-${
+      type === 'combat' ? 'red' : type === 'basic' ? 'blue' : 'green'
+    }-500`;
 
   return (
     <div className="wireframe-section space-y-4">
@@ -40,13 +36,9 @@ const InputManager: React.FC<InputManagerProps> = ({
           {suggestedActions.map((action, index) => (
             <button
               key={`${action.type}-${index}`}
-              onClick={() => handleSuggestedAction(action)}
+              onClick={() => handleAction(action.text)}
               disabled={isLoading}
-              className={`px-3 py-1 text-sm rounded hover:bg-opacity-80 disabled:opacity-50 ${
-                action.type === 'basic' ? 'bg-blue-500 text-white' :
-                action.type === 'combat' ? 'bg-red-500 text-white' :
-                'bg-green-500 text-white'
-              }`}
+              className={actionClass(action.type)}
               title={action.context || action.text}
             >
               {action.text}
@@ -55,7 +47,13 @@ const InputManager: React.FC<InputManagerProps> = ({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col space-y-2">
+      <form 
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (userInput.trim()) handleAction(userInput);
+        }} 
+        className="flex flex-col space-y-2"
+      >
         <input
           type="text"
           value={userInput}
@@ -76,6 +74,4 @@ const InputManager: React.FC<InputManagerProps> = ({
       </form>
     </div>
   );
-};
-
-export default InputManager;
+}
