@@ -267,28 +267,37 @@ describe('useBrawlingCombat', () => {
   });
 
   test('respects processing state during combat', async () => {
-    const { result } = renderHook(() =>
-      useBrawlingCombat({
-        playerCharacter: mockPlayer,
-        opponent: mockOpponent,
-        onCombatEnd: mockOnCombatEnd,
-        dispatch: mockDispatch
-      })
-    );
+    let hookResult: any;
+    
+    await act(async () => {
+      const { result } = renderHook(() =>
+        useBrawlingCombat({
+          playerCharacter: mockPlayer,
+          opponent: mockOpponent,
+          onCombatEnd: mockOnCombatEnd,
+          dispatch: mockDispatch
+        })
+      );
+      hookResult = result;
+      
+      // Wait for hook to initialize
+      await Promise.resolve();
+    });
+
+    expect(hookResult.current).not.toBeNull();
 
     // Start processing a round
     const roundPromise = act(async () => {
-      expect(result.current).not.toBeNull();
-      await result.current.processRound(true, true);
+      await hookResult.current.processRound(true, true);
     });
 
     // Verify processing state is true during combat
-    expect(result.current.isProcessing).toBe(true);
+    expect(hookResult.current.isProcessing).toBe(true);
 
     // Wait for round to complete
     await roundPromise;
 
     // Verify processing state is false after combat
-    expect(result.current.isProcessing).toBe(false);
+    expect(hookResult.current.isProcessing).toBe(false);
   });
 });
