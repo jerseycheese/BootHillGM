@@ -40,6 +40,8 @@ export default function CharacterCreation() {
           onFieldChange={handleFieldChange}
           onGenerateField={generateFieldValue}
           onSubmit={handleSubmit}
+          generateCharacter={generateCharacter}
+          isGeneratingCharacter={isGeneratingCharacter}
         />
       )}
     </div>
