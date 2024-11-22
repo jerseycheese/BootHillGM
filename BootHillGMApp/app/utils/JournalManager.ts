@@ -5,7 +5,7 @@
  * track important game events.
  */
 import { generateNarrativeSummary } from '../services/ai';
-import { cleanText } from './textCleaningUtils';
+import { cleanText, cleanCombatLogEntry } from './textCleaningUtils';
 import {
   JournalEntry,
   NarrativeJournalEntry,
