@@ -216,6 +216,8 @@ describe('useAIInteractions', () => {
 
   describe('error handling', () => {
     it('should handle AI service errors gracefully', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
       const error = new Error('AI service error');
       mockGetResponse.mockRejectedValueOnce(error);
 
@@ -232,6 +234,8 @@ describe('useAIInteractions', () => {
 
       expect(result.current.error).toBe('AI service error');
       expect(mockOnInventoryChange).not.toHaveBeenCalled();
+      
+      consoleSpy.mockRestore();
     });
 
     it('should handle undefined response values', async () => {
