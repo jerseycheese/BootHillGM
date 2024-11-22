@@ -27,7 +27,8 @@ export function CharacterSummary({
   onSubmit,
   isLoading,
   generateCharacter,
-  isGeneratingCharacter
+  isGeneratingCharacter,
+  onGoBack
 }: CharacterSummaryProps) {
   const router = useRouter();
   
