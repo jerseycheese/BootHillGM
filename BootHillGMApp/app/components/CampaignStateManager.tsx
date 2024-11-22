@@ -166,7 +166,12 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
         return null;
       }
 
-      const loadedState = JSON.parse(serializedState);
+      let loadedState;
+      try {
+        loadedState = JSON.parse(serializedState);
+      } catch (parseError) {
+        return null;
+      }
       
       if (!loadedState || !loadedState.savedTimestamp) {
         return null;
