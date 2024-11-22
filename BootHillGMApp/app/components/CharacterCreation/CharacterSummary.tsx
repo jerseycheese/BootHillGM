@@ -30,7 +30,8 @@ export function CharacterSummary({
 }: CharacterSummaryProps) {
   const router = useRouter();
   
-  const handleGoBack = () => {
+  const handleGoBack = (e: React.MouseEvent) => {
+    e.preventDefault();
     router.push('/character-creation');
   };
 
@@ -52,6 +53,7 @@ export function CharacterSummary({
           onClick={handleGoBack}
           className="wireframe-button"
           data-testid="go-back-button"
+          role="button"
         >
           Go back and make changes
         </button>
