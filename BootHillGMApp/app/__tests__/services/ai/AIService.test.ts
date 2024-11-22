@@ -118,6 +118,8 @@ describe('AIService', () => {
   });
 
   test('should handle API errors gracefully', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    
     const apiError = new Error('API Error');
     (retryWithExponentialBackoff as jest.Mock).mockRejectedValueOnce(apiError);
 
@@ -126,6 +128,8 @@ describe('AIService', () => {
       'test context',
       { inventory: [] }
     )).rejects.toThrow('API Error');
+    
+    consoleSpy.mockRestore();
   });
 
   test('should handle location changes', async () => {
