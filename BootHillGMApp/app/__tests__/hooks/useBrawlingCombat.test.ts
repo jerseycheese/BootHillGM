@@ -93,6 +93,9 @@ describe('useBrawlingCombat', () => {
   });
 
   it('processes a round of combat', async () => {
+    // Use fake timers
+    jest.useFakeTimers();
+    
     let hookResult: any;
     
     const { result } = renderHook(() =>
@@ -110,13 +113,13 @@ describe('useBrawlingCombat', () => {
     
     expect(hookResult.current).not.toBeNull();
     
-    // Process the round
+    // Start processing the round
+    const processPromise = hookResult.current.processRound(true, true);
+    
+    // Advance timers and resolve promises
     await act(async () => {
-      await hookResult.current.processRound(true, true);
-      
-      // Advance timers and flush promises
       jest.advanceTimersByTime(1000);
-      await Promise.resolve();
+      await processPromise;
     });
 
     expect(hookResult.current.brawlingState.roundLog).toHaveLength(2);
@@ -137,7 +140,10 @@ describe('useBrawlingCombat', () => {
         ])
       })
     });
-  }, 10000);
+    
+    // Clean up
+    jest.useRealTimers();
+  });
 
   test('processes complete combat round with player and opponent actions', async () => {
     // Mock random choice for opponent
