@@ -127,17 +127,24 @@ export const useBrawlingCombat = ({
   const processRound = useCallback(async (isPlayer: boolean, isPunching: boolean) => {
     setIsProcessing(true);
     try {
-      // Process player's action
-      const playerKnockout = handleCombatAction(true, isPunching);
-      if (playerKnockout) return;
+      if (isPlayer) {
+        // Process player's action
+        const playerKnockout = handleCombatAction(true, isPunching);
+        if (playerKnockout) return;
 
-      // Process opponent's action
-      const opponentKnockout = handleCombatAction(false, isPunching);
-      if (!opponentKnockout) {
-        setBrawlingState((prev: BrawlingState) => ({
-          ...prev,
-          round: prev.round === 1 ? 2 : 1 // Ensure round stays within 1 | 2
-        }));
+        // Add delay for opponent's response
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Opponent randomly chooses punch (true) or grapple (false)
+        const opponentPunching = Math.random() < 0.6; // 60% chance to punch
+        const opponentKnockout = handleCombatAction(false, opponentPunching);
+        
+        if (!opponentKnockout) {
+          setBrawlingState((prev: BrawlingState) => ({
+            ...prev,
+            round: prev.round === 1 ? 2 : 1
+          }));
+        }
       }
     } finally {
       setIsProcessing(false);
