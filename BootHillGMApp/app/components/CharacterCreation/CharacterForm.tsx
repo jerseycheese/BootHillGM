@@ -19,6 +19,8 @@ interface CharacterFormProps {
   onFieldChange: (field: keyof Character['attributes'] | keyof Character['skills'] | 'name', value: string | number) => void;
   onGenerateField: (field: keyof Character['attributes'] | keyof Character['skills'] | 'name') => Promise<void>;
   onSubmit: (e: React.FormEvent) => Promise<void>;
+  generateCharacter: () => Promise<void>;
+  isGeneratingCharacter: boolean;
 }
 
 export const CharacterForm: React.FC<CharacterFormProps> = ({
