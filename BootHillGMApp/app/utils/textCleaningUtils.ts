@@ -58,15 +58,17 @@ export const cleanCombatLogEntry = (text: string): string => {
     .replace(/\r\n/g, '\n')
     .replace(METADATA_PATTERNS.FORMAT.NEWLINES, '');
 
-  // Remove metadata markers using the updated MARKERS pattern
+  // Remove date prefixes if present
+  cleaned = cleaned.replace(/^\d{1,2}\/\d{1,2}\/\d{4}:\s*/, '');
+  
+  // Remove metadata sections
+  cleaned = cleaned.replace(/ACQUIRED_ITEMS:[\s\S]*?SUGGESTED_ACTIONS:[\s\S]*?](\s*-\s*\w+)?/, '');
+  
+  // Remove any remaining metadata markers
   cleaned = cleaned.replace(METADATA_PATTERNS.CORE.MARKERS, '');
-
-  // Remove JSON metadata
   cleaned = cleaned.replace(METADATA_PATTERNS.CORE.JSON, '');
-
-  // Remove empty brackets
   cleaned = cleaned.replace(METADATA_PATTERNS.CORE.MULTILINE, '');
-
+  
   // Clean extra whitespace but preserve spaces around punctuation
   cleaned = cleaned.replace(METADATA_PATTERNS.FORMAT.WHITESPACE, ' ').trim();
 
