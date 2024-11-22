@@ -67,7 +67,7 @@ describe('JournalViewer', () => {
 
     // Verify each entry type is rendered correctly
     expect(screen.getByText(/First narrative/)).toBeInTheDocument();
-    expect(screen.getByText(/Combat: Player vs Bandit - victory/)).toBeInTheDocument();
+    expect(screen.getByText(/Combat occurred/)).toBeInTheDocument();
     expect(screen.getByText(/Acquired: Gun, Ammo \| Removed: Money/)).toBeInTheDocument();
     expect(screen.getByText(/Find the treasure: updated/)).toBeInTheDocument();
   });
@@ -100,6 +100,24 @@ describe('JournalViewer', () => {
     // Verify quest entry (newest) appears in the list
     const questEntry = screen.getByText(/Find the treasure: updated/);
     expect(questEntry).toBeInTheDocument();
+  });
+
+  // Test date cleaning
+  test('removes date prefixes from content', () => {
+    const entryWithDate: CombatJournalEntry = {
+      type: 'combat',
+      timestamp: Date.now(),
+      content: '11/22/2024: Combat occurred',
+      combatants: {
+        player: 'Player',
+        opponent: 'Enemy'
+      },
+      outcome: 'victory'
+    };
+    
+    render(<JournalViewer entries={[entryWithDate]} />);
+    expect(screen.getByText(/Combat occurred/)).toBeInTheDocument();
+    expect(screen.queryByText(/11\/22\/2024:/)).not.toBeInTheDocument();
   });
 
   // Test fallback content
