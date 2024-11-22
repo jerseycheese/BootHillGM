@@ -317,6 +317,7 @@ export function useCharacterCreation() {
   return {
     character,
     showSummary,
+    setShowSummary,
     isGeneratingCharacter,
     isGeneratingField,
     isProcessingStep,
