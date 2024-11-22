@@ -141,7 +141,7 @@ export async function generateFieldValue(
   }
 }
 
-function generateRandomValue(key: keyof Character['attributes'] | keyof Character['skills']): number {
+export function generateRandomValue(key: keyof Character['attributes'] | keyof Character['skills']): number {
   // Roll d100 for initial value
   const roll = Math.floor(Math.random() * 100) + 1;
   
