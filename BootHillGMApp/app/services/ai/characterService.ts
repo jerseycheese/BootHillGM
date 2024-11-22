@@ -127,6 +127,35 @@ export async function generateCompleteCharacter(): Promise<Character> {
   }
 }
 
+// Keep track of recently generated names to avoid repetition
+const recentNames: string[] = [];
+const MAX_RECENT_NAMES = 10;
+
+function isNameTooSimilar(newName: string): boolean {
+  return recentNames.some(existingName => {
+    // Convert both names to lowercase for comparison
+    const name1 = newName.toLowerCase();
+    const name2 = existingName.toLowerCase();
+    
+    // Check if either name is a substring of the other
+    if (name1.includes(name2) || name2.includes(name1)) return true;
+    
+    // Split names into parts and check for matching parts
+    const parts1 = name1.split(' ');
+    const parts2 = name2.split(' ');
+    
+    // If they share any name parts, consider them too similar
+    return parts1.some(part1 => parts2.includes(part1));
+  });
+}
+
+function addToRecentNames(name: string) {
+  recentNames.unshift(name);
+  if (recentNames.length > MAX_RECENT_NAMES) {
+    recentNames.pop();
+  }
+}
+
 export async function generateFieldValue(
   key: keyof Character['attributes'] | keyof Character['skills'] | 'name'
 ): Promise<string | number> {
@@ -157,7 +186,12 @@ export async function generateFieldValue(
 
       // Validate the name meets minimum requirements
       if (name.split(' ').length >= 2 && /^[A-Za-z\s-]+$/.test(name)) {
-        return name;
+        // Check if the name is too similar to recent names
+        if (!isNameTooSimilar(name)) {
+          addToRecentNames(name);
+          return name;
+        }
+        // If too similar, throw error to trigger fallback
       }
       throw new Error('Invalid name generated');
     } catch {
@@ -173,10 +207,29 @@ export async function generateFieldValue(
         'Thompson', 'Walker', 'Harris', 'Martin', 'Moore'
       ];
       
-      const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-      const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+      // Keep generating until we get a unique combination
+      let attempts = 0;
+      let generatedName;
+      do {
+        const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+        const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+        generatedName = `${firstName} ${lastName}`;
+        attempts++;
+      } while (isNameTooSimilar(generatedName) && attempts < 10);
+
+      // If we found a unique name, use it
+      if (!isNameTooSimilar(generatedName)) {
+        addToRecentNames(generatedName);
+        return generatedName;
+      }
       
-      return `${firstName} ${lastName}`;
+      // If we couldn't find a unique name after 10 attempts,
+      // force a unique combination by using the attempt number
+      const firstName = firstNames[attempts % firstNames.length];
+      const lastName = lastNames[(attempts + 5) % lastNames.length];
+      generatedName = `${firstName} ${lastName}`;
+      addToRecentNames(generatedName);
+      return generatedName;
     }
   } else {
     return generateRandomValue(key);
