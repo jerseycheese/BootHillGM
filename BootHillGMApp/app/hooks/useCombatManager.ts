@@ -32,7 +32,7 @@ export const formatCombatEndMessage = (
     : `${opponentName} emerges victorious, defeating ${playerName}.`;
 
   // Return just the victory phrase with the prompt
-  return `${victoryPhrase}\n\nWhat would you like to do now?`;
+  return `${victoryPhrase}`;
 };
 
 /**
