@@ -10,6 +10,8 @@ interface CharacterSummaryProps {
   summary: string;
   onSubmit: (e: React.FormEvent) => Promise<void>;
   isLoading: boolean;
+  generateCharacter: () => Promise<void>;
+  isGeneratingCharacter: boolean;
 }
 
 /**
@@ -68,11 +70,12 @@ export function CharacterSummary({
       <div className="flex justify-between">
         <button
           type="button"
-          onClick={() => window.location.reload()}
-          className="wireframe-button"
-          data-testid="make-changes-button"
+          onClick={generateCharacter}
+          className={`wireframe-button ${isGeneratingCharacter ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isGeneratingCharacter}
+          data-testid="generate-character-button"
         >
-          Make Changes
+          Generate Random Character
         </button>
         <button 
           type="submit" 
