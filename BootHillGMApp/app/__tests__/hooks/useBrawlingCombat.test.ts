@@ -237,7 +237,7 @@ describe('useBrawlingCombat', () => {
     );
 
     // Verify only one action was processed (combat ended before opponent's turn)
-    expect(result.current.brawlingState.roundLog).toHaveLength(1);
+    expect(hookResult.current.brawlingState.roundLog).toHaveLength(1);
   });
 
   test('handles multiple rounds of combat', async () => {
