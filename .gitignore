@@ -128,6 +128,6 @@ dist
 .Trash-*
 .nfs*
 
-### Repopack ###
-repopack-output.txt
+### Repomix ###
+repomix-output.txt
 .aider*
