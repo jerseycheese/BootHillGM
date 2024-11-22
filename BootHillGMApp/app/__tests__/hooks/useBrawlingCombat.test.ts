@@ -95,22 +95,24 @@ describe('useBrawlingCombat', () => {
   it('processes a round of combat', async () => {
     let hookResult: any;
     
+    const { result } = renderHook(() =>
+      useBrawlingCombat({
+        playerCharacter: mockPlayer,
+        opponent: mockOpponent,
+        onCombatEnd: mockOnCombatEnd,
+        dispatch: mockDispatch
+      })
+    );
+    hookResult = result;
+    
+    // Wait for hook to initialize
+    await Promise.resolve();
+    
+    expect(hookResult.current).not.toBeNull();
+    
+    // Process the round
     await act(async () => {
-      const { result } = renderHook(() =>
-        useBrawlingCombat({
-          playerCharacter: mockPlayer,
-          opponent: mockOpponent,
-          onCombatEnd: mockOnCombatEnd,
-          dispatch: mockDispatch
-        })
-      );
-      hookResult = result;
-      
-      // Wait for hook to initialize
-      await Promise.resolve();
-      
-      // Process the round
-      await result.current.processRound(true, true);
+      await hookResult.current.processRound(true, true);
       
       // Advance timers and flush promises
       jest.advanceTimersByTime(1000);
