@@ -39,7 +39,16 @@ export const useCampaignStateRestoration = ({
   }
 
   try {
-    const savedState = JSON.parse(savedStateJSON);
+    let savedState;
+    try {
+      savedState = JSON.parse(savedStateJSON);
+    } catch (parseError) {
+      // Silently handle parse errors and return initial state
+      return { 
+        ...initialGameState, 
+        isClient: true 
+      };
+    }
     
     if (!savedState.character || !savedState.character.name) {
       return { 
