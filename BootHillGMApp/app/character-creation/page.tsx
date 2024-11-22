@@ -22,22 +22,14 @@ export default function CharacterCreation() {
 
   return (
     <div className="wireframe-container">
-      <button
-        type="button"
-        onClick={generateCharacter}
-        className={`wireframe-button mb-4 ${isGeneratingCharacter ? 'opacity-50 cursor-not-allowed' : ''}`}
-        disabled={isGeneratingCharacter}
-        data-testid="generate-character-button"
-      >
-        Generate Random Character
-      </button>
-      
       {showSummary ? (
         <CharacterSummary
           character={character}
           summary={characterSummary}
           onSubmit={handleSubmit}
-          isLoading={isGeneratingCharacter}
+          generateCharacter={generateCharacter}
+          isGeneratingCharacter={isGeneratingCharacter}
+          isLoading={isProcessingStep}
         />
       ) : (
         <CharacterForm
