@@ -190,18 +190,27 @@ describe('useBrawlingCombat', () => {
         nextRoundModifier: 0
       });
 
-    const { result } = renderHook(() =>
-      useBrawlingCombat({
-        playerCharacter: mockPlayer,
-        opponent: mockOpponent,
-        onCombatEnd: mockOnCombatEnd,
-        dispatch: mockDispatch
-      })
-    );
-
+    let hookResult: any;
+    
     await act(async () => {
-      expect(result.current).not.toBeNull();
-      await result.current.processRound(true, true);
+      const { result } = renderHook(() =>
+        useBrawlingCombat({
+          playerCharacter: mockPlayer,
+          opponent: mockOpponent,
+          onCombatEnd: mockOnCombatEnd,
+          dispatch: mockDispatch
+        })
+      );
+      hookResult = result;
+      
+      // Wait for hook to initialize
+      await Promise.resolve();
+    });
+
+    expect(hookResult.current).not.toBeNull();
+    
+    await act(async () => {
+      await hookResult.current.processRound(true, true);
     });
 
     // Verify combat ended
