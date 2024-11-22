@@ -32,7 +32,7 @@ export function CharacterSummary({
   
   const handleGoBack = (e: React.MouseEvent) => {
     e.preventDefault();
-    router.push('/character-creation');
+    router.back();
   };
 
   if (isLoading) {
