@@ -49,7 +49,7 @@ This document tracks resolved bugs in the BootHillGM project. For active bugs, s
 - Actual Behavior: Some state elements (e.g., NPC relationships, quest flags) are not correctly restored.
 - Status: Fixed
 - Priority: High
-- Closed Date: 2024-11-2
+- Closed Date: 2024-11-02
 
 [BUG-021] Delayed Content Update and Incorrect Step Information on Character Summary
   - Description: When generating a random character, there's a delay in updating the UI, and outdated step information is briefly shown.
@@ -60,3 +60,8 @@ This document tracks resolved bugs in the BootHillGM project. For active bugs, s
     - Improved loading indicator visibility
   - Fixed in commit: [commit-hash] "fix: eliminate loading indicator flash in character creation"
   - Date Closed: 2024-11-03
+
+[BUG-034] Post-Combat Narrative Cleanup
+- Description: Narrative updates after combat ends contain confusing or redundant information
+- Resolution: Implemented cleaner combat end messages with formatCombatEndMessage function and improved state management
+- Closed Date: 2024-11-22

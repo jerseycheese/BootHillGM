@@ -6,6 +6,39 @@ import { createStateProtection } from '../utils/stateProtection';
 import { CombatState, ensureCombatState } from '../types/combat';
 
 /**
+ * Creates a clean, narrative-style message for combat conclusion.
+ * Removes redundant roll information and formats the outcome in a
+ * story-appropriate way.
+ * 
+ * @param winner - The winner of the combat ('player' or 'opponent')
+ * @param summary - The combat summary containing the final action
+ * @param playerName - The name of the player character
+ * @param opponentName - The name of the opponent
+ * @returns A formatted message describing the combat conclusion
+ * 
+ * Example output:
+ * "The combat concludes as John strikes a decisive blow.
+ * John emerges victorious, defeating Bandit.
+ * What would you like to do now?"
+ */
+export const formatCombatEndMessage = (
+  winner: 'player' | 'opponent',
+  summary: string,
+  playerName: string,
+  opponentName: string
+): string => {
+  const victoryPhrase = winner === 'player'
+    ? `${playerName} emerges victorious, defeating ${opponentName}.`
+    : `${opponentName} emerges victorious, defeating ${playerName}.`;
+
+  // Clean roll information from summary
+  const cleanedSummary = summary.replace(/\[Roll: \d+\/\d+(?:\s*-\s*Critical!)?\]/g, '').trim();
+
+  // Construct a narrative-style message
+  return `The combat concludes as ${cleanedSummary}\n\n${victoryPhrase}\n\nWhat would you like to do now?`;
+};
+
+/**
  * Manages combat state and operations with protection against race conditions.
  * Uses StateProtection to ensure combat operations execute safely and in sequence.
  * 
@@ -20,16 +53,6 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
   const stateProtection = useRef(createStateProtection());
   const [isProcessing, setIsProcessing] = useState(false);
   const isUpdatingRef = useRef(false);
-  const characterNameRef = useRef(state.character?.name);
-  const opponentNameRef = useRef(state.opponent?.name);
-
-  // Update refs when character or opponent changes
-  if (characterNameRef.current !== state.character?.name) {
-    characterNameRef.current = state.character?.name;
-  }
-  if (opponentNameRef.current !== state.opponent?.name) {
-    opponentNameRef.current = state.opponent?.name;
-  }
 
   /**
    * Safely ends combat with state protection.
@@ -40,21 +63,33 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
     setIsProcessing(true);
     try {
       await stateProtection.current.withProtection('combat-end', async () => {
-        const endMessage = winner === 'player' 
-          ? "You have emerged victorious from the combat!" 
-          : "You have been defeated in combat.";
-      
-        onUpdateNarrative(`${endMessage}\n\n${combatSummary}\n\nWhat would you like to do now?`);
+        // Extract key information from combat summary
+        const cleanedSummary = combatSummary.replace(/\[Roll: \d+\/\d+(?:\s*-\s*Critical!)?\]/g, '').trim();
+        
+        // Get current names directly from state
+        const playerName = state.character?.name || 'Player';
+        const opponentName = state.opponent?.name || 'Unknown Opponent';
+        
+        // Format a concise end message that incorporates the summary
+        const endMessage = formatCombatEndMessage(
+          winner, 
+          cleanedSummary,
+          playerName,
+          opponentName
+        );
+        
+        // Update narrative without redundant information
+        onUpdateNarrative(endMessage);
       
         const currentJournal = state.journal || [];
         dispatch({ 
           type: 'UPDATE_JOURNAL', 
           payload: addCombatJournalEntry(
             currentJournal,
-            characterNameRef.current || 'Player',
-            opponentNameRef.current || 'Unknown Opponent',
+            playerName,
+            opponentName,
             winner === 'player' ? 'victory' : 'defeat',
-            combatSummary
+            cleanedSummary // Use cleaned summary for journal
           )
         });
 
@@ -67,7 +102,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             isActive: false,
             combatType: null,
             winner: winner,
-            summary: combatSummary
+            summary: cleanedSummary
           })
         });
       });
@@ -77,7 +112,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
     } finally {
       setIsProcessing(false);
     }
-  }, [dispatch, state.journal, onUpdateNarrative]);
+  }, [dispatch, state, onUpdateNarrative]);
 
   /**
    * Updates the player's strength during combat.

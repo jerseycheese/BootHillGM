@@ -101,12 +101,6 @@ This document tracks bugs found during development and testing. Each bug entry s
 - Impact: User Experience
 - Status: Open
 
-[BUG-034] Post-Combat Narrative Cleanup
-- Description: Narrative updates after combat ends contain confusing or redundant information
-- Priority: Medium
-- Impact: User Experience
-- Status: Open
-
 [BUG-035] State Protection Timeout Handling
 - Description: State protection utility sometimes triggers timeout too early during complex operations
 - Steps to Reproduce:

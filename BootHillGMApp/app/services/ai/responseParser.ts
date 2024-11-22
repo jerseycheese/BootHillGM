@@ -58,7 +58,7 @@ export function parseAIResponse(text: string): AIResponse {
             ['basic', 'combat', 'interaction'].includes(action.type)
           );
         }
-      } catch (e) {
+      } catch {
         // Failed to parse suggested actions, continue without them
       }
     }
