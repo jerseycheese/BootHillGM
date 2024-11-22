@@ -250,80 +250,93 @@ describe('useBrawlingCombat', () => {
   });
 
   test('handles multiple rounds of combat', async () => {
+    // Use fake timers
+    jest.useFakeTimers();
+    
     let hookResult: any;
     
-    await act(async () => {
-      const { result } = renderHook(() =>
-        useBrawlingCombat({
-          playerCharacter: mockPlayer,
-          opponent: mockOpponent,
-          onCombatEnd: mockOnCombatEnd,
-          dispatch: mockDispatch
-        })
-      );
-      hookResult = result;
-      
-      // Wait for hook to initialize
-      await Promise.resolve();
-    });
-
+    const { result } = renderHook(() =>
+      useBrawlingCombat({
+        playerCharacter: mockPlayer,
+        opponent: mockOpponent,
+        onCombatEnd: mockOnCombatEnd,
+        dispatch: mockDispatch
+      })
+    );
+    hookResult = result;
+    
+    // Wait for hook to initialize
+    await Promise.resolve();
+    
     expect(hookResult.current).not.toBeNull();
     
     // Process first round
+    const firstRoundPromise = hookResult.current.processRound(true, true);
     await act(async () => {
-      await hookResult.current.processRound(true, true);
+      jest.advanceTimersByTime(1000);
+      await firstRoundPromise;
     });
 
     expect(hookResult.current.brawlingState.round).toBe(2);
 
     // Process second round
+    const secondRoundPromise = hookResult.current.processRound(true, false);
     await act(async () => {
-      await hookResult.current.processRound(true, false); // Try grapple this time
+      jest.advanceTimersByTime(1000);
+      await secondRoundPromise;
     });
 
     // Should have 4 log entries total (2 per round)
-    expect(result.current.brawlingState.roundLog).toHaveLength(4);
+    expect(hookResult.current.brawlingState.roundLog).toHaveLength(4);
 
     // Verify round sequence
-    const logEntries = result.current.brawlingState.roundLog;
+    const logEntries = hookResult.current.brawlingState.roundLog;
     expect(logEntries[0].text).toContain('Player');
     expect(logEntries[1].text).toContain('Opponent');
     expect(logEntries[2].text).toContain('Player');
     expect(logEntries[3].text).toContain('Opponent');
+    
+    // Clean up
+    jest.useRealTimers();
   });
 
   test('respects processing state during combat', async () => {
+    // Use fake timers
+    jest.useFakeTimers();
+    
     let hookResult: any;
     
-    await act(async () => {
-      const { result } = renderHook(() =>
-        useBrawlingCombat({
-          playerCharacter: mockPlayer,
-          opponent: mockOpponent,
-          onCombatEnd: mockOnCombatEnd,
-          dispatch: mockDispatch
-        })
-      );
-      hookResult = result;
-      
-      // Wait for hook to initialize
-      await Promise.resolve();
-    });
-
+    const { result } = renderHook(() =>
+      useBrawlingCombat({
+        playerCharacter: mockPlayer,
+        opponent: mockOpponent,
+        onCombatEnd: mockOnCombatEnd,
+        dispatch: mockDispatch
+      })
+    );
+    hookResult = result;
+    
+    // Wait for hook to initialize
+    await Promise.resolve();
+    
     expect(hookResult.current).not.toBeNull();
-
-    // Start processing a round
-    const roundPromise = act(async () => {
-      await hookResult.current.processRound(true, true);
-    });
-
+    
+    // Start processing the round
+    const processPromise = hookResult.current.processRound(true, true);
+    
     // Verify processing state is true during combat
     expect(hookResult.current.isProcessing).toBe(true);
-
-    // Wait for round to complete
-    await roundPromise;
+    
+    // Advance timers and complete processing
+    await act(async () => {
+      jest.advanceTimersByTime(1000);
+      await processPromise;
+    });
 
     // Verify processing state is false after combat
     expect(hookResult.current.isProcessing).toBe(false);
+    
+    // Clean up
+    jest.useRealTimers();
   });
 });
