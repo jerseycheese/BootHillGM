@@ -2,6 +2,12 @@ import { renderHook, act } from '@testing-library/react';
 import { useBrawlingCombat } from '../../hooks/useBrawlingCombat';
 import { Character } from '../../types/character';
 
+// Helper to advance timers and flush promises
+const advanceTimersByTime = async (ms: number) => {
+  jest.advanceTimersByTime(ms);
+  await Promise.resolve(); // Flush promises
+};
+
 jest.mock('../../utils/brawlingSystem', () => ({
   ...jest.requireActual('../../utils/brawlingSystem'),
   resolveBrawlingRound: jest.fn().mockReturnValue({
@@ -64,6 +70,7 @@ describe('useBrawlingCombat', () => {
 
   afterEach(() => {
     jest.useRealTimers();
+    jest.restoreAllMocks();
   });
 
   it('initializes with default state', () => {
