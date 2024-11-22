@@ -259,7 +259,7 @@ export function useCharacterCreation() {
     setError('');
     
     try {
-      // Generate each field individually to ensure proper randomization
+      // Create a new character object
       const newCharacter: Character = {
         name: '',
         attributes: {
@@ -281,19 +281,19 @@ export function useCharacterCreation() {
       };
 
       // Generate name first
-      const name = await generateFieldValue('name');
+      const name = await aiGenerateFieldValue('name');
       newCharacter.name = name.toString();
 
-      // Generate attributes
+      // Generate attributes using direct calls to generateRandomValue
       for (const attr of Object.keys(newCharacter.attributes)) {
-        const value = await generateFieldValue(attr as keyof Character['attributes']);
-        newCharacter.attributes[attr as keyof Character['attributes']] = Number(value);
+        const value = generateRandomValue(attr as keyof Character['attributes']);
+        newCharacter.attributes[attr as keyof Character['attributes']] = value;
       }
 
-      // Generate skills
+      // Generate skills using direct calls to generateRandomValue
       for (const skill of Object.keys(newCharacter.skills)) {
-        const value = await generateFieldValue(skill as keyof Character['skills']);
-        newCharacter.skills[skill as keyof Character['skills']] = Number(value);
+        const value = generateRandomValue(skill as keyof Character['skills']);
+        newCharacter.skills[skill as keyof Character['skills']] = value;
       }
 
       setCharacter(newCharacter);
