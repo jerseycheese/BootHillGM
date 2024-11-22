@@ -58,8 +58,8 @@ export const cleanCombatLogEntry = (text: string): string => {
     .replace(/\r\n/g, '\n')
     .replace(METADATA_PATTERNS.FORMAT.NEWLINES, '');
 
-  // Remove date prefixes if present
-  cleaned = cleaned.replace(/^\d{1,2}\/\d{1,2}\/\d{4}:\s*/, '');
+  // Remove all date prefixes, including those mid-text
+  cleaned = cleaned.replace(/\d{1,2}\/\d{1,2}\/\d{4}:\s*/g, '');
   
   // Remove metadata sections
   cleaned = cleaned.replace(/ACQUIRED_ITEMS:[\s\S]*?SUGGESTED_ACTIONS:[\s\S]*?](\s*-\s*\w+)?/, '');
