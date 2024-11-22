@@ -16,6 +16,7 @@ import { useWeaponCombat } from '../hooks/useWeaponCombat';
 import { GameEngineAction } from '../utils/gameEngine';
 import { CombatTypeSelection } from './Combat/CombatTypeSelection';
 import { CombatType, CombatState } from '../types/combat';
+import { cleanCombatLogEntry } from '../utils/textCleaningUtils';
 
 export const CombatSystem: React.FC<{
   playerCharacter: Character;
@@ -141,7 +142,9 @@ export const CombatSystem: React.FC<{
       {brawlingState?.roundLog?.length > 0 && (
         <div className="combat-log mt-4">
           {brawlingState.roundLog.map((log, index) => (
-            <div key={index} className="text-sm mb-1 even:text-right">{log.text}</div>
+            <div key={index} className="text-sm mb-1 even:text-right">
+              {cleanCombatLogEntry(log.text)}
+            </div>
           ))}
         </div>
       )}
@@ -150,8 +153,8 @@ export const CombatSystem: React.FC<{
         <div className="combat-log mt-4">
           {weaponState.roundLog.map((log, index) => (
             <div key={index} className="text-sm mb-1 even:text-right">
-            {log.text}
-          </div>
+              {cleanCombatLogEntry(log.text)}
+            </div>
           ))}
         </div>
       )}
