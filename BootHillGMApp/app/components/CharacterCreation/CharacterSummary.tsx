@@ -38,12 +38,33 @@ export function CharacterSummary({
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6" data-testid="character-summary-form">
-      <div className="space-y-2">
-        <h2 className="text-xl font-bold">Character Summary</h2>
-        
-        {/* AI-generated character background */}
-        <p className="mb-4">{summary}</p>
+    <div className="space-y-6">
+      <div className="flex justify-between">
+        <button
+          type="button"
+          onClick={generateCharacter}
+          className={`wireframe-button ${isGeneratingCharacter ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isGeneratingCharacter}
+          data-testid="generate-character-button"
+        >
+          Generate Random Character
+        </button>
+        <button 
+          type="button"
+          onClick={onSubmit}
+          className="wireframe-button primary"
+          data-testid="start-game-button"
+        >
+          Start Game
+        </button>
+      </div>
+
+      <form className="space-y-6" data-testid="character-summary-form">
+        <div className="space-y-2">
+          <h2 className="text-xl font-bold">Character Summary</h2>
+          
+          {/* AI-generated character background */}
+          <p className="mb-4">{summary}</p>
         
         {/* Static character details */}
         <div className="space-y-4">
@@ -69,24 +90,8 @@ export function CharacterSummary({
         </div>
       </div>
 
-      <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={generateCharacter}
-          className={`wireframe-button ${isGeneratingCharacter ? 'opacity-50 cursor-not-allowed' : ''}`}
-          disabled={isGeneratingCharacter}
-          data-testid="generate-character-button"
-        >
-          Generate Random Character
-        </button>
-        <button 
-          type="submit" 
-          className="wireframe-button primary"
-          data-testid="start-game-button"
-        >
-          Start Game
-        </button>
-      </div>
-    </form>
+        </div>
+      </form>
+    </div>
   );
 }
