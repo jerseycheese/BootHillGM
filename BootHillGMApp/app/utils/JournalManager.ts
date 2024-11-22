@@ -5,7 +5,7 @@
  * track important game events.
  */
 import { generateNarrativeSummary } from '../services/ai';
-import { cleanMetadataMarkers } from './textCleaningUtils';
+import { cleanText } from './textCleaningUtils';
 import {
   JournalEntry,
   NarrativeJournalEntry,
@@ -50,7 +50,7 @@ export class JournalManager {
     context: string = ''
   ): Promise<JournalEntry[]> {
     try {
-      const cleanedContent = cleanMetadataMarkers(content);
+      const cleanedContent = cleanText(content);
       const narrativeSummary = await generateNarrativeSummary(cleanedContent, context);
       
       // Create a new narrative journal entry
@@ -75,7 +75,7 @@ export class JournalManager {
     outcome: CombatJournalEntry['outcome'],
     summary: string
   ): JournalEntry[] {
-    const cleanedSummary = cleanMetadataMarkers(summary);
+    const cleanedSummary = cleanText(summary);
     
     // Create a new combat journal entry
     const newEntry: CombatJournalEntry = {
@@ -107,7 +107,7 @@ export class JournalManager {
     const newEntry: InventoryJournalEntry = {
       type: 'inventory',
       timestamp: Date.now(),
-      content: cleanMetadataMarkers(context),
+      content: cleanText(context),
       items: {
         acquired: acquiredItems,
         removed: removedItems

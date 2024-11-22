@@ -1,5 +1,5 @@
 import { useRef, useEffect, useMemo } from 'react';
-import { cleanMetadataMarkers, toSentenceCase } from '../utils/textCleaningUtils';
+import { cleanText, toSentenceCase } from '../utils/textCleaningUtils';
 import { NarrativeContent } from './NarrativeContent';
 
 export interface NarrativeDisplayProps {
@@ -9,7 +9,7 @@ export interface NarrativeDisplayProps {
 }
 
 // Key type definitions for narrative content processing
-type ContentType = 'player-action' | 'gm-response' | 'narrative' | 'item-update';
+export type ContentType = 'player-action' | 'gm-response' | 'narrative' | 'item-update';
 type UpdateType = 'acquired' | 'used';
 
 export interface NarrativeItem {
@@ -191,7 +191,7 @@ const processNarrativeContent = (text: string): NarrativeItem[] => {
     }
 
     // Clean the line and process content
-    const cleanedLine = cleanMetadataMarkers(trimmedLine);
+    const cleanedLine = cleanText(trimmedLine);
     if (!cleanedLine && trimmedLine) {
       items.push({ type: 'narrative', content: trimmedLine });
       continue;

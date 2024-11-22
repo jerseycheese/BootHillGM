@@ -8,64 +8,42 @@
  * from game text while preserving important information.
  */
 const METADATA_PATTERNS = {
-  // Updated to match metadata markers anywhere in the line
-  MARKERS: /(^|\s+)(SUGGESTED_ACTIONS|ACQUIRED_ITEMS|REMOVED_ITEMS|LOCATION|COMBAT):\s*(\[[^\]]*\]|[^.!?]*?)(?=\s|$)/gm,
-  EMPTY_BRACKETS: /\[\s*\]/g,
-  IMPORTANT: /\s*important:\s*[^]*?(?=[A-Z][a-z]+\s|$)/g,
-  LOCATION: /\s*LOCATION:\s*([^.!?\n]*)[.!?\n]?.*/g,
-  JSON_METADATA: /\{[^{}]*\}/g,
-  DESCRIPTIVE: /(?:^|\s+)The\s+(?:room|area|place|location)\s+(?:is|appears|seems)\s+[^.!?]*[.!?]/gi,
-  EXTRA_WHITESPACE: /[\s\n]{2,}/g,
-  COMBAT_METADATA: /\s*(\[Roll: \d+\/\d+(?:\s*-\s*Critical!)?\])/g,
-  LEADING_NEWLINES: /^\n+/,
-  TRAILING_NEWLINES: /\n+$/,
-  // New patterns for combat log cleaning
-  UNCONSCIOUS_STATUS: /\s*\([^)]*Unconscious[^)]*\)/gi,
-  ROLL_INFO: /\s*\(Roll:\s*\d+\)/gi,
-  COMBAT_STATUS: /\s*\([^)]*\)\s*important:[^.!?]*\./gi,
+  CORE: {
+    MARKERS: /(^|\s+)(SUGGESTED_ACTIONS|ACQUIRED_ITEMS|REMOVED_ITEMS|LOCATION|COMBAT):\s*(\[[^\]]*\]|[^.!?]*?)(?=\s|$)/gm,
+    MULTILINE: /\n+(?:SUGGESTED_ACTIONS|ACQUIRED_ITEMS|REMOVED_ITEMS):[^\n]*/g,
+    JSON: /\{[^{}]*\}/g
+  },
+  COMBAT: {
+    ROLLS: /\[Roll: \d+\/\d+(?:\s*-\s*Critical!)?\]/g,
+    STATUS: /\s*\([^)]*\)\s*/g
+  },
+  FORMAT: {
+    WHITESPACE: /\s{2,}/g,
+    NEWLINES: /^\n+|\n+$/g,
+    NUMBERS: /(\d+)\s*:\s*(\d+)/g
+  }
 };
 
 /**
  * Removes metadata markers and formatting artifacts from text while preserving
  * game-relevant content. Handles both single-line and multi-line text.
  */
-export const cleanMetadataMarkers = (text: string | undefined): string => {
+export const cleanText = (text: string | undefined): string => {
   if (!text?.trim()) return '';
-
-  let cleaned = text;
-
-  // Remove metadata markers using the updated MARKERS pattern
-  cleaned = cleaned.replace(METADATA_PATTERNS.MARKERS, (match, p1) => {
-    // If the match is at the start of the line, remove it completely
-    if (p1.trim() === '') {
-      return '';
-    }
-    // Otherwise, remove only the metadata part, preserving the character name
-    return p1.trim();
-  });
-
-  // Clean empty brackets
-  cleaned = cleaned.replace(METADATA_PATTERNS.EMPTY_BRACKETS, '');
-
-  // Clean important
-  cleaned = cleaned.replace(METADATA_PATTERNS.IMPORTANT, '');
-
-  // Clean location
-  cleaned = cleaned.replace(METADATA_PATTERNS.LOCATION, '');
-
-  // Clean descriptive
-  cleaned = cleaned.replace(METADATA_PATTERNS.DESCRIPTIVE, '');
-
-  // Clean JSON metadata
-  cleaned = cleaned.replace(METADATA_PATTERNS.JSON_METADATA, '');
-
-  // Clean extra whitespace but preserve spaces around punctuation
-  cleaned = cleaned.replace(METADATA_PATTERNS.EXTRA_WHITESPACE, ' ').trim();
-
-  // Preserve spaces around colons and commas in roll information
-  cleaned = cleaned.replace(/(\d+)\s*:\s*(\d+)/g, '$1:$2'); // Remove spaces around colons in roll information
-
-  return cleaned;
+  
+  return text
+    // Clean metadata
+    .replace(METADATA_PATTERNS.CORE.MARKERS, (_, p1) => p1?.trim() || '')
+    .replace(METADATA_PATTERNS.CORE.MULTILINE, '')
+    .replace(METADATA_PATTERNS.CORE.JSON, '')
+    // Clean combat info
+    .replace(METADATA_PATTERNS.COMBAT.ROLLS, '')
+    .replace(METADATA_PATTERNS.COMBAT.STATUS, ' ')
+    // Format cleanup
+    .replace(METADATA_PATTERNS.FORMAT.WHITESPACE, ' ')
+    .replace(METADATA_PATTERNS.FORMAT.NEWLINES, '')
+    .replace(METADATA_PATTERNS.FORMAT.NUMBERS, '$1:$2')
+    .trim();
 };
 
 /**
@@ -78,20 +56,19 @@ export const cleanCombatLogEntry = (text: string): string => {
   // First normalize newlines and clean leading/trailing ones
   let cleaned = text
     .replace(/\r\n/g, '\n')
-    .replace(METADATA_PATTERNS.LEADING_NEWLINES, '')
-    .replace(METADATA_PATTERNS.TRAILING_NEWLINES, '');
+    .replace(METADATA_PATTERNS.FORMAT.NEWLINES, '');
 
   // Remove metadata markers using the updated MARKERS pattern
-  cleaned = cleaned.replace(METADATA_PATTERNS.MARKERS, '');
+  cleaned = cleaned.replace(METADATA_PATTERNS.CORE.MARKERS, '');
 
   // Remove JSON metadata
-  cleaned = cleaned.replace(METADATA_PATTERNS.JSON_METADATA, '');
+  cleaned = cleaned.replace(METADATA_PATTERNS.CORE.JSON, '');
 
   // Remove empty brackets
-  cleaned = cleaned.replace(METADATA_PATTERNS.EMPTY_BRACKETS, '');
+  cleaned = cleaned.replace(METADATA_PATTERNS.CORE.MULTILINE, '');
 
   // Clean extra whitespace but preserve spaces around punctuation
-  cleaned = cleaned.replace(METADATA_PATTERNS.EXTRA_WHITESPACE, ' ').trim();
+  cleaned = cleaned.replace(METADATA_PATTERNS.FORMAT.WHITESPACE, ' ').trim();
 
   return cleaned;
 };
@@ -113,7 +90,7 @@ export const cleanLocationText = (text: string | null | undefined): string => {
   cleaned = cleaned.split(/[.!?\n]|\s+(?=[A-Z][a-z]+\s+(?:has|is|was|were|will|had|have))/)[0];
 
   // Remove any remaining metadata markers
-  cleaned = cleanMetadataMarkers(cleaned);
+  cleaned = cleanText(cleaned);
 
   // Final cleanup of any remaining narrative indicators
   cleaned = cleaned
@@ -206,8 +183,8 @@ export const extractItemUpdates = (text: string): { acquired: string[]; removed:
   });
 
   // Clean and deduplicate items
-  updates.acquired = Array.from(new Set(updates.acquired)).map(cleanMetadataMarkers);
-  updates.removed = Array.from(new Set(updates.removed)).map(cleanMetadataMarkers);
+  updates.acquired = Array.from(new Set(updates.acquired)).map(cleanText);
+  updates.removed = Array.from(new Set(updates.removed)).map(cleanText);
 
   return updates;
 };
@@ -217,10 +194,10 @@ export const extractItemUpdates = (text: string): { acquired: string[]; removed:
  */
 export const cleanCharacterName = (name: string): string => {
   // Remove metadata markers using the updated MARKERS pattern
-  let cleaned = name.replace(METADATA_PATTERNS.MARKERS, '');
+  let cleaned = name.replace(METADATA_PATTERNS.CORE.MARKERS, '');
 
   // Clean extra whitespace
-  cleaned = cleaned.replace(METADATA_PATTERNS.EXTRA_WHITESPACE, ' ').trim();
+  cleaned = cleaned.replace(METADATA_PATTERNS.FORMAT.WHITESPACE, ' ').trim();
 
   return cleaned;
 };

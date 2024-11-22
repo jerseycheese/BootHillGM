@@ -91,13 +91,23 @@ export const useWeaponCombat = ({
 
     switch (action.type) {
       case 'aim':
-        setAimBonus(prev => prev + 10);
+        const newAimBonus = aimBonus + 10;
+        if (newAimBonus <= 20) {
+          setAimBonus(newAimBonus);
+          return {
+            hit: false,
+            roll: 0,
+            modifiedRoll: 0,
+            targetNumber: 0,
+            message: `${attacker.name} takes aim carefully`
+          };
+        }
         return {
           hit: false,
           roll: 0,
           modifiedRoll: 0,
           targetNumber: 0,
-          message: `${attacker.name} takes aim carefully`
+          message: `${attacker.name} cannot aim any more carefully`
         };
 
       case 'fire': {
@@ -131,11 +141,6 @@ export const useWeaponCombat = ({
         const critical = isCritical(roll);
 
         if (hit) {
-          // Parse weapon damage (e.g., "1d6+1")
-          const [diceCount, modifier] = weapon.stats.damage
-            .toLowerCase()
-            .split('d')
-            .map(part => parseInt(part) || 0);
 
           let damage = Math.floor(Math.random() * 6) + 1;
           if (critical) damage *= 2;
@@ -260,6 +265,11 @@ export const useWeaponCombat = ({
             return;
           }
         }
+      }
+
+      // Reset aim bonus at end of round if not used
+      if (action.type !== 'fire' && opponentAction.type !== 'fire') {
+        setAimBonus(0);
       }
 
     } finally {

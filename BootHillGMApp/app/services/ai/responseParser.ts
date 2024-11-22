@@ -1,7 +1,7 @@
 import { AIResponse } from './types';
 import { Character } from '../../types/character';
 import { SuggestedAction } from '../../types/campaign';
-import { cleanMetadataMarkers } from '../../utils/textCleaningUtils';
+import { cleanText } from '../../utils/textCleaningUtils';
 
 /**
  * Parses AI response text to extract structured game information.
@@ -59,7 +59,7 @@ export function parseAIResponse(text: string): AIResponse {
           );
         }
       } catch (e) {
-        console.warn('Failed to parse suggested actions:', e);
+        // Failed to parse suggested actions, continue without them
       }
     }
 
@@ -71,7 +71,7 @@ export function parseAIResponse(text: string): AIResponse {
     if (combatMatch) {
       combatInitiated = true;
       // Clean the opponent name before creating the opponent object
-      const opponentName = cleanMetadataMarkers(combatMatch[1].trim());
+      const opponentName = cleanText(combatMatch[1].trim());
       
       opponent = {
         name: opponentName,
@@ -94,34 +94,50 @@ export function parseAIResponse(text: string): AIResponse {
       };
     }
 
-    // Clean the narrative text thoroughly
-    const lines = text.split('\n').map(line => {
-      // Skip lines that are only metadata
-      if (/^(?:ACQUIRED_ITEMS|REMOVED_ITEMS|LOCATION|COMBAT|SUGGESTED_ACTIONS):\s*(\[[^\]]*\]|\s*)$/i.test(line.trim())) {
-        return '';
-      }
-      return cleanMetadataMarkers(line);
-    }).filter(Boolean);
+    // Split text into lines and remove empty lines
+    const lines = text.split('\n')
+      .map(line => line.trim())
+      .filter(Boolean);
 
-    // Process lines to join character names with their actions
+    // Process lines to handle multiline metadata blocks and join character actions
     const processedLines: string[] = [];
+    let currentCharacterName: string | null = null;
+
     for (let i = 0; i < lines.length; i++) {
-      const currentLine = lines[i];
-      const nextLine = lines[i + 1];
-      
-      // If current line is just a name and next line exists and starts with action verbs
-      if (nextLine && /^[A-Z][a-zA-Z\s]+$/.test(currentLine.trim()) && 
-          /^(?:punches|hits|misses|attacks|shoots|throws|dodges|blocks|parries)/i.test(nextLine.trim())) {
-        processedLines.push(`${currentLine} ${nextLine}`);
-        i++; // Skip the next line since we've used it
-      } else {
-        processedLines.push(currentLine);
+      let line = lines[i].trim();
+
+      // Skip pure metadata lines
+      if (/^(?:ACQUIRED_ITEMS|REMOVED_ITEMS|LOCATION|COMBAT|SUGGESTED_ACTIONS):\s*(\[[^\]]*\]|\s*)$/i.test(line)) {
+        continue;
+      }
+
+      // If this is a character name (single word or two words)
+      if (/^[A-Z][a-zA-Z]*(?:\s+[A-Z][a-zA-Z]*)?$/.test(line)) {
+        currentCharacterName = line;
+        continue;
+      }
+
+      // Clean metadata markers from the line
+      line = line.replace(/\s*ACQUIRED_ITEMS:\s*(?:\[[^\]]*\]|\s*)/g, ' ')
+                .replace(/\s*REMOVED_ITEMS:\s*(?:\[[^\]]*\]|\s*)/g, ' ')
+                .replace(/\s*SUGGESTED_ACTIONS:\s*\[[^\]]*\]/g, ' ')
+                .trim();
+
+      if (line) {
+        if (currentCharacterName) {
+          // If we have a character name, this must be their action
+          const fullLine = `${currentCharacterName} ${line}`;
+          processedLines.push(fullLine);
+          currentCharacterName = null;
+        } else {
+          // Regular narrative line
+          processedLines.push(line);
+        }
       }
     }
 
-    // Join and clean up the processed lines
+    // Join the processed lines into the final narrative
     const narrative = processedLines.join('\n')
-      .replace(/\s+ACQUIRED_ITEMS:\s*REMOVED_ITEMS:\s*/g, ' ')
       .replace(/\s+:\s+/g, ': ')
       .replace(/\s+,\s+/g, ', ')
       .replace(/\s+!/g, '!')

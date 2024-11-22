@@ -1,76 +1,75 @@
 import { NarrativeItem } from './NarrativeDisplay';
 
-interface NarrativeContentProps {
-  item: NarrativeItem;
-  processedUpdates: Set<string>;
+interface StyleConfig {
+  className: string;
+  testId?: string;
 }
 
-export const NarrativeContent: React.FC<NarrativeContentProps> = ({ 
-  item,
-  processedUpdates
-}) => {
-  const baseClasses = 'my-2 py-1';
-  
-  if (item.type === 'item-update' && item.metadata?.items) {
-    
-    // Skip if content contains SUGGESTED_ACTIONS
-    if (item.content.includes('SUGGESTED_ACTIONS')) {
-      return null;
-    }
-    
-    // Normalize items (case and spacing)
-    const normalizedItems = item.metadata.items.map(item => 
-      item.toLowerCase().trim()
-    ).sort();
-    
-    // Create a unique key for this update
-    const updateKey = `${item.metadata.updateType}-${normalizedItems.join(',')}`;
-    
-    // Skip if we've already processed this exact update
-    if (processedUpdates.has(updateKey)) {
-      return null;
-    }
-    
-    // Add to processed updates
-    processedUpdates.add(updateKey);
-    
-    // Create normalized content for display
-    const displayContent = `${item.metadata.updateType === 'acquired' ? 'Acquired' : 'Used/Removed'} Items: ${normalizedItems.join(', ')}`;
-    
-    return (
-      <div
-        data-testid={`item-update-${item.metadata.updateType}`}
-        className={`${baseClasses} item-update p-2 px-4 rounded border-l-4 ${
-          item.metadata.updateType === 'acquired'
-            ? 'bg-amber-50 border-amber-400'
-            : 'bg-gray-50 border-gray-400'
-        }`}
-      >
-        {displayContent}
-      </div>
-    );
+const STYLE_CONFIGS: Record<NarrativeItem['type'], StyleConfig> = {
+  'player-action': {
+    className: 'player-action border-l-4 border-green-500 pl-4',
+    testId: 'player-action'
+  },
+  'gm-response': {
+    className: 'gm-response border-l-4 border-blue-500 pl-4',
+    testId: 'gm-response'
+  },
+  'narrative': {
+    className: 'narrative-line'
+  },
+  'item-update': {
+    className: '',
+    testId: 'item-update'
   }
-  
-  switch (item.type) {
-    case 'player-action':
-      return (
-        <div className={`${baseClasses} player-action border-l-4 border-green-500 pl-4`}>
-          {item.content}
-        </div>
-      );
-      
-    case 'gm-response':
-      return (
-        <div className={`${baseClasses} gm-response border-l-4 border-blue-500 pl-4`}>
-          {item.content}
-        </div>
-      );
-      
-    default:
-      return item.content ? (
-        <div className={`${baseClasses} narrative-line`}>{item.content}</div>
-      ) : (
-        <div className="h-2" />
-      );
+};
+
+const ItemUpdate: React.FC<{
+  metadata: NonNullable<NarrativeItem['metadata']>,
+  processedUpdates: Set<string>
+}> = ({ metadata, processedUpdates }) => {
+  if (!metadata.items?.length || metadata.items.includes('SUGGESTED_ACTIONS')) {
+    return null;
   }
+
+  const normalizedItems = metadata.items
+    .map(item => item.toLowerCase().trim())
+    .sort();
+  
+  const updateKey = `${metadata.updateType}-${normalizedItems.join(',')}`;
+  if (processedUpdates.has(updateKey)) return null;
+  
+  processedUpdates.add(updateKey);
+  
+  const isAcquired = metadata.updateType === 'acquired';
+  const className = `bg-${isAcquired ? 'amber' : 'gray'}-50 border-${isAcquired ? 'amber' : 'gray'}-400`;
+
+  return (
+    <div
+      data-testid={`item-update-${metadata.updateType}`}
+      className={`my-2 py-1 p-2 px-4 rounded border-l-4 ${className}`}
+    >
+      {`${isAcquired ? 'Acquired' : 'Used/Removed'} Items: ${normalizedItems.join(', ')}`}
+    </div>
+  );
+};
+
+export const NarrativeContent: React.FC<{
+  item: NarrativeItem;
+  processedUpdates: Set<string>;
+}> = ({ item, processedUpdates }) => {
+  if (item.type === 'item-update' && item.metadata) {
+    return <ItemUpdate metadata={item.metadata} processedUpdates={processedUpdates} />;
+  }
+
+  const config = STYLE_CONFIGS[item.type];
+  return item.content ? (
+    <div 
+      className={`my-2 py-1 ${config.className}`}
+      data-testid={config.testId}
+    >
+      {item.content}
+    </div>
+  ) : (
+    <div className="h-2" />
+  );
 };

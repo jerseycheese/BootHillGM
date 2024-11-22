@@ -1,5 +1,5 @@
 import { Character } from '../types/character';
-import { cleanMetadataMarkers } from './textCleaningUtils';
+import { cleanText } from './textCleaningUtils';
 
 export interface CombatMessageParams {
   attackerName: string;
@@ -11,7 +11,7 @@ export interface CombatMessageParams {
 }
 
 export const cleanCharacterName = (name: string): string => {
-  let cleanedName = cleanMetadataMarkers(name);
+  let cleanedName = cleanText(name);
 
   // Remove suggested actions
   cleanedName = cleanedName.replace(/SUGGESTED_ACTIONS: \[.*?\]/, '');

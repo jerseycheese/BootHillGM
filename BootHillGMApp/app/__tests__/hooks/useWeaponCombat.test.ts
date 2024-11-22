@@ -64,35 +64,18 @@ describe('useWeaponCombat', () => {
       dispatch: mockDispatch
     }));
 
+    // First verify initial state
+    expect(result.current.canAim).toBe(true);
+
     await act(async () => {
       await result.current.processAction({ type: 'aim' });
     });
 
     expect(result.current.weaponState.roundLog[0].text)
       .toContain('takes aim carefully');
+    expect(result.current.isProcessing).toBe(false);
     expect(result.current.canAim).toBe(true);
   });
-
-  // Test is pending, functionality not in place yet.
-  // test('processes fire action', async () => {
-  //   const { result } = renderHook(() => useWeaponCombat({
-  //     playerCharacter: mockPlayer,
-  //     opponent: mockOpponent,
-  //     onCombatEnd: mockOnCombatEnd,
-  //     dispatch: mockDispatch,
-  //     debugMode: true // Enable debug mode to force a hit for the player
-  //   }));
-
-  //   // Force a hit for the opponent by setting a low roll value
-  //   jest.spyOn(Math, 'random').mockReturnValueOnce(0.01); // Opponent's roll
-
-  //   await act(async () => {
-  //     await result.current.processAction({ type: 'fire' });
-  //   });
-
-  //   expect(result.current.weaponState.roundLog).toHaveLength(2); // Player + opponent actions
-  //   expect(mockDispatch).toHaveBeenCalled();
-  // });
 
   test('handles movement action', async () => {
     const { result } = renderHook(() => useWeaponCombat({
