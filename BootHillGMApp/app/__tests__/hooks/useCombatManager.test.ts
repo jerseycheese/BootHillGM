@@ -172,6 +172,9 @@ describe('useCombatManager', () => {
   });
 
   test('handles combat end error gracefully', async () => {
+    // Temporarily suppress console.error for this test
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    
     // Mock state protection to throw error
     (createStateProtection as jest.Mock).mockImplementationOnce(() => ({
       withProtection: jest.fn().mockRejectedValue(new Error('Test error')),
@@ -189,6 +192,9 @@ describe('useCombatManager', () => {
     expect(mockUpdateNarrative).toHaveBeenCalledWith(
       expect.stringContaining('error processing the combat end')
     );
+
+    // Restore console.error
+    consoleSpy.mockRestore();
   });
 
   test('tracks processing state correctly', async () => {
