@@ -88,6 +88,9 @@ describe('useCampaignStateRestoration', () => {
   });
 
   test('handles corrupted JSON gracefully', () => {
+    // Temporarily suppress console.error for this test
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    
     const { result } = renderHook(() => 
       useCampaignStateRestoration({ 
         isInitializing: false, 
@@ -98,6 +101,9 @@ describe('useCampaignStateRestoration', () => {
     expect(result.current.character).toBeNull();
     expect(result.current.isClient).toBe(true);
     expect(result.current.isCombatActive).toBe(false);
+    
+    // Restore console.error
+    consoleSpy.mockRestore();
   });
 
   test('handles missing character data gracefully', () => {
