@@ -58,7 +58,28 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6" data-testid="character-form">
+    <div className="space-y-6">
+      <div className="flex justify-between">
+        <button
+          type="button"
+          onClick={generateCharacter}
+          className={`wireframe-button ${isGeneratingCharacter ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isGeneratingCharacter}
+          data-testid="generate-character-button"
+        >
+          Generate Random Character
+        </button>
+        <button
+          type="button"
+          onClick={onSubmit}
+          className="wireframe-button"
+          disabled={isProcessingStep}
+          data-testid="view-summary-button"
+        >
+          Review Character Summary
+        </button>
+      </div>
+      <form onSubmit={onSubmit} className="space-y-6" data-testid="character-form">
       <div className="grid grid-cols-1 gap-6">
         {fields.map((field) => (
           <div key={field.key} className="space-y-2">
@@ -108,25 +129,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
         </div>
       )}
 
-      <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={generateCharacter}
-          className={`wireframe-button ${isGeneratingCharacter ? 'opacity-50 cursor-not-allowed' : ''}`}
-          disabled={isGeneratingCharacter}
-          data-testid="generate-character-button"
-        >
-          Generate Random Character
-        </button>
-        <button
-          type="submit"
-          className="wireframe-button"
-          disabled={isProcessingStep}
-          data-testid="view-summary-button"
-        >
-          Review Character Summary
-        </button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 };
