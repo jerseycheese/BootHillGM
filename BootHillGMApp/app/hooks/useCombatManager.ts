@@ -83,7 +83,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             playerName,
             opponentName,
             winner === 'player' ? 'victory' : 'defeat',
-            cleanedSummary // Use cleaned summary for journal
+            combatSummary // Use combatSummary for journal
           )
         });
 
@@ -96,7 +96,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             isActive: false,
             combatType: null,
             winner: winner,
-            summary: cleanedSummary
+            summary: combatSummary
           })
         });
       });
