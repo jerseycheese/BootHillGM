@@ -121,6 +121,9 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       .replace(/ACQUIRED_ITEMS: \[.*?\]\n?/, '')
       .replace(/REMOVED_ITEMS: \[.*?\]\n?/, '')
       .replace(/SUGGESTED_ACTIONS: \[[\s\S]*?\]\n?/, '')
+      .replace(/^important:.*$/gim, '')  // Remove lines starting with "important:"
+      .replace(/\n.*?important:.*$/gim, '')  // Remove lines with "important:" anywhere
+      .replace(/\n\s*\n+/g, '\n')  // Clean up multiple newlines
       .trim();
 
     return { 

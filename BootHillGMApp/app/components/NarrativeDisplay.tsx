@@ -54,7 +54,10 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
 
       // Remove metadata markers while preserving core content
       const cleanLineContent = (text: string): string => {
-        return text.replace(/(?:ACQUIRED_ITEMS|REMOVED_ITEMS|SUGGESTED_ACTIONS):.+$/g, '').trim();
+        return text
+          .replace(/(?:ACQUIRED_ITEMS|REMOVED_ITEMS|SUGGESTED_ACTIONS):.+$/g, '')
+          .replace(/^important:.*$/i, '')  // Remove any remaining "important:" lines
+          .trim();
       };
 
       // Process different types of narrative content
