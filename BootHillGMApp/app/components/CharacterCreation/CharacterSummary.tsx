@@ -59,39 +59,37 @@ export function CharacterSummary({
         </button>
       </div>
 
-      <form className="space-y-6" data-testid="character-summary-form">
+      <div className="space-y-6" data-testid="character-summary-form">
         <div className="space-y-2">
           <h2 className="text-xl font-bold">Character Summary</h2>
           
           {/* AI-generated character background */}
           <p className="mb-4">{summary}</p>
         
-        {/* Static character details */}
-        <div className="space-y-4">
-          <p><strong>Name:</strong> {character.name}</p>
-          
-          <div>
-            <h3 className="text-lg font-bold">Attributes</h3>
-            {Object.entries(character.attributes).map(([attr, value]) => (
-              <p key={attr}>
-                <strong>{STEP_DESCRIPTIONS[attr]?.title || attr}:</strong> {Array.isArray(value) ? value.join(', ') : value}
-              </p>
-            ))}
-          </div>
-          
-          <div>
-            <h3 className="text-lg font-bold">Skills</h3>
-            {Object.entries(character.skills).map(([skill, value]) => (
-              <p key={skill}>
-                <strong>{STEP_DESCRIPTIONS[skill]?.title || skill}:</strong> {value}
-              </p>
-            ))}
+          {/* Static character details */}
+          <div className="space-y-4">
+            <p><strong>Name:</strong> {character.name}</p>
+            
+            <div>
+              <h3 className="text-lg font-bold">Attributes</h3>
+              {Object.entries(character.attributes).map(([attr, value]) => (
+                <p key={attr}>
+                  <strong>{STEP_DESCRIPTIONS[attr]?.title || attr}:</strong> {Array.isArray(value) ? value.join(', ') : value}
+                </p>
+              ))}
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-bold">Skills</h3>
+              {Object.entries(character.skills).map(([skill, value]) => (
+                <p key={skill}>
+                  <strong>{STEP_DESCRIPTIONS[skill]?.title || skill}:</strong> {value}
+                </p>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-
-        </div>
-      </form>
     </div>
   );
 }
