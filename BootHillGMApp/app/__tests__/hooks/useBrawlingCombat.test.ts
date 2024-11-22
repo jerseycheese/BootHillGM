@@ -146,45 +146,54 @@ describe('useBrawlingCombat', () => {
   });
 
   test('processes complete combat round with player and opponent actions', async () => {
+    // Use fake timers
+    jest.useFakeTimers();
+    
     // Mock random choice for opponent
     jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
 
     let hookResult: any;
     
+    const { result } = renderHook(() =>
+      useBrawlingCombat({
+        playerCharacter: mockPlayer,
+        opponent: mockOpponent,
+        onCombatEnd: mockOnCombatEnd,
+        dispatch: mockDispatch
+      })
+    );
+    hookResult = result;
+    
+    // Wait for hook to initialize
+    await Promise.resolve();
+    
+    expect(hookResult.current).not.toBeNull();
+    
+    // Start processing the round
+    const processPromise = hookResult.current.processRound(true, true);
+    
+    // Advance timers and resolve promises
     await act(async () => {
-      const { result } = renderHook(() =>
-        useBrawlingCombat({
-          playerCharacter: mockPlayer,
-          opponent: mockOpponent,
-          onCombatEnd: mockOnCombatEnd,
-          dispatch: mockDispatch
-        })
-      );
-      hookResult = result;
-      
-      // Wait for hook to initialize
-      await Promise.resolve();
-      
-      await result.current.processRound(true, true);
-      
-      // Advance timers and flush promises
       jest.advanceTimersByTime(1000);
-      await Promise.resolve();
+      await processPromise;
     });
 
     // Should have two log entries (player + opponent actions)
     expect(hookResult.current.brawlingState.roundLog).toHaveLength(2);
     
     // Verify round advanced
-    expect(result.current.brawlingState.round).toBe(2);
+    expect(hookResult.current.brawlingState.round).toBe(2);
 
     // Verify both player and opponent actions were processed
-    const [playerEntry, opponentEntry] = result.current.brawlingState.roundLog;
+    const [playerEntry, opponentEntry] = hookResult.current.brawlingState.roundLog;
     expect(playerEntry.text).toContain('Player');
     expect(opponentEntry.text).toContain('Opponent');
 
     // Verify dispatch was called twice (once for each character update)
     expect(mockDispatch).toHaveBeenCalledTimes(2);
+    
+    // Clean up
+    jest.useRealTimers();
   });
 
   test('ends combat when knockout occurs', async () => {
