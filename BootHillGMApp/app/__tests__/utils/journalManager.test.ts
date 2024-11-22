@@ -100,10 +100,16 @@ describe('JournalManager', () => {
       });
 
       it('should handle AI service errors gracefully', async () => {
+        // Temporarily suppress console.error for this test
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        
         (generateNarrativeSummary as jest.Mock).mockRejectedValueOnce(new Error('AI Error'));
         
         const result = await JournalManager.addNarrativeEntry(emptyJournal, 'Test content');
         expect(result).toEqual(emptyJournal);
+        
+        // Restore console.error
+        consoleSpy.mockRestore();
       });
     });
 
