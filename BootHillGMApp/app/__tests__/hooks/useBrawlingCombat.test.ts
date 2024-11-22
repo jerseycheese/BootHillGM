@@ -215,26 +215,35 @@ describe('useBrawlingCombat', () => {
   });
 
   test('handles multiple rounds of combat', async () => {
-    const { result } = renderHook(() =>
-      useBrawlingCombat({
-        playerCharacter: mockPlayer,
-        opponent: mockOpponent,
-        onCombatEnd: mockOnCombatEnd,
-        dispatch: mockDispatch
-      })
-    );
-
-    // Process first round
+    let hookResult: any;
+    
     await act(async () => {
-      await result.current.processRound(true, true);
+      const { result } = renderHook(() =>
+        useBrawlingCombat({
+          playerCharacter: mockPlayer,
+          opponent: mockOpponent,
+          onCombatEnd: mockOnCombatEnd,
+          dispatch: mockDispatch
+        })
+      );
+      hookResult = result;
+      
+      // Wait for hook to initialize
+      await Promise.resolve();
     });
 
-    expect(result.current.brawlingState.round).toBe(2);
+    expect(hookResult.current).not.toBeNull();
+    
+    // Process first round
+    await act(async () => {
+      await hookResult.current.processRound(true, true);
+    });
+
+    expect(hookResult.current.brawlingState.round).toBe(2);
 
     // Process second round
     await act(async () => {
-      expect(result.current).not.toBeNull();
-      await result.current.processRound(true, false); // Try grapple this time
+      await hookResult.current.processRound(true, false); // Try grapple this time
     });
 
     // Should have 4 log entries total (2 per round)
