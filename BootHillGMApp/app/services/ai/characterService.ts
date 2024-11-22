@@ -131,11 +131,53 @@ export async function generateFieldValue(
   key: keyof Character['attributes'] | keyof Character['skills'] | 'name'
 ): Promise<string | number> {
   if (key === 'name') {
-    const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name.";
-    const model = getAIModel();
-    const result = await retryWithExponentialBackoff(() => model.generateContent(prompt));
-    const response = await result.response;
-    return response.text().trim();
+    const prompt = `Generate a single name for a character in a Western-themed RPG set in the American Old West (1865-1890).
+    - Should be a full name (first and last)
+    - Historically appropriate for the time period
+    - No titles or descriptors
+    - No quotation marks or extra punctuation
+    Provide only the name.`;
+    
+    try {
+      const model = getAIModel();
+      const result = await retryWithExponentialBackoff(() => model.generateContent(prompt));
+      const response = await result.response;
+      const name = response.text()
+        .trim()
+        // Remove any quotes
+        .replace(/["']/g, '')
+        // Remove any trailing periods
+        .replace(/\.+$/, '')
+        // Remove any titles (Mr., Mrs., Miss, etc)
+        .replace(/^(Mr\.|Mrs\.|Miss|Dr\.|Rev\.) /i, '')
+        // Ensure proper capitalization
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+
+      // Validate the name meets minimum requirements
+      if (name.split(' ').length >= 2 && /^[A-Za-z\s-]+$/.test(name)) {
+        return name;
+      }
+      throw new Error('Invalid name generated');
+    } catch {
+      // Fallback to a randomly generated Western-appropriate name
+      const firstNames = [
+        'John', 'William', 'James', 'Charles', 'George',
+        'Frank', 'Jesse', 'Thomas', 'Henry', 'Robert',
+        'Sarah', 'Mary', 'Elizabeth', 'Annie', 'Margaret'
+      ];
+      const lastNames = [
+        'Smith', 'Johnson', 'Williams', 'Brown', 'Jones',
+        'Miller', 'Davis', 'Wilson', 'Anderson', 'Taylor',
+        'Thompson', 'Walker', 'Harris', 'Martin', 'Moore'
+      ];
+      
+      const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+      const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+      
+      return `${firstName} ${lastName}`;
+    }
   } else {
     return generateRandomValue(key);
   }
