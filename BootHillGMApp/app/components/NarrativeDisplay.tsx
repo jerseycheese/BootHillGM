@@ -48,7 +48,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
     return narrative.split('\n').reduce<NarrativeItem[]>((narrativeItems, line) => {
       const trimmedLine = line.trim();
       if (!trimmedLine) {
-        narrativeItems.push({ type: 'narrative', content: '' });
+        narrativeItems.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
         return narrativeItems;
       }
 

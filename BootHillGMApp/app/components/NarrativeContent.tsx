@@ -63,6 +63,10 @@ export const NarrativeContent: React.FC<{
 
   const config = STYLE_CONFIGS[item.type];
   // Skip rendering if content is undefined or empty
+  if (item.metadata?.isEmpty) {
+    return <div className="h-2" />;
+  }
+  
   if (!item.content || item.content.includes('undefined')) {
     return null;
   }
