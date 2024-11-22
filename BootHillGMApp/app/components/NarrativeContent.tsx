@@ -32,7 +32,7 @@ const ItemUpdate: React.FC<{
   }
 
   const normalizedItems = metadata.items
-    .map(item => item.toLowerCase().trim())
+    .map(item => item.toLowerCase().trim().replace(/\s+/g, ' '))
     .sort();
   
   const updateKey = `${metadata.updateType}-${normalizedItems.join(',')}`;

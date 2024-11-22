@@ -129,10 +129,6 @@ export const CombatSystem: React.FC<{
     return null;
   };
 
-  // Debug logs for combat log entries
-  console.log('Brawling Log:', brawlingState?.roundLog);
-  console.log('Weapon Log:', weaponState.roundLog);
-
   return (
     <div className="combat-system wireframe-section space-y-4">
       <CombatStatus

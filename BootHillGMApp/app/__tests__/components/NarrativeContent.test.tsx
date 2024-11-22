@@ -11,7 +11,6 @@ describe('NarrativeContent', () => {
   });
 
   const renderContent = (item: NarrativeItem) => {
-    console.log('Rendering item:', item);
     render(<NarrativeContent item={item} processedUpdates={processedUpdates} />);
   };
 
@@ -58,7 +57,6 @@ describe('NarrativeContent', () => {
     test('handles acquired items', () => {
       const items = ['sword', 'shield'];
       const itemUpdate = createItemUpdate('acquired', items);
-      console.log('Item update:', itemUpdate);
       renderContent(itemUpdate);
       const element = screen.getByTestId('item-update-acquired');
       expect(element).toHaveClass('bg-amber-50', 'border-amber-400');
@@ -68,7 +66,6 @@ describe('NarrativeContent', () => {
     test('handles used items', () => {
       const items = ['potion'];
       const itemUpdate = createItemUpdate('used', items);
-      console.log('Item update:', itemUpdate);
       renderContent(itemUpdate);
       const element = screen.getByTestId('item-update-used');
       expect(element).toHaveClass('bg-gray-50', 'border-gray-400');
@@ -78,7 +75,6 @@ describe('NarrativeContent', () => {
     test('deduplicates item updates', () => {
       const items = ['sword'];
       const itemUpdate = createItemUpdate('acquired', items);
-      console.log('Item update:', itemUpdate);
       renderContent(itemUpdate);
       renderContent(itemUpdate);
       expect(screen.getAllByTestId('item-update-acquired')).toHaveLength(1);

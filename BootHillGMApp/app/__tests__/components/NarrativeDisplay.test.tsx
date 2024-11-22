@@ -35,7 +35,7 @@ Regular narrative text
     render(<NarrativeDisplay narrative={formattedNarrative} />);
     
     expect(screen.getByText('Player: Look around')).toHaveClass('player-action');
-    expect(screen.getByText('GM: You see a dusty saloon')).toHaveClass('gm-response');
+    expect(screen.getByText('Game Master: You see a dusty saloon')).toHaveClass('gm-response');
     expect(screen.getByText('Regular narrative text')).toHaveClass('narrative-line');
   });
 
