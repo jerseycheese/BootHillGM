@@ -31,8 +31,10 @@ export const formatCombatEndMessage = (
     ? `${playerName} emerges victorious, defeating ${opponentName}.`
     : `${opponentName} emerges victorious, defeating ${playerName}.`;
 
-  // Return just the victory phrase with the prompt
-  return `${victoryPhrase}`;
+  // Clean up the summary by removing roll information
+  const cleanSummary = summary?.replace(/\[Roll:.*?\]/g, '').trim() || '';
+  
+  return `The combat concludes as ${cleanSummary}\n\n${victoryPhrase}\n\nWhat would you like to do now?`;
 };
 
 /**
