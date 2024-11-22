@@ -259,8 +259,44 @@ export function useCharacterCreation() {
     setError('');
     
     try {
-      const generatedCharacter = await generateCompleteCharacter();
-      setCharacter(generatedCharacter);
+      // Generate each field individually to ensure proper randomization
+      const newCharacter: Character = {
+        name: '',
+        attributes: {
+          speed: 0,
+          gunAccuracy: 0,
+          throwingAccuracy: 0,
+          strength: 0,
+          baseStrength: 0,
+          bravery: 0,
+          experience: 0
+        },
+        skills: {
+          shooting: 0,
+          riding: 0,
+          brawling: 0
+        },
+        wounds: [],
+        isUnconscious: false
+      };
+
+      // Generate name first
+      const name = await generateFieldValue('name');
+      newCharacter.name = name.toString();
+
+      // Generate attributes
+      for (const attr of Object.keys(newCharacter.attributes)) {
+        const value = await generateFieldValue(attr as keyof Character['attributes']);
+        newCharacter.attributes[attr as keyof Character['attributes']] = Number(value);
+      }
+
+      // Generate skills
+      for (const skill of Object.keys(newCharacter.skills)) {
+        const value = await generateFieldValue(skill as keyof Character['skills']);
+        newCharacter.skills[skill as keyof Character['skills']] = Number(value);
+      }
+
+      setCharacter(newCharacter);
     } catch {
       setError('Failed to generate character');
     } finally {
