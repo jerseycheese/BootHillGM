@@ -62,14 +62,17 @@ export const NarrativeContent: React.FC<{
   }
 
   const config = STYLE_CONFIGS[item.type];
-  return item.content ? (
+  // Skip rendering if content is undefined or empty
+  if (!item.content || item.content.includes('undefined')) {
+    return null;
+  }
+
+  return (
     <div 
       className={`my-2 py-1 ${config.className}`}
       data-testid={config.testId}
     >
       {item.content}
     </div>
-  ) : (
-    <div className="h-2" />
   );
 };
