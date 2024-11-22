@@ -76,7 +76,7 @@ export function CharacterSummary({
         </button>
         <button 
           type="submit" 
-          className="wireframe-button"
+          className="wireframe-button primary"
           data-testid="start-game-button"
         >
           Start Game

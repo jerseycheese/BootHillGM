@@ -111,9 +111,9 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
           type="submit"
           className="wireframe-button"
           disabled={isProcessingStep}
-          data-testid="start-game-button"
+          data-testid="view-summary-button"
         >
-          Start Game
+          Review Character Summary
         </button>
       </div>
     </form>
