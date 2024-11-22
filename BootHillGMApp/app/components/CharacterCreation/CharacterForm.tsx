@@ -106,16 +106,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
         </div>
       )}
 
-      <div className="flex justify-between">
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          className="wireframe-button"
-          disabled={isProcessingStep}
-          data-testid="make-changes-button"
-        >
-          Make Changes
-        </button>
+      <div className="flex justify-end">
         <button
           type="submit"
           className="wireframe-button"

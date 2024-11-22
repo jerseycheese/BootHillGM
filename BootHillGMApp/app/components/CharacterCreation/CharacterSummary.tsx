@@ -65,9 +65,21 @@ export function CharacterSummary({
         </div>
       </div>
 
-      <div className="flex justify-end">
-        <button type="submit" className="wireframe-button">
-          Finish Character Creation
+      <div className="flex justify-between">
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="wireframe-button"
+          data-testid="make-changes-button"
+        >
+          Make Changes
+        </button>
+        <button 
+          type="submit" 
+          className="wireframe-button"
+          data-testid="start-game-button"
+        >
+          Start Game
         </button>
       </div>
     </form>
