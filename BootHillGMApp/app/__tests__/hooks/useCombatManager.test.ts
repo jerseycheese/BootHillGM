@@ -292,7 +292,7 @@ describe('useCombatManager', () => {
     test('handles null combat summary', () => {
       const message = formatCombatEndMessage(
         'player',
-        null,
+        '',
         'Test Character',
         'Unknown Opponent'
       );
