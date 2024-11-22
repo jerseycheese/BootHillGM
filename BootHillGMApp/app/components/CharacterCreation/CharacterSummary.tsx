@@ -13,6 +13,7 @@ interface CharacterSummaryProps {
   isLoading: boolean;
   generateCharacter: () => Promise<void>;
   isGeneratingCharacter: boolean;
+  onGoBack: () => void;
 }
 
 /**
@@ -32,7 +33,7 @@ export function CharacterSummary({
   
   const handleGoBack = (e: React.MouseEvent) => {
     e.preventDefault();
-    router.back();
+    onGoBack();
   };
 
   if (isLoading) {

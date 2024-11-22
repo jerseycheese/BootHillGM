@@ -9,6 +9,7 @@ export default function CharacterCreation() {
   const {
     character,
     showSummary,
+    setShowSummary,
     isGeneratingCharacter,
     isGeneratingField,
     isProcessingStep,
@@ -30,6 +31,7 @@ export default function CharacterCreation() {
           generateCharacter={generateCharacter}
           isGeneratingCharacter={isGeneratingCharacter}
           isLoading={isProcessingStep}
+          onGoBack={() => setShowSummary(false)}
         />
       ) : (
         <CharacterForm
