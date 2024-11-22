@@ -246,31 +246,31 @@ describe('useCombatManager', () => {
     test('formats victory message correctly', () => {
       const message = formatCombatEndMessage(
         'player',
-        'Test summary',
+        'with a powerful strike',
         'Test Character',
         'Unknown Opponent'
       );
-      expect(message).toBe('The combat concludes as Test summary\n\nTest Character emerges victorious, defeating Unknown Opponent.');
+      expect(message).toBe('Test Character emerges victorious, defeating Unknown Opponent with a powerful strike.');
     });
 
     test('formats defeat message correctly', () => {
       const message = formatCombatEndMessage(
         'opponent',
-        'Test summary',
+        'with a devastating blow',
         'Test Character',
         'Unknown Opponent'
       );
-      expect(message).toBe('The combat concludes as Test summary\n\nUnknown Opponent emerges victorious, defeating Test Character.');
+      expect(message).toBe('Unknown Opponent emerges victorious, defeating Test Character with a devastating blow.');
     });
 
     test('removes redundant roll information', () => {
       const message = formatCombatEndMessage(
         'player',
-        'Test summary [Roll: 10/20 - Critical!]',
+        'lands the final blow [Roll: 10/20 - Critical!]',
         'Test Character',
         'Unknown Opponent'
       );
-      expect(message).toBe('The combat concludes as Test summary\n\nTest Character emerges victorious, defeating Unknown Opponent.');
+      expect(message).toBe('Test Character emerges victorious, defeating Unknown Opponent lands the final blow.');
     });
 
     test('handles empty combat summary', () => {
@@ -280,17 +280,17 @@ describe('useCombatManager', () => {
         'Test Character',
         'Unknown Opponent'
       );
-      expect(message).toBe('The combat concludes as \n\nTest Character emerges victorious, defeating Unknown Opponent.');
+      expect(message).toBe('Test Character emerges victorious, defeating Unknown Opponent.');
     });
 
     test('handles null combat summary', () => {
       const message = formatCombatEndMessage(
         'player',
-        '',
+        null,
         'Test Character',
         'Unknown Opponent'
       );
-      expect(message).toBe('The combat concludes as \n\nTest Character emerges victorious, defeating Unknown Opponent.');
+      expect(message).toBe('Test Character emerges victorious, defeating Unknown Opponent.');
     });
   });
 });

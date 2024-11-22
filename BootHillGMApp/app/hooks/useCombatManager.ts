@@ -27,13 +27,19 @@ export const formatCombatEndMessage = (
   opponentName: string
 ): string => {
   const victoryPhrase = winner === 'player'
-    ? `${playerName} emerges victorious, defeating ${opponentName}.`
-    : `${opponentName} emerges victorious, defeating ${playerName}.`;
+    ? `${playerName} emerges victorious, defeating ${opponentName}`
+    : `${opponentName} emerges victorious, defeating ${playerName}`;
 
-  // Clean up the summary by removing roll information
+  // Clean up the summary by removing roll information and ensure it ends with proper punctuation
   const cleanSummary = summary?.replace(/\[Roll:.*?\]/g, '').trim() || '';
-  
-  return `The combat concludes as ${cleanSummary}\n\n${victoryPhrase}`;
+  const summaryWithPunctuation = cleanSummary.endsWith('!') || cleanSummary.endsWith('.') 
+    ? cleanSummary 
+    : cleanSummary + '.';
+
+  // Combine the victory phrase with the summary if available
+  return cleanSummary 
+    ? `${victoryPhrase} ${summaryWithPunctuation}`
+    : `${victoryPhrase}.`;
 };
 
 /**
