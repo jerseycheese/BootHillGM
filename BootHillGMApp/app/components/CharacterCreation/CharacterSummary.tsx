@@ -23,7 +23,9 @@ export function CharacterSummary({
   character,
   summary,
   onSubmit,
-  isLoading
+  isLoading,
+  generateCharacter,
+  isGeneratingCharacter
 }: CharacterSummaryProps) {
   if (isLoading) {
     return (
