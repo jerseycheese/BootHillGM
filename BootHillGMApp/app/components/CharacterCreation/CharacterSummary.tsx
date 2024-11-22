@@ -29,6 +29,10 @@ export function CharacterSummary({
   isGeneratingCharacter
 }: CharacterSummaryProps) {
   const router = useRouter();
+  
+  const handleGoBack = () => {
+    router.push('/character-creation');
+  };
 
   if (isLoading) {
     return (
@@ -45,7 +49,7 @@ export function CharacterSummary({
       <div className="flex justify-between">
         <button
           type="button"
-          onClick={() => router.push('/character-creation')}
+          onClick={handleGoBack}
           className="wireframe-button"
           data-testid="go-back-button"
         >
