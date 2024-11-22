@@ -75,7 +75,8 @@ export class JournalManager {
     outcome: CombatJournalEntry['outcome'],
     summary: string
   ): JournalEntry[] {
-    const cleanedSummary = cleanText(summary);
+    // Clean the summary and remove metadata
+    const cleanedSummary = cleanCombatLogEntry(summary);
     
     // Create a new combat journal entry
     const newEntry: CombatJournalEntry = {

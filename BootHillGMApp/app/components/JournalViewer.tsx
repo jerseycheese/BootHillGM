@@ -14,7 +14,8 @@ const JournalEntry = memo(({ entry, formatDate }: {
     if (isNarrativeEntry(entry)) {
       return entry.narrativeSummary || entry.content;
     } else if (isCombatEntry(entry)) {
-      return `Combat: ${entry.combatants.player} vs ${entry.combatants.opponent} - ${entry.outcome}`;
+      const content = entry.content.trim();
+      return `${formatDate(entry.timestamp)}: Combat: ${entry.combatants.player} vs ${entry.combatants.opponent} - ${entry.outcome}${content ? '\n' + content : ''}`;
     } else if (isInventoryEntry(entry)) {
       const acquired = entry.items.acquired.length ? `Acquired: ${entry.items.acquired.join(', ')}` : '';
       const removed = entry.items.removed.length ? `Removed: ${entry.items.removed.join(', ')}` : '';
