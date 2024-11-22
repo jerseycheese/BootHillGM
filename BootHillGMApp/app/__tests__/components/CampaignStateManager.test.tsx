@@ -166,6 +166,9 @@ describe('CampaignStateManager', () => {
   });
 
   test('handles corrupted state gracefully', async () => {
+    // Temporarily suppress console.error for this test
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    
     localStorage.setItem('campaignState', 'invalid json');
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -179,6 +182,9 @@ describe('CampaignStateManager', () => {
       expect(loadedState).toBeNull();
       expect(result.current.state.character).toBeNull();
     });
+
+    // Restore console.error
+    consoleSpy.mockRestore();
   });
 
   test('handles no saved state gracefully', async () => {
