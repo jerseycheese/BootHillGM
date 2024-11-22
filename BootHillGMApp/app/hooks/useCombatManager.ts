@@ -60,22 +60,19 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
     setIsProcessing(true);
     try {
       await stateProtection.current.withProtection('combat-end', async () => {
-        // Extract key information from combat summary
-        const cleanedSummary = combatSummary.replace(/\[Roll: \d+\/\d+(?:\s*-\s*Critical!)?\]/g, '').trim();
-        
         // Get current names directly from state
         const playerName = state.character?.name || 'Player';
         const opponentName = state.opponent?.name || 'Unknown Opponent';
         
-        // Format a concise end message that incorporates the summary
+        // Format a concise end message
         const endMessage = formatCombatEndMessage(
-          winner, 
-          cleanedSummary,
+          winner,
+          '',  // We don't need the summary anymore
           playerName,
           opponentName
         );
         
-        // Update narrative without redundant information
+        // Update narrative with just the victory message
         onUpdateNarrative(endMessage);
       
         const currentJournal = state.journal || [];
