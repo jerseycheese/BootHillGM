@@ -45,7 +45,7 @@ export function CharacterSummary({
       <div className="flex justify-between">
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push('/character-creation')}
           className="wireframe-button"
           data-testid="go-back-button"
         >
