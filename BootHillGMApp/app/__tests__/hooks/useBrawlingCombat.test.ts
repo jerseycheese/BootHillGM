@@ -321,14 +321,17 @@ describe('useBrawlingCombat', () => {
     
     expect(hookResult.current).not.toBeNull();
     
-    // Start processing the round
-    const processPromise = hookResult.current.processRound(true, true);
-    
-    // Verify processing state is true during combat
-    expect(hookResult.current.isProcessing).toBe(true);
-    
-    // Advance timers and complete processing
+    // Start processing the round within an act to catch the state change
     await act(async () => {
+      const processPromise = hookResult.current.processRound(true, true);
+      
+      // Allow the state update to process
+      await Promise.resolve();
+      
+      // Now check the processing state
+      expect(hookResult.current.isProcessing).toBe(true);
+      
+      // Complete the processing
       jest.advanceTimersByTime(1000);
       await processPromise;
     });
