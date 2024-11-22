@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { LoadingScreen } from '../GameArea/LoadingScreen';
 import { Character } from '../../types/character';
 import { STEP_DESCRIPTIONS } from '../../hooks/useCharacterCreation';
@@ -27,6 +28,8 @@ export function CharacterSummary({
   generateCharacter,
   isGeneratingCharacter
 }: CharacterSummaryProps) {
+  const router = useRouter();
+
   if (isLoading) {
     return (
       <LoadingScreen 
@@ -42,12 +45,11 @@ export function CharacterSummary({
       <div className="flex justify-between">
         <button
           type="button"
-          onClick={generateCharacter}
-          className={`wireframe-button ${isGeneratingCharacter ? 'opacity-50 cursor-not-allowed' : ''}`}
-          disabled={isGeneratingCharacter}
-          data-testid="generate-character-button"
+          onClick={() => router.back()}
+          className="wireframe-button"
+          data-testid="go-back-button"
         >
-          Generate Random Character
+          Go back and make changes
         </button>
         <button 
           type="button"
