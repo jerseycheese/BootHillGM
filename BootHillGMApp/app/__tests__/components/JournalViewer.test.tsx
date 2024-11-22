@@ -134,6 +134,9 @@ describe('JournalViewer', () => {
 
   // Test date formatting error handling
   test('handles invalid timestamp gracefully', () => {
+    // Temporarily suppress console.warn for this test
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    
     const entryWithInvalidDate: NarrativeJournalEntry = {
       type: 'narrative',
       timestamp: NaN,
@@ -142,5 +145,8 @@ describe('JournalViewer', () => {
     
     render(<JournalViewer entries={[entryWithInvalidDate]} />);
     expect(screen.getByText('Invalid date', { selector: 'strong' })).toBeInTheDocument();
+    
+    // Restore console.warn
+    consoleSpy.mockRestore();
   });
 });
