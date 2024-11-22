@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useBrawlingCombat } from '../../hooks/useBrawlingCombat';
 import { Character } from '../../types/character';
 
@@ -304,8 +304,6 @@ describe('useBrawlingCombat', () => {
     // Use fake timers
     jest.useFakeTimers();
     
-    let hookResult: any;
-    
     const { result } = renderHook(() =>
       useBrawlingCombat({
         playerCharacter: mockPlayer,
@@ -314,30 +312,29 @@ describe('useBrawlingCombat', () => {
         dispatch: mockDispatch
       })
     );
-    hookResult = result;
     
-    // Wait for hook to initialize
-    await Promise.resolve();
+    let processPromise: Promise<void>;
     
-    expect(hookResult.current).not.toBeNull();
+    // Start processing the round
+    act(() => {
+      processPromise = result.current.processRound(true, true);
+    });
     
-    // Start processing the round within an act to catch the state change
+    // Verify processing state becomes true
+    await waitFor(() => {
+      expect(result.current.isProcessing).toBe(true);
+    });
+    
+    // Complete the processing
     await act(async () => {
-      const processPromise = hookResult.current.processRound(true, true);
-      
-      // Allow the state update to process
-      await Promise.resolve();
-      
-      // Now check the processing state
-      expect(hookResult.current.isProcessing).toBe(true);
-      
-      // Complete the processing
       jest.advanceTimersByTime(1000);
       await processPromise;
     });
-
-    // Verify processing state is false after combat
-    expect(hookResult.current.isProcessing).toBe(false);
+    
+    // Verify processing state becomes false
+    await waitFor(() => {
+      expect(result.current.isProcessing).toBe(false);
+    });
     
     // Clean up
     jest.useRealTimers();
