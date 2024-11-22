@@ -93,30 +93,33 @@ describe('useBrawlingCombat', () => {
   });
 
   it('processes a round of combat', async () => {
-    const { result } = renderHook(() =>
-      useBrawlingCombat({
-        playerCharacter: mockPlayer,
-        opponent: mockOpponent,
-        onCombatEnd: mockOnCombatEnd,
-        dispatch: mockDispatch
-      })
-    );
-
+    let hookResult: any;
+    
     await act(async () => {
-      const processPromise = result.current.processRound(true, true);
-
+      const { result } = renderHook(() =>
+        useBrawlingCombat({
+          playerCharacter: mockPlayer,
+          opponent: mockOpponent,
+          onCombatEnd: mockOnCombatEnd,
+          dispatch: mockDispatch
+        })
+      );
+      hookResult = result;
+      
+      // Wait for hook to initialize
       await Promise.resolve();
-
+      
+      // Process the round
+      await result.current.processRound(true, true);
+      
+      // Advance timers and flush promises
       jest.advanceTimersByTime(1000);
-
-      await processPromise;
-
       await Promise.resolve();
     });
 
-    expect(result.current.brawlingState.roundLog).toHaveLength(2);
+    expect(hookResult.current.brawlingState.roundLog).toHaveLength(2);
 
-    const [playerEntry, opponentEntry] = result.current.brawlingState.roundLog;
+    const [playerEntry, opponentEntry] = hookResult.current.brawlingState.roundLog;
     expect(playerEntry.text).toContain('Player punches with Light Hit');
     expect(opponentEntry.text).toContain('Opponent');
 
@@ -138,21 +141,31 @@ describe('useBrawlingCombat', () => {
     // Mock random choice for opponent
     jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
 
-    const { result } = renderHook(() =>
-      useBrawlingCombat({
-        playerCharacter: mockPlayer,
-        opponent: mockOpponent,
-        onCombatEnd: mockOnCombatEnd,
-        dispatch: mockDispatch
-      })
-    );
-
+    let hookResult: any;
+    
     await act(async () => {
+      const { result } = renderHook(() =>
+        useBrawlingCombat({
+          playerCharacter: mockPlayer,
+          opponent: mockOpponent,
+          onCombatEnd: mockOnCombatEnd,
+          dispatch: mockDispatch
+        })
+      );
+      hookResult = result;
+      
+      // Wait for hook to initialize
+      await Promise.resolve();
+      
       await result.current.processRound(true, true);
+      
+      // Advance timers and flush promises
+      jest.advanceTimersByTime(1000);
+      await Promise.resolve();
     });
 
     // Should have two log entries (player + opponent actions)
-    expect(result.current.brawlingState.roundLog).toHaveLength(2);
+    expect(hookResult.current.brawlingState.roundLog).toHaveLength(2);
     
     // Verify round advanced
     expect(result.current.brawlingState.round).toBe(2);
