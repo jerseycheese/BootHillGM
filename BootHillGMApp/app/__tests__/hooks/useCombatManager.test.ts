@@ -250,7 +250,7 @@ describe('useCombatManager', () => {
         'Test Character',
         'Unknown Opponent'
       );
-      expect(message).toBe('The combat concludes as Test summary\n\nTest Character emerges victorious, defeating Unknown Opponent.\n\nWhat would you like to do now?');
+      expect(message).toBe('The combat concludes as Test summary\n\nTest Character emerges victorious, defeating Unknown Opponent.');
     });
 
     test('formats defeat message correctly', () => {
@@ -260,7 +260,7 @@ describe('useCombatManager', () => {
         'Test Character',
         'Unknown Opponent'
       );
-      expect(message).toBe('The combat concludes as Test summary\n\nUnknown Opponent emerges victorious, defeating Test Character.\n\nWhat would you like to do now?');
+      expect(message).toBe('The combat concludes as Test summary\n\nUnknown Opponent emerges victorious, defeating Test Character.');
     });
 
     test('removes redundant roll information', () => {
@@ -270,7 +270,7 @@ describe('useCombatManager', () => {
         'Test Character',
         'Unknown Opponent'
       );
-      expect(message).toBe('The combat concludes as Test summary\n\nTest Character emerges victorious, defeating Unknown Opponent.\n\nWhat would you like to do now?');
+      expect(message).toBe('The combat concludes as Test summary\n\nTest Character emerges victorious, defeating Unknown Opponent.');
     });
 
     test('handles empty combat summary', () => {
@@ -280,7 +280,7 @@ describe('useCombatManager', () => {
         'Test Character',
         'Unknown Opponent'
       );
-      expect(message).toBe('The combat concludes as \n\nTest Character emerges victorious, defeating Unknown Opponent.\n\nWhat would you like to do now?');
+      expect(message).toBe('The combat concludes as \n\nTest Character emerges victorious, defeating Unknown Opponent.');
     });
 
     test('handles null combat summary', () => {
@@ -290,7 +290,7 @@ describe('useCombatManager', () => {
         'Test Character',
         'Unknown Opponent'
       );
-      expect(message).toBe('The combat concludes as \n\nTest Character emerges victorious, defeating Unknown Opponent.\n\nWhat would you like to do now?');
+      expect(message).toBe('The combat concludes as \n\nTest Character emerges victorious, defeating Unknown Opponent.');
     });
   });
 });

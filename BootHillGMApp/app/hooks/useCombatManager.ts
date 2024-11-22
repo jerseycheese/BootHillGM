@@ -18,8 +18,7 @@ import { CombatState, ensureCombatState } from '../types/combat';
  * 
  * Example output:
  * "The combat concludes as John strikes a decisive blow.
- * John emerges victorious, defeating Bandit.
- * What would you like to do now?"
+ * John emerges victorious, defeating Bandit."
  */
 export const formatCombatEndMessage = (
   winner: 'player' | 'opponent',
@@ -34,7 +33,7 @@ export const formatCombatEndMessage = (
   // Clean up the summary by removing roll information
   const cleanSummary = summary?.replace(/\[Roll:.*?\]/g, '').trim() || '';
   
-  return `The combat concludes as ${cleanSummary}\n\n${victoryPhrase}\n\nWhat would you like to do now?`;
+  return `The combat concludes as ${cleanSummary}\n\n${victoryPhrase}`;
 };
 
 /**
