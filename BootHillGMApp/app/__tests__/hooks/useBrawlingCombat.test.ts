@@ -200,6 +200,7 @@ describe('useBrawlingCombat', () => {
     );
 
     await act(async () => {
+      expect(result.current).not.toBeNull();
       await result.current.processRound(true, true);
     });
 
@@ -232,6 +233,7 @@ describe('useBrawlingCombat', () => {
 
     // Process second round
     await act(async () => {
+      expect(result.current).not.toBeNull();
       await result.current.processRound(true, false); // Try grapple this time
     });
 
@@ -258,6 +260,7 @@ describe('useBrawlingCombat', () => {
 
     // Start processing a round
     const roundPromise = act(async () => {
+      expect(result.current).not.toBeNull();
       await result.current.processRound(true, true);
     });
 
