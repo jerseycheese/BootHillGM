@@ -197,6 +197,9 @@ describe('useBrawlingCombat', () => {
   });
 
   test('ends combat when knockout occurs', async () => {
+    // Use fake timers
+    jest.useFakeTimers();
+    
     // Mock a powerful hit that causes knockout
     jest.spyOn(require('../../utils/brawlingSystem'), 'resolveBrawlingRound')
       .mockReturnValueOnce({
@@ -209,25 +212,28 @@ describe('useBrawlingCombat', () => {
 
     let hookResult: any;
     
-    await act(async () => {
-      const { result } = renderHook(() =>
-        useBrawlingCombat({
-          playerCharacter: mockPlayer,
-          opponent: mockOpponent,
-          onCombatEnd: mockOnCombatEnd,
-          dispatch: mockDispatch
-        })
-      );
-      hookResult = result;
-      
-      // Wait for hook to initialize
-      await Promise.resolve();
-    });
-
+    const { result } = renderHook(() =>
+      useBrawlingCombat({
+        playerCharacter: mockPlayer,
+        opponent: mockOpponent,
+        onCombatEnd: mockOnCombatEnd,
+        dispatch: mockDispatch
+      })
+    );
+    hookResult = result;
+    
+    // Wait for hook to initialize
+    await Promise.resolve();
+    
     expect(hookResult.current).not.toBeNull();
     
+    // Start processing the round
+    const processPromise = hookResult.current.processRound(true, true);
+    
+    // Advance timers and resolve promises
     await act(async () => {
-      await hookResult.current.processRound(true, true);
+      jest.advanceTimersByTime(1000);
+      await processPromise;
     });
 
     // Verify combat ended
@@ -238,6 +244,9 @@ describe('useBrawlingCombat', () => {
 
     // Verify only one action was processed (combat ended before opponent's turn)
     expect(hookResult.current.brawlingState.roundLog).toHaveLength(1);
+    
+    // Clean up
+    jest.useRealTimers();
   });
 
   test('handles multiple rounds of combat', async () => {
