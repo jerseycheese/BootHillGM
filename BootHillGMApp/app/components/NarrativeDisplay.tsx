@@ -77,7 +77,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
           trimmedLine.startsWith('REMOVED_ITEMS:')) {
         const updateType = trimmedLine.startsWith('ACQUIRED_ITEMS:') ? 'acquired' : 'used';
         const itemsMatch = trimmedLine.match(/:\s*(?:\[(.*?)\]|(.*))/);
-        const itemsList = itemsMatch ? 
+        const itemsList = itemsMatch && (itemsMatch[1] || itemsMatch[2]) ? 
           (itemsMatch[1] || itemsMatch[2])
             .split(',')
             .map(item => item.trim())

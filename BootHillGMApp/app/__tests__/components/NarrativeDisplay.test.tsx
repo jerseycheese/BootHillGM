@@ -89,6 +89,18 @@ Regular narrative text
     expect(container.scrollTop).toBe(0);
   });
 
+  test('handles empty item updates gracefully', () => {
+    const narrativeWithEmptyItems = `
+      ACQUIRED_ITEMS:
+      REMOVED_ITEMS:
+    `;
+    
+    render(<NarrativeDisplay narrative={narrativeWithEmptyItems} />);
+    // Should not throw any errors
+    expect(screen.queryByTestId('item-update-acquired')).toBeNull();
+    expect(screen.queryByTestId('item-update-used')).toBeNull();
+  });
+
   test('handles error states correctly', () => {
     render(
       <NarrativeDisplay 
