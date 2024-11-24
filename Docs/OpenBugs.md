@@ -75,17 +75,6 @@ This document tracks bugs found during development and testing. Each bug entry s
   - Status: Open
   - Priority: Medium
 
-[BUG-028] Player Actions Not Visually Distinct in Narrative
-  - Description: Player actions are not visually emphasized in the game narrative.
-  - Steps to Reproduce: 
-    1. Start a game session
-    2. Perform several actions
-    3. Review the narrative text
-  - Expected Behavior: Player actions should be visually distinct from the rest of the narrative
-  - Actual Behavior: Player actions blend in with the rest of the narrative text
-  - Status: Open
-  - Priority: Medium
-
 [BUG-032] Combat System UI Polish Needed
   - Description: While the combat system has been refactored for better maintainability, some UI improvements could enhance user experience
   - Areas for Improvement:

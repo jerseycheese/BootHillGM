@@ -39,13 +39,13 @@ describe('Narrative Processing', () => {
     expect(itemUpdate).toHaveTextContent('Used/Removed Items: healing potion');
   });
 
-  it('handles empty lines correctly', () => {
-    // Using a single newline to test empty line handling
-    render(React.createElement(NarrativeDisplay, { narrative: "Line 1\n\nLine 2" }));
-    const container = screen.getByTestId('narrative-display');
-    const spacers = screen.getAllByTestId('empty-spacer');
-    expect(spacers).toHaveLength(1); // One empty line between two content lines
-  });
+  it('handles empty lines correctly', () => {                                                                                                   
+    // Using a single newline to test empty line handling                                                                                       
+    render(React.createElement(NarrativeDisplay, { narrative: "Line 1\n\nLine 2" }));                                                           
+    const container = screen.getByTestId('narrative-display');                                                                                  
+    const spacers = screen.getAllByTestId('empty-spacer');                                                                                      
+    expect(spacers).toHaveLength(1); // One empty line between two content lines                                                                
+  }); 
 
   it('processes complex narrative sequences correctly', () => {
     const narrative = `

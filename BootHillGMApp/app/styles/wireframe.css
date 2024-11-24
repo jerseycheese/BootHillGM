@@ -149,20 +149,102 @@
 
 /* Narrative Display */
 .narrative-container {
-  background-color: var(--aged-paper);
-  border: 1px solid var(--weathered-wood);
-  padding: 1.5rem;
-  margin: 1rem 0;
+  background-color: var(--parchment);
+  scrollbar-width: thin;
+  scrollbar-color: var(--weathered-wood) transparent;
+}
+
+.narrative-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.narrative-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.narrative-container::-webkit-scrollbar-thumb {
+  background-color: var(--weathered-wood);
+  border-radius: 3px;
+}
+
+.narrative-content {
+  line-height: 1.6;
   font-family: var(--western-text);
-  line-height: 1.8;
 }
 
 .player-action {
-  color: var(--saddle-brown);
-  font-weight: bold;
+  border-left: 4px solid var(--saddle-brown);
+  padding-left: 1rem;
+  background-color: rgba(149, 69, 53, 0.05);
+  margin: 0.5rem 0;
+  transition: background-color 0.3s ease;
+  animation: highlight 1s ease-out;
+}
+
+.player-action:hover {
+  background-color: rgba(149, 69, 53, 0.1);
 }
 
 .gm-response {
-  color: var(--dusty-red);
-  font-style: italic;
+  border-left: 4px solid var(--dusty-red);
+  padding-left: 1rem;
+  margin: 0.5rem 0;
+}
+
+.item-update {
+  border-radius: 0.25rem;
+  margin: 0.5rem 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.9em;
+  background-color: var(--aged-paper);
+  border-left: 4px solid var(--leather-brown);
+}
+
+.item-update-acquired {
+  background-color: rgba(184, 84, 80, 0.1);
+  border-left-color: var(--dusty-red);
+}
+
+.item-update-used {
+  background-color: rgba(150, 121, 105, 0.1);
+  border-left-color: var(--weathered-wood);
+}
+
+.empty-line {
+  height: 1rem;
+}
+
+@keyframes highlight {
+  0% {
+    background-color: rgba(149, 69, 53, 0.2);
+  }
+  100% {
+    background-color: rgba(149, 69, 53, 0.05);
+  }
+}
+
+/* Error Display */
+.error-display {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  background-color: rgba(184, 84, 80, 0.1);
+  border-left: 4px solid var(--dusty-red);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 640px) {
+  .narrative-content {
+    font-size: 0.9rem;
+  }
+  
+  .player-action,
+  .gm-response {
+    padding-left: 0.75rem;
+  }
+  
+  .item-update {
+    font-size: 0.85rem;
+    padding: 0.375rem 0.75rem;
+  }
 }

@@ -114,7 +114,10 @@ describe('useBrawlingCombat', () => {
     expect(hookResult.current).not.toBeNull();
     
     // Start processing the round
-    const processPromise = hookResult.current.processRound(true, true);
+    let processPromise: Promise<void>;
+    await act(async () => {
+      processPromise = hookResult.current.processRound(true, true);
+    });
     
     // Advance timers and resolve promises
     await act(async () => {
@@ -170,7 +173,10 @@ describe('useBrawlingCombat', () => {
     expect(hookResult.current).not.toBeNull();
     
     // Start processing the round
-    const processPromise = hookResult.current.processRound(true, true);
+    let processPromise: Promise<void>;
+    await act(async () => {
+      processPromise = hookResult.current.processRound(true, true);
+    });
     
     // Advance timers and resolve promises
     await act(async () => {
@@ -228,7 +234,10 @@ describe('useBrawlingCombat', () => {
     expect(hookResult.current).not.toBeNull();
     
     // Start processing the round
-    const processPromise = hookResult.current.processRound(true, true);
+    let processPromise: Promise<void>;
+    await act(async () => {
+      processPromise = hookResult.current.processRound(true, true);
+    });
     
     // Advance timers and resolve promises
     await act(async () => {
@@ -271,7 +280,10 @@ describe('useBrawlingCombat', () => {
     expect(hookResult.current).not.toBeNull();
     
     // Process first round
-    const firstRoundPromise = hookResult.current.processRound(true, true);
+    let firstRoundPromise: Promise<void>;
+    await act(async () => {
+      firstRoundPromise = hookResult.current.processRound(true, true);
+    });
     await act(async () => {
       jest.advanceTimersByTime(1000);
       await firstRoundPromise;
@@ -280,7 +292,10 @@ describe('useBrawlingCombat', () => {
     expect(hookResult.current.brawlingState.round).toBe(2);
 
     // Process second round
-    const secondRoundPromise = hookResult.current.processRound(true, false);
+    let secondRoundPromise: Promise<void>;
+    await act(async () => {
+      secondRoundPromise = hookResult.current.processRound(true, false);
+    });
     await act(async () => {
       jest.advanceTimersByTime(1000);
       await secondRoundPromise;
@@ -316,7 +331,7 @@ describe('useBrawlingCombat', () => {
     let processPromise: Promise<void>;
     
     // Start processing the round
-    act(() => {
+    await act(async () => {
       processPromise = result.current.processRound(true, true);
     });
     

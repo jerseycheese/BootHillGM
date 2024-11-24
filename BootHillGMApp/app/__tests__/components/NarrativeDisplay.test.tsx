@@ -1,65 +1,65 @@
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { NarrativeDisplay } from '../../components/NarrativeDisplay';
 
 describe('NarrativeDisplay', () => {
-  const mockNarrative = 'Test narrative content';
   const mockError = 'Test error message';
   const mockRetry = jest.fn();
-
+  
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock scrollIntoView
-    Element.prototype.scrollIntoView = jest.fn();
-    // Mock scrollHeight and clientHeight
-    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
-      configurable: true,
-      value: 1000
-    });
-    Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
-      configurable: true,
-      value: 500
-    });
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  test('renders narrative content with proper formatting', () => {
-    const formattedNarrative = `
-Player: Look around
-Game Master: You see a dusty saloon
-Regular narrative text
+  test('emphasizes player actions with distinct styling', () => {
+    const narrative = `
+      Player: draws weapon
+      Game Master: You ready your weapon
+      Regular narrative text
+      Player: aims carefully
     `;
     
-    render(<NarrativeDisplay narrative={formattedNarrative} />);
+    render(<NarrativeDisplay narrative={narrative} />);
     
-    expect(screen.getByText('Player: Look around')).toHaveClass('player-action');
-    expect(screen.getByText('Game Master: You see a dusty saloon')).toHaveClass('gm-response');
-    expect(screen.getByText('Regular narrative text')).toHaveClass('narrative-line');
+    const playerActions = screen.getAllByTestId('player-action');
+    expect(playerActions).toHaveLength(2);
+    playerActions.forEach(action => {
+      expect(action).toHaveClass(
+        'player-action',
+        'border-l-4',
+        'border-saddle-brown',
+        'pl-4',
+        'bg-opacity-5',
+        'hover:bg-opacity-10',
+        'transition-colors',
+        'duration-300',
+        'animate-highlight'
+      );
+    });
   });
 
-  test('renders item update notifications correctly', () => {
-    const narrativeWithItems = `
-      Player: Acquired some items
-      ACQUIRED_ITEMS: [Gun, Knife]
-      GM: You now have a Gun and Knife.
-      Player: Used a knife
-      REMOVED_ITEMS: [Knife]
-      `;
-  
-    render(<NarrativeDisplay narrative={narrativeWithItems} />);
-  
-    // Use getAllByTestId since there may be multiple updates
-    const acquiredUpdates = screen.getAllByTestId('item-update-acquired');
-    expect(acquiredUpdates[0]).toHaveTextContent('Acquired Items: gun, knife');
-  
-    const usedUpdate = screen.getByTestId('item-update-used');
-    expect(usedUpdate).toHaveTextContent('Used/Removed Items: knife');
+  test('maintains proper ordering of different content types', () => {                                                                   
+    const narrative = 'Player: enters saloon\nGM: The room falls silent\nACQUIRED_ITEMS: [Whiskey]\nRegular narrative continues';        
+                                                                                                                                         
+    render(<NarrativeDisplay narrative={narrative} />);                                                                                  
+                                                                                                                                         
+    const playerAction = screen.getByTestId('player-action');                                                                            
+    const gmResponse = screen.getByTestId('gm-response');                                                                                
+    const itemUpdate = screen.getByTestId('item-update-acquired');                                                                       
+    const narrativeLine = screen.getByTestId('narrative-line');                                                                          
+                                                                                                                                         
+    // Verify all elements are present                                                                                                   
+    expect(playerAction).toBeInTheDocument();                                                                                            
+    expect(gmResponse).toBeInTheDocument();                                                                                              
+    expect(itemUpdate).toBeInTheDocument();                                                                                              
+    expect(narrativeLine).toBeInTheDocument();                                                                                           
+                                                                                                                                         
+    // Verify relative ordering                                                                                                          
+    expect(playerAction.compareDocumentPosition(gmResponse) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();                            
+    expect(gmResponse.compareDocumentPosition(itemUpdate) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();                              
+    expect(itemUpdate.compareDocumentPosition(narrativeLine) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
-  
 
-  test('auto-scrolls when new content is added', () => {
+  test('handles auto-scrolling behavior correctly', () => {
     const { rerender } = render(<NarrativeDisplay narrative="Initial content" />);
     
     const container = screen.getByTestId('narrative-display');
@@ -76,10 +76,8 @@ Regular narrative text
     const container = screen.getByTestId('narrative-display');
     
     // Simulate manual scroll
-    act(() => {
-      fireEvent.scroll(container, {
-        target: { scrollTop: 0 }
-      });
+    fireEvent.scroll(container, {
+      target: { scrollTop: 0 }
     });
     
     // Add new content
@@ -89,22 +87,25 @@ Regular narrative text
     expect(container.scrollTop).toBe(0);
   });
 
-  test('handles empty item updates gracefully', () => {
-    const narrativeWithEmptyItems = `
-      ACQUIRED_ITEMS:
-      REMOVED_ITEMS:
+  test('deduplicates item updates while maintaining order', () => {
+    const narrative = `
+      Player: searches the chest
+      ACQUIRED_ITEMS: [Gold, Silver]
+      GM: You find more items
+      ACQUIRED_ITEMS: [Gold, Silver]
     `;
     
-    render(<NarrativeDisplay narrative={narrativeWithEmptyItems} />);
-    // Should not throw any errors
-    expect(screen.queryByTestId('item-update-acquired')).toBeNull();
-    expect(screen.queryByTestId('item-update-used')).toBeNull();
+    render(<NarrativeDisplay narrative={narrative} />);
+    
+    const itemUpdates = screen.getAllByTestId('item-update-acquired');
+    expect(itemUpdates).toHaveLength(1);
+    expect(itemUpdates[0]).toHaveTextContent('Acquired Items: gold, silver');
   });
 
-  test('handles error states correctly', () => {
+  test('handles error display and retry functionality', () => {
     render(
       <NarrativeDisplay 
-        narrative={mockNarrative} 
+        narrative="Test narrative"
         error={mockError}
         onRetry={mockRetry}
       />
@@ -118,16 +119,48 @@ Regular narrative text
     expect(mockRetry).toHaveBeenCalledTimes(1);
   });
 
-  test('maintains empty line spacing', () => {
+  test('preserves empty lines for narrative pacing', () => {
     const narrativeWithEmptyLines = `Line 1\n\nLine 2`;
-    const { container } = render(<NarrativeDisplay narrative={narrativeWithEmptyLines} />);
-  
-    // Check for the number of narrative lines
-    const narrativeLines = container.getElementsByClassName('narrative-line');
-    expect(narrativeLines.length).toBe(2); // Line 1 and Line 2
-  
-    // Check for empty spacers
-    const emptySpacers = container.getElementsByClassName('h-2');
-    expect(emptySpacers.length).toBe(1); // The empty line spacer
+    render(<NarrativeDisplay narrative={narrativeWithEmptyLines} />);
+    
+    const emptySpacers = screen.getAllByTestId('empty-spacer');
+    expect(emptySpacers).toHaveLength(1);
+  });
+
+  test('properly cleans metadata from text content', () => {
+    const narrativeWithMetadata = `
+      Player: takes action SUGGESTED_ACTIONS: [...] ACQUIRED_ITEMS: []
+      GM: responds REMOVED_ITEMS: [] with text
+    `;
+    
+    render(<NarrativeDisplay narrative={narrativeWithMetadata} />);
+    
+    const playerAction = screen.getByTestId('player-action');
+    const gmResponse = screen.getByTestId('gm-response');
+    
+    expect(playerAction).toHaveTextContent('takes action');
+    expect(gmResponse).toHaveTextContent('responds with text');
+    expect(playerAction).not.toHaveTextContent('SUGGESTED_ACTIONS');
+    expect(gmResponse).not.toHaveTextContent('REMOVED_ITEMS');
+  });
+
+  test('processes multiple narrative lines with proper spacing', () => {
+    const multilineNarrative = 'Line 1\n\nLine 2\nPlayer: action\nGM: response';
+    render(<NarrativeDisplay narrative={multilineNarrative} />);
+    
+    const narrativeLines = screen.getAllByTestId('narrative-line');
+    expect(narrativeLines).toHaveLength(2);
+    expect(narrativeLines[0]).toHaveTextContent('Line 1');
+    expect(narrativeLines[1]).toHaveTextContent('Line 2');
+    expect(screen.getByTestId('empty-spacer')).toBeInTheDocument();
+    expect(screen.getByTestId('player-action')).toBeInTheDocument();
+    expect(screen.getByTestId('gm-response')).toBeInTheDocument();
+  });
+
+  test('handles malformed input gracefully', () => {
+    const malformedNarrative = 'ACQUIRED_ITEMS:\nPlayer:\nGM:';
+    render(<NarrativeDisplay narrative={malformedNarrative} />);
+    
+    expect(screen.queryByTestId('item-update-acquired')).not.toBeInTheDocument();
   });
 });

@@ -1,6 +1,10 @@
 /**
- * Enhanced NarrativeDisplay component with improved player action emphasis and state handling.
- * Provides clear visual distinction for player actions and optimized state updates.
+ * Displays game narrative with visual emphasis on player actions and automated item tracking.
+ * Features:
+ * - Distinct styling for player actions vs GM responses
+ * - Automatic item acquisition/removal tracking
+ * - Smart deduplication of item updates
+ * - Accessibility support for screen readers
  */
 
 import { useRef, useEffect, useMemo, useCallback } from 'react';
@@ -13,7 +17,7 @@ export interface NarrativeDisplayProps {
   onRetry?: () => void;
 }
 
-interface NarrativeItem {
+export interface NarrativeItem {
   type: 'player-action' | 'gm-response' | 'narrative' | 'item-update';
   content: string;
   metadata?: {
@@ -136,13 +140,16 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       data-testid="narrative-display"
     >
       <div className="narrative-content py-4 space-y-1">
-        {narrativeItems.map((item, index) => (
-          <NarrativeContent 
-            key={`${item.type}-${index}`}
-            item={item} 
-            processedUpdates={processedUpdatesRef.current}
-          />
-        ))}
+        {narrativeItems.map((item, index) => {
+          const element = (
+            <NarrativeContent 
+              key={`${item.type}-${index}`}
+              item={item} 
+              processedUpdates={processedUpdatesRef.current}
+            />
+          );
+          return element;
+        })}
       </div>
       
       {error && (

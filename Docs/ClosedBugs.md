@@ -65,3 +65,15 @@ This document tracks resolved bugs in the BootHillGM project. For active bugs, s
 - Description: Narrative updates after combat ends contain confusing or redundant information
 - Resolution: Implemented cleaner combat end messages with formatCombatEndMessage function and improved state management
 - Closed Date: 2024-11-22
+
+[BUG-028] Player Actions Not Visually Distinct in Narrative
+- Description: Player actions are not visually emphasized in the game narrative.
+- Steps to Reproduce: 
+  1. Start a game session
+  2. Perform several actions
+  3. Review the narrative text
+- Expected Behavior: Player actions should be visually distinct from the rest of the narrative
+- Actual Behavior: Player actions blend in with the rest of the narrative text
+- Status: Fixed
+- Resolution: Implemented distinct styling for player actions in NarrativeDisplay.tsx and added visual emphasis
+- Closed Date: 2024-11-25
