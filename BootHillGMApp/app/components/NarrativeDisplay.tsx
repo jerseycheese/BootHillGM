@@ -1,5 +1,11 @@
+/**
+ * Enhanced NarrativeDisplay component with improved player action emphasis and state handling.
+ * Provides clear visual distinction for player actions and optimized state updates.
+ */
+
 import { useRef, useEffect, useMemo, useCallback } from 'react';
 import { NarrativeContent } from './NarrativeContent';
+import { cleanText } from '../utils/textCleaningUtils';
 
 export interface NarrativeDisplayProps {
   narrative: string;
@@ -7,92 +13,104 @@ export interface NarrativeDisplayProps {
   onRetry?: () => void;
 }
 
-/**
- * Key type definitions for narrative content processing.
- * ContentType defines the possible types of narrative content for consistent display.
- * UpdateType specifies the types of item updates that can occur during gameplay.
- */
-export type ContentType = 'player-action' | 'gm-response' | 'narrative' | 'item-update';
-type UpdateType = 'acquired' | 'used';
-
-export interface NarrativeItem {
-  type: ContentType;
+interface NarrativeItem {
+  type: 'player-action' | 'gm-response' | 'narrative' | 'item-update';
   content: string;
   metadata?: {
     items?: string[];
-    updateType?: UpdateType;
+    updateType?: 'acquired' | 'used';
+    timestamp?: number;
+    isEmpty?: boolean;
   };
 }
 
-/**
- * Displays game narrative with auto-scrolling and content processing.
- * Handles different types of content (player actions, GM responses, items) 
- * and maintains a scrollable view with error handling.
- */
 export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   narrative,
   error,
   onRetry
 }) => {
-  // Track scroll position to maintain auto-scroll when appropriate
   const containerRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabled = useRef<boolean>(true);
-  // Keep track of processed item updates to prevent duplicates
   const processedUpdatesRef = useRef<Set<string>>(new Set());
 
-  // Process narrative content into structured items for display
+  // Enhanced narrative processing
   const narrativeItems = useMemo(() => {
-    // Clear processed updates when narrative changes
     processedUpdatesRef.current.clear();
     
-    return narrative.split('\n').reduce<NarrativeItem[]>((narrativeItems, line) => {
+    return narrative.split('\n').reduce<NarrativeItem[]>((items, line) => {
       const trimmedLine = line.trim();
       if (!trimmedLine) {
-        narrativeItems.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
-        return narrativeItems;
+        items.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
+        return items;
       }
 
-      // Remove metadata markers while preserving core content
-      const cleanLineContent = (text: string): string => {
-        return text
-          .replace(/(?:ACQUIRED_ITEMS|REMOVED_ITEMS|SUGGESTED_ACTIONS):.+$/g, '')
-          .replace(/^important:.*$/i, '')  // Remove any remaining "important:" lines
-          .trim();
-      };
-
-      // Process different types of narrative content
-      if (trimmedLine.startsWith('Player:')) {
-        narrativeItems.push({ 
-          type: 'player-action',
-          content: cleanLineContent(trimmedLine)
-        });
-      } else if (trimmedLine.startsWith('GM:') || trimmedLine.startsWith('Game Master:')) {
-        narrativeItems.push({ 
-          type: 'gm-response',
-          content: cleanLineContent(trimmedLine)
-        });
-      } else if (/^(?:ACQUIRED_ITEMS|REMOVED_ITEMS):/.test(trimmedLine)) {
-        // Handle item acquisition and removal updates
-        const [type, itemList] = trimmedLine.split(':');
-        const updateType = type.startsWith('ACQUIRED') ? 'acquired' : 'used';
-        const itemsArray = itemList.replace(/[\[\]]/g, '').split(',').map(i => i.trim()).filter(Boolean);
-        
-        if (itemsArray.length) {
-          narrativeItems.push({
-            type: 'item-update',
-            content: '',
-            metadata: { updateType, items: itemsArray }
+      // Improved player action detection
+      const playerActionMatch = trimmedLine.match(/^(?:Player:|You:?)\s*(.*)/i);
+      if (playerActionMatch) {
+        const cleanedAction = cleanText(playerActionMatch[1]);
+        if (cleanedAction) {
+          items.push({ 
+            type: 'player-action',
+            content: cleanedAction,
+            metadata: { timestamp: Date.now() }
           });
         }
-      } else if (!trimmedLine.startsWith('SUGGESTED_ACTIONS:')) {
-        // Process regular narrative lines, excluding metadata markers
-        narrativeItems.push({ 
-          type: 'narrative',
-          content: cleanLineContent(trimmedLine)
-        });
+        return items;
+      }
+
+      // Enhanced GM response detection
+      const gmResponseMatch = trimmedLine.match(/^(?:GM:|Game Master:)\s*(.*)/i);
+      if (gmResponseMatch) {
+        const cleanedResponse = cleanText(gmResponseMatch[1]);
+        if (cleanedResponse) {
+          items.push({ 
+            type: 'gm-response',
+            content: cleanedResponse,
+            metadata: { timestamp: Date.now() }
+          });
+        }
+        return items;
+      }
+
+      // Process item updates
+      if (trimmedLine.startsWith('ACQUIRED_ITEMS:') || 
+          trimmedLine.startsWith('REMOVED_ITEMS:')) {
+        const updateType = trimmedLine.startsWith('ACQUIRED_ITEMS:') ? 'acquired' : 'used';
+        const itemsMatch = trimmedLine.match(/:\s*(?:\[(.*?)\]|(.*))/);
+        const itemsList = itemsMatch ? 
+          (itemsMatch[1] || itemsMatch[2])
+            .split(',')
+            .map(item => item.trim())
+            .filter(Boolean) : 
+          [];
+
+        if (itemsList.length) {
+          items.push({
+            type: 'item-update',
+            content: '',
+            metadata: { 
+              updateType, 
+              items: itemsList,
+              timestamp: Date.now()
+            }
+          });
+        }
+        return items;
+      }
+
+      // Handle regular narrative
+      if (!trimmedLine.startsWith('SUGGESTED_ACTIONS:')) {
+        const cleanedContent = cleanText(trimmedLine);
+        if (cleanedContent) {
+          items.push({ 
+            type: 'narrative',
+            content: cleanedContent,
+            metadata: { timestamp: Date.now() }
+          });
+        }
       }
       
-      return narrativeItems;
+      return items;
     }, []);
   }, [narrative]);
 
