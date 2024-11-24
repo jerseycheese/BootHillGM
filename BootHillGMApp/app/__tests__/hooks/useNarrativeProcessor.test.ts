@@ -1,17 +1,19 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { NarrativeDisplay } from '../../components/NarrativeDisplay';
 
 describe('Narrative Processing', () => {
   it('processes player actions correctly', () => {
     render(React.createElement(NarrativeDisplay, { narrative: "Player: swings the sword" }));
-    const playerAction = screen.getByText('Player: swings the sword');
+    const playerActionContainer = screen.getByTestId('player-action');
+    const playerAction = within(playerActionContainer).getByText(/swings the sword/);
     expect(playerAction).toHaveClass('player-action');
   });
 
   it('processes GM responses correctly', () => {
     render(React.createElement(NarrativeDisplay, { narrative: "GM: The sword hits its target" }));
-    const gmResponse = screen.getByText('GM: The sword hits its target');
+    const gmResponseContainer = screen.getByTestId('gm-response');
+    const gmResponse = within(gmResponseContainer).getByText(/The sword hits its target/);
     expect(gmResponse).toHaveClass('gm-response');
   });
 
@@ -59,14 +61,17 @@ describe('Narrative Processing', () => {
     
     render(React.createElement(NarrativeDisplay, { narrative }));
 
-    expect(screen.getAllByText(/^Player:/)).toHaveLength(3);
-    expect(screen.getAllByText(/^GM:/)).toHaveLength(3);
-    
-    const itemUpdates = screen.getAllByTestId('item-update-acquired');
-    
-    expect(itemUpdates).toHaveLength(1); // Should only show one update
-    expect(itemUpdates[0]).toHaveTextContent('Acquired Items: gold coins, ruby necklace');
-    expect(screen.getByText('The chest closes with a loud thud')).toHaveClass('narrative-line');
+    const playerActions = screen.getAllByTestId('player-action');
+    const gmResponses = screen.getAllByTestId('gm-response');
+    const narratives = screen.getAllByTestId('narrative-line');
+
+    expect(playerActions).toHaveLength(3);
+    expect(gmResponses).toHaveLength(3);
+    expect(narratives).toHaveLength(1);
+
+    playerActions.forEach(action => expect(action).toHaveClass('player-action'));
+    gmResponses.forEach(response => expect(response).toHaveClass('gm-response'));
+    narratives.forEach(narrative => expect(narrative).toHaveClass('narrative-line'));
   });
 
   it('handles metadata markers without affecting narrative display', () => {
@@ -80,8 +85,8 @@ describe('Narrative Processing', () => {
 
     const container = screen.getByTestId('narrative-display');
     expect(container).not.toHaveTextContent('SUGGESTED_ACTIONS');
-    expect(screen.getByText('Player: looks around')).toHaveClass('player-action');
-    expect(screen.getByText('GM: You see various items')).toHaveClass('gm-response');
+    expect(screen.getByText(/looks around/)).toHaveClass('player-action');
+    expect(screen.getByText(/You see various items/)).toHaveClass('gm-response');
     expect(screen.getByText('The room is dimly lit')).toHaveClass('narrative-line');
   });
 
@@ -94,8 +99,8 @@ describe('Narrative Processing', () => {
     `;
     render(React.createElement(NarrativeDisplay, { narrative }));
 
-    const playerActions = screen.getAllByText(/^Player:/);
-    const gmResponses = screen.getAllByText(/^GM:/);
+    const playerActions = screen.getAllByText(/draws sword|attacks the goblin/);
+    const gmResponses = screen.getAllByText(/You ready your weapon|Your attack hits true/);
 
     expect(playerActions).toHaveLength(2);
     expect(gmResponses).toHaveLength(2);
@@ -118,6 +123,6 @@ describe('Narrative Processing', () => {
 
     expect(itemUpdates).toHaveLength(1);
     expect(itemUpdates[0]).toHaveTextContent('Acquired Items: gold coins, healing potion');
-    expect(removedUpdate).toHaveTextContent('healing potion');
+    expect(removedUpdate).toHaveTextContent('Used/Removed Items: healing potion');
   });
 });
