@@ -104,22 +104,22 @@ export async function generateCompleteCharacter(): Promise<Character> {
     // Generate a random name using generateFieldValue instead of using a default name
     const name = await generateFieldValue('name');
     
-    // Return a character with random name and default stats
+    // Return a character with random name and randomly generated stats
     return {
       name: name.toString(),
       attributes: {
-        speed: 10,
-        gunAccuracy: 10,
-        throwingAccuracy: 10,
-        strength: 10,
-        baseStrength: 10,
-        bravery: 10,
-        experience: 5
+        speed: generateRandomValue('speed'),
+        gunAccuracy: generateRandomValue('gunAccuracy'),
+        throwingAccuracy: generateRandomValue('throwingAccuracy'),
+        strength: generateRandomValue('strength'),
+        baseStrength: generateRandomValue('baseStrength'),
+        bravery: generateRandomValue('bravery'),
+        experience: generateRandomValue('experience')
       },
       skills: {
-        shooting: 50,
-        riding: 50,
-        brawling: 50
+        shooting: generateRandomValue('shooting'),
+        riding: generateRandomValue('riding'),
+        brawling: generateRandomValue('brawling')
       },
       wounds: [],
       isUnconscious: false
