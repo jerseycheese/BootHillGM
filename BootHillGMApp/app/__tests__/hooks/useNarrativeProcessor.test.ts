@@ -39,13 +39,12 @@ describe('Narrative Processing', () => {
     expect(itemUpdate).toHaveTextContent('Used/Removed Items: healing potion');
   });
 
-  it('handles empty lines correctly', () => {                                                                                                   
-    // Using a single newline to test empty line handling                                                                                       
-    render(React.createElement(NarrativeDisplay, { narrative: "Line 1\n\nLine 2" }));                                                           
-    const container = screen.getByTestId('narrative-display');                                                                                  
-    const spacers = screen.getAllByTestId('empty-spacer');                                                                                      
-    expect(spacers).toHaveLength(1); // One empty line between two content lines                                                                
-  }); 
+  it('handles empty lines correctly', () => {
+    // Using a single newline to test empty line handling
+    render(React.createElement(NarrativeDisplay, { narrative: "Line 1\n\nLine 2" }));
+    const spacers = screen.getAllByTestId('empty-spacer');
+    expect(spacers).toHaveLength(1); // One empty line between two content lines
+  });
 
   it('processes complex narrative sequences correctly', () => {
     const narrative = `
@@ -58,7 +57,7 @@ describe('Narrative Processing', () => {
       Player: examines the wall
       GM: You notice a hidden switch
     `;
-    
+
     render(React.createElement(NarrativeDisplay, { narrative }));
 
     const playerActions = screen.getAllByTestId('player-action');
@@ -83,8 +82,7 @@ describe('Narrative Processing', () => {
     `;
     render(React.createElement(NarrativeDisplay, { narrative }));
 
-    const container = screen.getByTestId('narrative-display');
-    expect(container).not.toHaveTextContent('SUGGESTED_ACTIONS');
+    expect(screen.getByTestId('narrative-display')).not.toHaveTextContent('SUGGESTED_ACTIONS');
     expect(screen.getByText(/looks around/)).toHaveClass('player-action');
     expect(screen.getByText(/You see various items/)).toHaveClass('gm-response');
     expect(screen.getByText('The room is dimly lit')).toHaveClass('narrative-line');

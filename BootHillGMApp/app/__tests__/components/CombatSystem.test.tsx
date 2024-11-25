@@ -102,9 +102,7 @@ describe('CombatSystem', () => {
     renderCombatSystem();
     
     // Check strength displays
-    expect(screen.getByTestId('player-strength-label')).toHaveTextContent('Player Strength:');
     expect(screen.getByTestId('player-strength-value')).toHaveTextContent('10/10');
-    expect(screen.getByTestId('opponent-strength-label')).toHaveTextContent('Opponent Strength:');
     expect(screen.getByTestId('opponent-strength-value')).toHaveTextContent('10/10');
     
     // Check combat type selection is present

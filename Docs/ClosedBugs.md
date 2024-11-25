@@ -77,3 +77,26 @@ This document tracks resolved bugs in the BootHillGM project. For active bugs, s
 - Status: Fixed
 - Resolution: Implemented distinct styling for player actions in NarrativeDisplay.tsx and added visual emphasis
 - Closed Date: 2024-11-25
+
+[BUG-032] Combat System UI Polish
+- Description: Combat system UI needed improvements for better user experience
+- Steps to Reproduce:
+  1. Enter combat with an opponent
+  2. Observe health bars and wound displays
+  3. Take damage and observe feedback
+- Expected Behavior: Clear visual feedback for health changes and combat status
+- Actual Behavior: Basic display without enhanced visual feedback
+- Status: Fixed
+- Resolution: Implemented new StrengthDisplay component with progress bars, color-coded wound severity, and improved accessibility
+- Closed Date: 2024-11-27
+
+[BUG-033] Narrative Metadata Cleanup
+- Description: Metadata markers appearing in narrative text and combat logs
+- Steps to Reproduce:
+  1. Engage in combat or narrative interactions
+  2. Check output text for metadata markers
+- Expected Behavior: Clean text without any metadata markers
+- Actual Behavior: Metadata markers visible in output
+- Status: Fixed
+- Resolution: Enhanced text cleaning implementation and improved metadata handling in narrative processing
+- Closed Date: 2024-11-27

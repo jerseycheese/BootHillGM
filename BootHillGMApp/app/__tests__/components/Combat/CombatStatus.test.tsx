@@ -22,8 +22,7 @@ describe('CombatStatus', () => {
       strength: 15,
       baseStrength: 15,
       bravery: 10,
-      experience: 5,
-      wounds: []
+      experience: 5
     },
     skills: {
       shooting: 50,
@@ -58,17 +57,11 @@ describe('CombatStatus', () => {
   });
 
   test('applies red text class for low player strength', () => {
-    const weakPlayer = {
+    const weakPlayer: Character = {
       ...mockPlayer,
       wounds: [
-        { location: 'chest' as const, severity: 'serious' as const, strengthReduction: 10, turnReceived: 1 }
-      ],
-      attributes: {
-        ...mockPlayer.attributes,
-        wounds: [
-          { location: 'chest' as const, severity: 'serious' as const, strengthReduction: 10, turnReceived: 1 }
-        ]
-      }
+        { location: 'chest', severity: 'serious', strengthReduction: 10, turnReceived: 1 }
+      ]
     };
 
     render(
@@ -89,13 +82,9 @@ describe('CombatStatus', () => {
       { location: 'chest', severity: 'serious', strengthReduction: 7, turnReceived: 2 }
     ];
 
-    const woundedPlayer = {
+    const woundedPlayer: Character = {
       ...mockPlayer,
-      wounds,
-      attributes: {
-        ...mockPlayer.attributes,
-        wounds
-      }
+      wounds
     };
 
     render(
@@ -105,12 +94,22 @@ describe('CombatStatus', () => {
       />
     );
 
-    expect(screen.getByText('leftArm - light (-3 STR)')).toBeInTheDocument();
-    expect(screen.getByText('chest - serious (-7 STR)')).toBeInTheDocument();
+    // Find wound elements and verify their content
+    const woundElements = screen.getAllByRole('listitem');
+    
+    // Check first wound (leftArm)
+    expect(woundElements[0]).toHaveTextContent('leftArm');
+    expect(woundElements[0]).toHaveTextContent('light');
+    expect(woundElements[0]).toHaveTextContent('-3 STR');
+    
+    // Check second wound (chest)
+    expect(woundElements[1]).toHaveTextContent('chest');
+    expect(woundElements[1]).toHaveTextContent('serious');
+    expect(woundElements[1]).toHaveTextContent('-7 STR');
   });
 
   test('shows unconscious status', () => {
-    const unconsciousPlayer = {
+    const unconsciousPlayer: Character = {
       ...mockPlayer,
       isUnconscious: true
     };
@@ -131,13 +130,9 @@ describe('CombatStatus', () => {
       { location: 'chest', severity: 'serious', strengthReduction: 7, turnReceived: 2 }
     ];
 
-    const woundedPlayer = {
+    const woundedPlayer: Character = {
       ...mockPlayer,
-      wounds,
-      attributes: {
-        ...mockPlayer.attributes,
-        wounds
-      }
+      wounds
     };
 
     render(
@@ -147,19 +142,20 @@ describe('CombatStatus', () => {
       />
     );
 
-    const lightWound = screen.getByText('leftArm - light (-3 STR)');
-    const seriousWound = screen.getByText('chest - serious (-7 STR)');
+    const woundElements = screen.getAllByRole('listitem');
+    const lightWound = woundElements[0];
+    const seriousWound = woundElements[1];
 
-    expect(lightWound).toHaveClass('text-orange-600');
+    expect(lightWound).toHaveClass('text-yellow-600');
     expect(seriousWound).toHaveClass('text-red-600');
   });
 
   test('cleans character names', () => {
-    const playerWithMetadata = {
+    const playerWithMetadata: Character = {
       ...mockPlayer,
       name: 'Test Player ACQUIRED_ITEMS: REMOVED_ITEMS:'
     };
-    const opponentWithMetadata = {
+    const opponentWithMetadata: Character = {
       ...mockOpponent,
       name: 'Test Opponent ACQUIRED_ITEMS: REMOVED_ITEMS:'
     };

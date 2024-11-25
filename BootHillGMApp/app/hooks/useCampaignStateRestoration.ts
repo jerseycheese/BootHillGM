@@ -42,7 +42,7 @@ export const useCampaignStateRestoration = ({
     let savedState;
     try {
       savedState = JSON.parse(savedStateJSON);
-    } catch (parseError) {
+    } catch {
       // Silently handle parse errors and return initial state
       return { 
         ...initialGameState, 

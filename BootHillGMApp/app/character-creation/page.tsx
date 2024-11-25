@@ -10,15 +10,13 @@ export default function CharacterCreation() {
     character,
     showSummary,
     setShowSummary,
-    isGeneratingCharacter,
     isGeneratingField,
-    isProcessingStep,
     characterSummary,
     error,
     handleSubmit,
     handleFieldChange,
-    generateCharacter,
     generateFieldValue,
+    generateFullCharacter,
   } = useCharacterCreation();
 
   return (
@@ -28,22 +26,20 @@ export default function CharacterCreation() {
           character={character}
           summary={characterSummary}
           onSubmit={handleSubmit}
-          generateCharacter={generateCharacter}
-          isGeneratingCharacter={isGeneratingCharacter}
-          isLoading={isProcessingStep}
+          isLoading={isGeneratingField}
           onGoBack={() => setShowSummary(false)}
         />
       ) : (
         <CharacterForm
           character={character}
           isGeneratingField={isGeneratingField}
-          isProcessingStep={isProcessingStep}
+          isProcessingStep={isGeneratingField}
           error={error}
           onFieldChange={handleFieldChange}
           onGenerateField={generateFieldValue}
           onSubmit={handleSubmit}
-          generateCharacter={generateCharacter}
-          isGeneratingCharacter={isGeneratingCharacter}
+          generateCharacter={generateFullCharacter}
+          isGeneratingCharacter={isGeneratingField}
         />
       )}
     </div>

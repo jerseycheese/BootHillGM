@@ -169,7 +169,7 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
       let loadedState;
       try {
         loadedState = JSON.parse(serializedState);
-      } catch (parseError) {
+      } catch {
         return null;
       }
       

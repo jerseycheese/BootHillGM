@@ -75,21 +75,6 @@ This document tracks bugs found during development and testing. Each bug entry s
   - Status: Open
   - Priority: Medium
 
-[BUG-032] Combat System UI Polish Needed
-  - Description: While the combat system has been refactored for better maintainability, some UI improvements could enhance user experience
-  - Areas for Improvement:
-    - Animations for health changes
-    - More prominent turn indicators
-    - Enhanced visual feedback for critical hits
-  - Status: Open
-  - Priority: Low
-
-[BUG-033] Clean Up Narrative Metadata
-- Description: Metadata markers still appear in some narrative text and combat logs
-- Priority: Medium
-- Impact: User Experience
-- Status: Open
-
 [BUG-035] State Protection Timeout Handling
 - Description: State protection utility sometimes triggers timeout too early during complex operations
 - Steps to Reproduce:

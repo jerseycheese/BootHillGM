@@ -42,7 +42,8 @@ describe('StatusDisplayManager', () => {
     
     expect(screen.getByText('Test Character')).toBeInTheDocument();
     expect(screen.getByText(/Test Town/)).toBeInTheDocument();
-    expect(screen.getByText(/Strength: \d+\/10/)).toBeInTheDocument();
+    expect(screen.getByText('Strength')).toBeInTheDocument();
+    expect(screen.getByTestId('strength-value')).toHaveTextContent('7/10');  // Updated to expect 7/10 due to wound penalties
   });
 
   test('displays "Unknown" when location is null', () => {
@@ -54,13 +55,15 @@ describe('StatusDisplayManager', () => {
   test('displays wounds correctly', () => {
     render(<StatusDisplayManager character={mockCharacter} location="Test Town" />);
     
-    expect(screen.getByText('Wounds:')).toBeInTheDocument();
-    expect(screen.getByText(/head - light/)).toBeInTheDocument();
-    expect(screen.getByText(/chest - serious/)).toBeInTheDocument();
+    expect(screen.getByText('Wounds')).toBeInTheDocument();
+    expect(screen.getByText('head')).toBeInTheDocument();
+    expect(screen.getByText('chest')).toBeInTheDocument();
+    expect(screen.getByText('Light')).toBeInTheDocument();
+    expect(screen.getByText('Serious')).toBeInTheDocument();
 
-    // Check for strength reduction text with the correct format
-    expect(screen.getByText('(-1 STR)')).toBeInTheDocument();
-    expect(screen.getByText('(-2 STR)')).toBeInTheDocument();
+    // Check for strength reduction text
+    expect(screen.getByText('-1 STR')).toBeInTheDocument();
+    expect(screen.getByText('-2 STR')).toBeInTheDocument();
   });
 
   test('displays unconscious state correctly', () => {
@@ -70,7 +73,6 @@ describe('StatusDisplayManager', () => {
     };
     render(<StatusDisplayManager character={unconsciousCharacter} location="Test Town" />);
     
-    // Check for unconscious state in the correct format
     expect(screen.getByText('(Unconscious)')).toBeInTheDocument();
   });
 });

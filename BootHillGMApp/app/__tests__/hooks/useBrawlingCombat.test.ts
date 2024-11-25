@@ -1,12 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useBrawlingCombat } from '../../hooks/useBrawlingCombat';
 import { Character } from '../../types/character';
-
-// Helper to advance timers and flush promises
-const advanceTimersByTime = async (ms: number) => {
-  jest.advanceTimersByTime(ms);
-  await Promise.resolve(); // Flush promises
-};
+import * as brawlingSystem from '../../utils/brawlingSystem';
 
 jest.mock('../../utils/brawlingSystem', () => ({
   ...jest.requireActual('../../utils/brawlingSystem'),
@@ -96,8 +91,6 @@ describe('useBrawlingCombat', () => {
     // Use fake timers
     jest.useFakeTimers();
     
-    let hookResult: any;
-    
     const { result } = renderHook(() =>
       useBrawlingCombat({
         playerCharacter: mockPlayer,
@@ -106,7 +99,7 @@ describe('useBrawlingCombat', () => {
         dispatch: mockDispatch
       })
     );
-    hookResult = result;
+    const hookResult = result; // Changed to const as it is never reassigned
     
     // Wait for hook to initialize
     await Promise.resolve();
@@ -155,8 +148,6 @@ describe('useBrawlingCombat', () => {
     // Mock random choice for opponent
     jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
 
-    let hookResult: any;
-    
     const { result } = renderHook(() =>
       useBrawlingCombat({
         playerCharacter: mockPlayer,
@@ -165,7 +156,7 @@ describe('useBrawlingCombat', () => {
         dispatch: mockDispatch
       })
     );
-    hookResult = result;
+    const hookResult = result; // Changed to const as it is never reassigned
     
     // Wait for hook to initialize
     await Promise.resolve();
@@ -207,7 +198,7 @@ describe('useBrawlingCombat', () => {
     jest.useFakeTimers();
     
     // Mock a powerful hit that causes knockout
-    jest.spyOn(require('../../utils/brawlingSystem'), 'resolveBrawlingRound')
+    jest.spyOn(brawlingSystem, 'resolveBrawlingRound')
       .mockReturnValueOnce({
         roll: 20,
         result: 'Critical Hit',
@@ -216,8 +207,6 @@ describe('useBrawlingCombat', () => {
         nextRoundModifier: 0
       });
 
-    let hookResult: any;
-    
     const { result } = renderHook(() =>
       useBrawlingCombat({
         playerCharacter: mockPlayer,
@@ -226,7 +215,7 @@ describe('useBrawlingCombat', () => {
         dispatch: mockDispatch
       })
     );
-    hookResult = result;
+    const hookResult = result; // Changed to const as it is never reassigned
     
     // Wait for hook to initialize
     await Promise.resolve();
@@ -262,8 +251,6 @@ describe('useBrawlingCombat', () => {
     // Use fake timers
     jest.useFakeTimers();
     
-    let hookResult: any;
-    
     const { result } = renderHook(() =>
       useBrawlingCombat({
         playerCharacter: mockPlayer,
@@ -272,7 +259,7 @@ describe('useBrawlingCombat', () => {
         dispatch: mockDispatch
       })
     );
-    hookResult = result;
+    const hookResult = result; // Changed to const as it is never reassigned
     
     // Wait for hook to initialize
     await Promise.resolve();
@@ -328,9 +315,8 @@ describe('useBrawlingCombat', () => {
       })
     );
     
-    let processPromise: Promise<void>;
-    
     // Start processing the round
+    let processPromise: Promise<void>;
     await act(async () => {
       processPromise = result.current.processRound(true, true);
     });

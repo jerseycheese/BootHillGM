@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { generateFieldValue as aiGenerateFieldValue, generateCompleteCharacter, generateCharacterSummary, generateRandomValue } from '../services/ai/characterService';
+import { generateFieldValue as aiGenerateFieldValue, generateCharacterSummary, generateCompleteCharacter } from '../services/ai/characterService';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from '../types/character';
 import { initialGameState } from '../types/campaign';
@@ -147,8 +147,6 @@ export function useCharacterCreation() {
 
   const [showSummary, setShowSummary] = useState(false);
   const [isGeneratingField, setIsGeneratingField] = useState(false);
-  const [isGeneratingCharacter, setIsGeneratingCharacter] = useState(false);
-  const [isProcessingStep, setIsProcessingStep] = useState(false);
   const [error, setError] = useState('');
   const [characterSummary, setCharacterSummary] = useState('');
 
@@ -209,9 +207,22 @@ export function useCharacterCreation() {
     }
   }, [handleFieldChange]);
 
+  const generateFullCharacter = useCallback(async () => {
+    setIsGeneratingField(true);
+    setError('');
+    
+    try {
+      const generatedCharacter = await generateCompleteCharacter();
+      setCharacter(generatedCharacter);
+    } catch {
+      setError('Failed to generate character');
+    } finally {
+      setIsGeneratingField(false);
+    }
+  }, []);
+
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsProcessingStep(true);
     setError('');
 
     try {
@@ -249,60 +260,8 @@ export function useCharacterCreation() {
       }
     } catch {
       setError('Failed to process character data');
-    } finally {
-      setIsProcessingStep(false);
     }
   }, [character, showSummary, cleanupState, saveGame, router, validateField]);
-
-  const generateCharacter = useCallback(async () => {
-    setIsGeneratingCharacter(true);
-    setError('');
-    
-    try {
-      // Create a new character object
-      const newCharacter: Character = {
-        name: '',
-        attributes: {
-          speed: 0,
-          gunAccuracy: 0,
-          throwingAccuracy: 0,
-          strength: 0,
-          baseStrength: 0,
-          bravery: 0,
-          experience: 0
-        },
-        skills: {
-          shooting: 0,
-          riding: 0,
-          brawling: 0
-        },
-        wounds: [],
-        isUnconscious: false
-      };
-
-      // Generate name first
-      const name = await aiGenerateFieldValue('name');
-      newCharacter.name = name.toString();
-
-      // Generate attributes using direct calls to generateRandomValue
-      for (const attr of Object.keys(newCharacter.attributes)) {
-        const value = generateRandomValue(attr as keyof Character['attributes']);
-        newCharacter.attributes[attr as keyof Character['attributes']] = value;
-      }
-
-      // Generate skills using direct calls to generateRandomValue
-      for (const skill of Object.keys(newCharacter.skills)) {
-        const value = generateRandomValue(skill as keyof Character['skills']);
-        newCharacter.skills[skill as keyof Character['skills']] = value;
-      }
-
-      setCharacter(newCharacter);
-    } catch {
-      setError('Failed to generate character');
-    } finally {
-      setIsGeneratingCharacter(false);
-    }
-  }, []);
 
   useEffect(() => {
     if (character.name) {
@@ -318,14 +277,12 @@ export function useCharacterCreation() {
     character,
     showSummary,
     setShowSummary,
-    isGeneratingCharacter,
     isGeneratingField,
-    isProcessingStep,
     characterSummary,
     error,
     handleSubmit,
     handleFieldChange,
-    generateCharacter,
     generateFieldValue,
+    generateFullCharacter,
   };
 }

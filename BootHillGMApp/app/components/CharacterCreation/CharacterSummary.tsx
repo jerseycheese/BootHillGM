@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import { LoadingScreen } from '../GameArea/LoadingScreen';
 import { Character } from '../../types/character';
 import { STEP_DESCRIPTIONS } from '../../hooks/useCharacterCreation';
@@ -11,8 +10,6 @@ interface CharacterSummaryProps {
   summary: string;
   onSubmit: (e: React.FormEvent) => Promise<void>;
   isLoading: boolean;
-  generateCharacter: () => Promise<void>;
-  isGeneratingCharacter: boolean;
   onGoBack: () => void;
 }
 
@@ -26,11 +23,8 @@ export function CharacterSummary({
   summary,
   onSubmit,
   isLoading,
-  generateCharacter,
-  isGeneratingCharacter,
   onGoBack
 }: CharacterSummaryProps) {
-  const router = useRouter();
   
   const handleGoBack = (e: React.MouseEvent) => {
     e.preventDefault();
