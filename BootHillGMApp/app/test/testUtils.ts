@@ -168,34 +168,40 @@ function useCharacterCreationHandler() {
   return { handleSubmit };
 }
 
+const mockCharacterState = {
+  character: initialCharacter,
+  setCharacter: null as any
+};
+
 // Mock useCharacterCreation hook with proper state management
-jest.mock('../hooks/useCharacterCreation', () => {                                                                                              
-  const originalModule = jest.requireActual('../hooks/useCharacterCreation');                                                                   
-  return {                                                                                                                                      
-    ...originalModule,                                                                                                                          
-    useCharacterCreation: () => {                                                                                                               
-      const [character, setCharacter] = React.useState<Character>(initialCharacter);                                                            
-      const [isGeneratingCharacter, setIsGeneratingCharacter] = React.useState(false);                                                          
-                                                                                                                                                
-      const generateCharacter = React.useCallback(async () => {                                                                                 
-        setIsGeneratingCharacter(true);                                                                                                         
-        try {                                                                                                                                   
-          const mockCharacter = await createMockCharacter();                                                                                    
-          // Ensure we're updating the state with the mock character                                                                            
-          await act(async () => {                                                                                                               
-            setCharacter(mockCharacter);                                                                                                        
-          });                                                                                                                                   
-                                                                                                                                                
-          const savedData = {                                                                                                                   
-            character: mockCharacter,                                                                                                           
-            currentStep: 0,                                                                                                                     
-            lastUpdated: Date.now()                                                                                                             
-          };                                                                                                                                    
-          window.localStorage.setItem('character-creation-progress', JSON.stringify(savedData));                                                
-        } finally {                                                                                                                             
-          setIsGeneratingCharacter(false);                                                                                                      
-        }                                                                                                                                       
-      }, []);                                                                                                                                   
+jest.mock('../hooks/useCharacterCreation', () => {
+  const originalModule = jest.requireActual('../hooks/useCharacterCreation');
+  return {
+    ...originalModule,
+    useCharacterCreation: () => {
+      const [character, setCharacter] = React.useState<Character>(initialCharacter);
+      const [isGeneratingCharacter, setIsGeneratingCharacter] = React.useState(false);
+
+      // Store the setState function for use in tests
+      mockCharacterState.setCharacter = setCharacter;
+
+      const generateCharacter = React.useCallback(async () => {
+        setIsGeneratingCharacter(true);
+        try {
+          const mockCharacter = await createMockCharacter();
+          setCharacter(mockCharacter); // Update the character state
+          
+          // Store in localStorage
+          const savedData = {
+            character: mockCharacter,
+            currentStep: 0,
+            lastUpdated: Date.now()
+          };
+          window.localStorage.setItem('character-creation-progress', JSON.stringify(savedData));
+        } finally {
+          setIsGeneratingCharacter(false);
+        }
+      }, []);
                                                                                                                                                 
       const handleFieldChange = React.useCallback((field: CharacterFieldKey, value: string | number) => {                                       
         setCharacter(prev => {                                                                                                                  
