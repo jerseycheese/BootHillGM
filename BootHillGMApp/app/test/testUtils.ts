@@ -170,7 +170,7 @@ function useCharacterCreationHandler() {
 
 const mockCharacterState = {
   character: initialCharacter,
-  setCharacter: null as any
+  setCharacter: null as React.Dispatch<React.SetStateAction<Character>> | null
 };
 
 // Mock useCharacterCreation hook with proper state management
