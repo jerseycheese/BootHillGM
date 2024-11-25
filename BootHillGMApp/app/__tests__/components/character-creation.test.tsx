@@ -1,8 +1,7 @@
 import '@testing-library/jest-dom';
 import { screen, act, fireEvent, waitFor } from '@testing-library/react';
 import { useCampaignState } from '../../components/CampaignStateManager';
-import { setupMocks, renderCharacterCreation, createMockCharacter, mockCharacterState } from '../../test/testUtils';
-import { STEP_DESCRIPTIONS } from '../../hooks/useCharacterCreation';
+import { setupMocks, createMockCharacter, mockCharacterState } from '../../test/testUtils';
 
 jest.mock('../../components/CampaignStateManager', () => ({
   useCampaignState: jest.fn(),
@@ -25,8 +24,6 @@ describe('Character Creation', () => {
 
   describe('Random Character Generation', () => {
     it('generates complete character with valid values', async () => {
-      // Render the component
-      const { container } = await renderCharacterCreation();
       
       // Get the generate button
       const generateButton = screen.getByTestId('generate-character-button');
