@@ -231,7 +231,6 @@ export async function generateFieldValue(
       return generatedName;
     }
   }
-}
 
 export function generateRandomValue(key: keyof Character['attributes'] | keyof Character['skills']): number {
   // Roll d100 for initial value
