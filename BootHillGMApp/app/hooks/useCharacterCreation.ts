@@ -198,7 +198,9 @@ export function useCharacterCreation() {
     setError('');
     
     try {
-      const value = await aiGenerateFieldValue(field);
+      const value = field === 'name' 
+        ? await aiGenerateFieldValue('name')
+        : generateRandomValue(field);
       handleFieldChange(field, value);
     } catch {
       setError(`Failed to generate value for ${field}`);

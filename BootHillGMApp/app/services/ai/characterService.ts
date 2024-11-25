@@ -157,9 +157,8 @@ function addToRecentNames(name: string) {
 }
 
 export async function generateFieldValue(
-  key: keyof Character['attributes'] | keyof Character['skills'] | 'name'
-): Promise<string | number> {
-  if (key === 'name') {
+  key: 'name'
+): Promise<string> {
     const prompt = `Generate a single name for a character in a Western-themed RPG set in the American Old West (1865-1890).
     - Should be a full name (first and last)
     - Historically appropriate for the time period
