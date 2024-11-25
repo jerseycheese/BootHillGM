@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { screen, act, fireEvent, waitFor } from '@testing-library/react';
 import { useCampaignState } from '../../components/CampaignStateManager';
-import { setupMocks, renderCharacterCreation } from '../../test/testUtils';
+import { setupMocks, renderCharacterCreation, createMockCharacter, mockCharacterState } from '../../test/testUtils';
 import { STEP_DESCRIPTIONS } from '../../hooks/useCharacterCreation';
 
 jest.mock('../../components/CampaignStateManager', () => ({
@@ -31,7 +31,7 @@ describe('Character Creation', () => {
       // Get the generate button
       const generateButton = screen.getByTestId('generate-character-button');
       
-      // Click the button
+      // Click the button and update state
       await act(async () => {
         fireEvent.click(generateButton);
         

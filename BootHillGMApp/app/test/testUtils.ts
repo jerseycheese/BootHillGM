@@ -324,4 +324,4 @@ export const getMockInitialState = () => ({
   lastUpdated: Date.now()
 });
 
-export { createMockLocalStorage };
+export { createMockLocalStorage, createMockCharacter, mockCharacterState };
