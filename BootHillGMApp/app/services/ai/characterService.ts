@@ -230,8 +230,6 @@ export async function generateFieldValue(
       addToRecentNames(generatedName);
       return generatedName;
     }
-  } else {
-    return generateRandomValue(key);
   }
 }
 
