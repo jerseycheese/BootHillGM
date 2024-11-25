@@ -37,7 +37,6 @@ import { Character } from '../types/character';
 type CharacterFieldKey = keyof Character['attributes'] | keyof Character['skills'] | 'name';
 
 let mockRouterPush: jest.Mock;
-// let mockConsoleError: jest.SpyInstance;
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
@@ -97,7 +96,6 @@ const initialCharacter: Character = {
 
 // Dynamically generate mock character with AI-generated name
 async function createMockCharacter(): Promise<Character> {
-  // Generate a random name that isn't "John Doe"
   const names = ['Billy the Kid', 'Wyatt Earp', 'Annie Oakley', 'Doc Holliday', 'Jesse James'];
   const randomName = names[Math.floor(Math.random() * names.length)];
   
@@ -137,12 +135,10 @@ function useCharacterCreationHandler() {
         };
         window.localStorage.setItem('character-creation-progress', JSON.stringify(savedData));
 
-        // If at summary step, clean up and redirect
         if (savedData.currentStep === 1) {
           window.localStorage.removeItem('character-creation-progress');
           cleanupState();
           
-          // Save game state with inventory
           const gameState = {
             character: mockCharacter,
             savedTimestamp: Date.now(),
@@ -173,90 +169,79 @@ function useCharacterCreationHandler() {
 }
 
 // Mock useCharacterCreation hook with proper state management
-jest.mock('../hooks/useCharacterCreation', () => {
-  const originalModule = jest.requireActual('../hooks/useCharacterCreation');
-  return {
-    ...originalModule,
-    useCharacterCreation: () => {
-      const [character, setCharacter] = React.useState<Character>(initialCharacter);
-      const [isGeneratingCharacter, setIsGeneratingCharacter] = React.useState(false);
-
-      const generateCharacter = React.useCallback(async () => {
-        setIsGeneratingCharacter(true);
-        try {
-          const newCharacter = await createMockCharacter();
-          setCharacter(newCharacter);
-          const savedData = {
-            character: newCharacter,
-            currentStep: 0,
-            lastUpdated: Date.now()
-          };
-          window.localStorage.setItem('character-creation-progress', JSON.stringify(savedData));
-        } finally {
-          setIsGeneratingCharacter(false);
-        }
-      }, []);
-
-      return {
-        character,
-        showSummary: false,
-        isGeneratingCharacter,
-        isGeneratingField: false,
-        isProcessingStep: false,
-        characterSummary: 'Test summary',
-        error: '',
-        handleSubmit: useCharacterCreationHandler().handleSubmit,
-        handleFieldChange: (field: CharacterFieldKey, value: string | number) => {
-          setCharacter(prev => {
-            if (field === 'name') {
-              return { ...prev, name: value.toString() };
-            }
-            if (field in prev.attributes) {
-              return {
-                ...prev,
-                attributes: {
-                  ...prev.attributes,
-                  [field]: Number(value)
-                }
-              };
-            }
-            return {
-              ...prev,
-              skills: {
-                ...prev.skills,
-                [field]: Number(value)
-              }
-            };
-          });
-        },
-        generateCharacter,
-        generateFieldValue: jest.fn().mockImplementation(async (field: CharacterFieldKey) => {
-          if (field === 'name') {
-            // Ensure we return a random name that isn't "John Doe"
-            const names = ['Billy the Kid', 'Wyatt Earp', 'Annie Oakley', 'Doc Holliday', 'Jesse James'];
-            return names[Math.floor(Math.random() * names.length)];
-          }
-          const ranges: Record<CharacterFieldKey, [number, number]> = {
-            name: [0, 0],
-            speed: [1, 20],
-            gunAccuracy: [1, 20],
-            throwingAccuracy: [1, 20],
-            strength: [8, 20],
-            baseStrength: [8, 20],
-            bravery: [1, 20],
-            experience: [0, 11],
-            shooting: [1, 100],
-            riding: [1, 100],
-            brawling: [1, 100]
-          };
-          const [min, max] = ranges[field];
-          return Math.floor(Math.random() * (max - min + 1)) + min;
-        }),
-      };
-    },
-    STEP_DESCRIPTIONS: originalModule.STEP_DESCRIPTIONS
-  };
-});
+jest.mock('../hooks/useCharacterCreation', () => {                                                                                              
+  const originalModule = jest.requireActual('../hooks/useCharacterCreation');                                                                   
+  return {                                                                                                                                      
+    ...originalModule,                                                                                                                          
+    useCharacterCreation: () => {                                                                                                               
+      const [character, setCharacter] = React.useState<Character>(initialCharacter);                                                            
+      const [isGeneratingCharacter, setIsGeneratingCharacter] = React.useState(false);                                                          
+                                                                                                                                                
+      const generateCharacter = React.useCallback(async () => {                                                                                 
+        setIsGeneratingCharacter(true);                                                                                                         
+        try {                                                                                                                                   
+          const mockCharacter = await createMockCharacter();                                                                                    
+          // Ensure we're updating the state with the mock character                                                                            
+          await act(async () => {                                                                                                               
+            setCharacter(mockCharacter);                                                                                                        
+          });                                                                                                                                   
+                                                                                                                                                
+          const savedData = {                                                                                                                   
+            character: mockCharacter,                                                                                                           
+            currentStep: 0,                                                                                                                     
+            lastUpdated: Date.now()                                                                                                             
+          };                                                                                                                                    
+          window.localStorage.setItem('character-creation-progress', JSON.stringify(savedData));                                                
+        } finally {                                                                                                                             
+          setIsGeneratingCharacter(false);                                                                                                      
+        }                                                                                                                                       
+      }, []);                                                                                                                                   
+                                                                                                                                                
+      const handleFieldChange = React.useCallback((field: CharacterFieldKey, value: string | number) => {                                       
+        setCharacter(prev => {                                                                                                                  
+          if (field === 'name') {                                                                                                               
+            return { ...prev, name: value.toString() };                                                                                         
+          }                                                                                                                                     
+          if (field in prev.attributes) {                                                                                                       
+            return {                                                                                                                            
+              ...prev,                                                                                                                          
+              attributes: {                                                                                                                     
+                ...prev.attributes,                                                                                                             
+                [field]: Number(value)                                                                                                          
+              }                                                                                                                                 
+            };                                                                                                                                  
+          }                                                                                                                                     
+          return {                                                                                                                              
+            ...prev,                                                                                                                            
+            skills: {                                                                                                                           
+              ...prev.skills,                                                                                                                   
+              [field]: Number(value)                                                                                                            
+            }                                                                                                                                   
+          };                                                                                                                                    
+        });                                                                                                                                     
+      }, []);                                                                                                                                   
+                                                                                                                                                
+      return {                                                                                                                                  
+        character,                                                                                                                              
+        showSummary: false,                                                                                                                     
+        isGeneratingCharacter,                                                                                                                  
+        isGeneratingField: false,                                                                                                               
+        isProcessingStep: false,                                                                                                                
+        characterSummary: 'Test summary',                                                                                                       
+        error: '',                                                                                                                              
+        handleSubmit: useCharacterCreationHandler().handleSubmit,                                                                               
+        handleFieldChange,                                                                                                                      
+        generateCharacter,                                                                                                                      
+        generateFieldValue: jest.fn().mockImplementation(async (field: CharacterFieldKey) => {                                                  
+          const value = await originalModule.generateFieldValue(field);                                                                         
+          handleFieldChange(field, value);                                                                                                      
+          return value;                                                                                                                         
+        }),                                                                                                                                     
+      };                                                                                                                                        
+    },                                                                                                                                          
+    STEP_DESCRIPTIONS: originalModule.STEP_DESCRIPTIONS                                                                                         
+  };                                                                                                                                            
+});   
 
 // Mock localStorage implementation
 const createMockLocalStorage = () => ({
@@ -280,15 +265,10 @@ const customRender = (
   return render(ui, { wrapper: Wrapper, ...options });
 };
 
-/**
- * Centralizes mock setup for character creation tests.
- * Returns common mocks used across tests.
- */
 export const setupMocks = () => {
   mockRouterPush = jest.fn();
   const mockCleanupState = jest.fn();
 
-  // Setup localStorage mock
   const mockLocalStorage = createMockLocalStorage();
   Object.defineProperty(window, 'localStorage', {
     value: mockLocalStorage,
@@ -315,10 +295,6 @@ const renderComponent = (): RenderResult => {
   return customRender(React.createElement(CharacterCreationPage));
 };
 
-/**
- * Renders character creation page with standardized setup.
- * Returns commonly needed elements and utilities.
- */
 export const renderCharacterCreation = async (): Promise<RenderCharacterCreationResult> => {
   let component: RenderResult;
   
@@ -336,9 +312,6 @@ export const renderCharacterCreation = async (): Promise<RenderCharacterCreation
   };
 };
 
-/**
- * Returns a mock initial state for character creation.
- */
 export const getMockInitialState = () => ({
   character: initialCharacter,
   currentStep: 0,
