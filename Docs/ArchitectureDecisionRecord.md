@@ -217,7 +217,7 @@ This ADR will be reviewed and updated as the project progresses beyond the MVP p
 We needed to simplify the complex state restoration logic in the CampaignStateManager component while ensuring proper type safety and data structure preservation.
 
 ## Decision
-Extracted state restoration logic into a dedicated hook (useCampaignStateRestoration) and implemented a clear separation between state initialization and restoration.
+Extracted state restoration logic into a dedicated hook (useCampaignStateRestoration) and implemented a clear separation between state initialization and restoration logic.
 
 ## Rationale
 - Improves code organization and maintainability
@@ -356,3 +356,31 @@ Implemented a dedicated BrawlingEngine class to handle pure combat calculations 
 - Extracted combat calculations to BrawlingEngine class
 - Updated tests to use new structure
 - Maintained existing hook interface
+
+## ADR 9: Loading Screen Consolidation
+
+### Date: 2024-11-26
+### Status: Accepted
+
+### Context
+Multiple loading screen implementations were causing inconsistency in user experience and maintenance overhead.
+
+### Decision
+Implemented a unified LoadingScreen component with type-specific messages and built-in error handling.
+
+### Rationale
+- Reduces code duplication
+- Provides consistent loading experience
+- Simplifies maintenance
+- Improves error handling
+
+### Consequences
+
+#### Positive
+- Single source of truth for loading states
+- Consistent user experience
+- Reduced code complexity
+
+#### Negative
+- Slightly more complex component API
+- Need to update existing loading screen usage

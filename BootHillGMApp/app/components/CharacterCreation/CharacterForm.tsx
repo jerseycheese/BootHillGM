@@ -56,7 +56,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
   }, [onGenerateField]);
 
   if (isProcessingStep) {
-    return <LoadingScreen message="Processing..." size="small" fullscreen={false} />;
+    return <LoadingScreen type="general" size="small" fullscreen={false} />;
   }
 
   return (
@@ -82,55 +82,54 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
         </button>
       </div>
       <form onSubmit={onSubmit} className="space-y-6" data-testid="character-form">
-      <div className="grid grid-cols-1 gap-6">
-        {fields.map((field) => (
-          <div key={field.key} className="space-y-2">
-            <div className="flex justify-between items-center">
-              <label htmlFor={field.key} className="block font-medium">
-                {field.title}
-                {field.min !== undefined && field.max !== undefined && (
-                  <span className="text-sm text-gray-500 ml-2">
-                    ({field.min}-{field.max})
-                  </span>
-                )}
-              </label>
-              <button
-                type="button"
-                onClick={() => handleGenerateField(field.key)}
-                className="wireframe-button text-sm"
-                disabled={isGeneratingField || generatingField === field.key}
-                data-testid={`generate-${field.key}-button`}
-              >
-                {generatingField === field.key ? 'Generating...' : 'Generate'}
-              </button>
+        <div className="grid grid-cols-1 gap-6">
+          {fields.map((field) => (
+            <div key={field.key} className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label htmlFor={field.key} className="block font-medium">
+                  {field.title}
+                  {field.min !== undefined && field.max !== undefined && (
+                    <span className="text-sm text-gray-500 ml-2">
+                      ({field.min}-{field.max})
+                    </span>
+                  )}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => handleGenerateField(field.key)}
+                  className="wireframe-button text-sm"
+                  disabled={isGeneratingField || generatingField === field.key}
+                  data-testid={`generate-${field.key}-button`}
+                >
+                  {generatingField === field.key ? 'Generating...' : 'Generate'}
+                </button>
+              </div>
+              <input
+                type={field.min !== undefined ? 'number' : 'text'}
+                id={field.key}
+                name={field.key}
+                value={field.key === 'name' ? 
+                  character.name : 
+                  character.attributes[field.key as keyof Character['attributes']] ?? 
+                  character.skills[field.key as keyof Character['skills']] ?? ''
+                }
+                onChange={(e) => onFieldChange(field.key, e.target.value)}
+                min={field.min}
+                max={field.max}
+                className="wireframe-input w-full"
+                required
+                data-testid={`${field.key}-input`}
+              />
+              <p className="text-sm text-gray-600">{field.description}</p>
             </div>
-            <input
-              type={field.min !== undefined ? 'number' : 'text'}
-              id={field.key}
-              name={field.key}
-              value={field.key === 'name' ? 
-                character.name : 
-                character.attributes[field.key as keyof Character['attributes']] ?? 
-                character.skills[field.key as keyof Character['skills']] ?? ''
-              }
-              onChange={(e) => onFieldChange(field.key, e.target.value)}
-              min={field.min}
-              max={field.max}
-              className="wireframe-input w-full"
-              required
-              data-testid={`${field.key}-input`}
-            />
-            <p className="text-sm text-gray-600">{field.description}</p>
-          </div>
-        ))}
-      </div>
-
-      {error && (
-        <div className="text-red-600 mt-2" role="alert" data-testid="error-message">
-          {error}
+          ))}
         </div>
-      )}
 
+        {error && (
+          <div className="text-red-600 mt-2" role="alert" data-testid="error-message">
+            {error}
+          </div>
+        )}
       </form>
     </div>
   );

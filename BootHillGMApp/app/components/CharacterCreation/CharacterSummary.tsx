@@ -34,9 +34,9 @@ export function CharacterSummary({
   if (isLoading) {
     return (
       <LoadingScreen 
-        message="Generating character background..." 
-        size="small"
-        fullscreen={false}
+        type="general" 
+        size="small" 
+        fullscreen={false} 
       />
     );
   }

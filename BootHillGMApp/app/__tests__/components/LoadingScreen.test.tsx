@@ -1,37 +1,59 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { LoadingScreen } from '../../components/GameArea/LoadingScreen';
 
 describe('LoadingScreen', () => {
-  test('renders default loading screen', () => {
+  test('renders with default props', () => {
     render(<LoadingScreen />);
-    
     expect(screen.getByRole('status')).toBeInTheDocument();
-    expect(screen.getByText('Loading game session...')).toBeInTheDocument();
-    expect(screen.getByText('If loading persists, try navigating to another page and back.')).toBeInTheDocument();
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
-  test('renders with custom messages', () => {
+  test('renders type-specific messages', () => {
+    const { rerender } = render(<LoadingScreen type="session" />);
+    expect(screen.getByText('Loading game session...')).toBeInTheDocument();
+
+    rerender(<LoadingScreen type="combat" />);
+    expect(screen.getByText('Preparing combat...')).toBeInTheDocument();
+
+    rerender(<LoadingScreen type="ai" />);
+    expect(screen.getByText('Processing response...')).toBeInTheDocument();
+
+    rerender(<LoadingScreen type="inventory" />);
+    expect(screen.getByText('Updating inventory...')).toBeInTheDocument();
+
+    rerender(<LoadingScreen type="general" />);
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+
+  test('handles error state with retry', () => {
+    const mockRetry = jest.fn();
     render(
       <LoadingScreen 
-        message="Custom loading message" 
-        subMessage="Custom sub-message"
+        error="Test error" 
+        onRetry={mockRetry} 
       />
     );
+
+    expect(screen.getByText('An error occurred. Please try again.')).toBeInTheDocument();
     
-    expect(screen.getByText('Custom loading message')).toBeInTheDocument();
-    expect(screen.getByText('Custom sub-message')).toBeInTheDocument();
+    const retryButton = screen.getByText('Retry');
+    fireEvent.click(retryButton);
+    expect(mockRetry).toHaveBeenCalled();
   });
 
-  test('renders different sizes', () => {
-    const { rerender } = render(<LoadingScreen size="small" />);
-    expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
-    
+  test('applies size classes correctly', () => {
+    const { container, rerender } = render(<LoadingScreen size="small" />);
+    expect(container.querySelector('.h-4')).toBeInTheDocument();
+
     rerender(<LoadingScreen size="large" />);
-    expect(screen.getByTestId('loading-screen')).toBeInTheDocument();
+    expect(container.querySelector('.h-12')).toBeInTheDocument();
   });
 
-  test('handles section mode', () => {
-    render(<LoadingScreen fullscreen={false} />);
-    expect(screen.getByTestId('loading-screen')).toHaveClass('wireframe-section');
+  test('toggles fullscreen mode', () => {
+    const { container, rerender } = render(<LoadingScreen fullscreen={true} />);
+    expect(container.firstChild).toHaveClass('wireframe-container');
+
+    rerender(<LoadingScreen fullscreen={false} />);
+    expect(container.firstChild).toHaveClass('wireframe-section');
   });
 });

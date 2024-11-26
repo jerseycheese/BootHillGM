@@ -244,6 +244,8 @@ export function useCharacterCreation() {
           return;
         }
 
+        setIsGeneratingField(true);
+
         const summary = await generateCharacterSummary(character);
         setCharacterSummary(summary);
         setShowSummary(true);
@@ -262,6 +264,8 @@ export function useCharacterCreation() {
       }
     } catch {
       setError('Failed to process character data');
+    } finally {
+      setIsGeneratingField(false); // Reset loading state
     }
   }, [character, showSummary, cleanupState, saveGame, router, validateField]);
 
@@ -287,4 +291,13 @@ export function useCharacterCreation() {
     generateFieldValue,
     generateFullCharacter,
   };
+}
+
+export function generateRandomValue(field: keyof Character['attributes'] | keyof Character['skills']): number {
+  // Get field constraints from step descriptions
+  const fieldInfo = STEP_DESCRIPTIONS[field];
+  if (!fieldInfo?.min || !fieldInfo?.max) return 0;
+  
+  // Generate random value within defined range
+  return Math.floor(Math.random() * (fieldInfo.max - fieldInfo.min + 1)) + fieldInfo.min;
 }

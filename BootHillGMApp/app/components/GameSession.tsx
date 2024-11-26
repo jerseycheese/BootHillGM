@@ -13,7 +13,7 @@ export default function GameSession() {
   useCombatStateRestoration(state, gameSession);
 
   if (!isClient || !gameSession || !state || !state.character || isInitializing) {
-    return <LoadingScreen />;
+    return <LoadingScreen type="session" />;
   }
 
   return (

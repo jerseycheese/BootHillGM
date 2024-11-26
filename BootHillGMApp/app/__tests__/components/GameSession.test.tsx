@@ -84,7 +84,7 @@ jest.mock('../../components/GameArea/SidePanel', () => ({
 
 jest.mock('../../components/GameArea/LoadingScreen', () => ({
   __esModule: true,
-  LoadingScreen: () => <div>Loading game session...</div>
+  LoadingScreen: (props: { type?: string }) => <div>Loading {props.type || 'general'}...</div>
 }));
 
 describe('GameSession', () => {
@@ -126,7 +126,7 @@ describe('GameSession', () => {
     });
 
     renderGameSession();
-    expect(screen.getByText(/Loading game session/i)).toBeInTheDocument();
+    expect(screen.getByText(/Loading session/i)).toBeInTheDocument();
   });
 
   it('renders combat system when combat is active', () => {
