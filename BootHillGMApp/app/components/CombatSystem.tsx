@@ -32,7 +32,6 @@ export const CombatSystem: React.FC<{
   initialCombatState
 }) => {
   const [combatType, setCombatType] = useState<CombatType>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Only set combatType if initialCombatState exists and has a non-null combatType
@@ -65,7 +64,6 @@ export const CombatSystem: React.FC<{
   });
 
   const handleCombatTypeSelect = (type: CombatType) => {
-    setIsLoading(true);
     setCombatType(type);
     dispatch({
       type: 'UPDATE_COMBAT_STATE',
@@ -93,7 +91,6 @@ export const CombatSystem: React.FC<{
         } : undefined
       }
     });
-    setIsLoading(false);
   };
 
   const renderCombatContent = () => {
