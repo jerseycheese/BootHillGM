@@ -10,6 +10,12 @@ export const metadata: Metadata = {
   description: "AI-driven Game Master for Boot Hill RPG",
 };
 
+// Add Crimson Text font
+const crimsonText = {
+  rel: 'stylesheet',
+  href: 'https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap'
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -17,6 +23,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="stylesheet" href={crimsonText.href} />
+      </head>
       <body>
         <CampaignStateProvider>
           <GameProviderWrapper>
