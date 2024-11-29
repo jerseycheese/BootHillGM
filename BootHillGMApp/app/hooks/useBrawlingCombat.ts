@@ -81,7 +81,9 @@ export const useBrawlingCombat = ({
     const message = BrawlingEngine.formatCombatMessage(
       attacker.name,
       result,
-      isPunching
+      result.roll > 2  // Only show punch/grapple message on hits
+        ? isPunching
+        : isPunching
     );
     
     const newLogEntry: LogEntry = { 
