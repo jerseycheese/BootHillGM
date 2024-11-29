@@ -58,6 +58,16 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
   }
 
   if (response.combatInitiated && response.opponent) {
+    // Add any combat narrative to the main narrative
+    const opponentNameParts = response.opponent.name.split(/^[^.!?\n]+/);
+    if (opponentNameParts[1]) {
+      const narrativePart = opponentNameParts[1].trim();
+      dispatch({ 
+        type: 'SET_NARRATIVE', 
+        payload: `${narrativeUpdate}\n${narrativePart}`
+      });
+    }
+
     // Extract only the structured data fields for the opponent
     const structuredOpponent = {
       name: cleanCharacterName(response.opponent.name),
