@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { NarrativeDisplay } from '../../components/NarrativeDisplay';
 import { NarrativeContent } from '../../components/NarrativeContent';
 import { NarrativeItem } from '../../components/NarrativeDisplay';

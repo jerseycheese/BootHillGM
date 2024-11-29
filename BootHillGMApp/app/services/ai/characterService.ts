@@ -102,7 +102,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
     return character;
   } catch {
     // Generate a random name using generateFieldValue instead of using a default name
-    const name = await generateFieldValue('name');
+    const name = await generateFieldValue();
     
     // Return a character with random name and randomly generated stats
     return {
