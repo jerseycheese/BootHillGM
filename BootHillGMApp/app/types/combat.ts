@@ -83,7 +83,6 @@ export interface CombatState {
   isActive: boolean;
   combatType: CombatType;
   winner: string | null;
-  summary: string | null;
   selection?: CombatSelectionState;
   brawling?: BrawlingState;
   weapon?: WeaponCombatState;
@@ -144,7 +143,6 @@ export function ensureCombatState(state?: Partial<CombatState>): CombatState {
     isActive: state?.isActive ?? false,
     combatType: state?.combatType ?? null,
     winner: state?.winner ?? null,
-    summary: state?.summary ?? null,
     selection: state?.selection,
     brawling: state?.brawling ? {
       round: state.brawling.round,

@@ -66,7 +66,6 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             isActive: false,
             combatType: null,
             winner: winner,
-            summary: null, // Set to null instead of combatSummary
             brawling: undefined,
             weapon: undefined,
             selection: undefined
