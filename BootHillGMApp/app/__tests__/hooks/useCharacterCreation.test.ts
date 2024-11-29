@@ -15,7 +15,7 @@ describe('useCharacterCreation', () => {
     });
 
     it('returns 0 for invalid fields', () => {
-      const result = generateRandomValue('invalidField' as any);
+      const result = generateRandomValue('invalidField' as keyof typeof STEP_DESCRIPTIONS);
       expect(result).toBe(0);
     });
   });
