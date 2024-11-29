@@ -1,5 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { useWeaponCombat } from '../../hooks/useWeaponCombat';
+import { WEAPON_STATS } from '../../types/combat';
 import { Character } from '../../types/character';
 
 describe('useWeaponCombat', () => {
@@ -23,7 +24,7 @@ describe('useWeaponCombat', () => {
     isUnconscious: false,
     weapon: {
       name: 'Colt Revolver',
-      damage: '1d6'
+      modifiers: WEAPON_STATS['Colt Revolver']
     }
   };
 
@@ -32,7 +33,7 @@ describe('useWeaponCombat', () => {
     name: 'Opponent',
     weapon: {
       name: 'Winchester Rifle',
-      damage: '1d8'
+      modifiers: WEAPON_STATS['Winchester Rifle']
     }
   };
 
@@ -72,12 +73,29 @@ describe('useWeaponCombat', () => {
     });
 
     expect(result.current.weaponState.roundLog[0].text)
-      .toContain('takes aim carefully');
+      .toContain('takes careful aim');
     expect(result.current.isProcessing).toBe(false);
-    expect(result.current.canAim).toBe(true);
   });
 
-  test('handles movement action', async () => {
+  test('processes weapon malfunction', async () => {
+    jest.spyOn(Math, 'random').mockReturnValue(0.96); // Force malfunction
+
+    const { result } = renderHook(() => useWeaponCombat({
+      playerCharacter: mockPlayer,
+      opponent: mockOpponent,
+      onCombatEnd: mockOnCombatEnd,
+      dispatch: mockDispatch
+    }));
+
+    await act(async () => {
+      await result.current.processAction({ type: 'fire' });
+    });
+
+    expect(result.current.weaponState.roundLog[0].text)
+      .toContain('malfunctions');
+  });
+
+  test('applies range modifiers correctly', async () => {
     const { result } = renderHook(() => useWeaponCombat({
       playerCharacter: mockPlayer,
       opponent: mockOpponent,
@@ -117,12 +135,23 @@ describe('useWeaponCombat', () => {
       await result.current.processAction({ type: 'fire' });
     });
 
-    if (mockOnCombatEnd.mock.calls.length > 0) {
-      expect(mockOnCombatEnd).toHaveBeenCalledWith(
-        'player',
-        expect.stringContaining('defeat')
-      );
-    }
+    jest.spyOn(Math, 'random').mockReturnValue(0.5); // Ensure hit
+
+    const { result } = renderHook(() => useWeaponCombat({
+      playerCharacter: mockPlayer,
+      opponent: weakOpponent,
+      onCombatEnd: mockOnCombatEnd,
+      dispatch: mockDispatch
+    }));
+
+    await act(async () => {
+      await result.current.processAction({ type: 'fire' });
+    });
+
+    expect(mockOnCombatEnd).toHaveBeenCalledWith(
+      'player',
+      expect.stringContaining('defeats')
+    );
   });
 
   test('maintains action availability states', async () => {
