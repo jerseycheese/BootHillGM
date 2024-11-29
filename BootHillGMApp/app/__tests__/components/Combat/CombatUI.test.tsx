@@ -1,10 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { CombatControls } from '../../../components/Combat/CombatControls';
 import { CombatLog } from '../../../components/Combat/CombatLog';
 import { CombatStatus } from '../../../components/Combat/CombatStatus';
 import { Character, Wound } from '../../../types/character';
-import * as combatUtils from '../../../utils/combatUtils';
 
 // Mock combat utils
 jest.mock('../../../utils/combatUtils', () => ({
