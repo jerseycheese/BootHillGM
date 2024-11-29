@@ -37,8 +37,8 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         
         // Descriptive victory message with proper formatting
         const endMessage = winner === 'player' 
-          ? `${playerName} has defeated ${opponentName} in combat.`
-          : `${opponentName} has defeated ${playerName} in combat.`;
+          ? `${playerName} has defeated ${opponentName} in combat and emerges victorious.`
+          : `${opponentName} has defeated ${playerName} in combat and emerges victorious.`;
         
         // Ensure proper narrative formatting
         onUpdateNarrative(`In the heat of battle, ${endMessage}`);
