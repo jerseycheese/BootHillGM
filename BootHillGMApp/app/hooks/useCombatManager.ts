@@ -5,42 +5,6 @@ import { addCombatJournalEntry } from '../utils/JournalManager';
 import { createStateProtection } from '../utils/stateProtection';
 import { CombatState, ensureCombatState } from '../types/combat';
 
-/**
- * Creates a clean, narrative-style message for combat conclusion.
- * Removes redundant roll information and formats the outcome in a
- * story-appropriate way.
- * 
- * @param winner - The winner of the combat ('player' or 'opponent')
- * @param summary - The combat summary containing the final action
- * @param playerName - The name of the player character
- * @param opponentName - The name of the opponent
- * @returns A formatted message describing the combat conclusion
- * 
- * Example output:
- * "The combat concludes as John strikes a decisive blow.
- * John emerges victorious, defeating Bandit."
- */
-export const formatCombatEndMessage = (
-  winner: 'player' | 'opponent',
-  summary: string,
-  playerName: string,
-  opponentName: string
-): string => {
-  const victoryPhrase = winner === 'player'
-    ? `${playerName} emerges victorious, defeating ${opponentName}`
-    : `${opponentName} emerges victorious, defeating ${playerName}`;
-
-  // Clean up the summary by removing roll information and ensure it ends with proper punctuation
-  const cleanSummary = summary?.replace(/\[Roll:.*?\]/g, '').trim() || '';
-  const summaryWithPunctuation = cleanSummary.endsWith('!') || cleanSummary.endsWith('.') 
-    ? cleanSummary 
-    : cleanSummary + '.';
-
-  // Combine the victory phrase with the summary if available
-  return cleanSummary 
-    ? `${victoryPhrase} ${summaryWithPunctuation}`
-    : `${victoryPhrase}.`;
-};
 
 /**
  * Manages combat state and operations with protection against race conditions.
@@ -63,7 +27,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
    * Handles victory/defeat message, journal updates, and state cleanup.
    * Provides error recovery if state updates fail.
    */
-  const handleCombatEnd = useCallback(async (winner: 'player' | 'opponent', combatSummary: string) => {
+  const handleCombatEnd = useCallback(async (winner: 'player' | 'opponent') => {
     setIsProcessing(true);
     try {
       await stateProtection.current.withProtection('combat-end', async () => {
@@ -71,15 +35,11 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         const playerName = state.character?.name || 'Player';
         const opponentName = state.opponent?.name || 'Unknown Opponent';
         
-        // Format a concise end message
-        const endMessage = formatCombatEndMessage(
-          winner,
-          '',  // We don't need the summary anymore
-          playerName,
-          opponentName
-        );
+        // Simple victory message
+        const endMessage = winner === 'player' 
+          ? `${playerName} emerges victorious.`
+          : `${opponentName} emerges victorious.`;
         
-        // Update narrative with just the victory message
         onUpdateNarrative(endMessage);
       
         const currentJournal = state.journal || [];
@@ -90,7 +50,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             playerName,
             opponentName,
             winner === 'player' ? 'victory' : 'defeat',
-            combatSummary // Use combatSummary for journal
+            '' // Empty string instead of combatSummary
           )
         });
 
@@ -106,8 +66,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             isActive: false,
             combatType: null,
             winner: winner,
-            summary: combatSummary,
-            // Add these explicit nulling of combat-specific states
+            summary: null, // Set to null instead of combatSummary
             brawling: undefined,
             weapon: undefined,
             selection: undefined
