@@ -116,8 +116,9 @@ export const CombatStatus: React.FC<CombatStatusProps> = ({
 }) => {
   const playerStrength = calculateCurrentStrength(playerCharacter);
   const maxPlayerStrength = playerCharacter.attributes.baseStrength;
-  const opponentStrength = calculateCurrentStrength(opponent);
-  const maxOpponentStrength = opponent.attributes.baseStrength;
+  // Ensure we're using the most up-to-date opponent values
+  const opponentStrength = opponent ? calculateCurrentStrength(opponent) : 0;
+  const maxOpponentStrength = opponent?.attributes?.baseStrength || 0;
 
   const playerName = cleanCharacterName(playerCharacter.name);
   const opponentName = cleanCharacterName(opponent.name);

@@ -185,11 +185,10 @@ export const useWeaponCombat = ({
             // Player's action hit the opponent
             dispatch({
               type: 'UPDATE_OPPONENT',
-              payload: {
-                ...opponent,
-                ...updatedDefender
-              }
+              payload: updatedDefender
             });
+            // Immediately update local opponent state
+            setCurrentOpponent(updatedDefender);
           } else {
             // Opponent's action hit the player
             dispatch({
