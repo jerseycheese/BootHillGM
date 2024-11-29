@@ -204,7 +204,17 @@ describe('CombatSystem', () => {
     // Render with mock character that has a weapon
     const characterWithWeapon = {
       ...mockPlayer,
-      weapon: { name: 'Test Weapon', damage: '1d6' }
+      weapon: {
+        id: 'test-weapon',
+        name: 'Test Weapon',
+        modifiers: {
+          damage: '1d6',
+          range: 20,
+          accuracy: 0,
+          reliability: 95,
+          speed: 0
+        }
+      }
     };
 
     render(
