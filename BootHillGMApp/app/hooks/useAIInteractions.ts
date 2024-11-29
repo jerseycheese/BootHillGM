@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { cleanCharacterName } from '../utils/combatUtils';
 import { AIService } from '../services/ai';
 import { GameState, SuggestedAction } from '../types/campaign';
 import { GameEngineAction } from '../utils/gameEngine';
@@ -57,10 +58,15 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
   }
 
   if (response.combatInitiated && response.opponent) {
-    // Set opponent first
+    // Clean opponent name and set opponent
+    const cleanedOpponent = {
+      ...response.opponent,
+      name: cleanCharacterName(response.opponent.name)
+    };
+    
     dispatch({
       type: 'SET_OPPONENT',
-      payload: response.opponent
+      payload: cleanedOpponent
     });
     
     // Initialize combat state with null combat type to trigger selection
