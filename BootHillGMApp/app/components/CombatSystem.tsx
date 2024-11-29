@@ -141,7 +141,7 @@ export const CombatSystem: React.FC<{
     <div className="combat-system wireframe-section space-y-4">
       <CombatStatus
         playerCharacter={playerCharacter}
-        opponent={combatType === 'weapon' ? currentOpponent : opponent}
+        opponent={currentOpponent || opponent}
       />
       
       {renderCombatContent()}
