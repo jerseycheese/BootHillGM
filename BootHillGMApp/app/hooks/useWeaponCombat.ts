@@ -160,8 +160,8 @@ export const useWeaponCombat = ({
           let damage = parseWeaponDamage(weapon.modifiers.damage);
           if (critical) damage *= 2;
 
-          // Calculate and apply cumulative damage
-          const currentStrength = defender.attributes.strength;
+          // Calculate and apply cumulative damage from current strength
+          const currentStrength = isPlayerAction ? currentOpponent.attributes.strength : playerCharacter.attributes.strength;
           const newStrength = Math.max(0, currentStrength - damage);
           const updatedDefender = {
             ...defender,
