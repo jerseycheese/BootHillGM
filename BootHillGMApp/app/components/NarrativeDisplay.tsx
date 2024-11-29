@@ -43,11 +43,9 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
     
     return narrative.split('\n').reduce<NarrativeItem[]>((items, line, index, array) => {
       const trimmedLine = line.trim();
+      
+      // Skip empty lines - we'll handle spacing differently
       if (!trimmedLine) {
-        const previousItem = items[items.length - 1];
-        if (!previousItem?.metadata?.isEmpty) {
-          items.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
-        }
         return items;
       }
 
@@ -109,9 +107,9 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       if (!trimmedLine.startsWith('SUGGESTED_ACTIONS:')) {
         const cleanedContent = cleanText(trimmedLine);
         if (cleanedContent) {
-          // Add a spacer before narrative content if the previous item wasn't a spacer
+          // Add spacer between different content types
           const previousItem = items[items.length - 1];
-          if (items.length > 0 && !previousItem?.metadata?.isEmpty) {
+          if (items.length > 0 && previousItem?.type !== 'narrative') {
             items.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
           }
           
