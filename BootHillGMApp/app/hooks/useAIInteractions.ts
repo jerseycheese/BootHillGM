@@ -58,10 +58,22 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
   }
 
   if (response.combatInitiated && response.opponent) {
-    // Clean opponent name and set opponent
+    // Clean opponent name and narrative content
     const cleanedOpponent = {
       ...response.opponent,
-      name: cleanCharacterName(response.opponent.name)
+      name: cleanCharacterName(response.opponent.name),
+      // Ensure other fields don't contain narrative content
+      attributes: {
+        ...response.opponent.attributes
+      },
+      skills: {
+        ...response.opponent.skills
+      },
+      weapon: response.opponent.weapon ? {
+        ...response.opponent.weapon,
+        name: cleanCharacterName(response.opponent.weapon.name)
+      } : undefined,
+      wounds: response.opponent.wounds || []
     };
     
     dispatch({
