@@ -81,6 +81,7 @@ export const NarrativeContent: React.FC<{
 
   const config = STYLE_CONFIGS[item.type];
   
+  // Only render spacer if it's an empty narrative item
   if (item.metadata?.isEmpty) {
     return <div className="h-4" data-testid="empty-spacer" role="separator" aria-hidden="true" />;
   }

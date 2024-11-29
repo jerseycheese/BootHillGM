@@ -109,6 +109,12 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       if (!trimmedLine.startsWith('SUGGESTED_ACTIONS:')) {
         const cleanedContent = cleanText(trimmedLine);
         if (cleanedContent) {
+          // Add a spacer before narrative content if the previous item wasn't a spacer
+          const previousItem = items[items.length - 1];
+          if (items.length > 0 && !previousItem?.metadata?.isEmpty) {
+            items.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
+          }
+          
           items.push({ 
             type: 'narrative',
             content: cleanedContent,
