@@ -196,5 +196,20 @@ export const extractItemUpdates = (text: string): { acquired: string[]; removed:
  */
 export const cleanCharacterName = (name: string): string => {
   if (!name?.trim()) return '';
-  return name.split(/[.!?]/)[0].trim();
+  
+  // Remove any metadata markers and their content
+  let cleaned = name
+    .replace(/important:.*?(?=\n|$)/gi, '')
+    .replace(/note:.*?(?=\n|$)/gi, '')
+    .replace(/metadata:.*?(?=\n|$)/gi, '')
+    .split(/[.!?]/)[0];
+    
+  // Remove any remaining narrative indicators
+  cleaned = cleaned
+    .replace(/\([^)]*\)/g, '')
+    .replace(/\[[^\]]*\]/g, '')
+    .replace(/\{[^}]*\}/g, '')
+    .replace(/:\s*.*$/, '');
+    
+  return cleaned.trim();
 };
