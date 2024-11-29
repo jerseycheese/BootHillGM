@@ -42,18 +42,23 @@ export const useWeaponCombat = ({
   debugMode = false // Default to false
 }: UseWeaponCombatProps) => {
   const [weaponState, setWeaponState] = useState<WeaponCombatState>(() => {
-    // Find equipped weapon in inventory
-    const equippedWeapon = state?.inventory?.find(item => 
+    // Find first available weapon in inventory
+    const availableWeapon = state?.inventory?.find(item => 
       item?.category === 'weapon' && item.quantity > 0
-    );
+    ) || {
+      id: 'default-colt',
+      name: 'Colt Revolver',
+      quantity: 1
+    };
 
-    const playerWeapon = equippedWeapon ? {
-      id: equippedWeapon.id,
-      name: equippedWeapon.name,
-      modifiers: WEAPON_STATS[equippedWeapon.name] || WEAPON_STATS['Colt Revolver'], // Fallback
+    // Always create a weapon object, using either inventory weapon or default
+    const playerWeapon = {
+      id: availableWeapon.id,
+      name: availableWeapon.name,
+      modifiers: WEAPON_STATS[availableWeapon.name] || WEAPON_STATS['Colt Revolver'],
       ammunition: 6,
       maxAmmunition: 6
-    } : null;
+    };
 
     return initialState || {
       round: 1,
