@@ -50,6 +50,8 @@ export const cleanText = (text: string | undefined): string => {
  * Specifically cleans combat log entries while preserving roll information
  * and important combat details. Handles multi-line combat descriptions.
  */
+import { trackTextCleaning } from './debugUtils';
+
 export const cleanCombatLogEntry = (text: string): string => {
   if (!text?.trim()) return '';
 
@@ -74,7 +76,9 @@ export const cleanCombatLogEntry = (text: string): string => {
     .replace(/important:.*$/i, '')
     .replace(/\s+The\s+[^.!?]*?(?=\s+(?:punches|grapples|hits|misses|fires|attacks|defends|blocks))/i, ' ');
     
-  return cleaned.trim();
+  const result = cleaned.trim();
+  trackTextCleaning(text, result, 'CombatLog', 'cleanCombatLogEntry');
+  return result;
 };
 
 /**
@@ -222,5 +226,7 @@ export const cleanCharacterName = (name: string): string => {
     .replace(/:\s*.*$/, '')
     .replace(/,.*$/, '');
     
-  return cleaned.trim();
+  const result = cleaned.trim();
+  trackTextCleaning(name, result, 'CharacterName', 'cleanCharacterName');
+  return result;
 };
