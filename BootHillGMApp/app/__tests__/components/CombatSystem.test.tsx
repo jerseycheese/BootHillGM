@@ -207,13 +207,11 @@ describe('CombatSystem', () => {
       weapon: {
         id: 'test-weapon',
         name: 'Test Weapon',
-        modifiers: {
-          damage: '1d6',
-          range: 20,
-          accuracy: 0,
-          reliability: 95,
-          speed: 0
-        }
+        damage: '1d6',
+        range: 20,
+        accuracy: 0,
+        reliability: 95,
+        speed: 0
       }
     };
 
