@@ -164,8 +164,18 @@ export const useWeaponCombat = ({
             ...defender,
             attributes: {
               ...defender.attributes,
-              strength: newStrength
-            }
+              strength: newStrength,
+              baseStrength: defender.attributes.baseStrength // Ensure baseStrength is preserved
+            },
+            wounds: [
+              ...defender.wounds,
+              {
+                location: 'chest', // You might want to randomize this
+                severity: damage >= 5 ? 'serious' : 'light',
+                strengthReduction: damage,
+                turnReceived: weaponState.round
+              }
+            ]
           };
 
           // Update state based on who was hit, using UPDATE_CHARACTER for both cases
