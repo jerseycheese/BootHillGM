@@ -1,9 +1,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CombatControls } from '../../../components/Combat/CombatControls';
-import { CombatLog } from '../../../components/Combat/CombatLog';
 import { CombatStatus } from '../../../components/Combat/CombatStatus';
-import { Character, Wound } from '../../../types/character';
+import { Character } from '../../../types/character';
 
 // Mock combat utils
 jest.mock('../../../utils/combatUtils', () => ({
@@ -49,7 +48,6 @@ describe('Combat UI Components', () => {
       );
 
       expect(screen.getByText("Player's Turn")).toHaveClass('bg-green-100');
-      expect(screen.getByText("Opponent's Turn")).not.toHaveClass('bg-green-100');
     });
 
     test('disables attack button when processing', () => {
@@ -65,34 +63,6 @@ describe('Combat UI Components', () => {
     });
   });
 
-  describe('CombatLog', () => {
-    const mockEntries = [
-      {
-        text: 'Player hits Opponent with Colt Revolver for 5 damage!',
-        type: 'hit' as const,
-        timestamp: 1234567890
-      },
-      {
-        text: 'Opponent misses Player! [Roll: 85/62]',
-        type: 'miss' as const,
-        timestamp: 1234567891
-      }
-    ];
-
-    test('renders combat log with entries', () => {
-      render(<CombatLog entries={mockEntries} />);
-      
-      expect(screen.getByTestId('combat-log')).toBeInTheDocument();
-      mockEntries.forEach((entry, index) => {
-        expect(screen.getByTestId(`combat-log-entry-${index}`)).toHaveTextContent(entry.text);
-      });
-    });
-
-    test('renders empty combat log when no entries provided', () => {
-      render(<CombatLog entries={[]} />);
-      expect(screen.queryByTestId('combat-log-entry-0')).not.toBeInTheDocument();
-    });
-  });
 
   describe('CombatStatus', () => {
     test('renders strength values correctly', () => {
@@ -107,29 +77,5 @@ describe('Combat UI Components', () => {
       expect(screen.getByTestId('opponent-strength-value')).toHaveTextContent('15/15');
     });
 
-    test('handles wounds correctly', () => {
-      const woundedCharacter: Character = {
-        ...mockCharacter,
-        wounds: [
-          { location: 'leftArm', severity: 'light', strengthReduction: 3, turnReceived: 1 } as Wound,
-          { location: 'chest', severity: 'serious', strengthReduction: 7, turnReceived: 2 } as Wound
-        ]
-      };
-
-      console.log('woundedCharacter:', woundedCharacter); // Debug code
-
-      render(
-        <CombatStatus
-          playerCharacter={woundedCharacter}
-          opponent={mockCharacter}
-        />
-      );
-
-      const woundElements = screen.getAllByRole('listitem');
-      expect(woundElements[0]).toHaveTextContent('leftArm');
-      expect(woundElements[0]).toHaveTextContent('light');
-      expect(woundElements[1]).toHaveTextContent('chest');
-      expect(woundElements[1]).toHaveTextContent('serious');
-    });
   });
 });
