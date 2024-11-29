@@ -104,9 +104,6 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       if (!trimmedLine.startsWith('SUGGESTED_ACTIONS:')) {
         const cleanedContent = cleanText(trimmedLine);
         if (cleanedContent) {
-          if (shouldAddSpacer('narrative', items[items.length - 1])) {
-            items.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
-          }
           items.push({ 
             type: 'narrative',
             content: cleanedContent,
