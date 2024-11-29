@@ -199,7 +199,7 @@ export function useCharacterCreation() {
     
     try {
       const value = field === 'name' 
-        ? await aiGenerateFieldValue('name')
+        ? await aiGenerateFieldValue()
         : generateRandomValue(field);
       handleFieldChange(field, value);
     } catch {
