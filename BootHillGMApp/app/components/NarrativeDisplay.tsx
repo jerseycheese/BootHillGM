@@ -41,11 +41,14 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   const shouldAddSpacer = (currentType: string, previousItem: NarrativeItem | undefined) => {
     if (!previousItem) return false;
     
-    // Add spacer between different content types
-    if (currentType !== previousItem.type) return true;
-    
-    // Add spacer between GM responses (to separate combat results)
-    if (currentType === 'gm-response' && previousItem.type === 'gm-response') return true;
+    // Only add spacers for type transitions
+    if (currentType !== previousItem.type) {
+      // Special case: Don't add spacer between consecutive GM responses
+      if (currentType === 'gm-response' && previousItem.type === 'gm-response') {
+        return false;
+      }
+      return true;
+    }
     
     return false;
   };
