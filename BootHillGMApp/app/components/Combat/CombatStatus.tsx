@@ -105,19 +105,20 @@ const StrengthDisplay: React.FC<StrengthDisplayProps> = ({
   );
 };
 
-import { TextCleaningDebug } from '../Debug/TextCleaningDebug';
-
-// Add debug component at the bottom
+// Add debug component wrapper
 const CombatStatusWithDebug: React.FC<CombatStatusProps> = (props) => {
   return (
     <>
-      <CombatStatus {...props} />
+      <BaseCombatStatus {...props} />
       <TextCleaningDebug />
     </>
   );
 };
 
+// Export the wrapped version
 export { CombatStatusWithDebug as CombatStatus };
+
+import { TextCleaningDebug } from '../Debug/TextCleaningDebug';
 
 interface CombatStatusProps {
   playerCharacter: Character;
