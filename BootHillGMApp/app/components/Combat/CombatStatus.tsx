@@ -124,7 +124,7 @@ interface CombatStatusProps {
   opponent: Character;
 }
 
-export const CombatStatus: React.FC<CombatStatusProps> = ({
+const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   playerCharacter,
   opponent
 }) => {
