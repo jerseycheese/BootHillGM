@@ -168,18 +168,11 @@ export const useWeaponCombat = ({
             }
           };
 
-          // Update state based on who was hit
-          if (isPlayer) {
-            dispatch({
-              type: 'SET_OPPONENT',
-              payload: updatedDefender
-            });
-          } else {
-            dispatch({
-              type: 'UPDATE_CHARACTER',
-              payload: updatedDefender  // Send the entire updated character
-            });
-          }
+          // Update state based on who was hit, using UPDATE_CHARACTER for both cases
+          dispatch({
+            type: 'UPDATE_CHARACTER',
+            payload: updatedDefender  // Send the entire updated character
+          });
 
           return {
             hit: true,
