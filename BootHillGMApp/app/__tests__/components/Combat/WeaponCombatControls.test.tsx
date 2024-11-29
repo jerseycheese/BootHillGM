@@ -2,6 +2,14 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { WeaponCombatControls } from '../../../components/Combat/WeaponCombatControls';
 import { WeaponCombatState, WEAPON_STATS } from '../../../types/combat';
+import * as combatUtils from '../../../types/combat';
+
+jest.mock('../../../types/combat', () => ({
+  ...jest.requireActual('../../../types/combat'),
+  rollForMalfunction: jest.fn(() => false),
+  calculateWeaponModifier: jest.fn(() => 2),
+  parseWeaponDamage: jest.fn(() => 6),
+}));
 
 describe('WeaponCombatControls', () => {
   const mockInitialState: WeaponCombatState = {
@@ -67,7 +75,10 @@ describe('WeaponCombatControls', () => {
     expect(mockOnAction).toHaveBeenCalledWith({ type: 'aim' });
   });
 
-  test('handles fire action correctly', () => {
+  test('handles fire action correctly', async () => {
+    (combatUtils.rollForMalfunction as jest.Mock).mockReturnValue(false);
+    (combatUtils.calculateWeaponModifier as jest.Mock).mockReturnValue(2);
+    (combatUtils.parseWeaponDamage as jest.Mock).mockReturnValue(6);
     renderComponent();
     
     fireEvent.click(screen.getByText('Fire'));
