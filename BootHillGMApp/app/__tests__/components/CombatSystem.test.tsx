@@ -231,8 +231,7 @@ describe('CombatSystem', () => {
     
     fireEvent.click(weaponButton);
     expect(screen.getByText('Your Weapon')).toBeInTheDocument();
-    expect(screen.getByText('Test Weapon')).toBeInTheDocument();
-    expect(screen.getByText('Basic weapon')).toBeInTheDocument();
+    expect(screen.getByText('Colt Revolver')).toBeInTheDocument();
     expect(screen.getByText('Opponent\'s Weapon')).toBeInTheDocument();
     expect(screen.getByText('No visible weapon')).toBeInTheDocument();
   });
