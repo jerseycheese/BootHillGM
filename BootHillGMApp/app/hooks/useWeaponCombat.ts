@@ -43,8 +43,8 @@ export const useWeaponCombat = ({
 }: UseWeaponCombatProps) => {
   const [weaponState, setWeaponState] = useState<WeaponCombatState>(() => {
     // Find equipped weapon in inventory
-    const equippedWeapon = state.inventory.find(item => 
-      item.category === 'weapon' && item.quantity > 0
+    const equippedWeapon = state?.inventory?.find(item => 
+      item?.category === 'weapon' && item.quantity > 0
     );
 
     const playerWeapon = equippedWeapon ? {
