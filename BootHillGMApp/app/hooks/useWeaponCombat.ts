@@ -177,9 +177,7 @@ export const useWeaponCombat = ({
           } else {
             dispatch({
               type: 'UPDATE_CHARACTER',
-              payload: {
-                attributes: updatedDefender.attributes
-              }
+              payload: updatedDefender  // Send the entire updated character
             });
           }
 
