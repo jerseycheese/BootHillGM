@@ -100,7 +100,7 @@ export const useWeaponCombat = ({
     // For opponent actions, opponent is attacker and player is defender
     const attacker = isPlayerAction ? playerCharacter : opponent;
     const defender = isPlayerAction ? opponent : playerCharacter;
-    const weapon = isPlayer ? weaponState.playerWeapon : weaponState.opponentWeapon;
+    const weapon = isPlayerAction ? weaponState.playerWeapon : weaponState.opponentWeapon;
 
     if (!weapon) return null;
 
