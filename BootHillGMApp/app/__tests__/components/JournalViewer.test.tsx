@@ -40,7 +40,7 @@ describe('JournalViewer', () => {
     expect(screen.getByText(/A new adventure begins/)).toBeInTheDocument();
     
     // Verify combat entry
-    expect(screen.getByText(/Combat summary/)).toBeInTheDocument();
+    expect(screen.getByText(/Combat occurred/)).toBeInTheDocument();
 
     // Check timestamp formatting
     const formattedDate = new Intl.DateTimeFormat('en-US', {

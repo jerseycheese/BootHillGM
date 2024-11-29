@@ -14,8 +14,7 @@ const JournalEntry = memo(({ entry, formatDate }: {
     if (isNarrativeEntry(entry)) {
       return entry.narrativeSummary || entry.content;
     } else if (isCombatEntry(entry)) {
-      const content = entry.content.replace(/^\d{1,2}\/\d{1,2}\/\d{4}:\s*/g, '').trim();
-      return content;
+      return entry.narrativeSummary || entry.content;
     } else if (isInventoryEntry(entry)) {
       const acquired = entry.items.acquired.length ? `Acquired: ${entry.items.acquired.join(', ')}` : '';
       const removed = entry.items.removed.length ? `Removed: ${entry.items.removed.join(', ')}` : '';
