@@ -94,10 +94,12 @@ export const useWeaponCombat = ({
    */
   const resolveWeaponAction = useCallback(async (
     action: WeaponCombatAction,
-    isPlayer: boolean
+    isPlayerAction: boolean
   ): Promise<WeaponCombatResult | null> => {
-    const attacker = isPlayer ? playerCharacter : opponent;
-    const defender = isPlayer ? opponent : playerCharacter;
+    // For player actions, player is attacker and opponent is defender
+    // For opponent actions, opponent is attacker and player is defender
+    const attacker = isPlayerAction ? playerCharacter : opponent;
+    const defender = isPlayerAction ? opponent : playerCharacter;
     const weapon = isPlayer ? weaponState.playerWeapon : weaponState.opponentWeapon;
 
     if (!weapon) return null;
@@ -179,20 +181,20 @@ export const useWeaponCombat = ({
           };
 
           // Update state based on who was hit
-          if (isPlayer) {
-            // If player was hit (defender is player), update player character
-            dispatch({
-              type: 'UPDATE_CHARACTER',
-              payload: updatedDefender
-            });
-          } else {
-            // If opponent was hit (defender is opponent), update opponent character
+          if (isPlayerAction) {
+            // Player's action hit the opponent
             dispatch({
               type: 'UPDATE_OPPONENT',
               payload: {
                 ...opponent,
                 ...updatedDefender
               }
+            });
+          } else {
+            // Opponent's action hit the player
+            dispatch({
+              type: 'UPDATE_CHARACTER',
+              payload: updatedDefender
             });
           }
 
