@@ -4,7 +4,12 @@ import {
   WeaponCombatState, 
   WeaponCombatAction, 
   WeaponCombatResult,
-  LogEntry 
+  LogEntry,
+  Weapon,
+  calculateWeaponModifier,
+  rollForMalfunction,
+  parseWeaponDamage,
+  WEAPON_STATS
 } from '../types/combat';
 import { GameEngineAction } from '../utils/gameEngine';
 import { calculateHitChance, isCritical } from '../utils/combatRules';
@@ -38,28 +43,22 @@ export const useWeaponCombat = ({
     initialState || {
       round: 1,
       playerWeapon: playerCharacter.weapon ? {
-        id: 'player-weapon',
+        id: playerCharacter.weapon.id,
         name: playerCharacter.weapon.name,
-        stats: {
-          damage: playerCharacter.weapon.damage,
-          range: 20, // Default range, adjust based on weapon type
-          speed: 0,
-          accuracy: 0,
-          reliability: 95
-        }
+        modifiers: WEAPON_STATS[playerCharacter.weapon.name],
+        ammunition: playerCharacter.weapon.ammunition,
+        maxAmmunition: playerCharacter.weapon.maxAmmunition
       } : null,
       opponentWeapon: opponent.weapon ? {
+        id: opponent.weapon.id,
         name: opponent.weapon.name,
-        stats: {
-          damage: opponent.weapon.damage,
-          range: 20,
-          speed: 0,
-          accuracy: 0,
-          reliability: 95
-        }
+        modifiers: WEAPON_STATS[opponent.weapon.name],
+        ammunition: opponent.weapon.ammunition,
+        maxAmmunition: opponent.weapon.maxAmmunition
       } : null,
-      currentRange: 15, // Starting range
-      roundLog: []
+      currentRange: 15,
+      roundLog: [],
+      lastAction: undefined
     }
   );
   const [isProcessing, setIsProcessing] = useState(false);
