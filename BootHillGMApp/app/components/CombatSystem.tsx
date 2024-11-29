@@ -116,7 +116,7 @@ export const CombatSystem: React.FC<{
         <BrawlingControls
           isProcessing={isBrawlingProcessing}
           onPunch={() => processRound(true, true)}
-          onGrapple={() => processRound(false, true)}
+          onGrapple={() => processRound(true, false)}
           round={brawlingState?.round || 1}
         />
       );
