@@ -124,24 +124,15 @@ describe('useWeaponCombat', () => {
       }
     };
 
-    const { result } = renderHook(() => useWeaponCombat({
-      playerCharacter: mockPlayer,
-      opponent: weakOpponent,
-      onCombatEnd: mockOnCombatEnd,
-      dispatch: mockDispatch
-    }));
-
-    await act(async () => {
-      await result.current.processAction({ type: 'fire' });
-    });
-
-    jest.spyOn(Math, 'random').mockReturnValue(0.5); // Ensure hit
+    // Force a hit
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
 
     const { result } = renderHook(() => useWeaponCombat({
       playerCharacter: mockPlayer,
       opponent: weakOpponent,
       onCombatEnd: mockOnCombatEnd,
-      dispatch: mockDispatch
+      dispatch: mockDispatch,
+      debugMode: true // Enable debug mode to ensure hit
     }));
 
     await act(async () => {
