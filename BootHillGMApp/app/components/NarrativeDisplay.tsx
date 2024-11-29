@@ -38,6 +38,18 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   const processedUpdatesRef = useRef<Set<string>>(new Set());
 
   // Enhanced narrative processing
+  const shouldAddSpacer = (currentType: string, previousItem: NarrativeItem | undefined) => {
+    if (!previousItem) return false;
+    
+    // Add spacer between different content types
+    if (currentType !== previousItem.type) return true;
+    
+    // Add spacer between GM responses (to separate combat results)
+    if (currentType === 'gm-response' && previousItem.type === 'gm-response') return true;
+    
+    return false;
+  };
+
   const narrativeItems = useMemo(() => {
     processedUpdatesRef.current.clear();
     
@@ -54,6 +66,9 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       if (playerActionMatch) {
         const cleanedAction = cleanText(playerActionMatch[1]);
         if (cleanedAction) {
+          if (shouldAddSpacer('player-action', items[items.length - 1])) {
+            items.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
+          }
           items.push({ 
             type: 'player-action',
             content: cleanedAction,
@@ -68,6 +83,9 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       if (gmResponseMatch) {
         const cleanedResponse = cleanText(gmResponseMatch[1]);
         if (cleanedResponse) {
+          if (shouldAddSpacer('gm-response', items[items.length - 1])) {
+            items.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
+          }
           items.push({ 
             type: 'gm-response',
             content: cleanedResponse,
@@ -107,12 +125,9 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       if (!trimmedLine.startsWith('SUGGESTED_ACTIONS:')) {
         const cleanedContent = cleanText(trimmedLine);
         if (cleanedContent) {
-          // Add spacer between different content types
-          const previousItem = items[items.length - 1];
-          if (items.length > 0 && previousItem?.type !== 'narrative') {
+          if (shouldAddSpacer('narrative', items[items.length - 1])) {
             items.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
           }
-          
           items.push({ 
             type: 'narrative',
             content: cleanedContent,
