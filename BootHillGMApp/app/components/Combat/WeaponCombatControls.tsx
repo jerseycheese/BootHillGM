@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { WeaponStats, WeaponCombatAction, WeaponCombatState } from '../../types/combat';
+import { WeaponCombatState, WeaponCombatAction, calculateWeaponModifier, rollForMalfunction, parseWeaponDamage } from '../../types/combat';
 
 interface WeaponCombatControlsProps {
   isProcessing: boolean;
@@ -21,10 +21,38 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
   const [showMoveOptions, setShowMoveOptions] = useState(false);
   const [targetRange, setTargetRange] = useState(currentState.currentRange);
 
+  const handleFire = () => {
+    if (!canFire || !currentState.playerWeapon) return;
+
+    const modifier = calculateWeaponModifier(
+      currentState.playerWeapon,
+      currentState.currentRange,
+      currentState.lastAction === 'aim'
+    );
+
+    const malfunction = rollForMalfunction(currentState.playerWeapon);
+    
+    if (malfunction) {
+      onAction({ type: 'malfunction' });
+      return;
+    }
+
+    onAction({
+      type: 'fire',
+      modifier,
+      damage: parseWeaponDamage(currentState.playerWeapon.modifiers.damage)
+    });
+  };
+
   const handleMove = () => {
+    const rangeModifier = currentState.playerWeapon ? 
+      calculateWeaponModifier(currentState.playerWeapon, targetRange, false) :
+      0;
+
     onAction({
       type: 'move',
-      targetRange
+      targetRange,
+      modifier: rangeModifier
     });
     setShowMoveOptions(false);
   };
@@ -65,7 +93,7 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
           Aim
         </button>
         <button
-          onClick={() => onAction({ type: 'fire' })}
+          onClick={handleFire}
           disabled={isProcessing || !canFire}
           className={`wireframe-button ${(!canFire || isProcessing) ? 'opacity-50' : ''}`}
         >
@@ -116,11 +144,21 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
   );
 };
 
-const WeaponDisplay: React.FC<{ weapon: { name: string; stats: WeaponStats } }> = ({ weapon }) => (
+const WeaponDisplay: React.FC<{ weapon: Weapon; range: number }> = ({ weapon, range }) => (
   <div className="text-sm">
     <p className="font-medium">{weapon.name}</p>
-    <p>Damage: {weapon.stats.damage}</p>
-    <p>Range: {weapon.stats.range}y</p>
-    <p>Speed: {weapon.stats.speed > 0 ? '+' : ''}{weapon.stats.speed}</p>
+    <p>Damage: {weapon.modifiers.damage}</p>
+    <p>Range: {weapon.modifiers.range}y</p>
+    <p>Accuracy: {weapon.modifiers.accuracy > 0 ? `+${weapon.modifiers.accuracy}` : weapon.modifiers.accuracy}</p>
+    <p>Reliability: {weapon.modifiers.reliability}%</p>
+    {weapon.ammunition !== undefined && (
+      <p>Ammo: {weapon.ammunition}/{weapon.maxAmmunition}</p>
+    )}
   </div>
 );
+
+const getWeaponModifierText = (weapon: Weapon | null, range: number): string => {
+  if (!weapon) return 'No modifier';
+  const modifier = calculateWeaponModifier(weapon, range, false);
+  return modifier >= 0 ? `+${modifier}` : `${modifier}`;
+};
