@@ -196,21 +196,5 @@ export const extractItemUpdates = (text: string): { acquired: string[]; removed:
  */
 export const cleanCharacterName = (name: string): string => {
   if (!name?.trim()) return '';
-  
-  // Take only the first sentence or phrase before any narrative
-  let cleaned = name.split(/[.!?]|\s+(?=Your|He|She|They|The|A|An)/i)[0];
-  
-  // Remove any metadata markers
-  cleaned = cleaned.replace(METADATA_PATTERNS.CORE.MARKERS, '');
-  
-  // Remove any narrative indicators
-  cleaned = cleaned
-    .replace(/\s*(?:appears|seems|looks|stands|walks|enters|exits|says|speaks|fights|shoots|draws)\s+.*$/i, '')
-    .replace(/\s*(?:is|was|were|will|has|have|had)\s+.*$/i, '')
-    .replace(/\s*(?:in|at|by|near|around|behind|beside|with)\s+.*$/i, '');
-    
-  // Clean extra whitespace
-  cleaned = cleaned.replace(METADATA_PATTERNS.FORMAT.WHITESPACE, ' ').trim();
-  
-  return cleaned;
+  return name.split(/[.!?]/)[0].trim();
 };

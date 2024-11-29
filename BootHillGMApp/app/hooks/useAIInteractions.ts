@@ -58,27 +58,34 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
   }
 
   if (response.combatInitiated && response.opponent) {
-    // Clean opponent name and narrative content
-    const cleanedOpponent = {
-      ...response.opponent,
-      name: cleanCharacterName(response.opponent.name),
-      // Ensure other fields don't contain narrative content
+    // Extract only the structured data fields for the opponent
+    const structuredOpponent = {
+      name: response.opponent.name.split(/[.!?]/)[0].trim(), // Take only the first sentence
       attributes: {
-        ...response.opponent.attributes
+        speed: response.opponent.attributes.speed,
+        gunAccuracy: response.opponent.attributes.gunAccuracy,
+        throwingAccuracy: response.opponent.attributes.throwingAccuracy,
+        strength: response.opponent.attributes.strength,
+        baseStrength: response.opponent.attributes.baseStrength,
+        bravery: response.opponent.attributes.bravery,
+        experience: response.opponent.attributes.experience
       },
       skills: {
-        ...response.opponent.skills
+        shooting: response.opponent.skills.shooting,
+        riding: response.opponent.skills.riding,
+        brawling: response.opponent.skills.brawling
       },
       weapon: response.opponent.weapon ? {
-        ...response.opponent.weapon,
-        name: cleanCharacterName(response.opponent.weapon.name)
+        name: response.opponent.weapon.name.split(/[.!?]/)[0].trim(),
+        damage: response.opponent.weapon.damage
       } : undefined,
-      wounds: response.opponent.wounds || []
+      wounds: response.opponent.wounds || [],
+      isUnconscious: response.opponent.isUnconscious || false
     };
     
     dispatch({
       type: 'SET_OPPONENT',
-      payload: cleanedOpponent
+      payload: structuredOpponent
     });
     
     // Initialize combat state with null combat type to trigger selection
