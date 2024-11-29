@@ -53,26 +53,28 @@ export const cleanText = (text: string | undefined): string => {
 export const cleanCombatLogEntry = (text: string): string => {
   if (!text?.trim()) return '';
 
-  // First normalize newlines and clean leading/trailing ones
-  let cleaned = text
-    .replace(/\r\n/g, '\n')
-    .replace(METADATA_PATTERNS.FORMAT.NEWLINES, '');
-
-  // Remove all date prefixes, including those mid-text
-  cleaned = cleaned.replace(/\d{1,2}\/\d{1,2}\/\d{4}:\s*/g, '');
+  // Extract just the combat action part
+  const combatPattern = /([^.!?]+(?:punches|grapples|hits|misses|fires|attacks|defends|blocks)[^.!?]*(?:Roll:[^.!?]*)?(?:damage[^.!?]*)?)/i;
+  const match = text.match(combatPattern);
   
-  // Remove metadata sections
-  cleaned = cleaned.replace(/ACQUIRED_ITEMS:[\s\S]*?SUGGESTED_ACTIONS:[\s\S]*?](\s*-\s*\w+)?/, '');
+  if (!match) return cleanText(text);
   
-  // Remove any remaining metadata markers
-  cleaned = cleaned.replace(METADATA_PATTERNS.CORE.MARKERS, '');
-  cleaned = cleaned.replace(METADATA_PATTERNS.CORE.JSON, '');
-  cleaned = cleaned.replace(METADATA_PATTERNS.CORE.MULTILINE, '');
+  let cleaned = match[1];
   
-  // Clean extra whitespace but preserve spaces around punctuation
-  cleaned = cleaned.replace(METADATA_PATTERNS.FORMAT.WHITESPACE, ' ').trim();
-
-  return cleaned;
+  // Clean character names in the combat text
+  const names = cleaned.match(/^[^.!?]+?(?=\s+(?:punches|grapples|hits|misses|fires|attacks|defends|blocks))/i);
+  if (names) {
+    const cleanedName = cleanCharacterName(names[0]);
+    cleaned = cleaned.replace(names[0], cleanedName);
+  }
+  
+  // Remove any remaining metadata or narrative text
+  cleaned = cleaned
+    .replace(/\s+He\s+[^.!?]*?(?=\s+(?:punches|grapples|hits|misses|fires|attacks|defends|blocks))/i, ' ')
+    .replace(/important:.*$/i, '')
+    .replace(/\s+The\s+[^.!?]*?(?=\s+(?:punches|grapples|hits|misses|fires|attacks|defends|blocks))/i, ' ');
+    
+  return cleaned.trim();
 };
 
 /**
