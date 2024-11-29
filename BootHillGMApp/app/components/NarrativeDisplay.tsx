@@ -37,21 +37,6 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   const isAutoScrollEnabled = useRef<boolean>(true);
   const processedUpdatesRef = useRef<Set<string>>(new Set());
 
-  // Enhanced narrative processing
-  const shouldAddSpacer = (currentType: string, previousItem: NarrativeItem | undefined) => {
-    if (!previousItem) return false;
-    
-    // Only add spacers for type transitions
-    if (currentType !== previousItem.type) {
-      // Special case: Don't add spacer between consecutive GM responses
-      if (currentType === 'gm-response' && previousItem.type === 'gm-response') {
-        return false;
-      }
-      return true;
-    }
-    
-    return false;
-  };
 
   const narrativeItems = useMemo(() => {
     processedUpdatesRef.current.clear();
@@ -59,19 +44,13 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
     return narrative.split('\n').reduce<NarrativeItem[]>((items, line, index, array) => {
       const trimmedLine = line.trim();
       
-      // Skip empty lines - we'll handle spacing differently
-      if (!trimmedLine) {
-        return items;
-      }
+      if (!trimmedLine) return items;
 
       // Improved player action detection
       const playerActionMatch = trimmedLine.match(/^(?:Player:|You:?)\s*(.*)/i);
       if (playerActionMatch) {
         const cleanedAction = cleanText(playerActionMatch[1]);
         if (cleanedAction) {
-          if (shouldAddSpacer('player-action', items[items.length - 1])) {
-            items.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
-          }
           items.push({ 
             type: 'player-action',
             content: cleanedAction,
@@ -86,9 +65,6 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       if (gmResponseMatch) {
         const cleanedResponse = cleanText(gmResponseMatch[1]);
         if (cleanedResponse) {
-          if (shouldAddSpacer('gm-response', items[items.length - 1])) {
-            items.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
-          }
           items.push({ 
             type: 'gm-response',
             content: cleanedResponse,

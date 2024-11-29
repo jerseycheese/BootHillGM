@@ -20,19 +20,19 @@ interface StyleConfig {
 
 const STYLE_CONFIGS: Record<NarrativeItem['type'], StyleConfig> = {
   'player-action': {
-    className: 'player-action border-l-4 border-saddle-brown pl-4 bg-opacity-5 hover:bg-opacity-10 transition-colors duration-300',
+    className: 'narrative-player-action border-l-4 border-saddle-brown pl-4 bg-opacity-5 hover:bg-opacity-10 transition-colors duration-300 mb-6',
     testId: 'player-action'
   },
   'gm-response': {
-    className: 'gm-response border-l-4 border-dusty-red pl-4',
+    className: 'narrative-gm-response border-l-4 border-dusty-red pl-4 mb-6',
     testId: 'gm-response'
   },
   'narrative': {
-    className: 'narrative-line font-western-text leading-relaxed',
+    className: 'narrative-text font-western-text leading-relaxed mb-6',
     testId: 'narrative-line'
   },
   'item-update': {
-    className: '',
+    className: 'narrative-item-update mb-6',
     testId: 'item-update'
   }
 };
@@ -80,11 +80,6 @@ export const NarrativeContent: React.FC<{
   }
 
   const config = STYLE_CONFIGS[item.type];
-  
-  // Only render spacer if it's an empty narrative item
-  if (item.metadata?.isEmpty) {
-    return <div className="h-4" data-testid="empty-spacer" role="separator" aria-hidden="true" />;
-  }
   
   if (!item.content || item.content.includes('undefined')) {
     return null;
