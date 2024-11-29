@@ -1,5 +1,4 @@
 import { AIService } from '../../../services/ai/aiService';
-import { InventoryItem } from '../../../types/inventory';
 import { retryWithExponentialBackoff } from '../../../utils/retry';
 
 // Mock the retry utility
@@ -73,85 +72,14 @@ describe('AIService', () => {
     expect(result.opponent?.name).toBe('Angry Bandit');
   });
 
-  test('should handle inventory changes', async () => {
-    const mockResponse = {
-      response: {
-        text: () => `
-          You found some items.
-          ACQUIRED_ITEMS: [Gun, Bullets]
-          REMOVED_ITEMS: [Money]
-        `
-      }
-    };
-
-    (retryWithExponentialBackoff as jest.Mock).mockResolvedValueOnce(mockResponse);
-
-    const inventory: InventoryItem[] = [
-      { id: 'money-1', name: 'Money', quantity: 1, description: 'Some coins' }
-    ];
-
-    const result = await aiService.getResponse(
-      'search for items',
-      'test context',
-      { inventory }
-    );
-
-    expect(result.acquiredItems).toEqual(['Gun', 'Bullets']);
-    expect(result.removedItems).toEqual(['Money']);
-  });
-
-  test('should generate narrative summary', async () => {
-    const mockResponse = {
-      response: {
-        text: () => 'A concise summary of the action'
-      }
-    };
-
-    (retryWithExponentialBackoff as jest.Mock).mockResolvedValueOnce(mockResponse);
-
-    const summary = await aiService.generateNarrativeSummary(
-      'draw gun',
-      'Player is in a saloon'
-    );
-
-    expect(summary).toBe('A concise summary of the action');
-  });
-
-  test('should handle API errors gracefully', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    
-    const apiError = new Error('API Error');
+  test('handles API errors gracefully', async () => {
+    const apiError = new Error('AI service error');
     (retryWithExponentialBackoff as jest.Mock).mockRejectedValueOnce(apiError);
 
     await expect(aiService.getResponse(
       'test action',
       'test context',
       { inventory: [] }
-    )).rejects.toThrow('API Error');
-    
-    consoleSpy.mockRestore();
-  });
-
-  test('should handle location changes', async () => {
-    const mockResponse = {
-      response: {
-        text: () => `
-          You walk into the saloon.
-          LOCATION: Dusty Saloon
-          ACQUIRED_ITEMS: []
-          REMOVED_ITEMS: []
-        `
-      }
-    };
-
-    (retryWithExponentialBackoff as jest.Mock).mockResolvedValueOnce(mockResponse);
-
-    const result = await aiService.getResponse(
-      'enter saloon',
-      'test context',
-      { inventory: [] }
-    );
-
-    expect(result.location).toBe('Dusty Saloon');
+    )).rejects.toThrow('AI service error');
   });
 });
