@@ -1,14 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { debugTracker } from '../../utils/debugUtils';
 
 export const TextCleaningDebug: React.FC = () => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const entries = debugTracker.getEntries();
 
   if (entries.length === 0) return null;
 
   return (
     <div className="mt-8 p-4 border-t-2 border-gray-200">
-      <h2 className="text-lg font-bold mb-4">Text Cleaning Debug Info</h2>
+      <button 
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center justify-between w-full text-lg font-bold mb-4 hover:text-gray-700"
+        aria-expanded={isExpanded}
+      >
+        <span>Text Cleaning Debug Info</span>
+        <span className="text-sm text-gray-600">
+          {isExpanded ? '▼' : '▶'} {entries.length} entries
+        </span>
+      </button>
+      {isExpanded && (
       <div className="space-y-4">
         {entries.map((entry, index) => (
           <div key={entry.timestamp} className="p-4 bg-gray-50 rounded">
@@ -28,6 +39,7 @@ export const TextCleaningDebug: React.FC = () => {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 };
