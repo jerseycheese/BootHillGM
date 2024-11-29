@@ -125,7 +125,7 @@ export const useWeaponCombat = ({
         setAimBonus(0);
 
         // Check for weapon malfunction
-        if (roll >= weapon.stats.reliability) {
+        if (roll >= weapon.modifiers.reliability) {
           return {
             hit: false,
             roll,
