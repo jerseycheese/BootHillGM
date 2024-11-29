@@ -32,7 +32,7 @@ import { GameEngineAction } from '../utils/gameEngine';
 interface UseCombatEngineProps {
   playerCharacter: Character;
   opponent: Character;
-  onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
+  onCombatEnd: (winner: 'player' | 'opponent') => void;
   onPlayerHealthChange: (health: number) => void;
   dispatch: React.Dispatch<GameEngineAction>;
   initialState?: {
@@ -106,9 +106,8 @@ export const useCombatEngine = ({
         const newHealth = Math.max(0, opponentHealth - damage);
         setOpponentHealth(newHealth);
         if (newHealth === 0) {
-          const summary = `${cleanCharacterName(attacker.name)} hits ${cleanCharacterName(defender.name)} with ${weaponName} - a fatal shot! [Roll: ${roll}/${hitChance}]`;
           combatEndRef.current = true;
-          onCombatEnd('player', summary);
+          onCombatEnd('player');
           return true;
         }
       } else {
@@ -116,9 +115,8 @@ export const useCombatEngine = ({
         setPlayerHealth(newHealth);
         onPlayerHealthChange(newHealth);
         if (newHealth === 0) {
-          const summary = `${cleanCharacterName(attacker.name)} hits ${cleanCharacterName(defender.name)} with ${weaponName} - a fatal shot! [Roll: ${roll}/${hitChance}]`;
           combatEndRef.current = true;
-          onCombatEnd('opponent', summary);
+          onCombatEnd('opponent');
           return true;
         }
       }
