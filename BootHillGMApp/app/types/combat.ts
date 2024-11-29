@@ -13,25 +13,51 @@ export interface BrawlingState {
   roundLog: LogEntry[];
 }
 
-export interface WeaponStats {
-  damage: string;        // e.g. "1d6+1"
-  range: number;         // Range in yards
-  speed: number;        // Speed modifier
-  accuracy: number;     // Accuracy modifier
-  reliability: number;  // Chance of malfunction (1-100)
+export interface WeaponModifiers {
+  accuracy: number;     // Base accuracy modifier
+  range: number;       // Effective range in yards
+  reliability: number; // Chance of malfunction (1-100)
+  damage: string;      // Damage dice (e.g. "1d6+1")
+  speed: number;       // Initiative modifier
 }
+
+export interface Weapon {
+  id: string;
+  name: string;
+  modifiers: WeaponModifiers;
+  ammunition?: number;
+  maxAmmunition?: number;
+}
+
+// Constants for base weapons
+export const WEAPON_STATS: Record<string, WeaponModifiers> = {
+  'Colt Revolver': {
+    accuracy: 2,
+    range: 20,
+    reliability: 95,
+    damage: '1d6',
+    speed: 0
+  },
+  'Winchester Rifle': {
+    accuracy: 3,
+    range: 40,
+    reliability: 90,
+    damage: '1d8',
+    speed: -1
+  },
+  'Shotgun': {
+    accuracy: 1,
+    range: 10,
+    reliability: 85,
+    damage: '2d6',
+    speed: -2
+  }
+};
 
 export interface WeaponCombatState {
   round: number;
-  playerWeapon: {
-    id: string;
-    name: string;
-    stats: WeaponStats;
-  } | null;
-  opponentWeapon: {
-    name: string;
-    stats: WeaponStats;
-  } | null;
+  playerWeapon: Weapon | null;
+  opponentWeapon: Weapon | null;
   currentRange: number;
   roundLog: LogEntry[];
   lastAction?: 'aim' | 'fire' | 'reload' | 'move';
@@ -75,6 +101,44 @@ export interface CombatSelectionState {
 }
 
 // Utility type to ensure non-null properties
+// Helper functions for weapon combat
+export const calculateWeaponModifier = (
+  weapon: Weapon | null,
+  range: number,
+  isAiming: boolean
+): number => {
+  if (!weapon) return 0;
+  
+  const rangePenalty = Math.max(-30, -Math.floor((range / weapon.modifiers.range) * 20));
+  const aimBonus = isAiming ? 10 : 0;
+  
+  return weapon.modifiers.accuracy + rangePenalty + aimBonus;
+};
+
+export const rollForMalfunction = (weapon: Weapon): boolean => {
+  const roll = Math.floor(Math.random() * 100) + 1;
+  return roll > weapon.modifiers.reliability;
+};
+
+export const parseWeaponDamage = (damageString: string): number => {
+  const [diceCount, diceType] = damageString.split('d');
+  const [baseDice, modifier] = diceType.split('+');
+  
+  let total = 0;
+  const count = parseInt(diceCount);
+  const sides = parseInt(baseDice);
+  
+  for (let i = 0; i < count; i++) {
+    total += Math.floor(Math.random() * sides) + 1;
+  }
+  
+  if (modifier) {
+    total += parseInt(modifier);
+  }
+  
+  return total;
+};
+
 export function ensureCombatState(state?: Partial<CombatState>): CombatState {
   return {
     isActive: state?.isActive ?? false,
