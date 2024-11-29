@@ -41,10 +41,13 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   const narrativeItems = useMemo(() => {
     processedUpdatesRef.current.clear();
     
-    return narrative.split('\n').reduce<NarrativeItem[]>((items, line) => {
+    return narrative.split('\n').reduce<NarrativeItem[]>((items, line, index, array) => {
       const trimmedLine = line.trim();
       if (!trimmedLine) {
-        items.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
+        const previousItem = items[items.length - 1];
+        if (!previousItem?.metadata?.isEmpty) {
+          items.push({ type: 'narrative', content: '', metadata: { isEmpty: true } });
+        }
         return items;
       }
 
