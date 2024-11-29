@@ -60,7 +60,13 @@ export const CombatSystem: React.FC<{
     opponent,
     onCombatEnd,
     dispatch,
-    initialState: initialCombatState?.weapon
+    initialState: initialCombatState?.weapon,
+    state: initialCombatState || {
+      isActive: true,
+      combatType: 'weapon',
+      winner: null,
+      summary: null
+    }
   });
 
   const handleCombatTypeSelect = (type: CombatType) => {
