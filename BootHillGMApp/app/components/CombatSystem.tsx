@@ -48,13 +48,14 @@ export const CombatSystem: React.FC<{
     initialCombatState: initialCombatState?.brawling
   });
 
-  const { 
-    weaponState, 
-    isProcessing: isWeaponProcessing, 
-    processAction, 
-    canAim, 
-    canFire, 
-    canReload 
+  const {
+    weaponState,
+    isProcessing: isWeaponProcessing,
+    processAction,
+    canAim,
+    canFire,
+    canReload,
+    currentOpponent // Add this to track current opponent state
   } = useWeaponCombat({
     playerCharacter,
     opponent,
@@ -140,7 +141,7 @@ export const CombatSystem: React.FC<{
     <div className="combat-system wireframe-section space-y-4">
       <CombatStatus
         playerCharacter={playerCharacter}
-        opponent={opponent}
+        opponent={combatType === 'weapon' ? currentOpponent : opponent}
       />
       
       {renderCombatContent()}

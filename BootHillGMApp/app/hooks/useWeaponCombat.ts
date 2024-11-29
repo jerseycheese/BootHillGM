@@ -307,12 +307,23 @@ export const useWeaponCombat = ({
   const canFire = !isProcessing && weaponState.playerWeapon !== null;
   const canReload = !isProcessing;
 
+  // Track current opponent state
+  const [currentOpponent, setCurrentOpponent] = useState(opponent);
+
+  // Update currentOpponent when dispatch updates opponent
+  useEffect(() => {
+    if (opponent !== currentOpponent) {
+      setCurrentOpponent(opponent);
+    }
+  }, [opponent]);
+
   return {
     weaponState,
     isProcessing,
     processAction,
     canAim,
     canFire,
-    canReload
+    canReload,
+    currentOpponent
   };
 };
