@@ -60,7 +60,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
   if (response.combatInitiated && response.opponent) {
     // Extract only the structured data fields for the opponent
     const structuredOpponent = {
-      name: response.opponent.name.split(/[.!?\n]/)[0].split(/\s+(?=[A-Z])/)[0].trim(),
+      name: cleanCharacterName(response.opponent.name),
       attributes: {
         speed: response.opponent.attributes.speed,
         gunAccuracy: response.opponent.attributes.gunAccuracy,

@@ -201,9 +201,14 @@ export const cleanCharacterName = (name: string): string => {
   let cleaned = name
     .replace(/important:.*?(?=\n|$)/gi, '')
     .replace(/note:.*?(?=\n|$)/gi, '')
-    .replace(/metadata:.*?(?=\n|$)/gi, '')
-    .split(/[.!?]/)[0];
+    .replace(/metadata:.*?(?=\n|$)/gi, '');
     
+  // Split on sentence endings or newlines and take first part
+  cleaned = cleaned.split(/[.!?\n]/)[0];
+  
+  // Split on spaces followed by capital letters (narrative start) and take first part
+  cleaned = cleaned.split(/\s+(?=[A-Z])/)[0];
+  
   // Remove any remaining narrative indicators
   cleaned = cleaned
     .replace(/\([^)]*\)/g, '')
