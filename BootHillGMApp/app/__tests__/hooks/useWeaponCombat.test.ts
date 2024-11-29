@@ -155,7 +155,7 @@ describe('useWeaponCombat', () => {
 
     expect(mockOnCombatEnd).toHaveBeenCalledWith(
       'player',
-      expect.stringContaining('defeats')
+      expect.stringContaining('defeat')
     );
   });
 
