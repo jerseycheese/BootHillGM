@@ -11,11 +11,23 @@ export interface CombatMessageParams {
 }
 
 export const cleanCharacterName = (name: string): string => {
-  let cleanedName = cleanText(name);
-
+  if (!name) return '';
+  
+  // Get the first line only
+  let cleanedName = name.split('\n')[0];
+  
+  // Remove any narrative text after the actual name
+  cleanedName = cleanedName.split(/[.,:]/)[0];
+  
+  // Apply existing text cleaning
+  cleanedName = cleanText(cleanedName);
+  
   // Remove suggested actions
   cleanedName = cleanedName.replace(/SUGGESTED_ACTIONS: \[.*?\]/, '');
-
+  
+  // Remove any remaining narrative indicators
+  cleanedName = cleanedName.replace(/important:.*$/, '');
+  
   return cleanedName.trim();
 };
 
