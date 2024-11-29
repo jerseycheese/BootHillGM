@@ -38,6 +38,7 @@ export const useWeaponCombat = ({
   onCombatEnd,
   dispatch,
   initialState,
+  state,
   debugMode = false // Default to false
 }: UseWeaponCombatProps) => {
   const [weaponState, setWeaponState] = useState<WeaponCombatState>(() => {
