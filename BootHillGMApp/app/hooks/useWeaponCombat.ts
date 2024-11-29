@@ -155,8 +155,33 @@ export const useWeaponCombat = ({
 
         if (hit) {
 
-          let damage = Math.floor(Math.random() * 6) + 1;
+          let damage = parseWeaponDamage(weapon.modifiers.damage);
           if (critical) damage *= 2;
+
+          // Apply the damage immediately
+          const newStrength = Math.max(0, defender.attributes.strength - damage);
+          if (isPlayer) {
+            dispatch({
+              type: 'SET_OPPONENT',
+              payload: {
+                ...defender,
+                attributes: {
+                  ...defender.attributes,
+                  strength: newStrength
+                }
+              }
+            });
+          } else {
+            dispatch({
+              type: 'UPDATE_CHARACTER',
+              payload: {
+                attributes: {
+                  ...defender.attributes,
+                  strength: newStrength
+                }
+              }
+            });
+          }
 
           return {
             hit: true,
@@ -222,19 +247,7 @@ export const useWeaponCombat = ({
       });
 
       if (result.damage) {
-        const newStrength = Math.max(0, opponent.attributes.strength - result.damage);
-        // Update opponent health
-        dispatch({
-          type: 'SET_OPPONENT',
-          payload: {
-            ...opponent,
-            attributes: {
-              ...opponent.attributes,
-              strength: newStrength
-            }
-          }
-        });
-        if (newStrength <= 0) {
+        if (opponent.attributes.strength <= 0) {
           onCombatEnd('player', `You defeat ${opponent.name} with a well-placed shot!`);
           return;
         }
