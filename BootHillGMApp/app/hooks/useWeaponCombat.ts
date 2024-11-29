@@ -131,7 +131,7 @@ export const useWeaponCombat = ({
         const totalBonus = aimBonus + rangeModifier + weapon.modifiers.accuracy;
         
         let roll = Math.floor(Math.random() * 100) + 1;
-        if (debugMode && isPlayer) {
+        if (debugMode && isPlayerAction) {
           roll = 1; // Force a hit for player in debug mode
         }
         const modifiedRoll = roll - totalBonus;
