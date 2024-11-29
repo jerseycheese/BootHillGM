@@ -14,9 +14,16 @@ describe('useCharacterCreation', () => {
       expect(result).toBeLessThanOrEqual(fieldInfo.max);
     });
 
-    it('returns 0 for invalid fields', () => {
-      const result = generateRandomValue('speed' as keyof Character['attributes'] | keyof Character['skills']);
+    it('returns 0 for undefined field info', () => {
+      // Mock STEP_DESCRIPTIONS to simulate missing field info
+      const originalDesc = STEP_DESCRIPTIONS['speed'];
+      STEP_DESCRIPTIONS['speed'] = { title: '', description: '' };
+      
+      const result = generateRandomValue('speed');
       expect(result).toBe(0);
+      
+      // Restore original description
+      STEP_DESCRIPTIONS['speed'] = originalDesc;
     });
   });
 });

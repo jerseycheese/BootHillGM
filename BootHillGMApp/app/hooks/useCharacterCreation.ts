@@ -293,7 +293,9 @@ export function useCharacterCreation() {
   };
 }
 
-export function generateRandomValue(field: keyof Character['attributes'] | keyof Character['skills']): number {
+export type ValidField = keyof Character['attributes'] | keyof Character['skills'];
+
+export function generateRandomValue(field: ValidField): number {
   // Get field constraints from step descriptions
   const fieldInfo = STEP_DESCRIPTIONS[field];
   if (!fieldInfo?.min || !fieldInfo?.max) return 0;
