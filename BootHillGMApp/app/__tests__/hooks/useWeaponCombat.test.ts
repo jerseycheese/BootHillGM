@@ -23,8 +23,15 @@ describe('useWeaponCombat', () => {
     wounds: [],
     isUnconscious: false,
     weapon: {
+      id: 'colt-revolver',
       name: 'Colt Revolver',
-      modifiers: WEAPON_STATS['Colt Revolver']
+      modifiers: {
+        damage: '2d6',
+        range: 20,
+        accuracy: 2,
+        reliability: 95,
+        speed: 1
+      }
     }
   };
 
@@ -32,8 +39,15 @@ describe('useWeaponCombat', () => {
     ...mockPlayer,
     name: 'Opponent',
     weapon: {
+      id: 'winchester-rifle',
       name: 'Winchester Rifle',
-      modifiers: WEAPON_STATS['Winchester Rifle']
+      modifiers: {
+        damage: '2d8',
+        range: 50,
+        accuracy: 3,
+        reliability: 90,
+        speed: 0
+      }
     }
   };
 
