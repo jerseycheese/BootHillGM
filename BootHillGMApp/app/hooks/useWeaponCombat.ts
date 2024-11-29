@@ -160,14 +160,14 @@ export const useWeaponCombat = ({
           let damage = parseWeaponDamage(weapon.modifiers.damage);
           if (critical) damage *= 2;
 
-          // Calculate and apply damage
-          const newStrength = Math.max(0, defender.attributes.strength - damage);
+          // Calculate and apply cumulative damage
+          const currentStrength = defender.attributes.strength;
+          const newStrength = Math.max(0, currentStrength - damage);
           const updatedDefender = {
             ...defender,
             attributes: {
               ...defender.attributes,
-              strength: newStrength,
-              baseStrength: defender.attributes.baseStrength // Ensure baseStrength is preserved
+              strength: newStrength
             },
             wounds: [
               ...defender.wounds,
@@ -204,7 +204,7 @@ export const useWeaponCombat = ({
             roll,
             modifiedRoll,
             targetNumber,
-            message: `${attacker.name} hits ${defender.name} with ${weapon.name} for ${damage} damage! (Strength: ${defender.attributes.strength} → ${newStrength})`,
+            message: `${attacker.name} hits ${defender.name} with ${weapon.name} for ${damage} damage! (Strength: ${currentStrength} → ${newStrength})`,
             newStrength // Pass the new strength value
           };
         }
