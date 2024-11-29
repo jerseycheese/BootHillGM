@@ -15,7 +15,7 @@ describe('useCharacterCreation', () => {
     });
 
     it('returns 0 for invalid fields', () => {
-      const result = generateRandomValue('invalidField' as keyof typeof STEP_DESCRIPTIONS);
+      const result = generateRandomValue('speed' as keyof Character['attributes'] | keyof Character['skills']);
       expect(result).toBe(0);
     });
   });
