@@ -192,13 +192,6 @@ export const useWeaponCombat = ({
             targetNumber,
             message: `${attacker.name} hits ${defender.name} with ${weapon.name} for ${damage} damage! (Strength: ${defender.attributes.strength} → ${newStrength})`,
             newStrength // Pass the new strength value
-            hit: true,
-            damage,
-            critical,
-            roll,
-            modifiedRoll,
-            targetNumber,
-            message: `${attacker.name} hits ${defender.name} with ${weapon.name} for ${damage} damage!`
           };
         }
 
