@@ -158,32 +158,40 @@ export const useWeaponCombat = ({
           let damage = parseWeaponDamage(weapon.modifiers.damage);
           if (critical) damage *= 2;
 
-          // Apply the damage immediately
+          // Calculate and apply damage
           const newStrength = Math.max(0, defender.attributes.strength - damage);
+          const updatedDefender = {
+            ...defender,
+            attributes: {
+              ...defender.attributes,
+              strength: newStrength
+            }
+          };
+
+          // Update state based on who was hit
           if (isPlayer) {
             dispatch({
               type: 'SET_OPPONENT',
-              payload: {
-                ...defender,
-                attributes: {
-                  ...defender.attributes,
-                  strength: newStrength
-                }
-              }
+              payload: updatedDefender
             });
           } else {
             dispatch({
               type: 'UPDATE_CHARACTER',
               payload: {
-                attributes: {
-                  ...defender.attributes,
-                  strength: newStrength
-                }
+                attributes: updatedDefender.attributes
               }
             });
           }
 
           return {
+            hit: true,
+            damage,
+            critical,
+            roll,
+            modifiedRoll,
+            targetNumber,
+            message: `${attacker.name} hits ${defender.name} with ${weapon.name} for ${damage} damage! (Strength: ${defender.attributes.strength} → ${newStrength})`,
+            newStrength // Pass the new strength value
             hit: true,
             damage,
             critical,
@@ -246,11 +254,9 @@ export const useWeaponCombat = ({
         timestamp: Date.now()
       });
 
-      if (result.damage) {
-        if (opponent.attributes.strength <= 0) {
-          onCombatEnd('player', `You defeat ${opponent.name} with a well-placed shot!`);
-          return;
-        }
+      if (result.damage && result.newStrength <= 0) {
+        onCombatEnd('player', `You defeat ${opponent.name} with a well-placed shot!`);
+        return;
       }
 
       // Process opponent's response
@@ -266,20 +272,9 @@ export const useWeaponCombat = ({
           timestamp: Date.now()
         });
 
-        if (opponentResult.damage) {
-          dispatch({
-            type: 'UPDATE_CHARACTER',
-            payload: {
-              attributes: {
-                ...playerCharacter.attributes,
-                strength: Math.max(0, playerCharacter.attributes.strength - opponentResult.damage)
-              }
-            }
-          });
-          if (playerCharacter.attributes.strength - opponentResult.damage <= 0) {
-            onCombatEnd('opponent', `${opponent.name} defeats you with a deadly shot!`);
-            return;
-          }
+        if (opponentResult.damage && opponentResult.newStrength <= 0) {
+          onCombatEnd('opponent', `${opponent.name} defeats you with a deadly shot!`);
+          return;
         }
       }
 
