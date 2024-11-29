@@ -94,8 +94,11 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           )
         });
 
-        dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
+        // Clear opponent state BEFORE setting combat inactive
         dispatch({ type: 'SET_OPPONENT', payload: null });
+        
+        // Then clear combat state
+        dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
         
         dispatch({ 
           type: 'UPDATE_COMBAT_STATE', 
@@ -103,7 +106,11 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             isActive: false,
             combatType: null,
             winner: winner,
-            summary: combatSummary
+            summary: combatSummary,
+            // Add these explicit nulling of combat-specific states
+            brawling: undefined,
+            weapon: undefined,
+            selection: undefined
           })
         });
       });
