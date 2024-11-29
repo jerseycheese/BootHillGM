@@ -35,12 +35,13 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         const playerName = state.character?.name || 'Player';
         const opponentName = state.opponent?.name || 'Unknown Opponent';
         
-        // Simple victory message
+        // Descriptive victory message with proper formatting
         const endMessage = winner === 'player' 
-          ? `${playerName} emerges victorious.`
-          : `${opponentName} emerges victorious.`;
+          ? `${playerName} has defeated ${opponentName} in combat.`
+          : `${opponentName} has defeated ${playerName} in combat.`;
         
-        onUpdateNarrative(endMessage);
+        // Ensure proper narrative formatting
+        onUpdateNarrative(`In the heat of battle, ${endMessage}`);
       
         const currentJournal = state.journal || [];
         dispatch({ 
