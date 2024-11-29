@@ -156,9 +156,7 @@ function addToRecentNames(name: string) {
   }
 }
 
-export async function generateFieldValue(
-  key: 'name'
-): Promise<string> {
+export async function generateFieldValue(): Promise<string> {
     const prompt = `Generate a single name for a character in a Western-themed RPG set in the American Old West (1865-1890).
     - Should be a full name (first and last)
     - Historically appropriate for the time period
