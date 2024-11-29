@@ -4,6 +4,7 @@ import { useCampaignState } from '../components/CampaignStateManager';
 import { addCombatJournalEntry } from '../utils/JournalManager';
 import { createStateProtection } from '../utils/stateProtection';
 import { CombatState, ensureCombatState } from '../types/combat';
+import { cleanText } from '../utils/textCleaningUtils';
 
 
 /**
@@ -37,14 +38,14 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         
         // Descriptive victory message with proper formatting
         const endMessage = winner === 'player' 
-          ? `${playerName} has defeated ${opponentName} in combat and emerges victorious.`
-          : `${opponentName} has defeated ${playerName} in combat and emerges victorious.`;
+          ? `${cleanText(playerName)} has defeated ${cleanText(opponentName)} in combat and emerges victorious.`
+          : `${cleanText(opponentName)} has defeated ${cleanText(playerName)} in combat and emerges victorious.`;
         
         // Debug logging
         console.log('End message before narrative update:', endMessage);
         
         // Ensure proper narrative formatting
-        const narrativeMessage = `In the heat of battle, ${endMessage}`;
+        const narrativeMessage = cleanText(`In the heat of battle, ${endMessage}`);
         console.log('Full narrative message:', narrativeMessage);
         
         onUpdateNarrative(narrativeMessage);
