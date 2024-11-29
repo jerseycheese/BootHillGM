@@ -203,18 +203,22 @@ export const cleanCharacterName = (name: string): string => {
     .replace(/note:.*?(?=\n|$)/gi, '')
     .replace(/metadata:.*?(?=\n|$)/gi, '');
     
-  // Split on sentence endings or newlines and take first part
-  cleaned = cleaned.split(/[.!?\n]/)[0];
+  // Split on any narrative indicators or sentence breaks
+  cleaned = cleaned.split(/[.!?\n]|(?:\s+(?:The|the|A|a|An|an)\s+)/)[0];
   
-  // Split on spaces followed by capital letters (narrative start) and take first part
-  cleaned = cleaned.split(/\s+(?=[A-Z])/)[0];
+  // Remove any article at the start of the name
+  cleaned = cleaned.replace(/^(?:The|the|A|a|An|an)\s+/, '');
+  
+  // Split on spaces followed by narrative content
+  cleaned = cleaned.split(/\s+(?=[A-Z][a-z]+\s+(?:draws|rushes|attacks|fires|shoots|moves|runs|walks|stands|sits|lies|goes|comes|tries|attempts|begins|starts|looks|seems|appears|is|was|were|has|had|have))/)[0];
   
   // Remove any remaining narrative indicators
   cleaned = cleaned
     .replace(/\([^)]*\)/g, '')
     .replace(/\[[^\]]*\]/g, '')
     .replace(/\{[^}]*\}/g, '')
-    .replace(/:\s*.*$/, '');
+    .replace(/:\s*.*$/, '')
+    .replace(/,.*$/, '');
     
   return cleaned.trim();
 };
