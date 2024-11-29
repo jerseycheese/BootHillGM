@@ -55,13 +55,19 @@ import { trackTextCleaning } from './debugUtils';
 export const cleanCombatLogEntry = (text: string): string => {
   if (!text?.trim()) return '';
 
+  // First remove any metadata sections
+  let cleaned = text.replace(/SUGGESTED_ACTIONS:\s*\[.*?\]/gs, '')
+                   .replace(/ACQUIRED_ITEMS:\s*\[.*?\]/g, '')
+                   .replace(/REMOVED_ITEMS:\s*\[.*?\]/g, '')
+                   .trim();
+
   // Extract just the combat action part
   const combatPattern = /([^.!?]+(?:punches|grapples|hits|misses|fires|attacks|defends|blocks)[^.!?]*(?:Roll:[^.!?]*)?(?:damage[^.!?]*)?)/i;
-  const match = text.match(combatPattern);
+  const match = cleaned.match(combatPattern);
   
-  if (!match) return cleanText(text);
+  if (!match) return cleanText(cleaned);
   
-  let cleaned = match[1];
+  cleaned = match[1];
   
   // Clean character names in the combat text
   const names = cleaned.match(/^[^.!?]+?(?=\s+(?:punches|grapples|hits|misses|fires|attacks|defends|blocks))/i);
