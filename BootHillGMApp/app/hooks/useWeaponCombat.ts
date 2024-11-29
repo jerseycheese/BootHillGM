@@ -28,6 +28,7 @@ interface UseWeaponCombatProps {
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
   dispatch: React.Dispatch<GameEngineAction>;
   initialState?: WeaponCombatState;
+  state: GameState;
   debugMode?: boolean; // Added debug mode
 }
 
@@ -39,16 +40,23 @@ export const useWeaponCombat = ({
   initialState,
   debugMode = false // Default to false
 }: UseWeaponCombatProps) => {
-  const [weaponState, setWeaponState] = useState<WeaponCombatState>(
-    initialState || {
+  const [weaponState, setWeaponState] = useState<WeaponCombatState>(() => {
+    // Find equipped weapon in inventory
+    const equippedWeapon = state.inventory.find(item => 
+      item.category === 'weapon' && item.quantity > 0
+    );
+
+    const playerWeapon = equippedWeapon ? {
+      id: equippedWeapon.id,
+      name: equippedWeapon.name,
+      modifiers: WEAPON_STATS[equippedWeapon.name] || WEAPON_STATS['Colt Revolver'], // Fallback
+      ammunition: 6,
+      maxAmmunition: 6
+    } : null;
+
+    return initialState || {
       round: 1,
-      playerWeapon: playerCharacter.weapon ? {
-        id: playerCharacter.weapon.id,
-        name: playerCharacter.weapon.name,
-        modifiers: WEAPON_STATS[playerCharacter.weapon.name],
-        ammunition: playerCharacter.weapon.ammunition,
-        maxAmmunition: playerCharacter.weapon.maxAmmunition
-      } : null,
+      playerWeapon,
       opponentWeapon: opponent.weapon ? {
         id: opponent.weapon.id,
         name: opponent.weapon.name,
@@ -59,8 +67,8 @@ export const useWeaponCombat = ({
       currentRange: 15,
       roundLog: [],
       lastAction: undefined
-    }
-  );
+    };
+  });
   const [isProcessing, setIsProcessing] = useState(false);
   const [aimBonus, setAimBonus] = useState(0);
 
