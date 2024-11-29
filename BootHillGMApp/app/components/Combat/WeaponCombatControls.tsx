@@ -94,8 +94,8 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
         </button>
         <button
           onClick={handleFire}
-          disabled={isProcessing || !canFire}
-          className={`wireframe-button ${(!canFire || isProcessing) ? 'opacity-50' : ''}`}
+          disabled={isProcessing || !canFire || currentState.lastAction === 'malfunction'}
+          className={`wireframe-button ${(!canFire || isProcessing || currentState.lastAction === 'malfunction') ? 'opacity-50' : ''}`}
         >
           Fire
         </button>
