@@ -10,6 +10,7 @@
 import { useRef, useEffect, useMemo, useCallback } from 'react';
 import { NarrativeContent } from './NarrativeContent';
 import { cleanText } from '../utils/textCleaningUtils';
+import '../styles/narrative.css';
 
 export interface NarrativeDisplayProps {
   narrative: string;

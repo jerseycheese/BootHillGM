@@ -1,0 +1,44 @@
+/* Custom border colors for narrative elements */
+.border-saddle-brown {
+  border-color: #8B4513;
+}
+
+.border-dusty-red {
+  border-color: #96323D;
+}
+
+/* Item update styles */
+.item-update {
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.item-update-acquired {
+  background-color: rgba(76, 175, 80, 0.1);
+  border-left: 4px solid #4CAF50;
+}
+
+.item-update-used {
+  background-color: rgba(244, 67, 54, 0.1);
+  border-left: 4px solid #F44336;
+}
+
+/* Animation for player actions */
+@keyframes highlight {
+  0% {
+    background-color: rgba(139, 69, 19, 0.1);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.animate-highlight {
+  animation: highlight 2s ease-out;
+}
+
+/* Western-style text */
+.font-western-text {
+  font-family: "Crimson Text", Georgia, serif;
+  letter-spacing: 0.02em;
+}
