@@ -87,7 +87,7 @@ describe('useWeaponCombat', () => {
     });
 
     expect(result.current.weaponState.roundLog[0].text)
-      .toContain('takes careful aim');
+      .toContain('takes aim carefully');
     expect(result.current.isProcessing).toBe(false);
   });
 
