@@ -159,9 +159,32 @@ describe('useAIInteractions', () => {
         await result.current.handleUserInput('attack');
       });
 
+      // Verify combat initialization dispatches
       expect(mockDispatch).toHaveBeenCalledWith({
-        type: 'SET_CHARACTER',
-        payload: mockOpponent
+        type: 'SET_OPPONENT',
+        payload: expect.objectContaining({
+          name: mockOpponent.name,
+          attributes: mockOpponent.attributes,
+          skills: mockOpponent.skills,
+          wounds: mockOpponent.wounds,
+          isUnconscious: mockOpponent.isUnconscious,
+          inventory: [],
+          weapon: undefined
+        })
+      });
+
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'UPDATE_COMBAT_STATE',
+        payload: expect.objectContaining({
+          isActive: true,
+          combatType: null,
+          winner: null
+        })
+      });
+
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'SET_COMBAT_ACTIVE',
+        payload: true
       });
     });
   });
