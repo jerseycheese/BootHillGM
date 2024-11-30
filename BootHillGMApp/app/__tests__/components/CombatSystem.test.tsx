@@ -205,7 +205,28 @@ describe('CombatSystem', () => {
   });
 
   test('weapon combat option is disabled when no weapons available', () => {
-    renderCombatSystem();
+    // Create a mock state with no weapons
+    const noWeaponsPlayer = {
+      ...mockPlayer,
+      weapon: null  // Remove weapon from player
+    };
+    
+    const noWeaponsOpponent = {
+      ...mockOpponent,
+      weapon: null  // Remove weapon from opponent
+    };
+
+    // Mock empty inventory state
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify({
+      ...mockCampaignState,
+      inventory: [], // Empty inventory
+      character: noWeaponsPlayer
+    }));
+
+    renderCombatSystem({
+      playerCharacter: noWeaponsPlayer,
+      opponent: noWeaponsOpponent
+    });
 
     const weaponButton = screen.getByRole('button', { name: /Weapon Combat/i });
     expect(weaponButton).toBeDisabled();
