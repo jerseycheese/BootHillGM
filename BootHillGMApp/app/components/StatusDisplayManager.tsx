@@ -18,6 +18,7 @@ interface StrengthBarProps {
   max: number;
   showValue?: boolean;
   isUnconscious?: boolean;
+  onReset?: () => void;  // Add reset handler
 }
 
 /**
@@ -46,15 +47,28 @@ const StrengthBar: React.FC<StrengthBarProps> = ({
       {showValue && (
         <div className="flex justify-between items-center mb-1">
           <span className="text-sm font-medium">Strength</span>
-          <span 
-            className={`text-sm font-bold ${current <= max / 2 ? 'text-red-600' : ''}`}
-            data-testid="strength-value"
-          >
-            {current}/{max}
-            {isUnconscious && (
-              <span className="text-red-600 ml-2 text-xs">(Unconscious)</span>
+          <div className="flex items-center gap-2">
+            <span 
+              className={`text-sm font-bold ${current <= max / 2 ? 'text-red-600' : ''}`}
+              data-testid="strength-value"
+            >
+              {current}/{max}
+              {isUnconscious && (
+                <span className="text-red-600 ml-2 text-xs">(Unconscious)</span>
+              )}
+            </span>
+            {/* Add dev mode reset button */}
+            {process.env.NODE_ENV !== 'production' && onReset && (
+              <button
+                onClick={onReset}
+                className="px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded"
+                title="Reset Strength (Dev Mode)"
+                data-testid="reset-strength-button"
+              >
+                ↻
+              </button>
             )}
-          </span>
+          </div>
         </div>
       )}
       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -128,6 +142,7 @@ const WoundDisplay: React.FC<WoundDisplayProps> = ({ wounds }) => {
 interface StatusDisplayManagerProps {
   character: Character;
   location: string | null;
+  onResetStrength?: () => void;  // Add reset handler
 }
 
 /**
@@ -136,7 +151,8 @@ interface StatusDisplayManagerProps {
  */
 const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
   character,
-  location
+  location,
+  onResetStrength
 }) => {
   const currentStrength = calculateCurrentStrength(character);
   const maxStrength = character.attributes.baseStrength;
@@ -156,6 +172,7 @@ const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
         current={currentStrength}
         max={maxStrength}
         isUnconscious={character.isUnconscious}
+        onReset={onResetStrength}
       />
 
       <WoundDisplay wounds={character.wounds} />
