@@ -81,7 +81,6 @@ export const CombatSystem: React.FC<{
         opponentStrength: opponent.attributes.strength,
         currentTurn: 'player',
         winner: null,
-        summary: null,
         brawling: type === 'brawling' ? {
           round: 1,
           playerModifier: 0,
