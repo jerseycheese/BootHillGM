@@ -7,14 +7,14 @@ describe('Narrative Processing', () => {
     render(React.createElement(NarrativeDisplay, { narrative: "Player: swings the sword" }));
     const playerActionContainer = screen.getByTestId('player-action');
     const playerAction = within(playerActionContainer).getByText(/swings the sword/);
-    expect(playerAction).toHaveClass('player-action');
+    expect(playerAction).toHaveClass('narrative-player-action');
   });
 
   it('processes GM responses correctly', () => {
     render(React.createElement(NarrativeDisplay, { narrative: "GM: The sword hits its target" }));
     const gmResponseContainer = screen.getByTestId('gm-response');
     const gmResponse = within(gmResponseContainer).getByText(/The sword hits its target/);
-    expect(gmResponse).toHaveClass('gm-response');
+    expect(gmResponse).toHaveClass('narrative-gm-response');
   });
 
   it('processes item acquisitions correctly', () => {
@@ -68,9 +68,9 @@ describe('Narrative Processing', () => {
     expect(gmResponses).toHaveLength(3);
     expect(narratives).toHaveLength(1);
 
-    playerActions.forEach(action => expect(action).toHaveClass('player-action'));
-    gmResponses.forEach(response => expect(response).toHaveClass('gm-response'));
-    narratives.forEach(narrative => expect(narrative).toHaveClass('narrative-line'));
+    playerActions.forEach(action => expect(action).toHaveClass('narrative-player-action'));
+    gmResponses.forEach(response => expect(response).toHaveClass('narrative-gm-response'));
+    narratives.forEach(narrative => expect(narrative).toHaveClass('narrative-text'));
   });
 
   it('handles metadata markers without affecting narrative display', () => {
@@ -83,9 +83,9 @@ describe('Narrative Processing', () => {
     render(React.createElement(NarrativeDisplay, { narrative }));
 
     expect(screen.getByTestId('narrative-display')).not.toHaveTextContent('SUGGESTED_ACTIONS');
-    expect(screen.getByText(/looks around/)).toHaveClass('player-action');
-    expect(screen.getByText(/You see various items/)).toHaveClass('gm-response');
-    expect(screen.getByText('The room is dimly lit')).toHaveClass('narrative-line');
+    expect(screen.getByText(/looks around/)).toHaveClass('narrative-player-action');
+    expect(screen.getByText(/You see various items/)).toHaveClass('narrative-gm-response');
+    expect(screen.getByText('The room is dimly lit')).toHaveClass('narrative-text');
   });
 
   it('processes consecutive player actions and GM responses', () => {
@@ -102,8 +102,8 @@ describe('Narrative Processing', () => {
 
     expect(playerActions).toHaveLength(2);
     expect(gmResponses).toHaveLength(2);
-    playerActions.forEach(action => expect(action).toHaveClass('player-action'));
-    gmResponses.forEach(response => expect(response).toHaveClass('gm-response'));
+    playerActions.forEach(action => expect(action).toHaveClass('narrative-player-action'));
+    gmResponses.forEach(response => expect(response).toHaveClass('narrative-gm-response'));
   });
 
   it('handles multiple item updates in sequence', () => {
