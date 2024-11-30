@@ -56,8 +56,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
             type: 'player-action',
             content: cleanedAction,
             metadata: { 
-              timestamp: Date.now(),
-              className: 'narrative-player-action'
+              timestamp: Date.now()
             }
           });
         }
@@ -73,8 +72,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
             type: 'gm-response',
             content: cleanedResponse,
             metadata: { 
-              timestamp: Date.now(),
-              className: 'narrative-gm-response'
+              timestamp: Date.now()
             }
           });
         }
@@ -115,8 +113,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
             type: 'narrative',
             content: cleanedContent,
             metadata: { 
-              timestamp: Date.now(),
-              className: 'narrative-line'
+              timestamp: Date.now()
             }
           });
         }

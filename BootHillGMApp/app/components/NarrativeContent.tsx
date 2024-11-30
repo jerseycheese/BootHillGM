@@ -20,19 +20,19 @@ interface StyleConfig {
 
 const STYLE_CONFIGS: Record<NarrativeItem['type'], StyleConfig> = {
   'player-action': {
-    className: 'narrative-player-action border-l-4 border-saddle-brown pl-4 bg-opacity-5 hover:bg-opacity-10 transition-colors duration-300 mb-6',
+    className: 'narrative-player-action border-l-4 pl-4 bg-opacity-5 hover:bg-opacity-10 transition-colors duration-300',
     testId: 'player-action'
   },
   'gm-response': {
-    className: 'narrative-gm-response border-l-4 border-dusty-red pl-4 mb-6',
+    className: 'narrative-gm-response',
     testId: 'gm-response'
   },
   'narrative': {
-    className: 'narrative-text font-western-text leading-relaxed mb-6',
+    className: 'narrative-text font-western-text leading-relaxed',
     testId: 'narrative-line'
   },
   'item-update': {
-    className: 'narrative-item-update mb-6',
+    className: 'narrative-item-update',
     testId: 'item-update'
   }
 };
