@@ -38,8 +38,9 @@ export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
         
         <button
           onClick={() => onSelectType('weapon')}
-          className={`wireframe-button p-4 ${!canUseWeapons ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className="wireframe-button p-4"
           disabled={!canUseWeapons}
+          aria-disabled={!canUseWeapons}
         >
           Weapon Combat
           <span className="block text-sm mt-1">
