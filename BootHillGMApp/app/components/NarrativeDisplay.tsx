@@ -138,7 +138,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       className="narrative-container overflow-y-auto flex-1 max-h-[60vh] px-4"
       data-testid="narrative-display"
     >
-      <div className="narrative-content py-4 space-y-1">
+      <div className="narrative-content py-4 2">
         {narrativeItems.map((item, index) => {
           const element = (
             <NarrativeContent 
