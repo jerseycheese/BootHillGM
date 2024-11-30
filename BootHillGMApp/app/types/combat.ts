@@ -79,6 +79,7 @@ export type WeaponCombatResult = {
   modifiedRoll: number;
   targetNumber: number;
   message: string;
+  newStrength?: number;
 };
 
 export interface CombatState {

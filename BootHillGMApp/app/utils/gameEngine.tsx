@@ -48,7 +48,8 @@ export type GameEngineAction =
   | { type: 'SET_STATE'; payload: Partial<GameState> }
   | { type: 'SET_SUGGESTED_ACTIONS'; payload: SuggestedAction[] }
   | { type: 'UPDATE_COMBAT_STATE'; payload: Partial<CombatState> }
-  | { type: 'SET_COMBAT_TYPE'; payload: CombatType };
+  | { type: 'SET_COMBAT_TYPE'; payload: CombatType }
+  | { type: 'UPDATE_OPPONENT'; payload: Character };
 
 // Initial state of the game
 export const initialState: GameState = {

@@ -22,6 +22,8 @@ import { calculateHitChance, isCritical } from '../utils/combatRules';
  * - Turn processing
  * - Damage calculation
  */
+import { GameState } from '../utils/gameEngine';
+
 interface UseWeaponCombatProps {
   playerCharacter: Character;
   opponent: Character;
@@ -43,12 +45,14 @@ export const useWeaponCombat = ({
 }: UseWeaponCombatProps) => {
   const [weaponState, setWeaponState] = useState<WeaponCombatState>(() => {
     // Find first available weapon in inventory
-    const availableWeapon = state?.inventory?.find(item => 
+    const availableWeapon = state?.inventory?.find((item: InventoryItem) => 
       item?.category === 'weapon' && item.quantity > 0
     ) || {
       id: 'default-colt',
       name: 'Colt Revolver',
-      quantity: 1
+      quantity: 1,
+      category: 'weapon' as const,
+      description: 'Standard issue Colt revolver'
     };
 
     // Always create a weapon object, using either inventory weapon or default
@@ -172,7 +176,7 @@ export const useWeaponCombat = ({
             wounds: [
               ...defender.wounds,
               {
-                location: 'chest', // You might want to randomize this
+                location: 'chest' as const, // You might want to randomize this
                 severity: damage >= 5 ? 'serious' : 'light',
                 strengthReduction: damage,
                 turnReceived: weaponState.round
