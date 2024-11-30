@@ -26,8 +26,16 @@ export const cleanCharacterName = (name: string): string => {
   // Remove suggested actions
   cleanedName = cleanedName.replace(/SUGGESTED_ACTIONS: \[.*?\]/, '');
   
+  // Remove metadata markers
+  cleanedName = cleanedName.replace(/ACQUIRED_ITEMS:.*?$/, '');
+  cleanedName = cleanedName.replace(/REMOVED_ITEMS:.*?$/, '');
+  cleanedName = cleanedName.replace(/LOCATION:.*?$/, '');
+  
   // Remove any remaining narrative indicators
   cleanedName = cleanedName.replace(/important:.*$/, '');
+  
+  // Remove any remaining metadata markers or suggested actions
+  cleanedName = cleanedName.replace(/(ACQUIRED_ITEMS|REMOVED_ITEMS|LOCATION|SUGGESTED_ACTIONS):.*?/, '');
   
   return cleanedName.trim();
 };
