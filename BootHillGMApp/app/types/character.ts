@@ -1,4 +1,5 @@
 import { InventoryItem } from './inventory';
+import { Weapon } from './combat';
 
 /**
  * Character type definitions following Boot Hill v2 rules
@@ -93,8 +94,5 @@ export interface Character {
   isUnconscious: boolean;
 
   /** Optional weapon data */
-  weapon?: {
-    name: string;
-    damage: string;
-  };
+  weapon?: Weapon;
 }
