@@ -163,10 +163,13 @@ const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
       type: 'UPDATE_CHARACTER',
       payload: {
         ...character,
+        wounds: [], // Clear all wounds
         attributes: {
           ...character.attributes,
-          strength: character.attributes.baseStrength
-        }
+          baseStrength: character.attributes.baseStrength, // Keep original base strength
+          currentStrength: character.attributes.baseStrength // Reset current strength to base
+        },
+        isUnconscious: false // Reset unconscious state
       }
     });
   };
