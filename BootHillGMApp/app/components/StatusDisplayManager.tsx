@@ -12,6 +12,7 @@ import React from 'react';
 import { Character } from '../types/character';
 import { calculateCurrentStrength } from '../utils/strengthSystem';
 import { cleanLocationText } from '../utils/textCleaningUtils';
+import { useCampaignState } from '../CampaignStateManager';
 
 interface StrengthBarProps {
   current: number;
@@ -143,7 +144,6 @@ const WoundDisplay: React.FC<WoundDisplayProps> = ({ wounds }) => {
 interface StatusDisplayManagerProps {
   character: Character;
   location: string | null;
-  onResetStrength?: () => void;  // Add reset handler
 }
 
 /**
@@ -152,11 +152,24 @@ interface StatusDisplayManagerProps {
  */
 const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
   character,
-  location,
-  onResetStrength
+  location
 }) => {
+  const { dispatch } = useCampaignState();
   const currentStrength = calculateCurrentStrength(character);
   const maxStrength = character.attributes.baseStrength;
+
+  const handleResetStrength = () => {
+    dispatch({
+      type: 'UPDATE_CHARACTER',
+      payload: {
+        ...character,
+        attributes: {
+          ...character.attributes,
+          strength: character.attributes.baseStrength
+        }
+      }
+    });
+  };
 
   return (
     <div className="wireframe-section space-y-4">
@@ -173,7 +186,7 @@ const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
         current={currentStrength}
         max={maxStrength}
         isUnconscious={character.isUnconscious}
-        onReset={onResetStrength}
+        onReset={handleResetStrength}
       />
 
       <WoundDisplay wounds={character.wounds} />
