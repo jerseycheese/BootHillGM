@@ -22,10 +22,10 @@ export const cleanCharacterName = (name: string): string => {
   cleanedName = cleanedName.replace(metadataPattern, '');
   
   // Remove suggested actions with JSON content
-  cleanedName = cleanedName.replace(/SUGGESTED_ACTIONS:\s*\[[^\]]*\]/g, '');
+  cleanedName = cleanedName.replace(/SUGGESTED_ACTIONS:\s*\[.*?\}]\s*/g, '');
   
-  // Remove any remaining JSON-like content
-  cleanedName = cleanedName.replace(/\[[^\]]*\]/g, '');
+  // Remove any remaining bracketed content
+  cleanedName = cleanedName.replace(/\[.*?\}]\s*/g, '');
   
   // Remove any narrative indicators
   cleanedName = cleanedName.replace(/important:.*$/, '');
