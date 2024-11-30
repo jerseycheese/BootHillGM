@@ -60,7 +60,7 @@ export interface WeaponCombatState {
   opponentWeapon: Weapon | null;
   currentRange: number;
   roundLog: LogEntry[];
-  lastAction?: 'aim' | 'fire' | 'reload' | 'move';
+  lastAction?: 'aim' | 'fire' | 'reload' | 'move' | 'malfunction';
 }
 
 export interface WeaponCombatAction {
