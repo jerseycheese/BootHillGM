@@ -7,26 +7,12 @@ import {
   WeaponCombatResult,
   LogEntry,
   Weapon,
+  WeaponModifiers,
+  WEAPON_STATS,
   calculateWeaponModifier,
   rollForMalfunction,
   parseWeaponDamage
 } from '../types/combat';
-
-// Using WeaponModifiers from combat.ts
-const WEAPON_STATS: Record<string, WeaponModifiers> = {
-  'Colt Revolver': {
-    name: 'Colt Revolver',
-    damage: '2d6',
-    id: 'colt-revolver',
-    ammunition: 6,
-    maxAmmunition: 6,
-    accuracy: 5,
-    range: 20,
-    reliability: 95,
-    speed: 3
-  }
-  // Add other weapons as needed
-};
 import { GameEngineAction } from '../utils/gameEngine';
 import { calculateHitChance, isCritical } from '../utils/combatRules';
 
