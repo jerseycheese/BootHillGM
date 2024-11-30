@@ -22,7 +22,7 @@ import { calculateHitChance, isCritical } from '../utils/combatRules';
  * - Turn processing
  * - Damage calculation
  */
-import { GameState } from '../utils/gameEngine';
+import { CombatState } from '../types/combat';
 
 interface UseWeaponCombatProps {
   playerCharacter: Character;
@@ -30,8 +30,8 @@ interface UseWeaponCombatProps {
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
   dispatch: React.Dispatch<GameEngineAction>;
   initialState?: WeaponCombatState;
-  state: GameState;
-  debugMode?: boolean; // Added debug mode
+  state: CombatState;
+  debugMode?: boolean;
 }
 
 export const useWeaponCombat = ({
@@ -45,8 +45,8 @@ export const useWeaponCombat = ({
 }: UseWeaponCombatProps) => {
   const [weaponState, setWeaponState] = useState<WeaponCombatState>(() => {
     // Find first available weapon in inventory
-    const availableWeapon = state?.inventory?.find((item: InventoryItem) => 
-      item?.category === 'weapon' && item.quantity > 0
+    const availableWeapon = playerCharacter.inventory?.find((item: InventoryItem) => 
+      item.category === 'weapon' && item.quantity > 0
     ) || {
       id: 'default-colt',
       name: 'Colt Revolver',
