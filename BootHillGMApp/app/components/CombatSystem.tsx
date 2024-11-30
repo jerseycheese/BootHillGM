@@ -62,11 +62,21 @@ export const CombatSystem: React.FC<{
     onCombatEnd,
     dispatch,
     initialState: initialCombatState?.weapon,
-    state: initialCombatState || {
-      isActive: true,
-      combatType: 'weapon',
-      winner: null,
-      summary: null
+    state: {
+      currentPlayer: playerCharacter.name,
+      npcs: [opponent.name],
+      character: playerCharacter,
+      location: 'combat',
+      gameProgress: 0,
+      journal: [],
+      narrative: '',
+      inventory: playerCharacter.inventory || [],
+      combat: initialCombatState || {
+        isActive: true,
+        combatType: 'weapon',
+        winner: null,
+        summary: null
+      }
     }
   });
 
