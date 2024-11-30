@@ -1,3 +1,5 @@
+import { InventoryItem } from './inventory';
+
 /**
  * Character type definitions following Boot Hill v2 rules
  * 
@@ -52,6 +54,9 @@ export interface CombatLogEntry {
 export interface Character {
   /** Character's full name */
   name: string;
+
+  /** Character's inventory */
+  inventory: InventoryItem[];
 
   /** Core character attributes */
   attributes: {

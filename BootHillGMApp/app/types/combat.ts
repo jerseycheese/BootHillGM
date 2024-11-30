@@ -19,6 +19,8 @@ export interface WeaponModifiers {
   reliability: number; // Chance of malfunction (1-100)
   damage: string;      // Damage dice (e.g. "1d6+1")
   speed: number;       // Initiative modifier
+  ammunition?: number;  // Current ammunition
+  maxAmmunition?: number; // Maximum ammunition capacity
 }
 
 export interface Weapon {
@@ -36,21 +38,27 @@ export const WEAPON_STATS: Record<string, WeaponModifiers> = {
     range: 20,
     reliability: 95,
     damage: '1d6',
-    speed: 0
+    speed: 0,
+    ammunition: 6,
+    maxAmmunition: 6
   },
   'Winchester Rifle': {
     accuracy: 3,
     range: 40,
     reliability: 90,
     damage: '1d8',
-    speed: -1
+    speed: -1,
+    ammunition: 15,
+    maxAmmunition: 15
   },
   'Shotgun': {
     accuracy: 1,
     range: 10,
     reliability: 85,
     damage: '2d6',
-    speed: -2
+    speed: -2,
+    ammunition: 2,
+    maxAmmunition: 2
   }
 };
 
