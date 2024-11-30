@@ -17,23 +17,20 @@ export const cleanCharacterName = (name: string): string => {
   // Get the first line only
   let cleanedName = name.split('\n')[0];
   
+  // Remove all metadata markers and their content first
+  cleanedName = cleanedName.replace(/\s*(ACQUIRED_ITEMS|REMOVED_ITEMS|LOCATION|SUGGESTED_ACTIONS):[^:]*/g, '');
+  
+  // Remove suggested actions
+  cleanedName = cleanedName.replace(/SUGGESTED_ACTIONS: \[.*?\]/, '');
+  
+  // Remove any narrative indicators
+  cleanedName = cleanedName.replace(/important:.*$/, '');
+  
   // Remove any narrative text after the actual name
   cleanedName = cleanedName.split(/[.,:]/)[0];
   
   // Apply existing text cleaning
   cleanedName = cleanText(cleanedName);
-  
-  // Remove suggested actions
-  cleanedName = cleanedName.replace(/SUGGESTED_ACTIONS: \[.*?\]/, '');
-  
-  // Remove all metadata markers and their content
-  cleanedName = cleanedName.split(/\s*(ACQUIRED_ITEMS|REMOVED_ITEMS|LOCATION|SUGGESTED_ACTIONS):\s*[^:]*/)
-    .filter(Boolean)
-    .join(' ')
-    .trim();
-    
-  // Remove any remaining narrative indicators
-  cleanedName = cleanedName.replace(/important:.*$/, '');
   
   // Clean up any double spaces
   cleanedName = cleanedName.replace(/\s+/g, ' ').trim();
