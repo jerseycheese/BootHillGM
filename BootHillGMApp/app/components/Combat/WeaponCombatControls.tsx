@@ -162,9 +162,3 @@ const WeaponDisplay: React.FC<{ weapon: Weapon }> = ({ weapon }) => (
     )}
   </div>
 );
-
-const getWeaponModifierText = (weapon: Weapon | null, range: number): string => {
-  if (!weapon) return 'No modifier';
-  const modifier = calculateWeaponModifier(weapon, range, false);
-  return modifier >= 0 ? `+${modifier}` : `${modifier}`;
-};

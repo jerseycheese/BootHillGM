@@ -113,7 +113,8 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
           brawling: 50
         },
         wounds: [],
-        isUnconscious: false
+        isUnconscious: false,
+        inventory: []
       };
     }
     

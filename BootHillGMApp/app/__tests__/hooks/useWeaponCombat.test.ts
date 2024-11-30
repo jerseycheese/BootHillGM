@@ -1,7 +1,8 @@
 import { renderHook, act } from '@testing-library/react';
 import { useWeaponCombat } from '../../hooks/useWeaponCombat';
-import { WEAPON_STATS } from '../../types/combat';
 import { Character } from '../../types/character';
+import { InventoryItem } from '../../types/inventory';
+import { CombatState } from '../../types/combat';
 
 describe('useWeaponCombat', () => {
   const mockPlayer: Character = {
@@ -22,6 +23,7 @@ describe('useWeaponCombat', () => {
     },
     wounds: [],
     isUnconscious: false,
+    inventory: [] as InventoryItem[],
     weapon: {
       id: 'colt-revolver',
       name: 'Colt Revolver',
@@ -54,6 +56,24 @@ describe('useWeaponCombat', () => {
   const mockDispatch = jest.fn();
   const mockOnCombatEnd = jest.fn();
 
+  const mockCombatState: CombatState = {
+    isActive: true,
+    combatType: 'weapon',
+    winner: null,
+    weapon: {
+      round: 1,
+      playerWeapon: mockPlayer.weapon || null,
+      opponentWeapon: mockOpponent.weapon || null,
+      currentRange: 15,
+      roundLog: [],
+      lastAction: undefined
+    },
+    playerStrength: mockPlayer.attributes.strength,
+    opponentStrength: mockOpponent.attributes.strength,
+    currentTurn: 'player',
+    combatLog: []
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -63,7 +83,8 @@ describe('useWeaponCombat', () => {
       playerCharacter: mockPlayer,
       opponent: mockOpponent,
       onCombatEnd: mockOnCombatEnd,
-      dispatch: mockDispatch
+      dispatch: mockDispatch,
+      combatState: mockCombatState
     }));
 
     expect(result.current.weaponState.playerWeapon?.name).toBe('Colt Revolver');
@@ -76,7 +97,8 @@ describe('useWeaponCombat', () => {
       playerCharacter: mockPlayer,
       opponent: mockOpponent,
       onCombatEnd: mockOnCombatEnd,
-      dispatch: mockDispatch
+      dispatch: mockDispatch,
+      combatState: mockCombatState
     }));
 
     // First verify initial state
@@ -98,7 +120,8 @@ describe('useWeaponCombat', () => {
       playerCharacter: mockPlayer,
       opponent: mockOpponent,
       onCombatEnd: mockOnCombatEnd,
-      dispatch: mockDispatch
+      dispatch: mockDispatch,
+      combatState: mockCombatState
     }));
 
     await act(async () => {
@@ -114,7 +137,8 @@ describe('useWeaponCombat', () => {
       playerCharacter: mockPlayer,
       opponent: mockOpponent,
       onCombatEnd: mockOnCombatEnd,
-      dispatch: mockDispatch
+      dispatch: mockDispatch,
+      combatState: mockCombatState
     }));
 
     await act(async () => {
@@ -146,7 +170,8 @@ describe('useWeaponCombat', () => {
       opponent: weakOpponent,
       onCombatEnd: mockOnCombatEnd,
       dispatch: mockDispatch,
-      debugMode: true // Enable debug mode to ensure hit
+      debugMode: true, // Enable debug mode to ensure hit
+      combatState: mockCombatState
     }));
 
     await act(async () => {
@@ -164,7 +189,8 @@ describe('useWeaponCombat', () => {
       playerCharacter: mockPlayer,
       opponent: mockOpponent,
       onCombatEnd: mockOnCombatEnd,
-      dispatch: mockDispatch
+      dispatch: mockDispatch,
+      combatState: mockCombatState
     }));
 
     expect(result.current.canFire).toBe(true);

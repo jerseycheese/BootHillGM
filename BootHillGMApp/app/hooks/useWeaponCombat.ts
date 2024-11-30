@@ -1,22 +1,20 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
+import { Weapon } from '../types/combat';
 
-const isValidWeapon = (weapon: any): weapon is Weapon => {
-  return weapon && 
-    typeof weapon.name === 'string' &&
-    typeof weapon.id === 'string';
+const isValidWeapon = (weapon: unknown): weapon is Weapon => {
+  return typeof weapon === 'object' && weapon !== null &&
+    typeof (weapon as Weapon).name === 'string' &&
+    typeof (weapon as Weapon).id === 'string';
 };
+
 import { 
   WeaponCombatState, 
   WeaponCombatAction, 
   WeaponCombatResult,
   LogEntry,
-  Weapon,
-  WeaponModifiers,
   WEAPON_STATS,
-  calculateWeaponModifier,
-  rollForMalfunction,
   parseWeaponDamage
 } from '../types/combat';
 import { GameEngineAction } from '../utils/gameEngine';
@@ -48,9 +46,11 @@ export const useWeaponCombat = ({
   onCombatEnd,
   dispatch,
   initialState,
-  combatState,
   debugMode = false // Default to false
 }: UseWeaponCombatProps) => {
+  // Track current opponent state
+  const [currentOpponent, setCurrentOpponent] = useState(opponent);
+
   const [weaponState, setWeaponState] = useState<WeaponCombatState>(() => {
     // Find first available weapon in inventory
     const availableWeapon = playerCharacter.inventory?.find((item: InventoryItem) => 
@@ -255,7 +255,7 @@ export const useWeaponCombat = ({
           message: `${attacker.name} reloads ${weapon.name}`
         };
     }
-  }, [playerCharacter, opponent, weaponState, aimBonus, debugMode, dispatch]);
+  }, [playerCharacter, opponent, weaponState, aimBonus, debugMode, dispatch, currentOpponent]);
 
   /**
    * Processes a complete combat turn including opponent response.
@@ -308,9 +308,7 @@ export const useWeaponCombat = ({
   }, [
     resolveWeaponAction,
     addToLog,
-    dispatch,
     opponent,
-    playerCharacter,
     onCombatEnd
   ]);
 
@@ -318,15 +316,12 @@ export const useWeaponCombat = ({
   const canFire = !isProcessing && weaponState.playerWeapon !== null;
   const canReload = !isProcessing;
 
-  // Track current opponent state
-  const [currentOpponent, setCurrentOpponent] = useState(opponent);
-
   // Update currentOpponent when dispatch updates opponent
   useEffect(() => {
     if (opponent !== currentOpponent) {
       setCurrentOpponent(opponent);
     }
-  }, [opponent]);
+  }, [opponent, currentOpponent]);
 
   return {
     weaponState,

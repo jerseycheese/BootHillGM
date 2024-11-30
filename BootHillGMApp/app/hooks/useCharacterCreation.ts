@@ -13,6 +13,7 @@ const STORAGE_KEY = 'character-creation-progress';
 
 const initialCharacter: Character = {
   name: '',
+  inventory: [],
   attributes: {
     speed: 0,
     gunAccuracy: 0,

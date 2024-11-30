@@ -6,6 +6,7 @@ import { GameEngineAction } from '../utils/gameEngine';
 import { JournalEntry } from '../types/journal';
 import { Character } from '../types/character';
 import { generateNarrativeSummary } from '../utils/aiService';
+import { WEAPON_STATS } from '../types/combat';
 
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
 const aiService = new AIService(API_KEY);
@@ -87,8 +88,17 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
       },
       inventory: response.opponent.inventory || [],
       weapon: response.opponent.weapon ? {
+        id: `weapon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: response.opponent.weapon.name.split(/[.!?]/)[0].trim(),
-        damage: response.opponent.weapon.damage
+        modifiers: WEAPON_STATS[response.opponent.weapon.name.split(/[.!?]/)[0].trim()] || {
+          accuracy: 0,
+          range: 0,
+          reliability: 0,
+          damage: '0d0',
+          speed: 0
+        },
+        ammunition: response.opponent.weapon.ammunition,
+        maxAmmunition: response.opponent.weapon.maxAmmunition
       } : undefined,
       wounds: response.opponent.wounds || [],
       isUnconscious: response.opponent.isUnconscious || false
@@ -118,7 +128,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
       payload: true
     });
 
-    dispatch({ type: 'SET_CHARACTER', payload: response.opponent });
+    dispatch({ type: 'SET_CHARACTER', payload: structuredOpponent });
   }
 
   const WEAPON_KEYWORDS = ['gun', 'rifle', 'pistol', 'revolver', 'peacemaker'];

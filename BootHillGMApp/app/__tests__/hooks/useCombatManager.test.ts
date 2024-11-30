@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { useCombatManager, formatCombatEndMessage } from '../../hooks/useCombatManager';
+import { useCombatManager } from '../../hooks/useCombatManager';
 import { createStateProtection } from '../../utils/stateProtection';
 import { CampaignStateProvider } from '../../components/CampaignStateManager';
 import { GameState } from '../../utils/gameEngine';
@@ -82,7 +82,6 @@ const mockInitialState: GameState = {
     isActive: false,
     combatType: null,
     winner: null,
-    summary: null,
     playerStrength: 10,
     opponentStrength: 10,
     currentTurn: 'player',
@@ -163,7 +162,7 @@ describe('useCombatManager', () => {
     expect(result.current.opponent?.name).toBe('Unknown Opponent');
 
     await act(async () => {
-      await result.current.handleCombatEnd('player', 'Test summary');
+      await result.current.handleCombatEnd('player');
     });
 
     expect(mockUpdateNarrative).toHaveBeenCalledWith(
@@ -186,7 +185,7 @@ describe('useCombatManager', () => {
     const { result } = renderHookWithProvider();
 
     await act(async () => {
-      await result.current.handleCombatEnd('player', 'Test summary');
+      await result.current.handleCombatEnd('player');
     });
 
     expect(mockUpdateNarrative).toHaveBeenCalledWith(
@@ -217,7 +216,7 @@ describe('useCombatManager', () => {
 
     let combatEndPromise: Promise<void>;
     await act(async () => {
-      combatEndPromise = Promise.resolve(result.current.handleCombatEnd('player', 'Test summary'));
+      combatEndPromise = Promise.resolve(result.current.handleCombatEnd('player'));
     });
 
     // isProcessing should be true after operation starts
@@ -245,59 +244,6 @@ describe('useCombatManager', () => {
     
     expect(mockStateProtection.getQueueLength).toHaveBeenCalled();
     expect(result.current.combatQueueLength).toBe(0);
-  });
-
-  // New tests for formatCombatEndMessage
-  describe('formatCombatEndMessage', () => {
-    test('formats victory message correctly', () => {
-      const message = formatCombatEndMessage(
-        'player',
-        'with a powerful strike',
-        'Test Character',
-        'Unknown Opponent'
-      );
-      expect(message).toBe('Test Character emerges victorious, defeating Unknown Opponent with a powerful strike.');
-    });
-
-    test('formats defeat message correctly', () => {
-      const message = formatCombatEndMessage(
-        'opponent',
-        'with a devastating blow',
-        'Test Character',
-        'Unknown Opponent'
-      );
-      expect(message).toBe('Unknown Opponent emerges victorious, defeating Test Character with a devastating blow.');
-    });
-
-    test('removes redundant roll information', () => {
-      const message = formatCombatEndMessage(
-        'player',
-        'lands the final blow [Roll: 10/20 - Critical!]',
-        'Test Character',
-        'Unknown Opponent'
-      );
-      expect(message).toBe('Test Character emerges victorious, defeating Unknown Opponent lands the final blow.');
-    });
-
-    test('handles empty combat summary', () => {
-      const message = formatCombatEndMessage(
-        'player',
-        '',
-        'Test Character',
-        'Unknown Opponent'
-      );
-      expect(message).toBe('Test Character emerges victorious, defeating Unknown Opponent.');
-    });
-
-    test('handles null combat summary', () => {
-      const message = formatCombatEndMessage(
-        'player',
-        '',
-        'Test Character',
-        'Unknown Opponent'
-      );
-      expect(message).toBe('Test Character emerges victorious, defeating Unknown Opponent.');
-    });
   });
 
 });

@@ -39,6 +39,7 @@ export function useCombatStateRestoration(
     if (shouldRestoreCombat && state.opponent && state.combatState) {
       const restoredOpponent: Character = {
         name: state.opponent.name,
+        inventory: state.opponent.inventory ?? [], // Added inventory property
         attributes: {
           speed: state.opponent.attributes?.speed ?? 5,
           gunAccuracy: state.opponent.attributes?.gunAccuracy ?? 5,
@@ -54,8 +55,17 @@ export function useCombatStateRestoration(
           brawling: state.opponent.skills?.brawling ?? 50
         },
         weapon: state.opponent.weapon ? {
+          id: state.opponent.weapon.id,
           name: state.opponent.weapon.name,
-          damage: state.opponent.weapon.damage
+          modifiers: {
+            accuracy: state.opponent.weapon.modifiers.accuracy,
+            range: state.opponent.weapon.modifiers.range,
+            reliability: state.opponent.weapon.modifiers.reliability,
+            damage: state.opponent.weapon.modifiers.damage,
+            speed: state.opponent.weapon.modifiers.speed
+          },
+          ammunition: state.opponent.weapon.ammunition,
+          maxAmmunition: state.opponent.weapon.maxAmmunition
         } : undefined,
         wounds: state.opponent.wounds ?? [],
         isUnconscious: state.opponent.isUnconscious ?? false

@@ -17,5 +17,6 @@ export const mockCharacter: Character = {
     brawling: 50
   },
   wounds: [],
-  isUnconscious: false
+  isUnconscious: false,
+  inventory: []
 };

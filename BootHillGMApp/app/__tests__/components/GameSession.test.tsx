@@ -24,7 +24,8 @@ const mockCharacter: Character = {
     brawling: 5
   },
   wounds: [],
-  isUnconscious: false
+  isUnconscious: false,
+  inventory: []
 };
 
 const mockGameState = {
@@ -147,7 +148,8 @@ describe('GameSession', () => {
         brawling: 5
       },
       wounds: [],
-      isUnconscious: false
+      isUnconscious: false,
+      inventory: []
     };
 
     (GameSessionHook.useGameSession as jest.Mock).mockReturnValue({

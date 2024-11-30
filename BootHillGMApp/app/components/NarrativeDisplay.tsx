@@ -42,7 +42,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   const narrativeItems = useMemo(() => {
     processedUpdatesRef.current.clear();
     
-    return narrative.split('\n').reduce<NarrativeItem[]>((items, line, index, array) => {
+    return narrative.split('\n').reduce<NarrativeItem[]>((items, line) => {
       const trimmedLine = line.trim();
       
       if (!trimmedLine) return items;

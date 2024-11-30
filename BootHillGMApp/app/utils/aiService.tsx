@@ -3,7 +3,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
-import { InventoryItem } from '../types/inventory';
 import { SuggestedAction } from '../types/campaign';
 
 // Configuration for the AI model, including safety settings set to BLOCK_NONE

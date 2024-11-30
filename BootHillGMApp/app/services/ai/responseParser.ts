@@ -90,7 +90,8 @@ export function parseAIResponse(text: string): AIResponse {
           brawling: 50
         },
         wounds: [],
-        isUnconscious: false
+        isUnconscious: false,
+        inventory: []
       };
     }
 

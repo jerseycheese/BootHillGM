@@ -66,7 +66,6 @@ export const CombatSystem: React.FC<{
       isActive: true,
       combatType: 'weapon',
       winner: null,
-      summary: null,
       playerStrength: playerCharacter.attributes.strength,
       opponentStrength: opponent.attributes.strength,
       currentTurn: 'player',

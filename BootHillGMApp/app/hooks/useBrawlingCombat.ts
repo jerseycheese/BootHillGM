@@ -114,7 +114,6 @@ export const useBrawlingCombat = ({
             isActive: false,
             combatType: 'brawling',
             winner,
-            summary,
             brawling: brawlingState
           })
         });

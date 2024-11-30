@@ -91,7 +91,8 @@ const initialCharacter: Character = {
     brawling: 0,
   },
   wounds: [],
-  isUnconscious: false
+  isUnconscious: false,
+  inventory: []
 };
 
 // Dynamically generate mock character with AI-generated name
@@ -116,7 +117,8 @@ async function createMockCharacter(): Promise<Character> {
       brawling: 50
     },
     wounds: [],
-    isUnconscious: false
+    isUnconscious: false,
+    inventory: []
   };
 }
 

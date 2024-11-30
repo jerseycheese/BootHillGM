@@ -4,7 +4,7 @@ import { useCampaignState } from '../components/CampaignStateManager';
 import { addCombatJournalEntry } from '../utils/JournalManager';
 import { createStateProtection } from '../utils/stateProtection';
 import { CombatState, ensureCombatState } from '../types/combat';
-import { cleanText, cleanCharacterName } from '../utils/textCleaningUtils';
+import { cleanCharacterName } from '../utils/textCleaningUtils';
 
 
 /**
@@ -137,8 +137,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         playerStrength,
         opponentStrength: newOpponent.attributes.strength,
         currentTurn: 'player',
-        winner: null,
-        summary: null
+        winner: null
       });
 
       // Update combat state with proper type conversion

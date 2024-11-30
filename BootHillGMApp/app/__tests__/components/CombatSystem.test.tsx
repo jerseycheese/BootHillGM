@@ -4,6 +4,7 @@ import { CombatSystem } from '../../components/CombatSystem';
 import { Character } from '../../types/character';
 import * as combatUtils from '../../utils/combatUtils';
 import { CampaignStateProvider } from '../../components/CampaignStateManager';
+import { WEAPON_STATS } from '../../types/combat';
 
 // Mock combat utils
 jest.mock('../../utils/combatUtils', () => ({
@@ -37,7 +38,15 @@ describe('CombatSystem', () => {
       brawling: 50
     },
     wounds: [],
-    isUnconscious: false
+    isUnconscious: false,
+    inventory: [],
+    weapon: {
+      id: 'test-weapon',
+      name: 'Colt Revolver',
+      modifiers: WEAPON_STATS['Colt Revolver'],
+      ammunition: 6,
+      maxAmmunition: 6
+    }
   };
 
   const mockOpponent: Character = {
@@ -57,7 +66,15 @@ describe('CombatSystem', () => {
       brawling: 50
     },
     wounds: [],
-    isUnconscious: false
+    isUnconscious: false,
+    inventory: [],
+    weapon: {
+      id: 'opponent-weapon',
+      name: 'Winchester Rifle',
+      modifiers: WEAPON_STATS['Winchester Rifle'],
+      ammunition: 15,
+      maxAmmunition: 15
+    }
   };
 
   // Mock campaign state with character and weapon
@@ -116,8 +133,7 @@ describe('CombatSystem', () => {
       initialCombatState: {
         isActive: true,
         combatType: null,
-        winner: null,
-        summary: null
+        winner: null
       }
     });
     
@@ -130,7 +146,6 @@ describe('CombatSystem', () => {
         isActive: true,
         combatType: 'brawling',
         winner: null,
-        summary: null,
         brawling: {
           round: 1,
           playerModifier: 0,
@@ -207,11 +222,9 @@ describe('CombatSystem', () => {
       weapon: {
         id: 'test-weapon',
         name: 'Test Weapon',
-        damage: '1d6',
-        range: 20,
-        accuracy: 0,
-        reliability: 95,
-        speed: 0
+        modifiers: WEAPON_STATS['Test Weapon'] || WEAPON_STATS['Colt Revolver'],
+        ammunition: 6,
+        maxAmmunition: 6
       }
     };
 
@@ -233,7 +246,7 @@ describe('CombatSystem', () => {
     expect(screen.getByText('Your Weapon')).toBeInTheDocument();
     expect(screen.getByText('Colt Revolver')).toBeInTheDocument();
     expect(screen.getByText('Opponent\'s Weapon')).toBeInTheDocument();
-    expect(screen.getByText('No visible weapon')).toBeInTheDocument();
+    expect(screen.getByText('Winchester Rifle')).toBeInTheDocument();
   });
 
   test('cleans metadata from character names', async () => {

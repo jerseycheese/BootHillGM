@@ -21,7 +21,7 @@ export const TextCleaningDebug: React.FC = () => {
       </button>
       {isExpanded && (
       <div className="space-y-4">
-        {entries.map((entry, index) => (
+        {entries.map((entry) => (
           <div key={entry.timestamp} className="p-4 bg-gray-50 rounded">
             <div className="font-medium text-sm text-gray-600">
               Source: {entry.source} | Function: {entry.cleaningFunction}

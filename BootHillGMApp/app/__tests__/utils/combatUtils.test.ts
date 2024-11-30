@@ -7,6 +7,7 @@ import {
   calculateCombatDamage
 } from '../../utils/combatUtils';
 import { Character } from '../../types/character';
+import { Weapon, WEAPON_STATS } from '../../types/combat';
 
 describe('Combat Utilities', () => {
   describe('cleanCharacterName', () => {
@@ -41,7 +42,14 @@ describe('Combat Utilities', () => {
         },
         wounds: [],
         isUnconscious: false,
-        weapon: { name: 'Revolver', damage: '1d6' }
+        inventory: [],
+        weapon: {
+          id: 'revolver',
+          name: 'Revolver',
+          modifiers: WEAPON_STATS['Colt Revolver'],
+          ammunition: 6,
+          maxAmmunition: 6
+        }
       };
       expect(getWeaponName(character)).toBe('Revolver');
     });
@@ -64,7 +72,8 @@ describe('Combat Utilities', () => {
           brawling: 50
         },
         wounds: [],
-        isUnconscious: false
+        isUnconscious: false,
+        inventory: []
       };
       expect(getWeaponName(character)).toBe('fists');
     });
@@ -131,6 +140,19 @@ describe('Combat Utilities', () => {
       const damage = calculateCombatDamage();
       expect(damage).toBeGreaterThanOrEqual(1);
       expect(damage).toBeLessThanOrEqual(6);
+    });
+
+    it('calculates damage based on weapon modifiers', () => {
+      const weapon: Weapon = {
+        id: 'revolver',
+        name: 'Colt Revolver',
+        modifiers: WEAPON_STATS['Colt Revolver'],
+        ammunition: 6,
+        maxAmmunition: 6
+      };
+      const damage = calculateCombatDamage(weapon);
+      expect(damage).toBeGreaterThanOrEqual(1);
+      expect(damage).toBeLessThanOrEqual(7); // 1d6 can be 1 to 6, plus 1 modifier
     });
   });
 });

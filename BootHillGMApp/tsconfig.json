@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2015",
+    "target": "es2018",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -19,7 +19,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "*": ["./*"]
     },
     "types": ["jest", "node", "@testing-library/jest-dom"]
   },
