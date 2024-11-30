@@ -166,7 +166,7 @@ describe('useCombatManager', () => {
     });
 
     expect(mockUpdateNarrative).toHaveBeenCalledWith(
-      expect.stringContaining('Test Character emerges victorious, defeating Unknown Opponent.')
+      'Test Character emerges victorious, defeating Unknown Opponent.'
     );
   });
 

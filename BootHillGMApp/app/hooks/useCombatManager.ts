@@ -55,7 +55,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             playerName,
             opponentName,
             winner === 'player' ? 'victory' : 'defeat',
-            narrativeMessage // Use the same message we created for the narrative
+            endMessage // Use the same message we created for the narrative
           )
         });
 
