@@ -42,17 +42,10 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         
         // Construct the victory message
         const endMessage = winner === 'player' 
-          ? `${cleanPlayerName} has defeated ${cleanOpponentName} in combat and emerges victorious.`
-          : `${cleanOpponentName} has defeated ${cleanPlayerName} in combat and emerges victorious.`;
+          ? `${cleanPlayerName} emerges victorious, defeating ${cleanOpponentName}.`
+          : `${cleanOpponentName} emerges victorious, defeating ${cleanPlayerName}.`;
         
-        // Debug logging
-        console.log('End message before narrative update:', endMessage);
-        
-        // Create the final narrative message
-        const narrativeMessage = `In the heat of battle, ${endMessage}`;
-        console.log('Full narrative message:', narrativeMessage);
-        
-        onUpdateNarrative(narrativeMessage);
+        onUpdateNarrative(endMessage);
       
         const currentJournal = state.journal || [];
         dispatch({ 
