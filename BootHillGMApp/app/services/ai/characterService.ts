@@ -77,7 +77,8 @@ export async function generateCompleteCharacter(): Promise<Character> {
         brawling: Number(characterData.Brawling) || 50
       },
       wounds: [],
-      isUnconscious: false
+      isUnconscious: false,
+      inventory: []
     };
     
     // Validate that all character attributes and skills are present and are valid numbers
@@ -122,7 +123,8 @@ export async function generateCompleteCharacter(): Promise<Character> {
         brawling: generateRandomValue('brawling')
       },
       wounds: [],
-      isUnconscious: false
+      isUnconscious: false,
+      inventory: []
     };
   }
 }
