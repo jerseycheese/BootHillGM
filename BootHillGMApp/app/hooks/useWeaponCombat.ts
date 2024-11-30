@@ -9,9 +9,37 @@ import {
   Weapon,
   calculateWeaponModifier,
   rollForMalfunction,
-  parseWeaponDamage,
-  WEAPON_STATS
+  parseWeaponDamage
 } from '../types/combat';
+
+interface WeaponStats {
+  [key: string]: {
+    name: string;
+    damage: string;
+    id: string;
+    ammunition: number;
+    maxAmmunition: number;
+    accuracy: number;
+    range: number;
+    reliability: number;
+    speed: number;
+  };
+}
+
+const WEAPON_STATS: WeaponStats = {
+  'Colt Revolver': {
+    name: 'Colt Revolver',
+    damage: '2d6',
+    id: 'colt-revolver',
+    ammunition: 6,
+    maxAmmunition: 6,
+    accuracy: 5,
+    range: 20,
+    reliability: 95,
+    speed: 3
+  }
+  // Add other weapons as needed
+};
 import { GameEngineAction } from '../utils/gameEngine';
 import { calculateHitChance, isCritical } from '../utils/combatRules';
 
@@ -100,7 +128,7 @@ export const useWeaponCombat = ({
   const resolveWeaponAction = useCallback(async (
     action: WeaponCombatAction,
     isPlayerAction: boolean
-  ): Promise<WeaponCombatResult | null> => {
+  ): Promise<WeaponCombatResult | null | undefined> => {
     // For player actions, player is attacker and opponent is defender
     // For opponent actions, opponent is attacker and player is defender
     const attacker = isPlayerAction ? playerCharacter : opponent;
