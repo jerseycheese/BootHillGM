@@ -21,8 +21,11 @@ export const cleanCharacterName = (name: string): string => {
   const metadataPattern = /\s*(ACQUIRED_ITEMS|REMOVED_ITEMS|LOCATION|SUGGESTED_ACTIONS):\s*[^:]*/g;
   cleanedName = cleanedName.replace(metadataPattern, '');
   
-  // Remove suggested actions with JSON content
-  cleanedName = cleanedName.replace(/SUGGESTED_ACTIONS:\s*\[.*?\]/g, '');
+  // Remove suggested actions with JSON content - using greedy matching
+  cleanedName = cleanedName.replace(/SUGGESTED_ACTIONS:\s*\[.*\]/g, '');
+  
+  // Remove any remaining JSON arrays
+  cleanedName = cleanedName.replace(/\[.*\]/g, '');
   
   // Remove any narrative indicators
   cleanedName = cleanedName.replace(/important:.*$/, '');
