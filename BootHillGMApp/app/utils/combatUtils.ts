@@ -30,6 +30,9 @@ export const cleanCharacterName = (name: string): string => {
   // Apply existing text cleaning
   cleanedName = cleanText(cleanedName);
   
+  // Remove any remaining colons
+  cleanedName = cleanedName.replace(/:/g, '');
+  
   // Clean up any double spaces and trim
   cleanedName = cleanedName.replace(/\s+/g, ' ').trim();
   
