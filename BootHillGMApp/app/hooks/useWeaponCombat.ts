@@ -70,11 +70,11 @@ export const useWeaponCombat = ({
       round: 1,
       playerWeapon,
       opponentWeapon: opponent.weapon ? {
-        id: opponent.weapon.id,
+        id: opponent.weapon.id || 'default-opponent-weapon',
         name: opponent.weapon.name,
-        modifiers: WEAPON_STATS[opponent.weapon.name],
-        ammunition: opponent.weapon.ammunition,
-        maxAmmunition: opponent.weapon.maxAmmunition
+        modifiers: WEAPON_STATS[opponent.weapon.name] || WEAPON_STATS['Colt Revolver'],
+        ammunition: WEAPON_STATS[opponent.weapon.name]?.ammunition || 6,
+        maxAmmunition: WEAPON_STATS[opponent.weapon.name]?.maxAmmunition || 6
       } : null,
       currentRange: 15,
       roundLog: [],
