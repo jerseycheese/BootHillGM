@@ -56,9 +56,9 @@ const ItemUpdate: React.FC<{
   
   const isAcquired = metadata.updateType === 'acquired';
   const className = `
-    item-update 
-    ${isAcquired ? 'item-update-acquired' : 'item-update-used'}
-    rounded-sm my-2 py-1 px-4
+    narrative-item-update
+    ${isAcquired ? 'narrative-item-acquired' : 'narrative-item-used'}
+    rounded-sm my-2
   `;
 
   return (
