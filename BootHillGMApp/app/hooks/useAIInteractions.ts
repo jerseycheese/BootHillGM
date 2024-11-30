@@ -85,6 +85,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
         riding: response.opponent.skills.riding,
         brawling: response.opponent.skills.brawling
       },
+      inventory: response.opponent.inventory || [],
       weapon: response.opponent.weapon ? {
         name: response.opponent.weapon.name.split(/[.!?]/)[0].trim(),
         damage: response.opponent.weapon.damage
