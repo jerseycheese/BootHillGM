@@ -64,8 +64,10 @@ export interface WeaponCombatState {
 }
 
 export interface WeaponCombatAction {
-  type: 'aim' | 'fire' | 'reload' | 'move';
+  type: 'aim' | 'fire' | 'reload' | 'move' | 'malfunction';
   targetRange?: number;  // For move actions
+  modifier?: number;     // For fire/move actions
+  damage?: number;       // For fire actions
 }
 
 export type WeaponCombatResult = {
