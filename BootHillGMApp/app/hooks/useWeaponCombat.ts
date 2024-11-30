@@ -12,8 +12,9 @@ import {
   parseWeaponDamage
 } from '../types/combat';
 
-// Using WeaponModifiers from combat.ts
-const WEAPON_STATS: Record<string, WeaponModifiers> = {
+import { WEAPON_STATS } from '../types/combat';
+
+// Using imported WEAPON_STATS from combat.ts instead of redefining
   'Colt Revolver': {
     name: 'Colt Revolver',
     damage: '2d6',
