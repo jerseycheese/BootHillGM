@@ -108,7 +108,6 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
         opponentStrength: response.opponent.attributes.strength,
         currentTurn: 'player',
         winner: null,
-        summary: null,
         combatLog: []
       }
     });
