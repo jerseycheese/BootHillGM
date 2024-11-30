@@ -1,6 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
+
+const isValidWeapon = (weapon: any): weapon is Weapon => {
+  return weapon && 
+    typeof weapon.name === 'string' &&
+    typeof weapon.id === 'string';
+};
 import { 
   WeaponCombatState, 
   WeaponCombatAction, 
@@ -69,7 +75,7 @@ export const useWeaponCombat = ({
     return initialState || {
       round: 1,
       playerWeapon,
-      opponentWeapon: opponent.weapon ? {
+      opponentWeapon: opponent.weapon && isValidWeapon(opponent.weapon) ? {
         id: opponent.weapon.id || 'default-opponent-weapon',
         name: opponent.weapon.name,
         modifiers: WEAPON_STATS[opponent.weapon.name] || WEAPON_STATS['Colt Revolver'],
