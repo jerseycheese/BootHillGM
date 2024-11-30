@@ -28,7 +28,8 @@ describe('Combat UI Components', () => {
       brawling: 50
     },
     wounds: [],
-    isUnconscious: false
+    isUnconscious: false,
+    inventory: []
   };
 
   describe('CombatControls', () => {
