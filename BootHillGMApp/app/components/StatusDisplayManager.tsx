@@ -12,7 +12,7 @@ import React from 'react';
 import { Character } from '../types/character';
 import { calculateCurrentStrength } from '../utils/strengthSystem';
 import { cleanLocationText } from '../utils/textCleaningUtils';
-import { useCampaignState } from '../CampaignStateManager';
+import { useCampaignState } from './CampaignStateManager';
 
 interface StrengthBarProps {
   current: number;
