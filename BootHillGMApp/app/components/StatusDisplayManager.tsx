@@ -32,7 +32,8 @@ const StrengthBar: React.FC<StrengthBarProps> = ({
   current,
   max,
   showValue = true,
-  isUnconscious = false
+  isUnconscious = false,
+  onReset
 }) => {
   const strengthPercentage = (current / max) * 100;
   
@@ -58,7 +59,7 @@ const StrengthBar: React.FC<StrengthBarProps> = ({
               )}
             </span>
             {/* Add dev mode reset button */}
-            {process.env.NODE_ENV !== 'production' && onReset && (
+            {process.env.NODE_ENV !== 'production' && (
               <button
                 onClick={onReset}
                 className="px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded"
