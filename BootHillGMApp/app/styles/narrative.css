@@ -1,26 +1,82 @@
-/* Custom border colors for narrative elements */
-.border-saddle-brown {
-  border-color: #8B4513;
+/* Narrative element styles */
+.narrative-line {
+  font-family: Georgia, serif;
+  color: #2d3748;
+  line-height: 1.6;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem 0;
+  border-left: 3px solid #4a5568;
+  background-color: #f7fafc;
 }
 
-.border-dusty-red {
-  border-color: #96323D;
+.narrative-gm-response {
+  font-family: Georgia, serif;
+  color: #2d3748;
+  line-height: 1.6;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem 0;
+  border-left: 3px solid #805ad5;
+  background-color: #f8f5ff;
+}
+
+.narrative-player-action {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1a365d;
+  line-height: 1.5;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem 0;
+  border-left: 3px solid #2b6cb0;
+  background-color: #ebf8ff;
+  font-weight: 500;
 }
 
 /* Item update styles */
-.item-update {
+.narrative-item-update {
   font-size: 0.9rem;
   font-style: italic;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem 0;
 }
 
-.item-update-acquired {
+.narrative-item-acquired {
   background-color: rgba(76, 175, 80, 0.1);
   border-left: 4px solid #4CAF50;
 }
 
-.item-update-used {
+.narrative-item-used {
   background-color: rgba(244, 67, 54, 0.1);
   border-left: 4px solid #F44336;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .narrative-line {
+    color: #e2e8f0;
+    background-color: #2d3748;
+    border-left-color: #718096;
+  }
+  
+  .narrative-gm-response {
+    color: #e2e8f0;
+    background-color: #322659;
+    border-left-color: #805ad5;
+  }
+  
+  .narrative-player-action {
+    color: #90cdf4;
+    background-color: #2c5282;
+    border-left-color: #4299e1;
+  }
+
+  .narrative-item-acquired {
+    background-color: rgba(76, 175, 80, 0.2);
+    border-left-color: #2e7d32;
+  }
+
+  .narrative-item-used {
+    background-color: rgba(244, 67, 54, 0.2);
+    border-left-color: #c62828;
+  }
 }
 
 /* Animation for player actions */
