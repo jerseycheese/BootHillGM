@@ -12,21 +12,8 @@ import {
   parseWeaponDamage
 } from '../types/combat';
 
-interface WeaponStats {
-  [key: string]: {
-    name: string;
-    damage: string;
-    id: string;
-    ammunition: number;
-    maxAmmunition: number;
-    accuracy: number;
-    range: number;
-    reliability: number;
-    speed: number;
-  };
-}
-
-const WEAPON_STATS: WeaponStats = {
+// Using WeaponModifiers from combat.ts
+const WEAPON_STATS: Record<string, WeaponModifiers> = {
   'Colt Revolver': {
     name: 'Colt Revolver',
     damage: '2d6',
