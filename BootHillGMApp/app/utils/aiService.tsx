@@ -3,6 +3,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
+import { InventoryItem } from '../types/inventory';
 import { SuggestedAction } from '../types/campaign';
 
 // Configuration for the AI model, including safety settings set to BLOCK_NONE
@@ -160,7 +161,8 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
           brawling: 50
         },
         wounds: [],
-        isUnconscious: false
+        isUnconscious: false,
+        inventory: [] as InventoryItem[]
       };
     }
     
@@ -311,7 +313,8 @@ export async function generateCompleteCharacter(): Promise<Character> {
         brawling: Number(characterData.Brawling) || 50
       },
       wounds: [],
-      isUnconscious: false
+      isUnconscious: false,
+      inventory: [] as InventoryItem[]
     };
     
     // Validate that all character attributes and skills are present and are valid numbers
@@ -356,7 +359,8 @@ export async function generateCompleteCharacter(): Promise<Character> {
         brawling: 50
       },
       wounds: [],
-      isUnconscious: false
+      isUnconscious: false,
+      inventory: [] as InventoryItem[]
     };
   }
 }
