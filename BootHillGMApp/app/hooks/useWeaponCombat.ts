@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Character } from '../types/character';
+import { InventoryItem } from '../types/inventory';
 import { 
   WeaponCombatState, 
   WeaponCombatAction, 
@@ -177,7 +178,7 @@ export const useWeaponCombat = ({
               ...defender.wounds,
               {
                 location: 'chest' as const, // You might want to randomize this
-                severity: damage >= 5 ? 'serious' : 'light',
+                severity: damage >= 5 ? 'serious' as const : 'light' as const,
                 strengthReduction: damage,
                 turnReceived: weaponState.round
               }
@@ -265,7 +266,7 @@ export const useWeaponCombat = ({
         timestamp: Date.now()
       });
 
-      if (result.damage && result.newStrength <= 0) {
+      if (result.damage && typeof result.newStrength === 'number' && result.newStrength <= 0) {
         onCombatEnd('player', `You defeat ${opponent.name} with a well-placed shot!`);
         return;
       }
@@ -283,7 +284,7 @@ export const useWeaponCombat = ({
           timestamp: Date.now()
         });
 
-        if (opponentResult.damage && opponentResult.newStrength <= 0) {
+        if (opponentResult.damage && typeof opponentResult.newStrength === 'number' && opponentResult.newStrength <= 0) {
           onCombatEnd('opponent', `${opponent.name} defeats you with a deadly shot!`);
           return;
         }
