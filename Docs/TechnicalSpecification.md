@@ -46,17 +46,6 @@ type GameEngineAction =
   | { type: 'UPDATE_JOURNAL'; payload: JournalEntry }
   | { type: 'SET_STATE'; payload: Partial<GameState> }
   | { type: 'SET_SAVED_TIMESTAMP'; payload: number };
-
-// Character Creation System
-interface CharacterFormProps {
-  character: Character;
-  isGeneratingField: boolean;
-  isProcessingStep: boolean;
-  error?: string;
-  onFieldChange: (field: keyof Character['attributes'] | keyof Character['skills'] | 'name', value: string | number) => void;
-  onGenerateField: (field: keyof Character['attributes'] | keyof Character['skills'] | 'name') => Promise<void>;
-  onSubmit: (e: React.FormEvent) => Promise<void>;
-}
 ```
 
 ### 2.2 AI Integration
@@ -298,6 +287,24 @@ export class JournalManager {
     }
   }
 }
+```
+
+### 2.5 Character Creation System
+```typescript
+// Character Creation System
+interface CharacterFormProps {
+  character: Character;
+  isGeneratingField: boolean;
+  isProcessingStep: boolean;
+  error?: string;
+  onFieldChange: (field: keyof Character['attributes'] | keyof Character['skills'] | 'name', value: string | number) => void;
+  onGenerateField: (field: keyof Character['attributes'] | keyof Character['skills'] | 'name') => Promise<void>;
+  onSubmit: (e: React.FormEvent) => Promise<void>;
+}
+
+// Added inventory and ammunition properties for characters and weapons
+// Improved character name cleaning to handle metadata markers and narrative text
+// Enhanced AI response processing to better handle opponent names and narrative text
 ```
 
 ## 3. System Components

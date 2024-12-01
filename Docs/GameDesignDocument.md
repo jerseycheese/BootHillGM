@@ -19,6 +19,7 @@ BootHillGM is an AI-driven, web-based RPG set in the American Old West, based on
 - Character state persistence
 - Equipment and inventory management
 - AI-generated character backgrounds
+- Inventory and ammunition properties for characters and weapons
 
 ### 3.2 Game Session Management
 - Real-time narrative generation
