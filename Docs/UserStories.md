@@ -195,12 +195,7 @@
   - Verify that added IDs and classes are unique and descriptive
   - Test that added identifiers don't break existing styles or functionality
   - Ensure Boot Hill rules tables and dice roll results have clear identifying classes
-
-- [ ] As a player, I want my character creation progress to be saved automatically after each step, so that I don't lose progress if I need to refresh or encounter an error.
-  **Test Plan:**
-  - Verify that progress is saved after each step completion
-  - Test recovery of progress after page refresh
-  - Ensure partial character data is properly stored and retrieved
+  
 
 ### Technical Improvements
 - [ ] As a developer, I want to add identifying IDs/classes to page markup to make debugging and testing easier.

@@ -20,7 +20,7 @@ interface StyleConfig {
 
 const STYLE_CONFIGS: Record<NarrativeItem['type'], StyleConfig> = {
   'player-action': {
-    className: 'narrative-player-action border-l-4 pl-4 bg-opacity-5 hover:bg-opacity-10 transition-colors duration-300',
+    className: 'narrative-player-action border-l-4 pl-4 bg-opacity-5',
     testId: 'player-action'
   },
   'gm-response': {
@@ -85,8 +85,7 @@ export const NarrativeContent: React.FC<{
     return null;
   }
 
-  const animationClass = item.type === 'player-action' ? 'animate-highlight' : '';
-  const className = `my-2 ${config.className} ${animationClass}`.trim();
+  const className = `my-2 ${config.className}`.trim();
 
   return (
     <div 

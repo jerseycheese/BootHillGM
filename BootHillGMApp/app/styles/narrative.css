@@ -43,10 +43,6 @@
   }
 }
 
-.animate-highlight {
-  animation: highlight 2s ease-out;
-}
-
 /* Western-style text */
 .font-western-text {
   font-family: "Crimson Text", Georgia, serif;

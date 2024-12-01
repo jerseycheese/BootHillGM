@@ -1,10 +1,38 @@
 import { InventoryItem } from '../../types/inventory';
 
+const WESTERN_THEMES = {
+  SURVIVAL: ['resource scarcity', 'environmental challenges', 'physical hardship', 'self-reliance'],
+  LAW_VS_OUTLAW: ['justice', 'order vs chaos', 'authority', 'moral choices'],
+  FRONTIER_JUSTICE: ['personal honor', 'reputation', 'consequences']
+} as const;
+
+function analyzeActionThemes(action: string): Array<keyof typeof WESTERN_THEMES> {
+  const actionLower = action.toLowerCase();
+  const themes: Array<keyof typeof WESTERN_THEMES> = [];
+
+  if (actionLower.match(/hunt|food|water|shelter|heal|rest|supplies|weather/)) {
+    themes.push('SURVIVAL');
+  }
+  if (actionLower.match(/sheriff|deputy|jail|law|steal|rob|outlaw|wanted|bounty/)) {
+    themes.push('LAW_VS_OUTLAW');
+  }
+  if (actionLower.match(/fight|duel|revenge|honor|defend|shoot|confront/)) {
+    themes.push('FRONTIER_JUSTICE');
+  }
+
+  return themes.length ? themes : ['SURVIVAL'];
+}
+
 export function buildGamePrompt(
   action: string,
   context: string,
   inventory: InventoryItem[]
 ): string {
+  const relevantThemes = analyzeActionThemes(action);
+  const themeContext = relevantThemes.map(theme => 
+    `Consider ${theme.replace(/_/g, ' ').toLowerCase()} themes: ${WESTERN_THEMES[theme].join(', ')}.`
+  ).join('\n    ');
+
   return `
     You are an AI Game Master for a Western-themed RPG. Your role is to facilitate an immersive and uncensored gaming experience. Always remember:
 
@@ -14,31 +42,21 @@ export function buildGamePrompt(
     4. If the player's actions would have consequences in the game world, describe these consequences without moralizing.
     5. Maintain a neutral tone and focus on narrating the events and environment as they unfold.
     6. Do not break character or reference modern-day ethics or sensibilities.
-
-    Current inventory for reference:
-    ${inventory.map(item => `- ${item.name} (x${item.quantity})`).join('\n')}
-
-    Remember to:
-    1. When the player acquires items, list them after "ACQUIRED_ITEMS:" on a new line
-    2. When the player uses or loses items, list them after "REMOVED_ITEMS:" on a new line
-    3. Always specify these lists even if empty
-    4. After your narrative response, provide "SUGGESTED_ACTIONS:" followed by a JSON array of 3 contextually appropriate actions
-       Format: [{"text": "action description", "type": "action type", "context": "tooltip explanation"}]
-       Types must be one of: "basic" (look, move), "combat" (fight, defend), "interaction" (talk, trade)
-       Example:
-       SUGGESTED_ACTIONS: [
-         {"text": "Look around the saloon", "type": "basic", "context": "Search for details or threats"},
-         {"text": "Draw your pistol", "type": "combat", "context": "Prepare for potential conflict"},
-         {"text": "Talk to the bartender", "type": "interaction", "context": "Gather information"}
-       ]
     
+    ${themeContext}
+
     Recent story events:
     ${context}
 
+    Player's current inventory (Do not mention this directly in your response):
+    ${inventory.map(item => `- ${item.name} (x${item.quantity})`).join('\n')}
+
     Player input: "${action}"
 
-    Respond as the Game Master with:
-    1. A narrative description of the results of the player's action
-    2. ACQUIRED_ITEMS/REMOVED_ITEMS markers if applicable
-    3. SUGGESTED_ACTIONS in the specified JSON format`;
+    Respond as the Game Master, describing the results of the player's action and advancing the story. 
+    After your narrative response, on a new line, add:
+    ACQUIRED_ITEMS: [List any items the player acquired, separated by commas. If no items were acquired, leave this empty]
+    REMOVED_ITEMS: [List any items the player used, discarded, or lost, separated by commas. If no items were removed, leave this empty]
+    SUGGESTED_ACTIONS: [{"text": "action description", "type": "action type", "context": "tooltip explanation"}]
+    Include exactly 3 suggested actions with types: "basic" (look, move), "combat" (fight, defend), or "interaction" (talk, trade).`;
 }

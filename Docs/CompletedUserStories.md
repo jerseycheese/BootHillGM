@@ -221,3 +221,11 @@
 - As a developer, I want to implement proper state management in the GameSession component to prevent unnecessary page reloads and improve user experience.
 - As a developer, I want to ensure reliable game state initialization to provide a consistent starting experience for players.
 - As a player, I want my initial game state (narrative, inventory) to be properly set up when starting a new game.
+
+[x] As a player, I want to experience themes of survival, law vs. outlaw, and frontier justice so that I feel like I'm in an authentic Western story.
+  **Priority:** High
+  **Test Plan:**
+  - Verify that these themes are present in the main storyline and side quests
+  - Test player choices that relate to these themes
+  - Ensure the game's atmosphere consistently reflects these Western themes
+  **Status:** Implemented - Theme system added to AI prompts.

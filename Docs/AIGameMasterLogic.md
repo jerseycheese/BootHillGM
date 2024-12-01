@@ -9,6 +9,9 @@ The AI Game Master (GM) is the core component of BootHillGM, responsible for cre
 - [ ] Create a linear main storyline with minimal branching
 - [x] Generate basic descriptive text for locations, characters, and events
 - [x] Adapt narrative based on limited player choices
+- [x] Theme analysis system for contextual storytelling
+- [x] Automatic theme detection from player actions
+- [x] Enhanced prompts incorporating relevant Western themes
 
 ### 2.2 Character Interaction
 - [x] Generate simple NPC dialogues based on predefined personality types
