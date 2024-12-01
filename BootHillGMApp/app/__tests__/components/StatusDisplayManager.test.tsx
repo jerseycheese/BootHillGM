@@ -2,10 +2,12 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { Character } from '../../types/character';
 import StatusDisplayManager from '../../components/StatusDisplayManager';
+import { CampaignStateProvider } from '../../components/CampaignStateManager';
 
 describe('StatusDisplayManager', () => {
   const mockCharacter: Character = {
     name: 'Test Character',
+    inventory: [],
     attributes: {
       speed: 10,
       gunAccuracy: 10,
@@ -13,48 +15,60 @@ describe('StatusDisplayManager', () => {
       strength: 10,
       baseStrength: 10,
       bravery: 10,
-      experience: 5
+      experience: 5,
     },
     skills: {
       shooting: 50,
       riding: 50,
-      brawling: 50
+      brawling: 50,
     },
     wounds: [
       {
         location: 'head',
         severity: 'light',
         strengthReduction: 1,
-        turnReceived: 1
+        turnReceived: 1,
       },
       {
         location: 'chest',
         severity: 'serious',
         strengthReduction: 2,
-        turnReceived: 2
-      }
+        turnReceived: 2,
+      },
     ],
-    isUnconscious: false
+    isUnconscious: false,
   };
 
   test('renders character information correctly', () => {
-    render(<StatusDisplayManager character={mockCharacter} location="Test Town" />);
-    
+    render(
+      <CampaignStateProvider>
+        <StatusDisplayManager character={mockCharacter} location="Test Town" />
+      </CampaignStateProvider>
+    );
+
     expect(screen.getByText('Test Character')).toBeInTheDocument();
     expect(screen.getByText(/Test Town/)).toBeInTheDocument();
     expect(screen.getByText('Strength')).toBeInTheDocument();
-    expect(screen.getByTestId('strength-value')).toHaveTextContent('7/10');  // Updated to expect 7/10 due to wound penalties
+    expect(screen.getByTestId('strength-value')).toHaveTextContent('7/10'); // Expect 7/10 due to wound penalties
   });
 
   test('displays "Unknown" when location is null', () => {
-    render(<StatusDisplayManager character={mockCharacter} location={null} />);
-    
+    render(
+      <CampaignStateProvider>
+        <StatusDisplayManager character={mockCharacter} location={null} />
+      </CampaignStateProvider>
+    );
+
     expect(screen.getByText(/Unknown/)).toBeInTheDocument();
   });
 
   test('displays wounds correctly', () => {
-    render(<StatusDisplayManager character={mockCharacter} location="Test Town" />);
-    
+    render(
+      <CampaignStateProvider>
+        <StatusDisplayManager character={mockCharacter} location="Test Town" />
+      </CampaignStateProvider>
+    );
+
     expect(screen.getByText('Wounds')).toBeInTheDocument();
     expect(screen.getByText('head')).toBeInTheDocument();
     expect(screen.getByText('chest')).toBeInTheDocument();
@@ -69,10 +83,14 @@ describe('StatusDisplayManager', () => {
   test('displays unconscious state correctly', () => {
     const unconsciousCharacter = {
       ...mockCharacter,
-      isUnconscious: true
+      isUnconscious: true,
     };
-    render(<StatusDisplayManager character={unconsciousCharacter} location="Test Town" />);
-    
+    render(
+      <CampaignStateProvider>
+        <StatusDisplayManager character={unconsciousCharacter} location="Test Town" />
+      </CampaignStateProvider>
+    );
+
     expect(screen.getByText('(Unconscious)')).toBeInTheDocument();
   });
 });

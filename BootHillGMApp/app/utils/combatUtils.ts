@@ -81,7 +81,10 @@ export const formatMissMessage = (
 };
 
 export const calculateCombatDamage = (weapon?: { modifiers: { damage: string } }): number => {
-  const baseDamage = Math.floor(Math.random() * 6) + 1;
-  const weaponDamage = weapon ? parseWeaponDamage(weapon.modifiers.damage) : 0;
-  return baseDamage + weaponDamage;
+  if (weapon) {
+    return parseWeaponDamage(weapon.modifiers.damage);
+  } else {
+    const baseDamage = Math.floor(Math.random() * 6) + 1;
+    return baseDamage;
+  }
 };

@@ -167,7 +167,7 @@ const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
         attributes: {
           ...character.attributes,
           baseStrength: character.attributes.baseStrength, // Keep original base strength
-          currentStrength: character.attributes.baseStrength // Reset current strength to base
+          strength: character.attributes.baseStrength // Reset strength to base
         },
         isUnconscious: false // Reset unconscious state
       }
