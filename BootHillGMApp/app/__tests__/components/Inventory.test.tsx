@@ -159,7 +159,7 @@ describe('Inventory', () => {
 
   test('calls onUseItem with item ID when Use button is clicked', async () => {
     const mockOnUseItem = jest.fn();
-    const { rerender } = renderWithContext(
+    renderWithContext(
       <Inventory onUseItem={mockOnUseItem} />, 
       {
         ...mockState,
@@ -175,14 +175,20 @@ describe('Inventory', () => {
       }
     );
 
-    // Find and click the Use button for Health Potion
-    const useButton = screen.getByLabelText('Use Health Potion');
+    // Wait for the button to be available
+    const useButton = await screen.findByLabelText('Use Health Potion');
+    
+    // Use userEvent for better interaction simulation
+    await waitFor(() => {
+      expect(useButton).toBeEnabled();
+    });
+    
     fireEvent.click(useButton);
 
-    // Wait for any async operations
+    // Verify the callback was called
     await waitFor(() => {
       expect(mockOnUseItem).toHaveBeenCalledWith('1');
-    });
+    }, { timeout: 3000 });
   });
 
   test('handles using an item with quantity greater than 1', () => {
