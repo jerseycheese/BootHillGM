@@ -1,7 +1,6 @@
 import { InventoryItem, ItemValidationResult } from '../types/inventory';
 import { Character } from '../types/character';
 import { CampaignState } from '../types/campaign';
-import { CombatState } from '../types/combat';
 
 /**
  * Manages inventory-related operations including item validation and usage prompts.

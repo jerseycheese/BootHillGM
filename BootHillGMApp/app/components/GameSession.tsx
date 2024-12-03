@@ -1,16 +1,53 @@
+import React, { useCallback } from 'react';
 import { useGameInitialization } from '../hooks/useGameInitialization';
 import { useGameSession } from '../hooks/useGameSession';
 import { useCombatStateRestoration } from '../hooks/useCombatStateRestoration';
 import { LoadingScreen } from './GameArea/LoadingScreen';
 import { MainGameArea } from './GameArea/MainGameArea';
 import { SidePanel } from './GameArea/SidePanel';
+import { InventoryManager } from '../utils/inventoryManager';
 
 export default function GameSession() {
   const { isInitializing, isClient } = useGameInitialization();
   const gameSession = useGameSession();
-  const { state } = gameSession;
+  const { state, dispatch } = gameSession;
 
-  useCombatStateRestoration(state, gameSession);
+  const handleUseItem = useCallback(() => {
+    // Existing implementation
+  }, []);
+
+  const handleEquipWeapon = useCallback((itemId: string) => {
+    if (!state.character) {
+      console.error('No character available to equip weapon');
+      return;
+    }
+    const item = state.inventory.find(i => i.id === itemId);
+    if (!item || item.category !== 'weapon') {
+      console.error('Invalid item to equip');
+      return;
+    }
+    InventoryManager.equipWeapon(state.character, item);
+    dispatch({ type: 'EQUIP_WEAPON', payload: itemId });
+    console.log('Weapon equipped:', itemId); // Debug log
+  }, [state, dispatch]);
+
+  // Create a session object with all required props
+  const sessionProps = {
+    ...gameSession,
+    handleEquipWeapon,
+    handleUseItem
+  };
+
+  // Create a combat initiator object that includes both prop versions
+  const combatInitiator = {
+    ...gameSession,
+    handleEquipWeapon,
+    onEquipWeapon: handleEquipWeapon,
+    handleUseItem,
+    initiateCombat: gameSession.initiateCombat
+  };
+
+  useCombatStateRestoration(state, combatInitiator);
 
   if (!isClient || !gameSession || !state || !state.character || isInitializing) {
     return <LoadingScreen type="session" />;
@@ -19,8 +56,8 @@ export default function GameSession() {
   return (
     <div className="wireframe-container">
       <div className="grid grid-cols-[1fr_300px] gap-4">
-        <MainGameArea {...gameSession} />
-        <SidePanel {...gameSession} />
+        <MainGameArea {...sessionProps} />
+        <SidePanel {...sessionProps} />
       </div>
     </div>
   );

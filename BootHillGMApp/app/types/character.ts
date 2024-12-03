@@ -51,7 +51,6 @@ export interface CombatLogEntry {
   timestamp: number;
 }
 
-
 export interface Character {
   /** Character's full name */
   name: string;
@@ -95,4 +94,7 @@ export interface Character {
 
   /** Optional weapon data */
   weapon?: Weapon;
+
+  /** Equipped weapon */
+  equippedWeapon?: Weapon;
 }

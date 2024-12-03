@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useReducer, ReactNode, Dispatch } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode, Dispatch, useCallback } from 'react';
 import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
 import { JournalEntry } from '../types/journal';
 import { SuggestedAction } from '../types/campaign';
 import { CombatType, CombatState, ensureCombatState } from '../types/combat';
 import { determineIfWeapon } from '../services/ai';
+import { InventoryManager } from './inventoryManager';
 
 // Define the structure of the game state
 export interface GameState {
@@ -40,7 +41,7 @@ export type GameEngineAction =
   | { type: 'SET_GAME_PROGRESS'; payload: number }
   | { type: 'UPDATE_JOURNAL'; payload: JournalEntry | JournalEntry[] }
   | { type: 'SET_COMBAT_ACTIVE'; payload: boolean }
-  | { type: 'SET_OPPONENT'; payload: Character | null }
+  | { type: 'SET_OPPONENT'; payload: Partial<Character> }
   | { type: 'UPDATE_ITEM_QUANTITY'; payload: { id: string; quantity: number } }
   | { type: 'CLEAN_INVENTORY' }
   | { type: 'SET_INVENTORY'; payload: InventoryItem[] }
@@ -49,7 +50,9 @@ export type GameEngineAction =
   | { type: 'SET_SUGGESTED_ACTIONS'; payload: SuggestedAction[] }
   | { type: 'UPDATE_COMBAT_STATE'; payload: Partial<CombatState> }
   | { type: 'SET_COMBAT_TYPE'; payload: CombatType }
-  | { type: 'UPDATE_OPPONENT'; payload: Character };
+  | { type: 'UPDATE_OPPONENT'; payload: Character }
+  | { type: 'EQUIP_WEAPON'; payload: string }
+  | { type: 'UNEQUIP_WEAPON'; payload: string };
 
 // Initial state of the game
 export const initialState: GameState = {
@@ -91,14 +94,9 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           )
         };
       } else {
-        // For new items, determine if it's a weapon if category isn't already set
         const newItem = { ...action.payload };
         if (!newItem.category) {
-          
-          // We'll set it as general by default, but the async check will update it if needed
           newItem.category = 'general';
-          
-          // Start the async check immediately and ensure proper error handling
           determineIfWeapon(newItem.name, newItem.description)
             .then((isWeapon: boolean) => {
               if (isWeapon) {
@@ -109,9 +107,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
               console.error(`[Inventory] Error during weapon determination for "${newItem.name}":`, error);
             });
         } else {
-          // Even if category is set, we should still verify if it should be a weapon
           if (newItem.category === 'general') {
-          
             determineIfWeapon(newItem.name, newItem.description)
               .then((isWeapon: boolean) => {
                 if (isWeapon) {
@@ -174,16 +170,49 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'UPDATE_JOURNAL':
       return { ...state, journal: Array.isArray(action.payload) ? action.payload : [...state.journal, action.payload] };
     
-    // Add direct SET_OPPONENT case
-    case 'SET_OPPONENT':
-      return { ...state, opponent: action.payload };
+    case 'SET_OPPONENT': {
+      if (!action.payload) {
+        return { ...state, opponent: null };
+      }
+
+      const defaultAttributes = {
+        speed: 5,
+        gunAccuracy: 5,
+        throwingAccuracy: 5,
+        strength: 5,
+        baseStrength: 5,
+        bravery: 5,
+        experience: 5
+      };
+
+      const defaultSkills = {
+        shooting: 50,
+        riding: 50,
+        brawling: 50
+      };
+
+      const opponent: Character = {
+        name: action.payload.name ?? 'Unknown Opponent',
+        inventory: action.payload.inventory ?? [],
+        attributes: {
+          ...defaultAttributes,
+          ...(action.payload.attributes || {})
+        },
+        skills: {
+          ...defaultSkills,
+          ...(action.payload.skills || {})
+        },
+        wounds: action.payload.wounds ?? [],
+        isUnconscious: action.payload.isUnconscious ?? false
+      };
+
+      return { ...state, opponent };
+    }
     
-    // Combat-related state updates
     case 'SET_COMBAT_ACTIVE':
       return {
         ...state,
         isCombatActive: action.payload,
-        // Reset combat state when combat ends
         ...((!action.payload) && {
           opponent: null,
           combatState: undefined
@@ -212,7 +241,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         })
       };
 
-    // Inventory management
     case 'UPDATE_ITEM_QUANTITY':
       return {
         ...state,
@@ -235,12 +263,10 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'SET_SAVED_TIMESTAMP':
       return { ...state, savedTimestamp: action.payload };
 
-    // Full state restoration with proper type handling
     case 'SET_STATE':
       return {
         ...state,
         ...action.payload,
-        // Ensure combat state is properly preserved with correct types
         isCombatActive: Boolean(action.payload.isCombatActive),
         opponent: action.payload.opponent ? {
           ...action.payload.opponent,
@@ -256,6 +282,47 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       };
     case 'SET_SUGGESTED_ACTIONS':
       return { ...state, suggestedActions: action.payload };
+    case 'EQUIP_WEAPON': {
+      const weaponItem = state.inventory.find(item => item.id === action.payload);
+      if (!weaponItem || weaponItem.category !== 'weapon') {
+        return state;
+      }
+
+      const updatedInventory = state.inventory.map(item => ({
+        ...item,
+        isEquipped: item.id === action.payload ? true : false
+      }));
+
+      return {
+        ...state,
+        inventory: updatedInventory,
+        character: state.character ? {
+          ...state.character,
+          weapon: weaponItem.weaponStats ? {
+            id: weaponItem.id,
+            name: weaponItem.name,
+            modifiers: weaponItem.weaponStats,
+            ammunition: weaponItem.weaponStats.ammunition,
+            maxAmmunition: weaponItem.weaponStats.maxAmmunition
+          } : undefined
+        } : null
+      };
+    }
+    case 'UNEQUIP_WEAPON': {
+      const updatedInventory = state.inventory.map(item => ({
+        ...item,
+        isEquipped: false
+      }));
+
+      return {
+        ...state,
+        inventory: updatedInventory,
+        character: state.character ? {
+          ...state.character,
+          weapon: undefined
+        } : null
+      };
+    }
     default:
       return state;
   }
@@ -284,4 +351,85 @@ export function useGame() {
     throw new Error('useGame must be used within a GameProvider');
   }
   return context;
+}
+
+// Custom hook to use game session with additional callbacks
+export function useGameSession() {
+  const { state, dispatch } = useGame();
+
+  const handleCombatEnd = useCallback((winner: 'player' | 'opponent', summary: string) => {
+    dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
+    dispatch({ type: 'SET_NARRATIVE', payload: summary });
+  }, [dispatch]);
+
+  const handlePlayerHealthChange = useCallback((newStrength: number) => {
+    if (!state.character) {
+      console.error('No character available to change health');
+      return;
+    }
+    
+    // Keep all existing attributes and only update strength
+    const updatedAttributes = {
+      ...state.character.attributes,
+      strength: newStrength
+    };
+    
+    dispatch({ 
+      type: 'UPDATE_CHARACTER', 
+      payload: { 
+        attributes: updatedAttributes
+      } 
+    });
+  }, [state.character, dispatch]);
+
+  const handleUseItem = useCallback((itemId: string) => {
+    dispatch({ type: 'USE_ITEM', payload: itemId });
+  }, [dispatch]);
+
+  const handleEquipWeapon = useCallback((itemId: string) => {
+    if (!state.character) {
+      console.error('No character available to equip weapon');
+      return;
+    }
+    const item = state.inventory.find(i => i.id === itemId);
+    if (!item || item.category !== 'weapon') {
+      console.error('Invalid item to equip');
+      return;
+    }
+    InventoryManager.equipWeapon(state.character, item);
+    dispatch({ type: 'EQUIP_WEAPON', payload: itemId });
+    console.log('Weapon equipped:', itemId);
+  }, [state, dispatch]);
+
+  const handleUnequipWeapon = useCallback((itemId: string) => {
+    if (!state.character) {
+      console.error('No character available to unequip weapon');
+      return;
+    }
+    InventoryManager.unequipWeapon(state.character);
+    dispatch({ type: 'UNEQUIP_WEAPON', payload: itemId });
+    console.log('Weapon unequipped:', itemId);
+  }, [state, dispatch]);
+
+  const retryLastAction = useCallback(() => {
+    // Implementation here
+  }, []);
+
+  return {
+    state,
+    dispatch,
+    isLoading: false,
+    error: null,
+    isCombatActive: state.isCombatActive,
+    opponent: state.opponent,
+    handleUserInput: () => {
+      // Implementation here
+    },
+    retryLastAction,
+    handleCombatEnd,
+    handlePlayerHealthChange,
+    handleUseItem,
+    onEquipWeapon: handleEquipWeapon,
+    onUnequipWeapon: handleUnequipWeapon
+  };
 }

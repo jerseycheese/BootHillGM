@@ -15,6 +15,7 @@ interface CombatInitiator extends GameSessionWithoutState {
       combatLog: LogEntry[];
     }
   ) => void;
+  onEquipWeapon: (itemId: string) => void; // Add this callback
 }
 
 /**

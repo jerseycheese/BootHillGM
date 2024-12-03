@@ -109,7 +109,8 @@ describe('gameReducer', () => {
         brawling: 6
       },
       wounds: [],
-      isUnconscious: false
+      isUnconscious: false,
+      inventory: []
     };
     const action: GameEngineAction = { type: 'SET_OPPONENT', payload: mockOpponent };
     const newState = gameReducer(initialState, action);

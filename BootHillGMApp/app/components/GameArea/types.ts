@@ -22,6 +22,7 @@ export interface GameSessionProps {
   handleCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
   handlePlayerHealthChange: (newHealth: number) => void;
   handleUseItem: (itemId: string) => void;
+  handleEquipWeapon: (itemId: string) => void; // Updated property name
 }
 
 export interface GameplayControlsProps {

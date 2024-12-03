@@ -11,6 +11,7 @@ import type { GameSessionProps } from './types';
 export function SidePanel({
   state,
   handleUseItem,
+  handleEquipWeapon,
 }: GameSessionProps) {
   if (!state.character) {
     return null;
@@ -23,7 +24,10 @@ export function SidePanel({
           character={state.character}
           location={state.location}
         />
-        <Inventory onUseItem={handleUseItem} />
+        <Inventory 
+          handleUseItem={handleUseItem}
+          handleEquipWeapon={handleEquipWeapon}
+        />
         <JournalViewer entries={state.journal || []} />
       </div>
     </div>
