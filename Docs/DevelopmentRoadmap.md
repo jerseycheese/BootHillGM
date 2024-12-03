@@ -67,6 +67,8 @@
 3.2 State Management Improvements
 - [ ] Implement progressive state saving
 - [x] Add state persistence across navigation
+- [x] Implement weapon equipment state management
+- [x] Add inventory-weapon integration
 - [ ] Create error recovery system
 
 3.3 Combat System Enhancements
