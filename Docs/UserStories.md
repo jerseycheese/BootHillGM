@@ -241,15 +241,6 @@
   - Ensure that the emphasis doesn't disrupt the overall readability of the narrative
 
 ### Weapon Combat System
-- [x] As a player, I want to have a weapon combat UI with aim, fire, reload and move actions, so that I can engage in gunfights.
-  **Priority:** High
-  **Risk Level:** Medium
-  **Test Plan:**
-  - Verify all combat actions are available
-  - Test button state management
-  - Ensure proper combat log entries
-  - Check display of weapon information
-  **Status:** Core UI implemented.
 
 - [ ] As a player, I want to be able to equip weapons from my inventory, so that I can use them in combat.
   **Priority:** High
@@ -315,6 +306,11 @@
   **Status:** Needs improvement.
 
 ### Ammunition System
+- As a player, I want to manage weapon ammunition and reliability during combat, so that gunfights feel more tactical.
+  **Priority:** High
+  **Risk Level:** Medium
+  **Status:** To Do
+  **Dependencies:** Weapon equipment system
 - [ ] As a player, I want to track ammunition for my weapons, so that reloading becomes a tactical consideration.
   **Priority:** Medium
   **Risk Level:** Low
