@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { Inventory } from '../../components/Inventory';
 import { CampaignStateContext } from '../../components/CampaignStateManager';
 import { CampaignState } from '../../types/campaign';
@@ -159,7 +159,7 @@ describe('Inventory', () => {
 
   test('calls onUseItem with item ID when Use button is clicked', async () => {
     const mockOnUseItem = jest.fn();
-    renderWithContext(
+    const { container } = renderWithContext(
       <Inventory onUseItem={mockOnUseItem} />, 
       {
         ...mockState,
@@ -175,20 +175,20 @@ describe('Inventory', () => {
       }
     );
 
-    // Wait for the button to be available
-    const useButton = await screen.findByLabelText('Use Health Potion');
+    // Wait for the button to be available and visible
+    const useButton = await screen.findByRole('button', { name: /Use Health Potion/i });
     
-    // Use userEvent for better interaction simulation
-    await waitFor(() => {
-      expect(useButton).toBeEnabled();
+    // Ensure button is enabled and visible
+    expect(useButton).toBeEnabled();
+    expect(useButton).toBeVisible();
+
+    // Click the button
+    await act(async () => {
+      await useButton.click();
     });
-    
-    fireEvent.click(useButton);
 
     // Verify the callback was called
-    await waitFor(() => {
-      expect(mockOnUseItem).toHaveBeenCalledWith('1');
-    }, { timeout: 3000 });
+    expect(mockOnUseItem).toHaveBeenCalledWith('1');
   });
 
   test('handles using an item with quantity greater than 1', () => {
