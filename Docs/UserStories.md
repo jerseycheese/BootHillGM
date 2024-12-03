@@ -267,7 +267,7 @@
   - Verify opponent weapon information is visible
   - Test different opponent weapon configurations
   - Ensure weapon info updates if opponent changes weapons
-  **Status:** Not yet implemented.
+- As a player, I want to use different weapons and items during combat to add more tactical depth to battles.
 
 - [ ] As a player, I want the Aim action to provide accuracy bonuses that persist until I fire or move, so that careful aiming is rewarded.
   **Priority:** Medium
