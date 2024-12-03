@@ -157,16 +157,32 @@ describe('Inventory', () => {
     expect(screen.queryByText('Restores 20 health points')).not.toBeInTheDocument();
   });
 
-  test('calls onUseItem with item ID when Use button is clicked', () => {
+  test('calls onUseItem with item ID when Use button is clicked', async () => {
     const mockOnUseItem = jest.fn();
-    renderWithContext(<Inventory onUseItem={mockOnUseItem} />);
-    
+    const { rerender } = renderWithContext(
+      <Inventory onUseItem={mockOnUseItem} />, 
+      {
+        ...mockState,
+        inventory: [
+          { 
+            id: '1', 
+            name: 'Health Potion', 
+            quantity: 2, 
+            description: 'Restores 20 health points',
+            category: 'consumable'
+          }
+        ]
+      }
+    );
+
     // Find and click the Use button for Health Potion
     const useButton = screen.getByLabelText('Use Health Potion');
     fireEvent.click(useButton);
-    
-    // Check if onUseItem was called with the correct item ID
-    expect(mockOnUseItem).toHaveBeenCalledWith('1');
+
+    // Wait for any async operations
+    await waitFor(() => {
+      expect(mockOnUseItem).toHaveBeenCalledWith('1');
+    });
   });
 
   test('handles using an item with quantity greater than 1', () => {
