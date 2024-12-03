@@ -10,13 +10,13 @@ import { useCampaignState } from './CampaignStateManager';
  * - Automatic error message clearing
  */
 interface InventoryProps {
-  handleUseItem?: (itemId: string) => void;
+  onUseItem?: (itemId: string) => void;
   handleEquipWeapon?: (itemId: string) => void;
   handleUnequipWeapon?: (itemId: string) => void;
 }
 
 export const Inventory: React.FC<InventoryProps> = ({ 
-  handleUseItem: onUseItem,
+  onUseItem,
   handleEquipWeapon,
   handleUnequipWeapon: onUnequipWeapon
 }) => {
