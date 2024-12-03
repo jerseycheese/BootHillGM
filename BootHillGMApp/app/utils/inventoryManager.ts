@@ -1,5 +1,4 @@
 import { InventoryItem, ItemValidationResult } from '../types/inventory';
-import { GameState } from '../types/campaign';
 import { Character } from '../types/character';
 
 /**
@@ -18,7 +17,7 @@ export class InventoryManager {
   static validateItemUse(
     item: InventoryItem,
     character: Character,
-    gameState: GameState
+    gameState: any
   ): ItemValidationResult {
     if (!item) {
       return { valid: false, reason: 'Item not found' };
@@ -72,5 +71,28 @@ export class InventoryManager {
     }
 
     return `use ${item.name}`;
+  }
+
+  /**
+   * Equips a weapon to the character.
+   * @param character - The character to equip the weapon to.
+   * @param item - The weapon item to equip.
+   */
+  static equipWeapon(character: Character, item: InventoryItem): void {
+    if (item.category !== 'weapon' || !item.weaponStats) {
+      console.error('Item is not a valid weapon');
+      return;
+    }
+    character.equippedWeapon = item as unknown as Character['equippedWeapon'];
+    console.log('Weapon equipped:', item.name); // Debug log
+  }
+
+  /**
+   * Unequips the current weapon from the character.
+   * @param character - The character to unequip the weapon from.
+   */
+  static unequipWeapon(character: Character): void {
+    character.equippedWeapon = undefined;
+    console.log('Weapon unequipped'); // Debug log
   }
 }
