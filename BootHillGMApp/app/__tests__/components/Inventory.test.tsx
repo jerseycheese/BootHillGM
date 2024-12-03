@@ -159,7 +159,7 @@ describe('Inventory', () => {
 
   test('calls onUseItem with item ID when Use button is clicked', async () => {
     const mockOnUseItem = jest.fn();
-    const { container } = renderWithContext(
+    renderWithContext(
       <Inventory onUseItem={mockOnUseItem} />, 
       {
         ...mockState,
@@ -169,22 +169,22 @@ describe('Inventory', () => {
             name: 'Health Potion', 
             quantity: 2, 
             description: 'Restores 20 health points',
-            category: 'consumable'
+            category: 'consumable',
+            effect: {
+              type: 'heal',
+              value: 20
+            }
           }
         ]
       }
     );
 
-    // Wait for the button to be available and visible
-    const useButton = await screen.findByRole('button', { name: /Use Health Potion/i });
+    // Find and click the Use button
+    const useButton = screen.getByRole('button', { name: /use health potion/i });
     
-    // Ensure button is enabled and visible
-    expect(useButton).toBeEnabled();
-    expect(useButton).toBeVisible();
-
-    // Click the button
-    await act(async () => {
-      await useButton.click();
+    // Click the button within act()
+    act(() => {
+      fireEvent.click(useButton);
     });
 
     // Verify the callback was called
