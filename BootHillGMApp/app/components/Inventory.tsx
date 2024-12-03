@@ -9,7 +9,17 @@ import { useCampaignState } from './CampaignStateManager';
  * - Hover descriptions for items
  * - Automatic error message clearing
  */
-export function Inventory({ onUseItem }: { onUseItem?: (itemId: string) => void }) {
+interface InventoryProps {
+  handleUseItem?: (itemId: string) => void;
+  handleEquipWeapon?: (itemId: string) => void;
+  handleUnequipWeapon?: (itemId: string) => void;
+}
+
+export const Inventory: React.FC<InventoryProps> = ({ 
+  handleUseItem: onUseItem,
+  handleEquipWeapon,
+  handleUnequipWeapon: onUnequipWeapon
+}) => {
   const { state } = useCampaignState();
   const [error, setError] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -44,6 +54,15 @@ export function Inventory({ onUseItem }: { onUseItem?: (itemId: string) => void 
     clearError();
   }, [state, onUseItem, clearError]);
 
+  const handleEquipWeaponClick = useCallback((itemId: string) => {
+    if (!state.character) {
+      setError('No character available');
+      return;
+    }
+    console.log('Equip weapon called with itemId:', itemId); // Debug log
+    handleEquipWeapon?.(itemId);
+  }, [state.character, handleEquipWeapon]);
+
   return (
     <div className="wireframe-section">
       <h2 className="wireframe-subtitle">Inventory</h2>
@@ -61,13 +80,18 @@ export function Inventory({ onUseItem }: { onUseItem?: (itemId: string) => void 
           item && item.id && item.name && item.quantity > 0 ? (
             <li 
               key={item.id} 
-              className="wireframe-text relative flex justify-between items-center p-2"
+              className={`wireframe-text relative flex justify-between items-center p-2 ${
+                item.isEquipped ? 'bg-blue-50' : ''
+              }`}
               onMouseEnter={() => setHoveredItem(item.id)}
               onMouseLeave={() => setHoveredItem(null)}
             >
               <div className="flex-grow">
                 <span>
                   {item.name} (x{item.quantity})
+                  {item.isEquipped && (
+                    <span className="ml-2 text-xs text-blue-600">(Equipped)</span>
+                  )}
                   <span className="ml-2 text-xs px-2 py-0.5 bg-gray-200 rounded-full">
                     {item.category}
                   </span>
@@ -78,13 +102,34 @@ export function Inventory({ onUseItem }: { onUseItem?: (itemId: string) => void 
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => handleUseItem(item.id)}
-                className="ml-4 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                aria-label={`Use ${item.name}`}
-              >
-                Use
-              </button>
+              <div className="flex gap-2">
+                {item.category === 'weapon' && (
+                  item.isEquipped ? (
+                    <button
+                      onClick={() => onUnequipWeapon?.(item.id)}
+                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                      aria-label={`Unequip ${item.name}`}
+                    >
+                      Unequip
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleEquipWeaponClick(item.id)}
+                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                      aria-label={`Equip ${item.name}`}
+                    >
+                      Equip
+                    </button>
+                  )
+                )}
+                <button
+                  onClick={() => handleUseItem(item.id)}
+                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                  aria-label={`Use ${item.name}`}
+                >
+                  Use
+                </button>
+              </div>
             </li>
           ) : null
         ))}
@@ -94,4 +139,4 @@ export function Inventory({ onUseItem }: { onUseItem?: (itemId: string) => void 
       )}
     </div>
   );
-}
+};
