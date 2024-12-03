@@ -60,7 +60,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         });
 
         // Clear opponent state BEFORE setting combat inactive
-        dispatch({ type: 'SET_OPPONENT', payload: null });
+        dispatch({ type: 'SET_OPPONENT', payload: {} });
         
         // Then clear combat state
         dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
