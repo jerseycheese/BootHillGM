@@ -180,10 +180,10 @@ describe('Inventory', () => {
     );
 
     // Find and click the Use button
-    const useButton = screen.getByRole('button', { name: /use health potion/i });
+    const useButton = screen.getByLabelText('Use Health Potion');
     
-    // Click the button within act()
-    act(() => {
+    // Click the button and wait for updates
+    await act(async () => {
       fireEvent.click(useButton);
     });
 
