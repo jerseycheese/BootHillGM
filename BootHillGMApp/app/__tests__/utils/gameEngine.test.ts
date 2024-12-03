@@ -47,7 +47,8 @@ describe('gameReducer', () => {
         brawling: 7
       },
       wounds: [],
-      isUnconscious: false
+      isUnconscious: false,
+      inventory: []
     };
     const action: GameEngineAction = { type: 'SET_CHARACTER', payload: mockCharacter };
     const newState = gameReducer(initialState, action);
