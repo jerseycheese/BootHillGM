@@ -159,6 +159,14 @@
 - [x] As a player, I want to see short descriptions of items in my inventory, so I can understand their purpose and any gameplay-relevant stats.
   **Status:** Implemented with starting inventory system including detailed item descriptions and initialization during character creation.
 
+- [x] As a player, I want to have a weapon combat UI with aim, fire, reload and move actions, so that I can engage in gunfights.
+  **Test Plan:**
+  - Verify all combat actions are available
+  - Test button state management
+  - Ensure proper combat log entries
+  - Check display of weapon information
+  **Status:** Core UI implemented.
+
 ### UI/UX Improvements
 - [x] As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
   **Implementation:**
