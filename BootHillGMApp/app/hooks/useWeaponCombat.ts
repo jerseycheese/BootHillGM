@@ -222,6 +222,8 @@ export const useWeaponCombat = ({
               type: 'UPDATE_CHARACTER',
               payload: updatedPlayer
             });
+            // Force a re-render with updated player state
+            setWeaponState(prev => ({...prev}));
           }
 
           return {
@@ -301,30 +303,38 @@ export const useWeaponCombat = ({
         return;
       }
 
+      // Update round counter after player's action
+      setWeaponState(prev => ({
+        ...prev,
+        round: prev.round + 1,
+        lastAction: action.type
+      }));
+
       // Add a small delay before opponent's turn
       await new Promise(resolve => setTimeout(resolve, 750));
 
-      // Opponent's turn
-      if (!isProcessing) return; // Check if combat was ended during delay
-      
+      // Opponent's turn - only if combat hasn't ended
       const opponentAction: WeaponCombatAction = {
-        type: Math.random() > 0.3 ? 'fire' : 'aim'
+        type: 'fire'  // Force opponent to always fire
       };
 
       const opponentResult = await resolveWeaponAction(opponentAction, false);
-      if (opponentResult) {
-        addToLog({
-          text: opponentResult.message,
-          type: opponentResult.hit ? 'hit' : 'miss',
-          timestamp: Date.now()
-        });
+      if (!opponentResult) {
+        setIsProcessing(false);
+        return;
+      }
 
-        // Check if combat should end after opponent's action
-        if (opponentResult.hit && playerCharacter.attributes.strength <= 0) {
-          setIsProcessing(false);
-          onCombatEnd('opponent', `${opponent.name} defeats you with a deadly shot!`);
-          return;
-        }
+      addToLog({
+        text: opponentResult.message,
+        type: opponentResult.hit ? 'hit' : 'miss',
+        timestamp: Date.now()
+      });
+
+      // Check if combat should end after opponent's action
+      if (opponentResult.hit && playerCharacter.attributes.strength <= 0) {
+        setIsProcessing(false);
+        onCombatEnd('opponent', `${opponent.name} defeats you with a deadly shot!`);
+        return;
       }
 
       // Update round counter and reset aim if needed
