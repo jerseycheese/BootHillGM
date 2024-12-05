@@ -73,16 +73,26 @@ export const useWeaponCombat = ({
       maxAmmunition: 6
     };
 
+    // Create opponent weapon, using their weapon if valid or providing a default
+    const opponentWeapon = opponent.weapon && isValidWeapon(opponent.weapon) ? {
+      id: opponent.weapon.id || 'default-opponent-weapon',
+      name: opponent.weapon.name,
+      modifiers: WEAPON_STATS[opponent.weapon.name] || WEAPON_STATS['Colt Revolver'],
+      ammunition: WEAPON_STATS[opponent.weapon.name]?.ammunition || 6,
+      maxAmmunition: WEAPON_STATS[opponent.weapon.name]?.maxAmmunition || 6
+    } : {
+      // Default opponent weapon
+      id: 'opponent-default-colt',
+      name: 'Colt Revolver',
+      modifiers: WEAPON_STATS['Colt Revolver'],
+      ammunition: 6,
+      maxAmmunition: 6
+    };
+
     return initialState || {
       round: 1,
       playerWeapon,
-      opponentWeapon: opponent.weapon && isValidWeapon(opponent.weapon) ? {
-        id: opponent.weapon.id || 'default-opponent-weapon',
-        name: opponent.weapon.name,
-        modifiers: WEAPON_STATS[opponent.weapon.name] || WEAPON_STATS['Colt Revolver'],
-        ammunition: WEAPON_STATS[opponent.weapon.name]?.ammunition || 6,
-        maxAmmunition: WEAPON_STATS[opponent.weapon.name]?.maxAmmunition || 6
-      } : null,
+      opponentWeapon, // Now always has a value
       currentRange: 15,
       roundLog: [],
       lastAction: undefined
