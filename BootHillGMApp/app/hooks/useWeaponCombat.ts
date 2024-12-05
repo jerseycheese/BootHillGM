@@ -37,8 +37,8 @@ interface UseWeaponCombatProps {
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
   dispatch: React.Dispatch<GameEngineAction>;
   initialState?: WeaponCombatState;
-  combatState: CombatState;
   debugMode?: boolean;
+  combatState: CombatState;
 }
 
 export const useWeaponCombat = ({
