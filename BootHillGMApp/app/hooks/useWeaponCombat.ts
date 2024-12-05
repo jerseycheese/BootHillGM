@@ -234,6 +234,16 @@ export const useWeaponCombat = ({
                 }
             });
 
+            // Force a combat state update to ensure consistency
+            dispatch({
+                type: 'UPDATE_COMBAT_STATE',
+                payload: {
+                    ...combatState,
+                    opponentStrength: newStrength,
+                    opponent: completeUpdatedOpponent
+                }
+            });
+
             // Log the update for debugging
             console.log('Updating opponent strength:', {
               before: currentStrength,
