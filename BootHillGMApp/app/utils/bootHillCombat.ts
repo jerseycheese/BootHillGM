@@ -9,11 +9,49 @@
  */
 
 import { Character } from '../types/character';
+import { Weapon } from '../types/combat';
 
 export interface CombatModifiers {
   speedMod: number;
   accuracyMod: number;
 }
+
+export interface CombatSituationModifiers {
+  givingFirstMove?: boolean;
+  surprised?: 'none' | 'partial' | 'complete';
+  isRunning?: boolean;
+  isMounted?: boolean;
+  wounds?: number;
+  drawingTwoGuns?: boolean;
+  hipShooting?: boolean;
+  consecutiveTurns?: number;
+  consecutiveAims?: number;
+}
+
+export interface WeaponSpeedCategory {
+  type: 'verySlow' | 'slow' | 'belowAverage' | 'average' | 'fast' | 'veryFast';
+  modifier: number;
+}
+
+const WEAPON_SPEED_MODIFIERS: Record<WeaponSpeedCategory['type'], number> = {
+  verySlow: -10,
+  slow: -5,
+  belowAverage: 0,
+  average: 5,
+  fast: 8,
+  veryFast: 10
+};
+
+export const getWeaponSpeedModifier = (weapon: Weapon): number => {
+  // Map weapon types to speed categories
+  const speedCategory = weapon.modifiers.speed >= 8 ? 'veryFast' :
+                       weapon.modifiers.speed >= 5 ? 'fast' :
+                       weapon.modifiers.speed >= 0 ? 'average' :
+                       weapon.modifiers.speed >= -3 ? 'belowAverage' :
+                       weapon.modifiers.speed >= -7 ? 'slow' : 'verySlow';
+                       
+  return WEAPON_SPEED_MODIFIERS[speedCategory];
+};
 
 /**
  * Calculate brawling damage based on strength and current condition
