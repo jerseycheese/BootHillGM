@@ -132,9 +132,21 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   const playerStrength = calculateCurrentStrength(playerCharacter);
   const maxPlayerStrength = playerCharacter.attributes.baseStrength;
   // Ensure we're using the most up-to-date opponent values
-  // Calculate opponent strength values from both opponent and combat state
   const maxOpponentStrength = opponent?.attributes?.baseStrength || opponent?.attributes?.strength || 0;
   const opponentStrength = Math.max(0, opponent?.attributes?.strength || 0);
+
+  // Enhanced strength tracking
+  const [lastKnownStrength, setLastKnownStrength] = useState(opponentStrength);
+
+  useEffect(() => {
+    if (opponent?.attributes?.strength !== undefined && 
+        opponent.attributes.strength !== lastKnownStrength) {
+      setLastKnownStrength(opponent.attributes.strength);
+    }
+  }, [opponent?.attributes?.strength, lastKnownStrength]);
+
+  // Use the most current strength value
+  const currentOpponentStrength = Math.max(0, lastKnownStrength);
 
   // Enhanced debug logging
   console.log('Combat Status Strength Values:', {
@@ -171,7 +183,7 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
           isUnconscious={playerCharacter.isUnconscious}
         />
         <StrengthDisplay
-          current={opponentStrength}
+          current={currentOpponentStrength}
           max={maxOpponentStrength}
           name={opponentName}
           wounds={opponent.wounds}
