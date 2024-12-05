@@ -210,12 +210,18 @@ export const useWeaponCombat = ({
             // Update both local and global state
             setCurrentOpponent(updatedOpponent);
             
-            // Ensure the opponent update is dispatched
+            // Ensure the opponent update is dispatched with complete opponent data
             dispatch({
               type: 'UPDATE_OPPONENT',
               payload: {
-                ...updatedOpponent,
-                id: opponent.id // Make sure we include the ID
+                ...opponent,  // Include all original opponent data
+                ...updatedOpponent,  // Override with updated values
+                id: opponent.id,
+                attributes: {
+                  ...opponent.attributes,
+                  strength: newStrength
+                },
+                wounds: updatedOpponent.wounds
               }
             });
 
@@ -224,7 +230,16 @@ export const useWeaponCombat = ({
               before: currentStrength,
               damage,
               after: newStrength,
-              opponent: updatedOpponent
+              opponent: updatedOpponent,
+              dispatchPayload: {
+                ...opponent,
+                ...updatedOpponent,
+                id: opponent.id,
+                attributes: {
+                  ...opponent.attributes,
+                  strength: newStrength
+                }
+              }
             });
 
             return {
