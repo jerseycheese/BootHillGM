@@ -283,75 +283,85 @@ export const useWeaponCombat = ({
     setIsProcessing(true);
 
     try {
-      // Player's turn
-      const result = await resolveWeaponAction(action, true);
-      if (!result) {
-        setIsProcessing(false);
-        return;
-      }
+        // Player's turn
+        console.log("Processing player's action:", action);
+        const result = await resolveWeaponAction(action, true);
+        if (!result) {
+            setIsProcessing(false);
+            return;
+        }
 
-      addToLog({
-        text: result.message,
-        type: result.hit ? 'hit' : 'miss',
-        timestamp: Date.now()
-      });
+        addToLog({
+            text: result.message,
+            type: result.hit ? 'hit' : 'miss',
+            timestamp: Date.now()
+        });
 
-      // Check if combat should end after player's action
-      if (result.hit && currentOpponent.attributes.strength <= 0) {
-        setIsProcessing(false);
-        onCombatEnd('player', `You defeat ${opponent.name} with a well-placed shot!`);
-        return;
-      }
+        // Check if combat should end after player's action
+        if (result.hit && currentOpponent.attributes.strength <= 0) {
+            setIsProcessing(false);
+            onCombatEnd('player', `You defeat ${opponent.name} with a well-placed shot!`);
+            return;
+        }
 
-      // Update round counter after player's action
-      setWeaponState(prev => ({
-        ...prev,
-        round: prev.round + 1,
-        lastAction: action.type
-      }));
+        // Update state after player's action
+        setWeaponState(prev => ({
+            ...prev,
+            round: prev.round + 1,
+            lastAction: action.type
+        }));
 
-      // Add a small delay before opponent's turn
-      await new Promise(resolve => setTimeout(resolve, 750));
+        // EXPLICITLY HANDLE OPPONENT'S TURN
+        console.log("Starting opponent's turn");
+        
+        // Make sure opponent has a weapon
+        if (!weaponState.opponentWeapon) {
+            console.log("No opponent weapon found");
+            setIsProcessing(false);
+            return;
+        }
 
-      // Opponent's turn - only if combat hasn't ended
-      const opponentAction: WeaponCombatAction = {
-        type: 'fire'  // Force opponent to always fire
-      };
+        const opponentAction: WeaponCombatAction = {
+            type: 'fire'
+        };
 
-      const opponentResult = await resolveWeaponAction(opponentAction, false);
-      if (!opponentResult) {
-        setIsProcessing(false);
-        return;
-      }
+        // Process opponent's action
+        console.log("Resolving opponent's action");
+        const opponentResult = await resolveWeaponAction(opponentAction, false);
+        
+        if (opponentResult) {
+            console.log("Opponent action result:", opponentResult);
+            
+            addToLog({
+                text: opponentResult.message,
+                type: opponentResult.hit ? 'hit' : 'miss',
+                timestamp: Date.now()
+            });
 
-      addToLog({
-        text: opponentResult.message,
-        type: opponentResult.hit ? 'hit' : 'miss',
-        timestamp: Date.now()
-      });
+            // Check if combat should end after opponent's action
+            if (opponentResult.hit && playerCharacter.attributes.strength <= 0) {
+                setIsProcessing(false);
+                onCombatEnd('opponent', `${opponent.name} defeats you with a deadly shot!`);
+                return;
+            }
 
-      // Check if combat should end after opponent's action
-      if (opponentResult.hit && playerCharacter.attributes.strength <= 0) {
-        setIsProcessing(false);
-        onCombatEnd('opponent', `${opponent.name} defeats you with a deadly shot!`);
-        return;
-      }
+            // Update state after opponent's action
+            setWeaponState(prev => ({
+                ...prev,
+                round: prev.round + 1,
+                lastAction: opponentAction.type
+            }));
+        }
 
-      // Update round counter and reset aim if needed
-      setWeaponState(prev => ({
-        ...prev,
-        round: prev.round + 1,
-        lastAction: action.type
-      }));
-
-      if (action.type !== 'fire' && opponentAction.type !== 'fire') {
-        setAimBonus(0);
-      }
+        // Reset aim bonus if needed
+        if (action.type !== 'fire' && opponentAction.type !== 'fire') {
+            setAimBonus(0);
+        }
 
     } catch (error) {
-      console.error('Combat action error:', error);
+        console.error('Combat action error:', error);
     } finally {
-      setIsProcessing(false);
+        setIsProcessing(false);
     }
   }, [
     resolveWeaponAction,
@@ -360,7 +370,8 @@ export const useWeaponCombat = ({
     onCombatEnd,
     isProcessing,
     currentOpponent,
-    playerCharacter
+    playerCharacter,
+    weaponState.opponentWeapon
   ]);
 
   const canAim = !isProcessing && aimBonus < 20;
