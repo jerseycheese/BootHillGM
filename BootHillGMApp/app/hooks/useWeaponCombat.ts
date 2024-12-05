@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
 import { Weapon } from '../types/combat';
+import { calculateRangeModifier, getWeaponSpeedModifier } from '../utils/bootHillCombat';
 
 const isValidWeapon = (weapon: unknown): weapon is Weapon => {
   return typeof weapon === 'object' && weapon !== null &&
