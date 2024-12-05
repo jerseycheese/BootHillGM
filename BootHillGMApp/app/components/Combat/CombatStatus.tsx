@@ -152,7 +152,7 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   // Enhanced debug logging
   console.log('Combat Status Strength Values:', {
     opponent,
-    opponentStrength,
+    currentOpponentStrength,
     maxOpponentStrength,
     rawStrength: opponent?.attributes?.strength,
     baseStrength: opponent?.attributes?.baseStrength,
