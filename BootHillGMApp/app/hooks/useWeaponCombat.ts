@@ -180,72 +180,91 @@ export const useWeaponCombat = ({
         const critical = isCritical(roll);
 
         if (hit) {
-
           let damage = parseWeaponDamage(weapon.modifiers.damage);
           if (critical) damage *= 2;
 
-          // Calculate and apply cumulative damage from current strength
-          const currentStrength = isPlayerAction ? currentOpponent.attributes.strength : playerCharacter.attributes.strength;
-          const newStrength = Math.max(0, currentStrength - damage);
-          const updatedDefender = {
-            ...defender,
-            attributes: {
-              ...defender.attributes,
-              strength: newStrength
-            },
-            wounds: [
-              ...defender.wounds,
-              {
-                location: 'chest' as const, // You might want to randomize this
-                severity: damage >= 5 ? 'serious' as const : 'light' as const,
-                strengthReduction: damage,
-                turnReceived: weaponState.round
-              }
-            ]
-          };
-
-          // Update state based on who was hit
+          // Calculate damage based on who was hit
           if (isPlayerAction) {
-            // Player's action hit the opponent
+            // Player hit opponent - update opponent's strength
+            const currentStrength = currentOpponent.attributes.strength;
+            const newStrength = Math.max(0, currentStrength - damage);
+            
+            // Create updated opponent with wound
             const updatedOpponent = {
               ...currentOpponent,
               attributes: {
                 ...currentOpponent.attributes,
                 strength: newStrength
-              }
+              },
+              wounds: [
+                ...currentOpponent.wounds || [],
+                {
+                  location: 'chest' as const,
+                  severity: damage >= 5 ? 'serious' as const : 'light' as const,
+                  strengthReduction: damage,
+                  turnReceived: weaponState.round
+                }
+              ]
             };
+
+            // Update both local and global state
             setCurrentOpponent(updatedOpponent);
             dispatch({
               type: 'UPDATE_OPPONENT',
               payload: updatedOpponent
             });
+
+            return {
+              hit: true,
+              damage,
+              critical,
+              roll,
+              modifiedRoll,
+              targetNumber,
+              message: `${attacker.name} hits ${defender.name} with ${weapon.name} for ${damage} damage! (Strength: ${currentStrength} → ${newStrength})`,
+              newStrength
+            };
+
           } else {
-            // Opponent's action hit the player
+            // Opponent hit player - update player's strength
+            const currentStrength = playerCharacter.attributes.strength;
+            const newStrength = Math.max(0, currentStrength - damage);
+            
+            // Create updated player with wound
             const updatedPlayer = {
               ...playerCharacter,
               attributes: {
                 ...playerCharacter.attributes,
                 strength: newStrength
-              }
+              },
+              wounds: [
+                ...playerCharacter.wounds || [],
+                {
+                  location: 'chest' as const,
+                  severity: damage >= 5 ? 'serious' as const : 'light' as const,
+                  strengthReduction: damage,
+                  turnReceived: weaponState.round
+                }
+              ]
             };
+
+            // Update global state
             dispatch({
               type: 'UPDATE_CHARACTER',
               payload: updatedPlayer
             });
-            // Force a re-render with updated player state
-            setWeaponState(prev => ({...prev}));
-          }
 
-          return {
-            hit: true,
-            damage,
-            critical,
-            roll,
-            modifiedRoll,
-            targetNumber,
-            message: `${attacker.name} hits ${defender.name} with ${weapon.name} for ${damage} damage! (Strength: ${currentStrength} → ${newStrength})`,
-            newStrength // Pass the new strength value
-          };
+            return {
+              hit: true,
+              damage,
+              critical,
+              roll,
+              modifiedRoll,
+              targetNumber,
+              message: `${attacker.name} hits ${defender.name} with ${weapon.name} for ${damage} damage! (Strength: ${currentStrength} → ${newStrength})`,
+              newStrength
+            };
+          }
         }
 
         return {
