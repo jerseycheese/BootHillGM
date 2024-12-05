@@ -191,7 +191,7 @@ export const useWeaponCombat = ({
             const newStrength = Math.max(0, currentStrength - damage);
             
             // Create the complete updated opponent state
-            const completeUpdatedOpponent = {
+            const updatedOpponent = {
                 ...opponent,
                 id: opponent.id,
                 attributes: {
@@ -217,12 +217,12 @@ export const useWeaponCombat = ({
             }));
 
             // Update both local and global state
-            setCurrentOpponent(completeUpdatedOpponent);
+            setCurrentOpponent(updatedOpponent);
             
             // Dispatch the complete opponent update
             dispatch({
                 type: 'UPDATE_OPPONENT',
-                payload: completeUpdatedOpponent
+                payload: updatedOpponent
             });
 
             // Force a combat state update to ensure consistency
@@ -231,35 +231,25 @@ export const useWeaponCombat = ({
                 payload: {
                     ...combatState,
                     opponentStrength: newStrength,
-                    opponent: completeUpdatedOpponent
-                }
-            });
-
-            // Force a combat state update to ensure consistency
-            dispatch({
-                type: 'UPDATE_COMBAT_STATE',
-                payload: {
-                    ...combatState,
-                    opponentStrength: newStrength,
-                    opponent: completeUpdatedOpponent
+                    opponent: updatedOpponent
                 }
             });
 
             // Log the update for debugging
             console.log('Updating opponent strength:', {
-              before: currentStrength,
-              damage,
-              after: newStrength,
-              opponent: updatedOpponent,
-              dispatchPayload: {
-                ...opponent,
-                ...updatedOpponent,
-                id: opponent.id,
-                attributes: {
-                  ...opponent.attributes,
-                  strength: newStrength
+                before: currentStrength,
+                damage,
+                after: newStrength,
+                opponent: updatedOpponent,
+                dispatchPayload: {
+                    ...opponent,
+                    ...updatedOpponent,
+                    id: opponent.id,
+                    attributes: {
+                        ...opponent.attributes,
+                        strength: newStrength
+                    }
                 }
-              }
             });
 
             return {
