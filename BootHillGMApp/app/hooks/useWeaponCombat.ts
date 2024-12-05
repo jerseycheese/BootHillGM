@@ -197,7 +197,7 @@ export const useWeaponCombat = ({
                 strength: newStrength
               },
               wounds: [
-                ...currentOpponent.wounds || [],
+                ...(currentOpponent.wounds || []),
                 {
                   location: 'chest' as const,
                   severity: damage >= 5 ? 'serious' as const : 'light' as const,
@@ -209,9 +209,22 @@ export const useWeaponCombat = ({
 
             // Update both local and global state
             setCurrentOpponent(updatedOpponent);
+            
+            // Ensure the opponent update is dispatched
             dispatch({
               type: 'UPDATE_OPPONENT',
-              payload: updatedOpponent
+              payload: {
+                ...updatedOpponent,
+                id: opponent.id // Make sure we include the ID
+              }
+            });
+
+            // Log the update for debugging
+            console.log('Updating opponent strength:', {
+              before: currentStrength,
+              damage,
+              after: newStrength,
+              opponent: updatedOpponent
             });
 
             return {
