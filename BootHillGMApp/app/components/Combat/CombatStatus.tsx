@@ -134,20 +134,20 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   const playerStrength = calculateCurrentStrength(playerCharacter);
   const maxPlayerStrength = playerCharacter.attributes.baseStrength;
   // Ensure we're using the most up-to-date opponent values
-  // Use combatState for opponent strength values
+  // Use combatState for opponent strength values with safe access
   const maxOpponentStrength = opponent?.attributes?.baseStrength || opponent?.attributes?.strength || 0;
-  const currentOpponentStrength = Math.max(0, combatState.opponentStrength || opponent?.attributes?.strength || 0);
+  const currentOpponentStrength = Math.max(0, combatState?.opponentStrength ?? opponent?.attributes?.strength ?? 0);
 
   // Debug logging
   useEffect(() => {
     console.log('Combat Status Update:', {
-      combatStateStrength: combatState.opponentStrength,
+      combatStateStrength: combatState?.opponentStrength,
       opponentAttributeStrength: opponent?.attributes?.strength,
       currentOpponentStrength,
       maxOpponentStrength,
       opponent
     });
-  }, [combatState.opponentStrength, opponent, currentOpponentStrength, maxOpponentStrength]);
+  }, [combatState?.opponentStrength, opponent, currentOpponentStrength, maxOpponentStrength]);
 
   // Enhanced debug logging
   console.log('Combat Status Strength Values:', {
