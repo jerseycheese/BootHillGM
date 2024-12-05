@@ -132,8 +132,9 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   const playerStrength = calculateCurrentStrength(playerCharacter);
   const maxPlayerStrength = playerCharacter.attributes.baseStrength;
   // Ensure we're using the most up-to-date opponent values
-  const opponentStrength = opponent ? Math.min(opponent.attributes.strength, calculateCurrentStrength(opponent)) : 0;
-  const maxOpponentStrength = opponent?.attributes?.baseStrength || 0;
+  // Always use calculated strength for both current and max values
+  const opponentStrength = opponent ? calculateCurrentStrength(opponent) : 0;
+  const maxOpponentStrength = opponent?.attributes?.baseStrength || opponent?.attributes?.strength || 0;
 
   const playerName = cleanCharacterName(playerCharacter.name);
   const opponentName = cleanCharacterName(opponent.name);
