@@ -197,17 +197,30 @@ export const useWeaponCombat = ({
           // Update state based on who was hit
           if (isPlayerAction) {
             // Player's action hit the opponent
+            const updatedOpponent = {
+              ...currentOpponent,
+              attributes: {
+                ...currentOpponent.attributes,
+                strength: newStrength
+              }
+            };
+            setCurrentOpponent(updatedOpponent);
             dispatch({
               type: 'UPDATE_OPPONENT',
-              payload: updatedDefender
+              payload: updatedOpponent
             });
-            // Immediately update local opponent state
-            setCurrentOpponent(updatedDefender);
           } else {
             // Opponent's action hit the player
+            const updatedPlayer = {
+              ...playerCharacter,
+              attributes: {
+                ...playerCharacter.attributes,
+                strength: newStrength
+              }
+            };
             dispatch({
               type: 'UPDATE_CHARACTER',
-              payload: updatedDefender
+              payload: updatedPlayer
             });
           }
 
@@ -282,13 +295,18 @@ export const useWeaponCombat = ({
       });
 
       // Check if combat should end after player's action
-      if (result.hit && result.newStrength !== undefined && result.newStrength <= 0) {
+      if (result.hit && currentOpponent.attributes.strength <= 0) {
         setIsProcessing(false);
         onCombatEnd('player', `You defeat ${opponent.name} with a well-placed shot!`);
         return;
       }
 
+      // Add a small delay before opponent's turn
+      await new Promise(resolve => setTimeout(resolve, 750));
+
       // Opponent's turn
+      if (!isProcessing) return; // Check if combat was ended during delay
+      
       const opponentAction: WeaponCombatAction = {
         type: Math.random() > 0.3 ? 'fire' : 'aim'
       };
@@ -301,7 +319,8 @@ export const useWeaponCombat = ({
           timestamp: Date.now()
         });
 
-        if (opponentResult.hit && opponentResult.newStrength !== undefined && opponentResult.newStrength <= 0) {
+        // Check if combat should end after opponent's action
+        if (opponentResult.hit && playerCharacter.attributes.strength <= 0) {
           setIsProcessing(false);
           onCombatEnd('opponent', `${opponent.name} defeats you with a deadly shot!`);
           return;
