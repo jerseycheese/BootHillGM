@@ -13,7 +13,7 @@
 
 'use client';
 
-import React, { useEffect} from 'react';
+import React, { useEffect, useState} from 'react';
 import { Character } from '../../types/character';
 import { calculateCurrentStrength } from '../../utils/strengthSystem';
 import { cleanCharacterName } from '../../utils/combatUtils';
