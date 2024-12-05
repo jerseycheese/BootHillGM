@@ -264,10 +264,16 @@ export const useWeaponCombat = ({
    * Includes weapon combat resolution, state updates, and combat log entries.
    */
   const processAction = useCallback(async (action: WeaponCombatAction): Promise<void> => {
+    if (isProcessing) return;
     setIsProcessing(true);
+
     try {
+      // Player's turn
       const result = await resolveWeaponAction(action, true);
-      if (!result) return;
+      if (!result) {
+        setIsProcessing(false);
+        return;
+      }
 
       addToLog({
         text: result.message,
@@ -275,12 +281,14 @@ export const useWeaponCombat = ({
         timestamp: Date.now()
       });
 
-      if (result.damage && typeof result.newStrength === 'number' && result.newStrength <= 0) {
+      // Check if combat should end after player's action
+      if (result.hit && result.newStrength !== undefined && result.newStrength <= 0) {
+        setIsProcessing(false);
         onCombatEnd('player', `You defeat ${opponent.name} with a well-placed shot!`);
         return;
       }
 
-      // Process opponent's response
+      // Opponent's turn
       const opponentAction: WeaponCombatAction = {
         type: Math.random() > 0.3 ? 'fire' : 'aim'
       };
@@ -293,17 +301,26 @@ export const useWeaponCombat = ({
           timestamp: Date.now()
         });
 
-        if (opponentResult.damage && typeof opponentResult.newStrength === 'number' && opponentResult.newStrength <= 0) {
+        if (opponentResult.hit && opponentResult.newStrength !== undefined && opponentResult.newStrength <= 0) {
+          setIsProcessing(false);
           onCombatEnd('opponent', `${opponent.name} defeats you with a deadly shot!`);
           return;
         }
       }
 
-      // Reset aim bonus at end of round if not used
+      // Update round counter and reset aim if needed
+      setWeaponState(prev => ({
+        ...prev,
+        round: prev.round + 1,
+        lastAction: action.type
+      }));
+
       if (action.type !== 'fire' && opponentAction.type !== 'fire') {
         setAimBonus(0);
       }
 
+    } catch (error) {
+      console.error('Combat action error:', error);
     } finally {
       setIsProcessing(false);
     }
