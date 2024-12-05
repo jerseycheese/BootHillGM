@@ -139,8 +139,9 @@ export const useWeaponCombat = ({
 
       case 'fire': {
         const baseChance = calculateHitChance(attacker);
-        const rangeModifier = Math.max(-30, -Math.floor((weaponState.currentRange / weapon.modifiers.range) * 20));
-        const totalBonus = aimBonus + rangeModifier + weapon.modifiers.accuracy;
+        const rangeModifier = calculateRangeModifier(weapon, weaponState.currentRange);
+        const weaponSpeedMod = getWeaponSpeedModifier(weapon);
+        const totalBonus = aimBonus + rangeModifier + weapon.modifiers.accuracy + weaponSpeedMod;
         
         let roll = Math.floor(Math.random() * 100) + 1;
         if (debugMode && isPlayerAction) {

@@ -80,8 +80,16 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
         </div>
       </div>
 
-      <div className="range-indicator text-center p-2">
-        Range: {currentState.currentRange} yards
+      <div className="range-indicator text-center p-2 space-y-1">
+        <div>Range: {currentState.currentRange} yards</div>
+        {currentState.playerWeapon && (
+          <div className="text-sm">
+            <span className={`${calculateRangeModifier(currentState.playerWeapon, currentState.currentRange) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              Range Modifier: {calculateRangeModifier(currentState.playerWeapon, currentState.currentRange) > 0 ? '+' : ''}
+              {calculateRangeModifier(currentState.playerWeapon, currentState.currentRange)}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-2">

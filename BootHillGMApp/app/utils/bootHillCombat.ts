@@ -43,14 +43,39 @@ const WEAPON_SPEED_MODIFIERS: Record<WeaponSpeedCategory['type'], number> = {
 };
 
 export const getWeaponSpeedModifier = (weapon: Weapon): number => {
-  // Map weapon types to speed categories
+  // Map weapon types to speed categories based on Boot Hill v2 rules
   const speedCategory = weapon.modifiers.speed >= 8 ? 'veryFast' :
                        weapon.modifiers.speed >= 5 ? 'fast' :
                        weapon.modifiers.speed >= 0 ? 'average' :
                        weapon.modifiers.speed >= -3 ? 'belowAverage' :
                        weapon.modifiers.speed >= -7 ? 'slow' : 'verySlow';
                        
-  return WEAPON_SPEED_MODIFIERS[speedCategory];
+  const baseModifier = WEAPON_SPEED_MODIFIERS[speedCategory];
+  
+  // Additional modifiers from Boot Hill v2
+  let totalModifier = baseModifier;
+  
+  // Weapon-specific adjustments
+  if (weapon.modifiers.reliability < 85) {
+    totalModifier -= 2; // Less reliable weapons are slower to handle
+  }
+  
+  if (weapon.ammunition !== undefined && weapon.ammunition === 0) {
+    totalModifier -= 5; // Empty weapons are slower (need reload)
+  }
+  
+  return totalModifier;
+};
+
+export const calculateRangeModifier = (weapon: Weapon, range: number): number => {
+  const effectiveRange = weapon.modifiers.range;
+  
+  // Boot Hill v2 range brackets
+  if (range <= effectiveRange * 0.25) return 5;  // Point blank bonus
+  if (range <= effectiveRange * 0.5) return 0;   // Normal range
+  if (range <= effectiveRange) return -10;       // Long range penalty
+  if (range <= effectiveRange * 1.5) return -20; // Extended range severe penalty
+  return -30; // Extreme range
 };
 
 /**
