@@ -189,40 +189,49 @@ export const useWeaponCombat = ({
             const currentStrength = currentOpponent.attributes.strength;
             const newStrength = Math.max(0, currentStrength - damage);
             
-            // Create updated opponent with wound
-            const updatedOpponent = {
-              ...currentOpponent,
-              attributes: {
-                ...currentOpponent.attributes,
-                strength: newStrength
-              },
-              wounds: [
-                ...(currentOpponent.wounds || []),
-                {
-                  location: 'chest' as const,
-                  severity: damage >= 5 ? 'serious' as const : 'light' as const,
-                  strengthReduction: damage,
-                  turnReceived: weaponState.round
-                }
-              ]
-            };
-
-            // Update both local and global state
-            setCurrentOpponent(updatedOpponent);
-            
-            // Ensure the opponent update is dispatched with complete opponent data
-            dispatch({
-              type: 'UPDATE_OPPONENT',
-              payload: {
-                ...opponent,  // Include all original opponent data
-                ...updatedOpponent,  // Override with updated values
+            // Create the complete updated opponent state
+            const completeUpdatedOpponent = {
+                ...opponent,
                 id: opponent.id,
                 attributes: {
-                  ...opponent.attributes,
-                  strength: newStrength
+                    ...opponent.attributes,
+                    strength: newStrength,
+                    baseStrength: opponent.attributes.baseStrength || opponent.attributes.strength
                 },
-                wounds: updatedOpponent.wounds
-              }
+                wounds: [
+                    ...(currentOpponent.wounds || []),
+                    {
+                        location: 'chest' as const,
+                        severity: damage >= 5 ? 'serious' as const : 'light' as const,
+                        strengthReduction: damage,
+                        turnReceived: weaponState.round
+                    }
+                ]
+            };
+
+            // Update weapon state first to ensure UI updates
+            setWeaponState(prev => ({
+                ...prev,
+                opponentStrength: newStrength
+            }));
+
+            // Update both local and global state
+            setCurrentOpponent(completeUpdatedOpponent);
+            
+            // Dispatch the complete opponent update
+            dispatch({
+                type: 'UPDATE_OPPONENT',
+                payload: completeUpdatedOpponent
+            });
+
+            // Force a combat state update to ensure consistency
+            dispatch({
+                type: 'UPDATE_COMBAT_STATE',
+                payload: {
+                    ...combatState,
+                    opponentStrength: newStrength,
+                    opponent: completeUpdatedOpponent
+                }
             });
 
             // Log the update for debugging
