@@ -123,30 +123,31 @@ import { TextCleaningDebug } from '../Debug/TextCleaningDebug';
 interface CombatStatusProps {
   playerCharacter: Character;
   opponent: Character;
+  combatState: CombatState;
 }
 
 const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   playerCharacter,
-  opponent
+  opponent,
+  combatState
 }) => {
   const playerStrength = calculateCurrentStrength(playerCharacter);
   const maxPlayerStrength = playerCharacter.attributes.baseStrength;
   // Ensure we're using the most up-to-date opponent values
+  // Use combatState for opponent strength values
   const maxOpponentStrength = opponent?.attributes?.baseStrength || opponent?.attributes?.strength || 0;
-  const opponentStrength = Math.max(0, opponent?.attributes?.strength || 0);
+  const currentOpponentStrength = Math.max(0, combatState.opponentStrength || opponent?.attributes?.strength || 0);
 
-  // Enhanced strength tracking
-  const [lastKnownStrength, setLastKnownStrength] = useState(opponentStrength);
-
+  // Debug logging
   useEffect(() => {
-    if (opponent?.attributes?.strength !== undefined && 
-        opponent.attributes.strength !== lastKnownStrength) {
-      setLastKnownStrength(opponent.attributes.strength);
-    }
-  }, [opponent?.attributes?.strength, lastKnownStrength]);
-
-  // Use the most current strength value
-  const currentOpponentStrength = Math.max(0, lastKnownStrength);
+    console.log('Combat Status Update:', {
+      combatStateStrength: combatState.opponentStrength,
+      opponentAttributeStrength: opponent?.attributes?.strength,
+      currentOpponentStrength,
+      maxOpponentStrength,
+      opponent
+    });
+  }, [combatState.opponentStrength, opponent, currentOpponentStrength, maxOpponentStrength]);
 
   // Enhanced debug logging
   console.log('Combat Status Strength Values:', {
