@@ -161,13 +161,13 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
 
   // Force re-render when strength changes
   useEffect(() => {
-    if (opponent?.attributes?.strength !== opponentStrength) {
+    if (opponent?.attributes?.strength !== currentOpponentStrength) {
       console.log('Strength mismatch detected:', {
-        componentStrength: opponentStrength,
+        componentStrength: currentOpponentStrength,
         opponentStrength: opponent?.attributes?.strength
       });
     }
-  }, [opponent?.attributes?.strength, opponentStrength]);
+  }, [opponent?.attributes?.strength, currentOpponentStrength]);
 
   const playerName = cleanCharacterName(playerCharacter.name);
   const opponentName = cleanCharacterName(opponent.name);
