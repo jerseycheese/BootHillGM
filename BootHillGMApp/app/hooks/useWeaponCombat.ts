@@ -47,7 +47,8 @@ export const useWeaponCombat = ({
   onCombatEnd,
   dispatch,
   initialState,
-  debugMode = false // Default to false
+  debugMode = false, // Default to false
+  combatState
 }: UseWeaponCombatProps) => {
   // Track current opponent state
   const [currentOpponent, setCurrentOpponent] = useState(opponent);
