@@ -230,8 +230,13 @@ export const useWeaponCombat = ({
                 type: 'UPDATE_COMBAT_STATE',
                 payload: {
                     ...combatState,
+                    isActive: true,
                     opponentStrength: newStrength,
-                    opponent: updatedOpponent
+                    opponent: updatedOpponent,
+                    weapon: {
+                        ...combatState.weapon,
+                        opponentStrength: newStrength
+                    }
                 }
             });
 
