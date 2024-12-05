@@ -357,7 +357,10 @@ export const useWeaponCombat = ({
     resolveWeaponAction,
     addToLog,
     opponent,
-    onCombatEnd
+    onCombatEnd,
+    isProcessing,
+    currentOpponent,
+    playerCharacter
   ]);
 
   const canAim = !isProcessing && aimBonus < 20;
