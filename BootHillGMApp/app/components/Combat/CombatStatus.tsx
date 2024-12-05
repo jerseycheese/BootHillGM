@@ -132,18 +132,29 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   const playerStrength = calculateCurrentStrength(playerCharacter);
   const maxPlayerStrength = playerCharacter.attributes.baseStrength;
   // Ensure we're using the most up-to-date opponent values
-  // Calculate opponent strength values
+  // Calculate opponent strength values from both opponent and combat state
   const maxOpponentStrength = opponent?.attributes?.baseStrength || opponent?.attributes?.strength || 0;
-  const opponentStrength = opponent ? Math.max(0, opponent.attributes.strength) : 0;
+  const opponentStrength = Math.max(0, opponent?.attributes?.strength || 0);
 
-  // Add debug logging
+  // Enhanced debug logging
   console.log('Combat Status Strength Values:', {
     opponent,
     opponentStrength,
     maxOpponentStrength,
     rawStrength: opponent?.attributes?.strength,
-    baseStrength: opponent?.attributes?.baseStrength
+    baseStrength: opponent?.attributes?.baseStrength,
+    wounds: opponent?.wounds
   });
+
+  // Force re-render when strength changes
+  useEffect(() => {
+    if (opponent?.attributes?.strength !== opponentStrength) {
+      console.log('Strength mismatch detected:', {
+        componentStrength: opponentStrength,
+        opponentStrength: opponent?.attributes?.strength
+      });
+    }
+  }, [opponent?.attributes?.strength, opponentStrength]);
 
   const playerName = cleanCharacterName(playerCharacter.name);
   const opponentName = cleanCharacterName(opponent.name);
