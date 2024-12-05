@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { WeaponCombatState, WeaponCombatAction, calculateWeaponModifier, rollForMalfunction, parseWeaponDamage, Weapon } from '../../types/combat';
+import { calculateRangeModifier } from '../../utils/bootHillCombat';
 
 interface WeaponCombatControlsProps {
   isProcessing: boolean;
