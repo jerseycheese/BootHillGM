@@ -242,6 +242,18 @@
 
 ### Weapon Combat System
 
+- [ ] As a GM, I want NPCs to be dynamically assigned appropriate weapons when combat begins, based on their character type, location, and story context.
+  **Priority:** High
+  **Risk Level:** Medium
+  **Test Plan:**
+  - Verify AI assigns weapons based on NPC type (lawman, outlaw, civilian)
+  - Test weapon assignment considers location context
+  - Ensure some NPCs remain unarmed when appropriate
+  - Check that combat handles both armed/unarmed NPCs gracefully
+  - Verify weapon selections are period-accurate
+  **Dependencies:** Combat system, NPC system
+  **Status:** Not yet implemented.
+
 - [ ] As a player, I want to be able to equip weapons from my inventory, so that I can use them in combat.
   **Priority:** High
   **Risk Level:** Low
