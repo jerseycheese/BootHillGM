@@ -11,12 +11,18 @@ interface CombatTypeSelectionProps {
   onSelectType: (type: CombatType) => void;
 }
 
+/**
+ * Displays combat type selection UI with available weapons for both player and opponent.
+ * Shows brawling and weapon combat options based on availability.
+ */
 export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
   opponent,
   onSelectType
 }) => {
   const { state } = useCampaignState();
-  const canUseBrawling = true; // Always available
+  // Brawling is always available as a combat option
+  const canUseBrawling = true;
+  // Check if either combatant has weapons available
   const hasWeaponInInventory = state.inventory?.some(item => item.category === 'weapon');
   const opponentHasWeapon = Boolean(opponent.weapon);
   const canUseWeapons = hasWeaponInInventory || opponentHasWeapon;
