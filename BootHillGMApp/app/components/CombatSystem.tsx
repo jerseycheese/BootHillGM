@@ -151,6 +151,15 @@ export const CombatSystem: React.FC<{
       <CombatStatus
         playerCharacter={playerCharacter}
         opponent={currentOpponent || opponent}
+        combatState={{
+          isActive: true,
+          combatType,
+          winner: null,
+          playerStrength: playerCharacter.attributes.strength,
+          opponentStrength: currentOpponent?.attributes?.strength || opponent.attributes.strength,
+          brawling: brawlingState,
+          weapon: weaponState
+        }}
       />
       
       {renderCombatContent()}
