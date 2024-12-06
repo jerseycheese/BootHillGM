@@ -2,6 +2,7 @@ import React from 'react';
 import { Character } from '../../types/character';
 import { CombatType } from '../../types/combat';
 import { useCampaignState } from '../CampaignStateManager';
+import { getOpponentWeapon } from '../../utils/weaponUtils';
 
 interface CombatTypeSelectionProps {
   playerCharacter: Character;
@@ -63,7 +64,7 @@ export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
               ))
             }
             {opponent.weapon && (
-              <li>{opponent.name}: {opponent.weapon}</li>
+              <li>{opponent.name}: {getOpponentWeapon(opponent).name}</li>
             )}
           </ul>
         </div>

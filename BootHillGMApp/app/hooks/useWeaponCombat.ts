@@ -3,12 +3,7 @@ import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
 import { Weapon } from '../types/combat';
 import { calculateRangeModifier, getWeaponSpeedModifier } from '../utils/bootHillCombat';
-
-const isValidWeapon = (weapon: unknown): weapon is Weapon => {
-  return typeof weapon === 'object' && weapon !== null &&
-    typeof (weapon as Weapon).name === 'string' &&
-    typeof (weapon as Weapon).id === 'string';
-};
+import { getOpponentWeapon } from '../utils/weaponUtils';
 
 import { 
   WeaponCombatState, 
@@ -75,20 +70,7 @@ export const useWeaponCombat = ({
     };
 
     // Create opponent weapon, using their weapon if valid or providing a default
-    const opponentWeapon = opponent.weapon && isValidWeapon(opponent.weapon) ? {
-      id: opponent.weapon.id || 'default-opponent-weapon',
-      name: opponent.weapon.name,
-      modifiers: WEAPON_STATS[opponent.weapon.name] || WEAPON_STATS['Colt Revolver'],
-      ammunition: WEAPON_STATS[opponent.weapon.name]?.ammunition || 6,
-      maxAmmunition: WEAPON_STATS[opponent.weapon.name]?.maxAmmunition || 6
-    } : {
-      // Default opponent weapon
-      id: 'opponent-default-colt',
-      name: 'Colt Revolver',
-      modifiers: WEAPON_STATS['Colt Revolver'],
-      ammunition: 6,
-      maxAmmunition: 6
-    };
+    const opponentWeapon = getOpponentWeapon(opponent);
 
     return initialState || {
       round: 1,
