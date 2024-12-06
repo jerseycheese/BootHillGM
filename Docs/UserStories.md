@@ -244,13 +244,6 @@
   - Ensure equipped weapon status persists
   **Status:** Not yet implemented.
 
-- [ ] As a player, I want to see what weapon (if any) opponents are wielding during encounters, so I can make informed combat decisions.
-  **Priority:** High
-  **Risk Level:** Low
-  **Test Plan:**
-  - Verify opponent weapon information is visible
-  - Test different opponent weapon configurations
-  - Ensure weapon info updates if opponent changes weapons
 - As a player, I want to use different weapons and items during combat to add more tactical depth to battles.
 
 - [ ] As a player, I want the Aim action to provide accuracy bonuses that persist until I fire or move, so that careful aiming is rewarded.
