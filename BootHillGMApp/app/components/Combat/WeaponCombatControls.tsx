@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { WeaponCombatState, WeaponCombatAction, calculateWeaponModifier, rollForMalfunction, parseWeaponDamage, Weapon } from '../../types/combat';
+import {
+  WeaponCombatState,
+  WeaponCombatAction,
+  calculateWeaponModifier,
+  rollForMalfunction,
+  parseWeaponDamage,
+  Weapon,
+} from '../../types/combat';
 import { calculateRangeModifier } from '../../utils/bootHillCombat';
 
 interface WeaponCombatControlsProps {
@@ -17,12 +24,12 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
   onAction,
   canAim,
   canFire,
-  canReload
+  canReload,
 }) => {
   const [showMoveOptions, setShowMoveOptions] = useState(false);
   const [targetRange, setTargetRange] = useState(currentState.currentRange);
 
-  const handleFire = () => {
+  const handleFire = async () => {
     if (!canFire || !currentState.playerWeapon) return;
 
     const modifier = calculateWeaponModifier(
@@ -32,7 +39,7 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
     );
 
     const malfunction = rollForMalfunction(currentState.playerWeapon);
-    
+
     if (malfunction) {
       onAction({ type: 'malfunction' });
       return;
@@ -41,22 +48,30 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
     onAction({
       type: 'fire',
       modifier,
-      damage: parseWeaponDamage(currentState.playerWeapon.modifiers.damage)
+      damage: parseWeaponDamage(currentState.playerWeapon.modifiers.damage),
     });
   };
 
-  const handleMove = () => {
-    const rangeModifier = currentState.playerWeapon ? 
-      calculateWeaponModifier(currentState.playerWeapon, targetRange, false) :
-      0;
+  const handleMove = async () => {
+    const rangeModifier = currentState.playerWeapon
+      ? calculateWeaponModifier(currentState.playerWeapon, targetRange, false)
+      : 0;
 
     onAction({
       type: 'move',
       targetRange,
-      modifier: rangeModifier
+      modifier: rangeModifier,
     });
     setShowMoveOptions(false);
   };
+
+  const handleAim = () => {
+    onAction({ type: 'aim' });
+  }
+
+  const handleReload = () => {
+    onAction({ type: 'reload' });
+  }
 
   return (
     <div className="weapon-combat-controls space-y-4">
@@ -95,7 +110,7 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
 
       <div className="grid grid-cols-2 gap-2">
         <button
-          onClick={() => onAction({ type: 'aim' })}
+          onClick={handleAim}
           disabled={isProcessing || !canAim}
           className={`wireframe-button ${(!canAim || isProcessing) ? 'opacity-50' : ''}`}
         >
@@ -103,8 +118,12 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
         </button>
         <button
           onClick={handleFire}
-          disabled={isProcessing || !canFire || currentState.lastAction === 'malfunction'}
-          className={`wireframe-button ${(!canFire || isProcessing || currentState.lastAction === 'malfunction') ? 'opacity-50' : ''}`}
+          disabled={
+            isProcessing || !canFire || currentState.lastAction === 'malfunction'
+          }
+          className={`wireframe-button ${
+            (!canFire || isProcessing || currentState.lastAction === 'malfunction') ? 'opacity-50' : ''
+          }`}
         >
           Fire
         </button>
@@ -112,7 +131,7 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
 
       <div className="grid grid-cols-2 gap-2">
         <button
-          onClick={() => onAction({ type: 'reload' })}
+          onClick={handleReload}
           disabled={isProcessing || !canReload}
           className={`wireframe-button ${(!canReload || isProcessing) ? 'opacity-50' : ''}`}
         >

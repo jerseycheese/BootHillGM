@@ -88,3 +88,75 @@ export const calculateCombatDamage = (weapon?: { modifiers: { damage: string } }
     return baseDamage;
   }
 };
+
+/**
+ * Simulates a combat encounter between a player and an opponent.
+ * Returns the results of the combat, including the winner and a detailed description of the events.
+ * 
+ * @param player - The player character
+ * @param opponent - The opponent character
+ * @returns An object containing the winner and a detailed description of the combat events
+ */
+export const resolveCombat = (player: Character, opponent: Character): { winner: 'player' | 'opponent', results: string } => {
+  let playerStrength = player.attributes.strength;
+  let opponentStrength = opponent.attributes.strength;
+  let combatLog = '';
+
+  // Simulate combat rounds
+  let round = 1;
+  while (playerStrength > 0 && opponentStrength > 0) {
+    combatLog += `Round ${round}:\n`;
+
+    // Player attacks opponent
+    const playerRoll = Math.floor(Math.random() * 100) + 1;
+    const playerHitChance = 50; // Base hit chance
+    const playerDamage = calculateCombatDamage(player.weapon);
+    if (playerRoll <= playerHitChance) {
+      opponentStrength -= playerDamage;
+      combatLog += formatHitMessage({
+        attackerName: player.name,
+        defenderName: opponent.name,
+        weaponName: getWeaponName(player),
+        damage: playerDamage,
+        roll: playerRoll,
+        hitChance: playerHitChance
+      });
+    } else {
+      combatLog += formatMissMessage(player.name, opponent.name, playerRoll, playerHitChance);
+    }
+
+    if (opponentStrength <= 0) {
+      break;
+    }
+
+    // Opponent attacks player
+    const opponentRoll = Math.floor(Math.random() * 100) + 1;
+    const opponentHitChance = 50; // Base hit chance
+    const opponentDamage = calculateCombatDamage(opponent.weapon);
+    if (opponentRoll <= opponentHitChance) {
+      playerStrength -= opponentDamage;
+      combatLog += formatHitMessage({
+        attackerName: opponent.name,
+        defenderName: player.name,
+        weaponName: getWeaponName(opponent),
+        damage: opponentDamage,
+        roll: opponentRoll,
+        hitChance: opponentHitChance
+      });
+    } else {
+      combatLog += formatMissMessage(opponent.name, player.name, opponentRoll, opponentHitChance);
+    }
+
+    round++;
+  }
+
+  // Determine the winner
+  const winner = playerStrength > 0 ? 'player' : 'opponent';
+
+  // Construct the final combat results
+  const results = winner === 'player' 
+    ? `${player.name} emerges victorious after ${round} rounds of combat.\n${combatLog}`
+    : `${opponent.name} emerges victorious after ${round} rounds of combat.\n${combatLog}`;
+
+  return { winner, results };
+};

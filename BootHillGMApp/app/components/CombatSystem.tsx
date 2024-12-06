@@ -15,7 +15,7 @@ import { useBrawlingCombat } from '../hooks/useBrawlingCombat';
 import { useWeaponCombat } from '../hooks/useWeaponCombat';
 import { GameEngineAction } from '../utils/gameEngine';
 import { CombatTypeSelection } from './Combat/CombatTypeSelection';
-import { CombatType, CombatState } from '../types/combat';
+import { CombatType, CombatState, WeaponCombatAction } from '../types/combat';
 import { cleanCombatLogEntry } from '../utils/textCleaningUtils';
 
 export const CombatSystem: React.FC<{
@@ -62,22 +62,7 @@ export const CombatSystem: React.FC<{
     onCombatEnd,
     dispatch,
     initialState: initialCombatState?.weapon,
-    combatState: initialCombatState || {
-      isActive: true,
-      combatType: 'weapon',
-      winner: null,
-      playerStrength: playerCharacter.attributes.strength,
-      opponentStrength: opponent.attributes.strength,
-      currentTurn: 'player',
-      weapon: {
-        round: 1,
-        playerWeapon: null,
-        opponentWeapon: null,
-        currentRange: 0,
-        roundLog: [],
-        lastAction: undefined
-      }
-    }
+    combatState: initialCombatState || { isActive: false, combatType: null, winner: null, playerStrength: 0, opponentStrength: 0, brawling: undefined, weapon: undefined, currentTurn: 'player' }
   });
 
   const handleCombatTypeSelect = (type: CombatType) => {
@@ -136,7 +121,7 @@ export const CombatSystem: React.FC<{
         <WeaponCombatControls
           isProcessing={isWeaponProcessing}
           currentState={weaponState}
-          onAction={processAction}
+          onAction={(action: WeaponCombatAction) => processAction(action)}
           canAim={canAim}
           canFire={canFire}
           canReload={canReload}

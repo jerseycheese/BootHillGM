@@ -109,16 +109,23 @@ export const useGameSession = () => {
       });
       
       if (response.combatInitiated && response.opponent) {
-        combatManager.initiateCombat(response.opponent);
-      }
+        // Add only the initial combat initiation message to the narrative
+        updateNarrative({
+          text: 'Combat has been initiated.',
+          playerInput: input
+        });
 
-      // Update narrative with acquired and removed items information
-      updateNarrative({
-        text: response.narrative,
-        playerInput: input,
-        acquiredItems: response.acquiredItems,
-        removedItems: response.removedItems
-      });
+        // Initiate combat
+        combatManager.initiateCombat(response.opponent);
+      } else {
+        // Update narrative with acquired and removed items information
+        updateNarrative({
+          text: response.narrative,
+          playerInput: input,
+          acquiredItems: response.acquiredItems,
+          removedItems: response.removedItems
+        });
+      }
       
       // Handle other response effects (inventory, location, etc.)
       if (response.location) {

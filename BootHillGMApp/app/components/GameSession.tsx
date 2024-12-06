@@ -10,7 +10,7 @@ import { InventoryManager } from '../utils/inventoryManager';
 export default function GameSession() {
   const { isInitializing, isClient } = useGameInitialization();
   const gameSession = useGameSession();
-  const { state, dispatch } = gameSession;
+  const { state, dispatch, executeCombatRound } = gameSession;
 
   const handleUseItem = useCallback(() => {
     // Existing implementation
@@ -30,11 +30,18 @@ export default function GameSession() {
     dispatch({ type: 'EQUIP_WEAPON', payload: itemId });
   }, [state, dispatch]);
 
+  const handleCombatAction = useCallback(async () => {
+    if (executeCombatRound) {
+      await executeCombatRound();
+    }
+  }, [executeCombatRound]);
+
   // Create a session object with all required props
   const sessionProps = {
     ...gameSession,
     handleEquipWeapon,
-    handleUseItem
+    handleUseItem,
+    handleCombatAction,
   };
 
   // Create a combat initiator object that includes both prop versions
@@ -43,7 +50,8 @@ export default function GameSession() {
     handleEquipWeapon,
     onEquipWeapon: handleEquipWeapon,
     handleUseItem,
-    initiateCombat: gameSession.initiateCombat
+    initiateCombat: gameSession.initiateCombat,
+    handleCombatAction,
   };
 
   useCombatStateRestoration(state, combatInitiator);
