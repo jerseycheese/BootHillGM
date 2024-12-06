@@ -308,6 +308,15 @@
 
 ## Post-MVP Features
 
+### Extended Character System
+- [ ] As a player, I want to see my character's additional skills (Shooting, Riding, Brawling) so that I know my character's specialties.
+  **Note:** Extension to base Boot Hill v2 rules for additional character depth.
+  **Test Plan:**
+  - Verify all additional skills are listed
+  - Test that skill values are calculated correctly based on character attributes
+  - Check that skill updates are reflected immediately in the display
+  **Status:** Planned for future implementation.
+
 ### Advanced Weapon Combat
 - [ ] As a player, I want different weapon types to have unique characteristics (rate of fire, reliability, etc.), so that weapon choice matters more.
 - [ ] As a player, I want the option to draw/holster weapons outside of combat, so that I can be prepared for encounters.

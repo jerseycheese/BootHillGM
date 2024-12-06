@@ -27,9 +27,6 @@ export const CHARACTER_CREATION_STEPS = [
   { key: 'strength', type: 'number' },
   { key: 'bravery', type: 'number' },
   { key: 'experience', type: 'number' },
-  { key: 'shooting', type: 'number' },
-  { key: 'riding', type: 'number' },
-  { key: 'brawling', type: 'number' },
   { key: 'summary', type: 'review' }
 ] as const;
 
@@ -76,15 +73,6 @@ export interface Character {
     experience: number;
   };
 
-  /** Character skills per Boot Hill v2 */
-  skills: {
-    /** Firearm proficiency (1-100) */
-    shooting: number;
-    /** Mounted combat ability (1-100) */
-    riding: number;
-    /** Hand-to-hand combat skill (1-100) */
-    brawling: number;
-  };
 
   /** Track active wounds and their effects */
   wounds: Wound[];
