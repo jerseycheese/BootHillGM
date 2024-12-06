@@ -62,7 +62,9 @@ export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
                 <li key={weapon.id}>You: {weapon.name}</li>
               ))
             }
-            {/* Opponent weapons to be implemented in future work */}
+            {opponent.weapon && (
+              <li>{opponent.name}: {opponent.weapon}</li>
+            )}
           </ul>
         </div>
       )}
