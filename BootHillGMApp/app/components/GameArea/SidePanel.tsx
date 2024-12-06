@@ -25,7 +25,7 @@ export function SidePanel({
           location={state.location}
         />
         <Inventory 
-          handleUseItem={handleUseItem}
+          onUseItem={handleUseItem}  // Updated prop name
           handleEquipWeapon={handleEquipWeapon}
         />
         <JournalViewer entries={state.journal || []} />

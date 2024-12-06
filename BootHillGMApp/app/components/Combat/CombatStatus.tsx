@@ -16,6 +16,7 @@
 import React, { useEffect, useState} from 'react';
 import { Character } from '../../types/character';
 import { calculateCurrentStrength } from '../../utils/strengthSystem';
+import { CombatState } from '../../types/combat';
 import { cleanCharacterName } from '../../utils/combatUtils';
 
 interface StrengthDisplayProps {
@@ -107,6 +108,16 @@ const StrengthDisplay: React.FC<StrengthDisplayProps> = ({
 
 // Add debug component wrapper
 const CombatStatusWithDebug: React.FC<CombatStatusProps> = (props) => {
+  // Add debug logging for props
+  useEffect(() => {
+    console.log('CombatStatus Props:', {
+      playerStrength: props.playerCharacter?.attributes?.strength,
+      opponentStrength: props.opponent?.attributes?.strength,
+      combatStateOpponentStrength: props.combatState?.opponentStrength,
+      opponent: props.opponent
+    });
+  }, [props.playerCharacter?.attributes?.strength, props.opponent?.attributes?.strength, props.combatState?.opponentStrength]);
+
   return (
     <>
       <BaseCombatStatus {...props} />
@@ -133,46 +144,25 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
 }) => {
   const playerStrength = calculateCurrentStrength(playerCharacter);
   const maxPlayerStrength = playerCharacter.attributes.baseStrength;
-  // Ensure we're using the most up-to-date opponent values
-  // Use combatState for opponent strength values with safe access
-  const maxOpponentStrength = opponent?.attributes?.baseStrength || opponent?.attributes?.strength || 0;
+  
+  // Debug logging for strength calculations
+  useEffect(() => {
+    console.log('Strength Calculations:', {
+      opponent,
+      opponentBaseStrength: opponent?.attributes?.baseStrength,
+      opponentCurrentStrength: opponent?.attributes?.strength,
+      combatStateStrength: combatState?.opponentStrength
+    });
+  }, [opponent, combatState]);
+
+  // Use combat state strength if available, otherwise fall back to opponent attributes
   const currentOpponentStrength = Math.max(0, 
-    combatState?.weapon?.opponentStrength ?? 
     combatState?.opponentStrength ?? 
     opponent?.attributes?.strength ?? 
     0
   );
-
-  // Debug logging
-  useEffect(() => {
-    console.log('Combat Status Update:', {
-      combatStateStrength: combatState?.opponentStrength,
-      opponentAttributeStrength: opponent?.attributes?.strength,
-      currentOpponentStrength,
-      maxOpponentStrength,
-      opponent
-    });
-  }, [combatState?.opponentStrength, opponent, currentOpponentStrength, maxOpponentStrength]);
-
-  // Enhanced debug logging
-  console.log('Combat Status Strength Values:', {
-    opponent,
-    currentOpponentStrength,
-    maxOpponentStrength,
-    rawStrength: opponent?.attributes?.strength,
-    baseStrength: opponent?.attributes?.baseStrength,
-    wounds: opponent?.wounds
-  });
-
-  // Force re-render when strength changes
-  useEffect(() => {
-    if (opponent?.attributes?.strength !== currentOpponentStrength) {
-      console.log('Strength mismatch detected:', {
-        componentStrength: currentOpponentStrength,
-        opponentStrength: opponent?.attributes?.strength
-      });
-    }
-  }, [opponent?.attributes?.strength, currentOpponentStrength]);
+  
+  const maxOpponentStrength = opponent?.attributes?.baseStrength || opponent?.attributes?.strength || 0;
 
   const playerName = cleanCharacterName(playerCharacter.name);
   const opponentName = cleanCharacterName(opponent.name);

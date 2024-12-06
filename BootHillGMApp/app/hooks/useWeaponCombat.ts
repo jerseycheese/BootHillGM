@@ -47,7 +47,7 @@ export const useWeaponCombat = ({
   onCombatEnd,
   dispatch,
   initialState,
-  debugMode = false, // Default to false
+  debugMode = false,
   combatState
 }: UseWeaponCombatProps) => {
   // Track current opponent state
@@ -93,9 +93,9 @@ export const useWeaponCombat = ({
     return initialState || {
       round: 1,
       playerWeapon,
-      opponentWeapon, // Now always has a value
+      opponentWeapon,
       currentRange: 15,
-      roundLog: [],
+      roundLog: [], // Initialize as empty array
       lastAction: undefined
     };
   });
@@ -129,7 +129,7 @@ export const useWeaponCombat = ({
     if (!weapon) return null;
 
     switch (action.type) {
-      case 'aim':
+      case 'aim': {
         const newAimBonus = aimBonus + 10;
         if (newAimBonus <= 20) {
           setAimBonus(newAimBonus);
@@ -148,6 +148,7 @@ export const useWeaponCombat = ({
           targetNumber: 0,
           message: `${attacker.name} cannot aim any more carefully`
         };
+      }
 
       case 'fire': {
         const baseChance = calculateHitChance(attacker);
@@ -193,7 +194,6 @@ export const useWeaponCombat = ({
             // Create the complete updated opponent state
             const updatedOpponent = {
                 ...opponent,
-                id: opponent.id,
                 attributes: {
                     ...opponent.attributes,
                     strength: newStrength,
@@ -210,34 +210,29 @@ export const useWeaponCombat = ({
                 ]
             };
 
-            // Update weapon state first to ensure UI updates
-            setWeaponState(prev => ({
-                ...prev,
-                opponentStrength: newStrength
-            }));
-
-            // Update both local and global state
             setCurrentOpponent(updatedOpponent);
-            
-            // Dispatch the complete opponent update
+
+            // Update combatState with only valid properties
             dispatch({
-                type: 'UPDATE_OPPONENT',
-                payload: updatedOpponent
+              type: 'UPDATE_COMBAT_STATE',
+              payload: {
+                ...combatState,
+                opponentStrength: newStrength,
+                weapon: {
+                  ...combatState.weapon,
+                  round: weaponState.round,
+                  currentRange: weaponState.currentRange,
+                  playerWeapon: weaponState.playerWeapon,
+                  opponentWeapon: weaponState.opponentWeapon,
+                  roundLog: weaponState.roundLog
+                }
+              }
             });
 
-            // Force a combat state update to ensure consistency
+            // Also update the opponent separately
             dispatch({
-                type: 'UPDATE_COMBAT_STATE',
-                payload: {
-                    ...combatState,
-                    isActive: true,
-                    opponentStrength: newStrength,
-                    opponent: updatedOpponent,
-                    weapon: {
-                        ...combatState.weapon,
-                        opponentStrength: newStrength
-                    }
-                }
+              type: 'SET_OPPONENT',
+              payload: updatedOpponent
             });
 
             // Log the update for debugging
@@ -246,15 +241,7 @@ export const useWeaponCombat = ({
                 damage,
                 after: newStrength,
                 opponent: updatedOpponent,
-                dispatchPayload: {
-                    ...opponent,
-                    ...updatedOpponent,
-                    id: opponent.id,
-                    attributes: {
-                        ...opponent.attributes,
-                        strength: newStrength
-                    }
-                }
+                combatState: combatState
             });
 
             return {
@@ -267,12 +254,11 @@ export const useWeaponCombat = ({
               message: `${attacker.name} hits ${defender.name} with ${weapon.name} for ${damage} damage! (Strength: ${currentStrength} → ${newStrength})`,
               newStrength
             };
-
           } else {
             // Opponent hit player - update player's strength
             const currentStrength = playerCharacter.attributes.strength;
             const newStrength = Math.max(0, currentStrength - damage);
-            
+
             // Create updated player with wound
             const updatedPlayer = {
               ...playerCharacter,
@@ -344,7 +330,7 @@ export const useWeaponCombat = ({
           message: `${attacker.name} reloads ${weapon.name}`
         };
     }
-  }, [playerCharacter, opponent, weaponState, aimBonus, debugMode, dispatch, currentOpponent]);
+  }, [playerCharacter, opponent, weaponState, aimBonus, debugMode, dispatch, combatState, currentOpponent]);
 
   /**
    * Processes a complete combat turn including opponent response.
