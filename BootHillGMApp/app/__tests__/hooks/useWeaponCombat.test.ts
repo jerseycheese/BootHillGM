@@ -158,20 +158,28 @@ describe('useWeaponCombat', () => {
       ...mockOpponent,
       attributes: {
         ...mockOpponent.attributes,
-        strength: 1
+        strength: 1  // Keep opponent very weak
       }
     };
 
-    // Force a hit
-    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+    // Mock both the hit chance and damage rolls
+    const mockRolls = [
+      0.5,  // First roll for hit check (will hit)
+      0.9,  // High roll for damage to ensure fatal hit
+      0.9   // Second damage die roll
+    ];
+    let rollIndex = 0;
+    jest.spyOn(Math, 'random').mockImplementation(() => mockRolls[rollIndex++]);
 
     const { result } = renderHook(() => useWeaponCombat({
       playerCharacter: mockPlayer,
       opponent: weakOpponent,
       onCombatEnd: mockOnCombatEnd,
       dispatch: mockDispatch,
-      debugMode: true, // Enable debug mode to ensure hit
-      combatState: mockCombatState
+      combatState: {
+        ...mockCombatState,
+        opponentStrength: 1  // Ensure combat state also reflects weak opponent
+      }
     }));
 
     await act(async () => {
