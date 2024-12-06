@@ -158,7 +158,12 @@ export const CombatSystem: React.FC<{
           playerStrength: playerCharacter.attributes.strength,
           opponentStrength: currentOpponent?.attributes?.strength || opponent.attributes.strength,
           brawling: brawlingState,
-          weapon: weaponState
+          weapon: weaponState,
+          currentTurn: 'player',
+          selection: combatType ? undefined : {
+            isSelectingType: true,
+            availableTypes: ['brawling', 'weapon']
+          }
         }}
       />
       
