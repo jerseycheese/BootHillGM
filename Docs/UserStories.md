@@ -5,12 +5,6 @@
 ## MVP Features
 
 ### Character Creation
-- [ ] As a player, I want to see my character's essential skills (Shooting, Riding, Brawling) so that I know my character's specialties.
-  **Test Plan:**
-  - Ensure all essential skills are listed
-  - Verify that skill values are calculated correctly based on character attributes
-  - Check that skill updates are reflected immediately in the display
-  **Status:** Partially implemented. Skills are defined in the data model, but display and calculation need completion.
 
 - [ ] As a player, I want to receive a simple background for my character so that I have a starting point for roleplaying.
   **Test Plan:**
