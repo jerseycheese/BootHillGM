@@ -356,7 +356,8 @@ export const useWeaponCombat = ({
         });
 
         // Check if combat should end after player's action
-        if (result.hit && currentOpponent.attributes.strength <= 0) {
+        // Check if the hit was fatal
+        if (result.hit && (result.newStrength !== undefined && result.newStrength <= 0)) {
             setIsProcessing(false);
             onCombatEnd('player', `You defeat ${opponent.name} with a well-placed shot!`);
             return;
