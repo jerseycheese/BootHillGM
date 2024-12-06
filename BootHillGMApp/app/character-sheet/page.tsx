@@ -78,16 +78,6 @@ export default function CharacterSheet() {
           ))}
         </ul>
       </div>
-      <div className="wireframe-section">
-        <h3 className="wireframe-subtitle">Skills</h3>
-        <ul className="wireframe-list">
-          {Object.entries(character.skills).map(([key, value]) => (
-            <li key={key} className="wireframe-text">
-              {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
-            </li>
-          ))}
-        </ul>
-      </div>
       {character.wounds && character.wounds.length > 0 && (
         <div className="wireframe-section">
           <h3 className="wireframe-subtitle">Wounds</h3>

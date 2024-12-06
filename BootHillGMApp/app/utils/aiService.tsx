@@ -247,9 +247,6 @@ export async function generateCompleteCharacter(): Promise<Character> {
     - BaseStrength (8-20)
     - Bravery (1-20)
     - Experience (0-11)
-    - Shooting (1-100)
-    - Riding (1-100)
-    - Brawling (1-100)
 
     Respond with a valid JSON object. No additional text or formatting.
   `;
@@ -305,11 +302,6 @@ export async function generateCompleteCharacter(): Promise<Character> {
         baseStrength: Number(characterData.BaseStrength) || 10,
         bravery: Number(characterData.Bravery) || 10,
         experience: Number(characterData.Experience) || 5
-      },
-      skills: {
-        shooting: Number(characterData.Shooting) || 50,
-        riding: Number(characterData.Riding) || 50,
-        brawling: Number(characterData.Brawling) || 50
       },
       wounds: [],
       isUnconscious: false,

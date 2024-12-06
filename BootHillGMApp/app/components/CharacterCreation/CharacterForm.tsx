@@ -16,8 +16,8 @@ interface CharacterFormProps {
   isGeneratingField: boolean;
   isProcessingStep: boolean;
   error?: string;
-  onFieldChange: (field: keyof Character['attributes'] | keyof Character['skills'] | 'name', value: string | number) => void;
-  onGenerateField: (field: keyof Character['attributes'] | keyof Character['skills'] | 'name') => Promise<void>;
+  onFieldChange: (field: keyof Character['attributes'] | 'name', value: string | number) => void;
+  onGenerateField: (field: keyof Character['attributes'] | 'name') => Promise<void>;
   onSubmit: (e: React.FormEvent) => Promise<void>;
   generateCharacter: () => Promise<void>;
   isGeneratingCharacter: boolean;

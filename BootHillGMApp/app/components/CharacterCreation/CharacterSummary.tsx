@@ -83,14 +83,6 @@ export function CharacterSummary({
               ))}
             </div>
             
-            <div>
-              <h3 className="text-lg font-bold">Skills</h3>
-              {Object.entries(character.skills).map(([skill, value]) => (
-                <p key={skill}>
-                  <strong>{STEP_DESCRIPTIONS[skill]?.title || skill}:</strong> {value}
-                </p>
-              ))}
-            </div>
           </div>
         </div>
       </div>
