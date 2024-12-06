@@ -47,15 +47,14 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       
       if (!trimmedLine) return items;
 
-      // Improved player action detection
-      const playerActionMatch = trimmedLine.match(/^(?:Player:|You:?)\s*(.*)/i);
-      if (playerActionMatch) {
-        const cleanedAction = cleanText(playerActionMatch[1]);
+      // First check for explicit markers
+      if (trimmedLine.startsWith('Player Action: ')) {
+        const cleanedAction = cleanText(trimmedLine.substring('Player Action: '.length));
         if (cleanedAction) {
-          items.push({ 
+          items.push({
             type: 'player-action',
             content: cleanedAction,
-            metadata: { 
+            metadata: {
               timestamp: Date.now()
             }
           });
@@ -63,15 +62,44 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
         return items;
       }
 
-      // Enhanced GM response detection
-      const gmResponseMatch = trimmedLine.match(/^(?:GM:|Game Master:)\s*(.*)/i);
-      if (gmResponseMatch) {
-        const cleanedResponse = cleanText(gmResponseMatch[1]);
+      if (trimmedLine.startsWith('GM Response: ')) {
+        const cleanedResponse = cleanText(trimmedLine.substring('GM Response: '.length));
         if (cleanedResponse) {
-          items.push({ 
+          items.push({
             type: 'gm-response',
             content: cleanedResponse,
-            metadata: { 
+            metadata: {
+              timestamp: Date.now()
+            }
+          });
+        }
+        return items;
+      }
+
+      // Fallback to checking for less explicit markers
+      if (trimmedLine.startsWith('Player:') || trimmedLine.startsWith('You:')) {
+        const content = trimmedLine.substring(trimmedLine.indexOf(':') + 1);
+        const cleanedAction = cleanText(content);
+        if (cleanedAction) {
+          items.push({
+            type: 'player-action',
+            content: cleanedAction,
+            metadata: {
+              timestamp: Date.now()
+            }
+          });
+        }
+        return items;
+      }
+
+      if (trimmedLine.startsWith('GM:') || trimmedLine.startsWith('Game Master:')) {
+        const content = trimmedLine.substring(trimmedLine.indexOf(':') + 1);
+        const cleanedResponse = cleanText(content);
+        if (cleanedResponse) {
+          items.push({
+            type: 'gm-response',
+            content: cleanedResponse,
+            metadata: {
               timestamp: Date.now()
             }
           });
