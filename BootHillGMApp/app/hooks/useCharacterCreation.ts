@@ -23,11 +23,6 @@ const initialCharacter: Character = {
     bravery: 0,
     experience: 0,
   },
-  skills: {
-    shooting: 0,
-    riding: 0,
-    brawling: 0,
-  },
   wounds: [],
   isUnconscious: false
 };
@@ -86,24 +81,6 @@ export const STEP_DESCRIPTIONS: Record<string, StepDescription> = {
     description: "Previous combat encounters and gunfights. Provides combat bonuses.",
     min: 0,
     max: 11
-  },
-  shooting: {
-    title: "Shooting",
-    description: "Overall firearms proficiency. Higher values improve hit chances.",
-    min: 1,
-    max: 100
-  },
-  riding: {
-    title: "Riding",
-    description: "Horsemanship and mounted combat ability.",
-    min: 1,
-    max: 100
-  },
-  brawling: {
-    title: "Brawling",
-    description: "Hand-to-hand combat skill. Important for close encounters.",
-    min: 1,
-    max: 100
   },
   summary: {
     title: "Character Summary",

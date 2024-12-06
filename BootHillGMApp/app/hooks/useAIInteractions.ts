@@ -81,11 +81,6 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
         bravery: response.opponent.attributes.bravery,
         experience: response.opponent.attributes.experience
       },
-      skills: {
-        shooting: response.opponent.skills.shooting,
-        riding: response.opponent.skills.riding,
-        brawling: response.opponent.skills.brawling
-      },
       inventory: response.opponent.inventory || [],
       weapon: response.opponent.weapon ? {
         id: `weapon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,

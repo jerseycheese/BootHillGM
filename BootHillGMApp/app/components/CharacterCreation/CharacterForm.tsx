@@ -4,7 +4,7 @@ import { STEP_DESCRIPTIONS } from '../../hooks/useCharacterCreation';
 import { LoadingScreen } from '../GameArea/LoadingScreen';
 
 interface AttributeField {
-  key: keyof Character['attributes'] | keyof Character['skills'] | 'name';
+  key: keyof Character['attributes'] | 'name';
   title: string;
   description: string;
   min?: number;

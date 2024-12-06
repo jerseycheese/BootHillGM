@@ -89,7 +89,6 @@ export const useCampaignStateRestoration = ({
 const restoreCharacter = (character: Partial<Character>): Character => ({
   ...character,
   attributes: { ...character.attributes },
-  skills: { ...character.skills },
   wounds: [...(character.wounds || [])],
   isUnconscious: Boolean(character.isUnconscious)
 }) as Character;
