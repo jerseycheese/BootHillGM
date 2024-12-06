@@ -88,16 +88,6 @@
   - Test cases where either combatant has no weapons
   **Status:** Not yet implemented.
 
-- [ ] As a player, I want to make basic attacks with weapons using Boot Hill's base combat rules, so that I can engage in armed combat.
-  **Priority:** High
-  **Risk Level:** Medium
-  **Test Plan:**
-  - Verify attack rolls follow Boot Hill base rules
-  - Test basic hit/miss calculations
-  - Ensure combat flow matches Boot Hill turn structure
-  - Check that combat log records weapon attacks properly
-  **Status:** Not yet implemented.
-
 - [ ] As a player, I want weapons to have distinct base damage values, so that different weapons feel meaningful in combat.
   **Priority:** High
   **Risk Level:** Low

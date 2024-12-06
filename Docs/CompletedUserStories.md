@@ -167,6 +167,14 @@
   - Check display of weapon information
   **Status:** Core UI implemented.
 
+- As a player, I want to make basic attacks with weapons using Boot Hill's base combat rules, so that I can engage in armed combat.
+  **Test Plan:**
+  - Verify attack rolls follow Boot Hill base rules
+  - Test basic hit/miss calculations
+  - Ensure combat flow matches Boot Hill turn structure
+  - Check that combat log records weapon attacks properly
+  **Status:** Implemented. Features Boot Hill combat mechanics including weapon modifiers, hit calculations, and proper combat log entries.
+
 ### UI/UX Improvements
 - [x] As a player, I want to see a loading indicator when content is being generated or fetched, so that I understand the system is working and not frozen.
   **Implementation:**
