@@ -34,7 +34,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
   generateCharacter,
   isGeneratingCharacter
 }) => {
-  const [generatingField, setGeneratingField] = useState<keyof Character['attributes'] | keyof Character['skills'] | 'name' | null>(null);
+  const [generatingField, setGeneratingField] = useState<keyof Character['attributes'] | 'name' | null>(null);
 
   const fields: AttributeField[] = [
     { key: 'name', title: 'Name', description: 'Your character\'s full name' },

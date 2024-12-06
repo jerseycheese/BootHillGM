@@ -91,7 +91,7 @@ export const STEP_DESCRIPTIONS: Record<string, StepDescription> = {
 export type StepType = 'string' | 'number' | 'review';
 
 export interface Step {
-  key: keyof Character['attributes'] | keyof Character['skills'] | 'name' | 'summary';
+  key: keyof Character['attributes'] | 'name' | 'summary';
   type: StepType;
 }
 

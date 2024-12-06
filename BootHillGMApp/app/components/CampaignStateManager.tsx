@@ -185,7 +185,6 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
         opponent: loadedState.opponent ? {
           ...loadedState.opponent,
           attributes: { ...loadedState.opponent.attributes },
-          skills: { ...loadedState.opponent.skills },
           wounds: [...(loadedState.opponent.wounds || [])],
           isUnconscious: Boolean(loadedState.opponent.isUnconscious)
         } : null,
