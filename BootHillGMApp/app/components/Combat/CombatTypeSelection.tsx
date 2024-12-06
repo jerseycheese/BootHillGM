@@ -3,6 +3,7 @@ import { Character } from '../../types/character';
 import { CombatType } from '../../types/combat';
 import { useCampaignState } from '../CampaignStateManager';
 import { getOpponentWeapon } from '../../utils/weaponUtils';
+import { cleanCharacterName } from '../../utils/textCleaningUtils';
 
 interface CombatTypeSelectionProps {
   playerCharacter: Character;
@@ -63,7 +64,7 @@ export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
                 <li key={weapon.id}>You: {weapon.name}</li>
               ))
             }
-            <li>{opponent.name}: {getOpponentWeapon(opponent).name}</li>
+            <li>{cleanCharacterName(opponent.name)}: {getOpponentWeapon(opponent).name}</li>
           </ul>
         </div>
       )}
