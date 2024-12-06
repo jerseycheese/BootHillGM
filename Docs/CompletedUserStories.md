@@ -1,6 +1,13 @@
 # Completed User Stories
 
 ## Character Creation
+- As a player, I want to see my character's essential skills (Shooting, Riding, Brawling) so that I know my character's specialties.
+  **Test Plan:**
+  - Verify all essential skills are listed
+  - Test that skill values are calculated correctly based on character attributes
+  - Check that skill updates are reflected immediately in the display
+  **Status:** In Progress - Skills display component being implemented.
+
 - As a player, I want to create a character using AI-guided prompts so that I can quickly generate a unique persona for the game.
   **Test Plan:**
   - Verify that AI prompts are generated and displayed to the user
