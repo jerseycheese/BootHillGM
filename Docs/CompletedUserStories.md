@@ -1,13 +1,6 @@
 # Completed User Stories
 
 ## Character Creation
-- As a player, I want to see my character's essential skills (Shooting, Riding, Brawling) so that I know my character's specialties.
-  **Test Plan:**
-  - Verify all essential skills are listed
-  - Test that skill values are calculated correctly based on character attributes
-  - Check that skill updates are reflected immediately in the display
-  **Status:** In Progress - Skills display component being implemented.
-
 - As a player, I want to create a character using AI-guided prompts so that I can quickly generate a unique persona for the game.
   **Test Plan:**
   - Verify that AI prompts are generated and displayed to the user
@@ -91,11 +84,11 @@
   - Test with page refresh during combat
   **Status:** Implemented. Combat state properly persists across navigation and page reloads.
 
-- As a player, I want to use my character's skills and attributes in combat so that the fights feel personalized to my character.
+- As a player, I want to use my character's attributes in combat so that the fights feel personalized to my character.
   **Test Plan:**
-  - Confirm that character skills and attributes affect combat calculations
+  - Confirm that character attributes affect combat calculations
   - Test different character builds to ensure varied combat experiences
-  - Verify that skill/attribute improvements reflect in combat performance
+  - Verify that attribute improvements reflect in combat performance
   **Status:** Implemented. Combat system uses character attributes for hit chance calculations.
 
 - As a player, I want to see the results of combat actions quickly so that fights maintain a fast pace.

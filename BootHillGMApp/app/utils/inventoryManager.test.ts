@@ -6,6 +6,7 @@ import { InventoryItem } from '../types/inventory';
 describe('InventoryManager', () => {
   const mockCharacter: Character = {
     name: 'Test Character',
+    inventory: [],
     attributes: {
       speed: 5,
       gunAccuracy: 5,
@@ -14,11 +15,6 @@ describe('InventoryManager', () => {
       baseStrength: 10,
       bravery: 5,
       experience: 0
-    },
-    skills: {
-      shooting: 50,
-      riding: 50,
-      brawling: 50
     },
     wounds: [],
     isUnconscious: false
@@ -47,7 +43,8 @@ describe('InventoryManager', () => {
         id: '1',
         name: 'Test Item',
         quantity: 1,
-        description: 'Test Description'
+        description: 'Test Description',
+        category: 'general'
       };
 
       const result = InventoryManager.validateItemUse(item, mockCharacter, mockGameState);
@@ -59,7 +56,8 @@ describe('InventoryManager', () => {
         id: '1',
         name: 'Test Item',
         quantity: 0,
-        description: 'Test Description'
+        description: 'Test Description',
+        category: 'general'
       };
 
       const result = InventoryManager.validateItemUse(item, mockCharacter, mockGameState);
@@ -75,7 +73,8 @@ describe('InventoryManager', () => {
         description: 'Test Description',
         requirements: {
           minStrength: 15
-        }
+        },
+        category: 'general'
       };
 
       const result = InventoryManager.validateItemUse(item, mockCharacter, mockGameState);
@@ -91,7 +90,8 @@ describe('InventoryManager', () => {
         description: 'Test Description',
         requirements: {
           location: ['Saloon']
-        }
+        },
+        category: 'general'
       };
 
       const result = InventoryManager.validateItemUse(item, mockCharacter, mockGameState);
@@ -107,7 +107,8 @@ describe('InventoryManager', () => {
         description: 'Test Description',
         requirements: {
           combatOnly: true
-        }
+        },
+        category: 'general'
       };
 
       const result = InventoryManager.validateItemUse(item, mockCharacter, mockGameState);
@@ -123,7 +124,8 @@ describe('InventoryManager', () => {
         name: 'Test Item',
         quantity: 1,
         description: 'Test Description',
-        usePrompt: 'Custom prompt'
+        usePrompt: 'Custom prompt',
+        category: 'general'
       };
 
       const prompt = InventoryManager.getItemUsePrompt(item);
@@ -139,7 +141,8 @@ describe('InventoryManager', () => {
         effect: {
           type: 'heal',
           value: 10
-        }
+        },
+        category: 'consumable'
       };
 
       const prompt = InventoryManager.getItemUsePrompt(item);
@@ -151,7 +154,8 @@ describe('InventoryManager', () => {
         id: '1',
         name: 'Test Item',
         quantity: 1,
-        description: 'Test Description'
+        description: 'Test Description',
+        category: 'general'
       };
 
       const prompt = InventoryManager.getItemUsePrompt(item);

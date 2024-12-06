@@ -50,11 +50,6 @@ export function useCombatStateRestoration(
           bravery: state.opponent.attributes?.bravery ?? 5,
           experience: state.opponent.attributes?.experience ?? 5
         },
-        skills: {
-          shooting: state.opponent.skills?.shooting ?? 50,
-          riding: state.opponent.skills?.riding ?? 50,
-          brawling: state.opponent.skills?.brawling ?? 50
-        },
         weapon: state.opponent.weapon ? {
           id: state.opponent.weapon.id,
           name: state.opponent.weapon.name,

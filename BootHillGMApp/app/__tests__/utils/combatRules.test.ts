@@ -4,20 +4,18 @@ import { Character } from '../../types/character';
 describe('Combat Rules', () => {
   const mockCharacter: Character = {
     name: 'Test Character',
-    health: 100,
     attributes: {
       speed: 10,
       gunAccuracy: 10,
       throwingAccuracy: 10,
       strength: 10,
+      baseStrength: 10,
       bravery: 50,
       experience: 5
     },
-    skills: {
-      shooting: 50,
-      riding: 50,
-      brawling: 50
-    }
+    wounds: [],
+    isUnconscious: false,
+    inventory: []
   };
 
   describe('calculateFirstShot', () => {

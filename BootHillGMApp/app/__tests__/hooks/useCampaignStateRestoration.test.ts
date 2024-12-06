@@ -26,13 +26,9 @@ describe('useCampaignStateRestoration', () => {
       bravery: 10,
       experience: 5
     },
-    skills: {
-      shooting: 50,
-      riding: 50,
-      brawling: 50
-    },
     wounds: [],
-    isUnconscious: false
+    isUnconscious: false,
+    inventory: []
   };
 
   const mockState: TestGameState = {

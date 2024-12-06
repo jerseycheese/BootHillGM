@@ -127,13 +127,9 @@ describe('useAIInteractions', () => {
           bravery: 8,
           experience: 5
         },
-        skills: {
-          shooting: 50,
-          riding: 40,
-          brawling: 45
-        },
         wounds: [],
-        isUnconscious: false
+        isUnconscious: false,
+        inventory: []
       };
 
       const mockResponse = {
@@ -165,7 +161,6 @@ describe('useAIInteractions', () => {
         payload: expect.objectContaining({
           name: mockOpponent.name,
           attributes: mockOpponent.attributes,
-          skills: mockOpponent.skills,
           wounds: mockOpponent.wounds,
           isUnconscious: mockOpponent.isUnconscious,
           inventory: [],

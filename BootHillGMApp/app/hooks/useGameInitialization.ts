@@ -54,7 +54,7 @@ export const useGameInitialization = () => {
         const response = await getAIResponse(
           `Initialize a new game session for ${characterData?.name}. 
           Describe their current situation and location in detail.
-          Consider the character's background and skills.
+          Consider the character's background.
           Include suggestions for what they might do next.`,
           '',
           startingInventory // Pass starting inventory to AI for context
@@ -97,7 +97,7 @@ export const useGameInitialization = () => {
       const response = await getAIResponse(
         `Initialize a new game session for ${state.character?.name || 'Unknown'}. 
         Provide a detailed introduction to the character's current situation.
-        Consider their skills, background, and circumstances.
+        Consider their background, and circumstances.
         Include clear suggestions for what they might do next.
         Ensure to explicitly state their current location.`,
         '',

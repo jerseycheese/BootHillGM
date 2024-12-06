@@ -18,11 +18,6 @@ const mockCharacter: Character = {
     bravery: 5,
     experience: 0
   },
-  skills: {
-    shooting: 5,
-    riding: 5,
-    brawling: 5
-  },
   wounds: [],
   isUnconscious: false,
   inventory: []
@@ -141,11 +136,6 @@ describe('GameSession', () => {
         baseStrength: 5,
         bravery: 5,
         experience: 0
-      },
-      skills: {
-        shooting: 5,
-        riding: 5,
-        brawling: 5
       },
       wounds: [],
       isUnconscious: false,

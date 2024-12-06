@@ -107,11 +107,6 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
           bravery: 10,
           experience: 5
         },
-        skills: {
-          shooting: 50,
-          riding: 50,
-          brawling: 50
-        },
         wounds: [],
         isUnconscious: false,
         inventory: []

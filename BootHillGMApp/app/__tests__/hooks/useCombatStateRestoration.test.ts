@@ -15,13 +15,9 @@ describe('useCombatStateRestoration', () => {
       bravery: 10,
       experience: 5
     },
-    skills: {
-      shooting: 50,
-      riding: 50,
-      brawling: 50
-    },
     wounds: [],
-    isUnconscious: false
+    isUnconscious: false,
+    inventory: []
   };
 
   const mockState: GameState = {
@@ -41,13 +37,9 @@ describe('useCombatStateRestoration', () => {
         bravery: 10,
         experience: 5
       },
-      skills: {
-        shooting: 50,
-        riding: 50,
-        brawling: 50
-      },
       wounds: [],
-      isUnconscious: false
+      isUnconscious: false,
+      inventory: []
     },
     narrative: '',
     gameProgress: 0,
@@ -62,8 +54,7 @@ describe('useCombatStateRestoration', () => {
       combatLog: [{ text: 'Combat started', type: 'info', timestamp: Date.now() }],
       isActive: true,
       combatType: 'brawling',
-      winner: null,
-      summary: ''
+      winner: null
     }
   };
 
@@ -78,7 +69,9 @@ describe('useCombatStateRestoration', () => {
     retryLastAction: jest.fn(),
     handleCombatEnd: jest.fn(),
     handlePlayerHealthChange: jest.fn(),
-    handleUseItem: jest.fn()
+    handleUseItem: jest.fn(),
+    onEquipWeapon: jest.fn(),
+    handleEquipWeapon: jest.fn()
   };
 
   beforeEach(() => {
@@ -95,7 +88,6 @@ describe('useCombatStateRestoration', () => {
           ...mockOpponent.attributes,
           baseStrength: 10
         }),
-        skills: expect.objectContaining(mockOpponent.skills),
         wounds: [],
         isUnconscious: false,
         weapon: undefined

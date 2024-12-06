@@ -14,7 +14,7 @@ interface CharacterSummaryProps {
 }
 
 /**
- * Displays final character summary with attributes and skills.
+ * Displays final character summary with attributes.
  * Shows AI-generated background and allows submission
  * to complete character creation.
  */

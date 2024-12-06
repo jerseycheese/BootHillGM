@@ -154,11 +154,6 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
           bravery: 10,
           experience: 5
         },
-        skills: {
-          shooting: 50,
-          riding: 50,
-          brawling: 50
-        },
         wounds: [],
         isUnconscious: false,
         inventory: [] as InventoryItem[]
@@ -201,7 +196,7 @@ export async function getCharacterCreationStep(step: number, currentField: strin
     This is step ${step + 1} of the character creation process, focusing on the character's ${currentField}.
     
     Please provide a brief, engaging prompt for the player to determine their character's ${currentField}.
-    For numerical attributes, suggest a range (e.g., 1-20 for attributes, 1-100 for skills).
+    For numerical attributes, suggest a range (e.g., 1-20 for attributes).
     Keep your response concise and focused on this specific aspect of character creation.
 
     Also, provide a brief description of what this ${currentField} represents in the context of a Western character.
@@ -213,7 +208,7 @@ export async function getCharacterCreationStep(step: number, currentField: strin
 
 // Function to validate attribute values based on Boot Hill rules
 export function validateAttributeValue(attribute: string, value: number): boolean {
-  // Define valid ranges for each attribute and skill
+  // Define valid ranges for each attribute
   const validRanges: Record<string, [number, number]> = {
     speed: [1, 20],
     gunAccuracy: [1, 20],
@@ -221,10 +216,7 @@ export function validateAttributeValue(attribute: string, value: number): boolea
     strength: [8, 20],
     baseStrength: [8, 20],
     bravery: [1, 20],
-    experience: [0, 11],
-    shooting: [1, 100],
-    riding: [1, 100],
-    brawling: [1, 100],
+    experience: [0, 11]
   };
 
   if (attribute in validRanges) {
@@ -238,7 +230,7 @@ export function validateAttributeValue(attribute: string, value: number): boolea
 // Function to generate a complete character using AI
 export async function generateCompleteCharacter(): Promise<Character> {
   const prompt = `
-    Generate a complete character for the Boot Hill RPG. Provide values for the following attributes and skills:
+    Generate a complete character for the Boot Hill RPG. Provide values for the following attributes:
     - Name
     - Speed (1-20)
     - GunAccuracy (1-20)
@@ -308,7 +300,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
       inventory: [] as InventoryItem[]
     };
     
-    // Validate that all character attributes and skills are present and are valid numbers
+    // Validate that all character attributes are present and are valid numbers
     const isValid = (
       character.name !== 'Unknown' &&
       !isNaN(character.attributes.speed) &&
@@ -317,14 +309,11 @@ export async function generateCompleteCharacter(): Promise<Character> {
       !isNaN(character.attributes.strength) &&
       !isNaN(character.attributes.baseStrength) &&
       !isNaN(character.attributes.bravery) &&
-      !isNaN(character.attributes.experience) &&
-      !isNaN(character.skills.shooting) &&
-      !isNaN(character.skills.riding) &&
-      !isNaN(character.skills.brawling)
+      !isNaN(character.attributes.experience)
     );
 
     if (!isValid) {
-      throw new Error('Invalid character data: some attributes or skills are missing or not numbers');
+      throw new Error('Invalid character data: some attributes are missing or not numbers');
     }
     
     return character;
@@ -344,11 +333,6 @@ export async function generateCompleteCharacter(): Promise<Character> {
         bravery: 10,
         experience: 5
       },
-      skills: {
-        shooting: 50,
-        riding: 50,
-        brawling: 50
-      },
       wounds: [],
       isUnconscious: false,
       inventory: [] as InventoryItem[]
@@ -357,33 +341,30 @@ export async function generateCompleteCharacter(): Promise<Character> {
 }
 
 // Generate a field value for character creation
-// Uses AI for character name and random generation for attributes and skills
+// Uses AI for character name and random generation for attributes
 export async function generateFieldValue(
-  key: keyof Character['attributes'] | keyof Character['skills'] | 'name'
+  key: keyof Character['attributes'] | 'name'
 ): Promise<string | number> {
   if (key === 'name') {
     const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name.";
     const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
     return response.narrative.trim();
   } else {
-    return generateRandomValue(key as keyof Character['attributes'] | keyof Character['skills']);
+    return generateRandomValue(key as keyof Character['attributes']);
   }
 }
 
-// Generate a random value for a given attribute or skill
-function generateRandomValue(key: keyof Character['attributes'] | keyof Character['skills']): number {
-  // Define valid ranges for each attribute and skill
-  const ranges: Record<keyof Character['attributes'] | keyof Character['skills'], [number, number]> = {
+// Generate a random value for a given attribute
+function generateRandomValue(key: keyof Character['attributes']): number {
+  // Define valid ranges for each attribute
+  const ranges: Record<keyof Character['attributes'], [number, number]> = {
     speed: [1, 20],
     gunAccuracy: [1, 20],
     throwingAccuracy: [1, 20],
     strength: [8, 20],
     baseStrength: [8, 20],
     bravery: [1, 20],
-    experience: [0, 11],
-    shooting: [1, 100],
-    riding: [1, 100],
-    brawling: [1, 100],
+    experience: [0, 11]
   };
 
   const [min, max] = ranges[key];
@@ -467,8 +448,6 @@ export async function generateCharacterSummary(character: Character): Promise<st
     Name: ${character.name}
     Attributes:
     ${Object.entries(character.attributes).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
-    Skills:
-    ${Object.entries(character.skills).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
     
     The summary should capture the essence of the character, their strengths, potential weaknesses, and how they might fit into a Western setting. Keep the tone consistent with a gritty, Wild West atmosphere.
     

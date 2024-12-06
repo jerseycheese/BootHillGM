@@ -3,13 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { Inventory } from '../../components/Inventory';
 import { CampaignStateContext } from '../../components/CampaignStateManager';
 import { CampaignState } from '../../types/campaign';
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  quantity: number;
-  description: string;
-}
+import { InventoryItem, ItemCategory } from '../../types/inventory';
 
 describe('Inventory', () => {
   // Mock campaign state with test data
@@ -27,13 +21,9 @@ describe('Inventory', () => {
         bravery: 5,
         experience: 0
       },
-      skills: {
-        shooting: 50,
-        riding: 50,
-        brawling: 50
-      },
       wounds: [],
-      isUnconscious: false
+      isUnconscious: false,
+      inventory: []
     },
     location: '',
     savedTimestamp: undefined,
@@ -41,8 +31,8 @@ describe('Inventory', () => {
     journal: [],
     narrative: '',
     inventory: [
-      { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores 20 health points' },
-      { id: '2', name: 'Rope', quantity: 1, description: 'A sturdy rope, 50 feet long' }
+      { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores 20 health points', category: 'consumable' as ItemCategory },
+      { id: '2', name: 'Rope', quantity: 1, description: 'A sturdy rope, 50 feet long', category: 'general' as ItemCategory }
     ],
     quests: [],
     isCombatActive: false,
@@ -98,8 +88,8 @@ describe('Inventory', () => {
     const stateWithZeroQuantity: CampaignState = {
       ...mockState,
       inventory: [
-        { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores 20 health points' },
-        { id: '2', name: 'Empty Bottle', quantity: 0, description: 'An empty glass bottle' }
+        { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores 20 health points', category: 'consumable' as ItemCategory },
+        { id: '2', name: 'Empty Bottle', quantity: 0, description: 'An empty glass bottle', category: 'general' as ItemCategory }
       ]
     };
 
@@ -122,7 +112,7 @@ describe('Inventory', () => {
     const stateWithInvalidItems: CampaignState = {
       ...mockState,
       inventory: [
-        { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores 20 health points' },
+        { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores 20 health points', category: 'consumable' as ItemCategory },
         { id: '2', quantity: 1, description: 'Invalid item' } as unknown as InventoryItem, // Missing name
         { name: 'Sword', quantity: 1, description: 'Invalid item' } as unknown as InventoryItem, // Missing id
         { id: '4', name: 'Shield', description: 'Invalid item' } as unknown as InventoryItem // Missing quantity
@@ -169,7 +159,7 @@ describe('Inventory', () => {
             name: 'Health Potion', 
             quantity: 2, 
             description: 'Restores 20 health points',
-            category: 'consumable',
+            category: 'consumable' as ItemCategory,
             effect: {
               type: 'heal',
               value: 20
@@ -196,7 +186,7 @@ describe('Inventory', () => {
     const stateWithMultipleItems: CampaignState = {
       ...mockState,
       inventory: [
-        { id: '1', name: 'Health Potion', quantity: 3, description: 'Restores 20 health points' }
+        { id: '1', name: 'Health Potion', quantity: 3, description: 'Restores 20 health points', category: 'consumable' as ItemCategory }
       ]
     };
 
@@ -222,7 +212,8 @@ describe('Inventory', () => {
       description: 'Too heavy to use',
       requirements: {
         minStrength: 20
-      }
+      },
+      category: 'general' as ItemCategory
     };
 
     const stateWithInvalidItem = {
@@ -246,7 +237,8 @@ describe('Inventory', () => {
       description: 'Combat only',
       requirements: {
         combatOnly: true
-      }
+      },
+      category: 'general' as ItemCategory
     };
 
     const stateWithInvalidItem = {
@@ -286,7 +278,8 @@ describe('Inventory', () => {
       id: 'valid-item',
       name: 'Valid Item',
       quantity: 1,
-      description: 'Can use this'
+      description: 'Can use this',
+      category: 'general' as ItemCategory
     };
 
     const stateWithValidItem = {

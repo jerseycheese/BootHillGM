@@ -156,10 +156,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           attributes: {
             ...state.character.attributes,
             ...(action.payload.attributes || {})
-          },
-          skills: {
-            ...state.character.skills,
-            ...(action.payload.skills || {})
           }
         }
       };
@@ -185,22 +181,12 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         experience: 5
       };
 
-      const defaultSkills = {
-        shooting: 50,
-        riding: 50,
-        brawling: 50
-      };
-
       const opponent: Character = {
         name: action.payload.name ?? 'Unknown Opponent',
         inventory: action.payload.inventory ?? [],
         attributes: {
           ...defaultAttributes,
           ...(action.payload.attributes || {})
-        },
-        skills: {
-          ...defaultSkills,
-          ...(action.payload.skills || {})
         },
         wounds: action.payload.wounds ?? [],
         isUnconscious: action.payload.isUnconscious ?? false
@@ -271,7 +257,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         opponent: action.payload.opponent ? {
           ...action.payload.opponent,
           attributes: { ...action.payload.opponent.attributes },
-          skills: { ...action.payload.opponent.skills },
           wounds: [...action.payload.opponent.wounds],
           isUnconscious: Boolean(action.payload.opponent.isUnconscious)
         } : null,

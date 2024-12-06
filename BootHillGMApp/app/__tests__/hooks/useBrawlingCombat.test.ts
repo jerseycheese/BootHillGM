@@ -25,13 +25,9 @@ const mockPlayer: Character = {
     bravery: 0,
     experience: 0
   },
-  skills: {
-    shooting: 0,
-    riding: 0,
-    brawling: 0
-  },
   wounds: [],
-  isUnconscious: false
+  isUnconscious: false,
+  inventory: []
 };
 
 const mockOpponent: Character = {
@@ -45,13 +41,9 @@ const mockOpponent: Character = {
     bravery: 0,
     experience: 0
   },
-  skills: {
-    shooting: 0,
-    riding: 0,
-    brawling: 0
-  },
   wounds: [],
-  isUnconscious: false
+  isUnconscious: false,
+  inventory: []
 };
 
 const mockDispatch = jest.fn();

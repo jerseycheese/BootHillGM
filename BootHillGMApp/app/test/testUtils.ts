@@ -34,7 +34,7 @@ import { getStartingInventory } from '../utils/startingInventory';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from '../types/character';
 
-type CharacterFieldKey = keyof Character['attributes'] | keyof Character['skills'] | 'name';
+type CharacterFieldKey = keyof Character['attributes'] | 'name';
 
 let mockRouterPush: jest.Mock;
 
@@ -84,11 +84,6 @@ const initialCharacter: Character = {
     baseStrength: 0,
     bravery: 0,
     experience: 0,
-  },
-  skills: {
-    shooting: 0,
-    riding: 0,
-    brawling: 0,
   },
   wounds: [],
   isUnconscious: false,
@@ -215,11 +210,7 @@ jest.mock('../hooks/useCharacterCreation', () => {
             };                                                                                                                                  
           }                                                                                                                                     
           return {                                                                                                                              
-            ...prev,                                                                                                                            
-            skills: {                                                                                                                           
-              ...prev.skills,                                                                                                                   
-              [field]: Number(value)                                                                                                            
-            }                                                                                                                                   
+            ...prev                                                                                                                                  
           };                                                                                                                                    
         });                                                                                                                                     
       }, []);                                                                                                                                   

@@ -21,7 +21,6 @@ jest.mock('../../utils/stateProtection', () => ({
 const createCharacter = (partialCharacter: Partial<Character>): Character => ({
   ...partialCharacter,
   attributes: { ...partialCharacter.attributes },
-  skills: { ...partialCharacter.skills },
   wounds: [...(partialCharacter.wounds || [])],
   isUnconscious: Boolean(partialCharacter.isUnconscious)
 }) as Character;
@@ -44,11 +43,6 @@ const mockInitialState: GameState = {
       bravery: 5,
       experience: 0
     },
-    skills: {
-      shooting: 50,
-      riding: 50,
-      brawling: 50
-    },
     wounds: [],
     isUnconscious: false
   }),
@@ -66,11 +60,6 @@ const mockInitialState: GameState = {
       baseStrength: 10,
       bravery: 5,
       experience: 0
-    },
-    skills: {
-      shooting: 50,
-      riding: 50,
-      brawling: 50
     },
     wounds: [],
     isUnconscious: false

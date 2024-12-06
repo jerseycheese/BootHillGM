@@ -9,7 +9,7 @@
 - [ ] As a player, I want to receive a simple background for my character so that I have a starting point for roleplaying.
   **Test Plan:**
   - Confirm that each character receives a unique background
-  - Verify that the background is consistent with the character's attributes and skills
+  - Verify that the background is consistent with the character's attributes
   - Ensure the background is displayed clearly in the character sheet
   **Status:** Not yet implemented.
 
@@ -17,7 +17,7 @@
   **Test Plan:**
   - Verify that appropriate rating tables from Boot Hill rules are displayed for each step
   - Ensure tables are clearly formatted and readable
-  - Check that tables match the current attribute/skill being set
+  - Check that tables match the current attribute being set
   - Test table display on different screen sizes
 
 - [ ] As a player, I want to see "Roll Dice" instead of "Generate" for numerical values, with an explanation of the dice roll result.
@@ -179,10 +179,10 @@
   - Verify that added IDs and classes are unique and descriptive
   - Test that added identifiers don't break existing styles or functionality
 
-- [ ] As a user, I want to see character attributes and skills in title case for better readability.
+- [ ] As a user, I want to see character attributes in title case for better readability.
   **Test Plan:**
-  - Check all instances where character attributes and skills are displayed
-  - Verify that attributes and skills are consistently displayed in title case
+  - Check all instances where character attributes are displayed
+  - Verify that attributes are consistently displayed in title case
 
 - [ ] As a user, I want the journal to be on its own separate page, so that it doesn't take up too much space on the Game Session page.
   **Test Plan:**

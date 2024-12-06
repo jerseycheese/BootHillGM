@@ -35,11 +35,6 @@ describe('Combat Utilities', () => {
           bravery: 5,
           experience: 5
         },
-        skills: {
-          shooting: 50,
-          riding: 50,
-          brawling: 50
-        },
         wounds: [],
         isUnconscious: false,
         inventory: [],
@@ -65,11 +60,6 @@ describe('Combat Utilities', () => {
           baseStrength: 5,
           bravery: 5,
           experience: 5
-        },
-        skills: {
-          shooting: 50,
-          riding: 50,
-          brawling: 50
         },
         wounds: [],
         isUnconscious: false,

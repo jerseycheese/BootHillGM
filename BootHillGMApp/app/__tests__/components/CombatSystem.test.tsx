@@ -32,11 +32,6 @@ describe('CombatSystem', () => {
       bravery: 10,
       experience: 5
     },
-    skills: {
-      shooting: 50,
-      riding: 50,
-      brawling: 50
-    },
     wounds: [],
     isUnconscious: false,
     inventory: [],
@@ -59,11 +54,6 @@ describe('CombatSystem', () => {
       baseStrength: 10,
       bravery: 10,
       experience: 5
-    },
-    skills: {
-      shooting: 50,
-      riding: 50,
-      brawling: 50
     },
     wounds: [],
     isUnconscious: false,
@@ -89,7 +79,12 @@ describe('CombatSystem', () => {
     journal: [],
     isCombatActive: false,
     opponent: null,
-    combatState: null,
+    combatState: {
+      isActive: false,
+      combatType: null,
+      winner: null,
+      combatLog: []
+    },
     savedTimestamp: Date.now()
   }));
 
@@ -133,7 +128,8 @@ describe('CombatSystem', () => {
       initialCombatState: {
         isActive: true,
         combatType: null,
-        winner: null
+        winner: null,
+        combatLog: []
       }
     });
     
@@ -151,7 +147,8 @@ describe('CombatSystem', () => {
           playerModifier: 0,
           opponentModifier: 0,
           roundLog: []
-        }
+        },
+        combatLog: []
       }
     });
     
@@ -208,12 +205,12 @@ describe('CombatSystem', () => {
     // Create a mock state with no weapons
     const noWeaponsPlayer = {
       ...mockPlayer,
-      weapon: null  // Remove weapon from player
+      weapon: undefined  // Remove weapon from player
     };
     
     const noWeaponsOpponent = {
       ...mockOpponent,
-      weapon: null  // Remove weapon from opponent
+      weapon: undefined  // Remove weapon from opponent
     };
 
     // Mock empty inventory state
@@ -294,7 +291,7 @@ describe('CombatSystem', () => {
   //   const mockWeaponState = {
   //     ...mockCampaignState,
   //     combatType: 'weapon' as const,
-  //     roundLog: [
+  //     combatLog: [
   //       { text: 'Test combat log entry', type: 'hit', timestamp: Date.now() }
   //     ]
   //   };

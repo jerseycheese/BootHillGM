@@ -75,8 +75,7 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
         isCombatActive: Boolean(stateToSave.isCombatActive),
         opponent: stateToSave.opponent ? {
           ...stateToSave.opponent,
-          attributes: { ...stateToSave.opponent.attributes },
-          skills: { ...stateToSave.opponent.skills }
+          attributes: { ...stateToSave.opponent.attributes }
         } : null,
         combatState: stateToSave.combatState 
           ? ensureCombatState(stateToSave.combatState)

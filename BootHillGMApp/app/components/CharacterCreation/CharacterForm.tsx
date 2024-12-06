@@ -41,7 +41,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
     ...Object.entries(STEP_DESCRIPTIONS)
       .filter(([key]) => key !== 'name' && key !== 'summary')
       .map(([key, value]) => ({
-        key: key as keyof Character['attributes'] | keyof Character['skills'],
+        key: key as keyof Character['attributes'],
         title: value.title,
         description: value.description,
         min: value.min,
@@ -49,7 +49,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
       }))
   ];
 
-  const handleGenerateField = useCallback(async (field: keyof Character['attributes'] | keyof Character['skills'] | 'name') => {
+  const handleGenerateField = useCallback(async (field: keyof Character['attributes'] | 'name') => {
     setGeneratingField(field);
     await onGenerateField(field);
     setGeneratingField(null);
@@ -110,8 +110,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
                 name={field.key}
                 value={field.key === 'name' ? 
                   character.name : 
-                  character.attributes[field.key as keyof Character['attributes']] ?? 
-                  character.skills[field.key as keyof Character['skills']] ?? ''
+                  character.attributes[field.key as keyof Character['attributes']] ?? ''
                 }
                 onChange={(e) => onFieldChange(field.key, e.target.value)}
                 min={field.min}

@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { CombatTypeSelection } from '../CombatTypeSelection';
 import { useCampaignState } from '../../CampaignStateManager';
+import { Character } from '../../../types/character';
 
 // Mock the campaign state hook
 jest.mock('../../CampaignStateManager');
@@ -21,14 +22,39 @@ describe('CombatTypeSelection', () => {
   });
 
   it('displays cleaned opponent name with default weapon', () => {
-    const opponent = {
+    const opponent: Character = {
       name: 'Rancher\nSUGGESTED_ACTIONS: []',
-      // ... other required properties
+      inventory: [],
+      attributes: {
+        speed: 5,
+        gunAccuracy: 5,
+        throwingAccuracy: 5,
+        strength: 5,
+        baseStrength: 10,
+        bravery: 5,
+        experience: 0
+      },
+      wounds: [],
+      isUnconscious: false
     };
 
     render(
       <CombatTypeSelection
-        playerCharacter={{} as any}
+        playerCharacter={{
+          name: 'Player',
+          inventory: [],
+          attributes: {
+            speed: 5,
+            gunAccuracy: 5,
+            throwingAccuracy: 5,
+            strength: 5,
+            baseStrength: 10,
+            bravery: 5,
+            experience: 0
+          },
+          wounds: [],
+          isUnconscious: false
+        }}
         opponent={opponent}
         onSelectType={mockOnSelectType}
       />
@@ -39,14 +65,39 @@ describe('CombatTypeSelection', () => {
   });
 
   it('shows available weapons for both combatants', () => {
-    const opponent = {
+    const opponent: Character = {
       name: 'Rancher',
-      // ... other required properties
+      inventory: [],
+      attributes: {
+        speed: 5,
+        gunAccuracy: 5,
+        throwingAccuracy: 5,
+        strength: 5,
+        baseStrength: 10,
+        bravery: 5,
+        experience: 0
+      },
+      wounds: [],
+      isUnconscious: false
     };
 
     render(
       <CombatTypeSelection
-        playerCharacter={{} as any}
+        playerCharacter={{
+          name: 'Player',
+          inventory: [],
+          attributes: {
+            speed: 5,
+            gunAccuracy: 5,
+            throwingAccuracy: 5,
+            strength: 5,
+            baseStrength: 10,
+            bravery: 5,
+            experience: 0
+          },
+          wounds: [],
+          isUnconscious: false
+        }}
         opponent={opponent}
         onSelectType={mockOnSelectType}
       />

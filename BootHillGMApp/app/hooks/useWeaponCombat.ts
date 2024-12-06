@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
-import { Weapon } from '../types/combat';
 import { calculateRangeModifier, getWeaponSpeedModifier } from '../utils/bootHillCombat';
 import { getOpponentWeapon } from '../utils/weaponUtils';
 

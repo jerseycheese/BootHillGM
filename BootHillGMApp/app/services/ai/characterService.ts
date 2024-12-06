@@ -4,7 +4,7 @@ import { retryWithExponentialBackoff } from '../../utils/retry';
 
 export async function generateCompleteCharacter(): Promise<Character> {
   const prompt = `
-    Generate a complete character for the Boot Hill RPG. Provide values for the following attributes and skills:
+    Generate a complete character for the Boot Hill RPG. Provide values for the following attributes:
     - Name
     - Speed (1-20)
     - GunAccuracy (1-20)
@@ -13,9 +13,6 @@ export async function generateCompleteCharacter(): Promise<Character> {
     - BaseStrength (8-20)
     - Bravery (1-20)
     - Experience (0-11)
-    - Shooting (1-100)
-    - Riding (1-100)
-    - Brawling (1-100)
 
     Respond with a valid JSON object. No additional text or formatting.
   `;
@@ -71,17 +68,12 @@ export async function generateCompleteCharacter(): Promise<Character> {
         bravery: Number(characterData.Bravery) || 10,
         experience: Number(characterData.Experience) || 5
       },
-      skills: {
-        shooting: Number(characterData.Shooting) || 50,
-        riding: Number(characterData.Riding) || 50,
-        brawling: Number(characterData.Brawling) || 50
-      },
       wounds: [],
       isUnconscious: false,
       inventory: []
     };
     
-    // Validate that all character attributes and skills are present and are valid numbers
+    // Validate that all character attributes are present and are valid numbers
     const isValid = (
       character.name !== 'Unknown' &&
       !isNaN(character.attributes.speed) &&
@@ -90,14 +82,11 @@ export async function generateCompleteCharacter(): Promise<Character> {
       !isNaN(character.attributes.strength) &&
       !isNaN(character.attributes.baseStrength) &&
       !isNaN(character.attributes.bravery) &&
-      !isNaN(character.attributes.experience) &&
-      !isNaN(character.skills.shooting) &&
-      !isNaN(character.skills.riding) &&
-      !isNaN(character.skills.brawling)
+      !isNaN(character.attributes.experience)
     );
 
     if (!isValid) {
-      throw new Error('Invalid character data: some attributes or skills are missing or not numbers');
+      throw new Error('Invalid character data: some attributes are missing or not numbers');
     }
     
     return character;
@@ -116,11 +105,6 @@ export async function generateCompleteCharacter(): Promise<Character> {
         baseStrength: generateRandomValue('baseStrength'),
         bravery: generateRandomValue('bravery'),
         experience: generateRandomValue('experience')
-      },
-      skills: {
-        shooting: generateRandomValue('shooting'),
-        riding: generateRandomValue('riding'),
-        brawling: generateRandomValue('brawling')
       },
       wounds: [],
       isUnconscious: false,
@@ -232,7 +216,7 @@ export async function generateFieldValue(): Promise<string> {
     }
   }
 
-export function generateRandomValue(key: keyof Character['attributes'] | keyof Character['skills']): number {
+export function generateRandomValue(key: keyof Character['attributes']): number {
   // Roll d100 for initial value
   const roll = Math.floor(Math.random() * 100) + 1;
   
@@ -303,24 +287,6 @@ export function generateRandomValue(key: keyof Character['attributes'] | keyof C
       if (roll <= 99) return 10; // 10 gunfights
       return 11; // 11+ gunfights
 
-    // Skills use percentile rolls with some modifications
-    case 'shooting':
-    case 'riding':
-    case 'brawling':
-      // Apply initial modification for player characters
-      let modified = roll;
-      if (roll <= 25) modified += 25;
-      else if (roll <= 50) modified += 15;
-      else if (roll <= 70) modified += 10;
-      else if (roll <= 90) modified += 5;
-      
-      // Apply survival modification
-      if (modified <= 51) modified += 3;
-      else if (modified <= 70) modified += 2;
-      else if (modified <= 90) modified += 1;
-      else if (modified <= 95) modified += 0.5;
-      
-      return Math.min(100, Math.floor(modified));
   }
   
   return 10; // Fallback default
@@ -332,8 +298,6 @@ export async function generateCharacterSummary(character: Character): Promise<st
     Name: ${character.name}
     Attributes:
     ${Object.entries(character.attributes).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
-    Skills:
-    ${Object.entries(character.skills).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
     
     The summary should capture the essence of the character, their strengths, potential weaknesses, and how they might fit into a Western setting. Keep the tone consistent with a gritty, Wild West atmosphere.
     

@@ -138,7 +138,7 @@ export function useCharacterCreation() {
     return !isNaN(numValue) && numValue >= fieldInfo.min && numValue <= fieldInfo.max;
   }, []);
 
-  const handleFieldChange = useCallback((field: keyof Character['attributes'] | keyof Character['skills'] | 'name', value: string | number) => {
+  const handleFieldChange = useCallback((field: keyof Character['attributes'] | 'name', value: string | number) => {
     setError('');
     
     if (!validateField(field, value)) {
@@ -162,16 +162,12 @@ export function useCharacterCreation() {
       }
       
       return {
-        ...prev,
-        skills: {
-          ...prev.skills,
-          [field]: Number(value)
-        }
+        ...prev
       };
     });
   }, [validateField]);
 
-  const generateFieldValue = useCallback(async (field: keyof Character['attributes'] | keyof Character['skills'] | 'name') => {
+  const generateFieldValue = useCallback(async (field: keyof Character['attributes'] | 'name') => {
     setIsGeneratingField(true);
     setError('');
     
@@ -212,8 +208,7 @@ export function useCharacterCreation() {
           .find(([key]) => {
             if (key === 'summary') return false;
             const value = key === 'name' ? character.name : 
-              character.attributes[key as keyof Character['attributes']] ?? 
-              character.skills[key as keyof Character['skills']];
+            character.attributes[key as keyof Character['attributes']];
             return !validateField(key, value);
           });
 
@@ -271,7 +266,7 @@ export function useCharacterCreation() {
   };
 }
 
-export type ValidField = keyof Character['attributes'] | keyof Character['skills'];
+export type ValidField = keyof Character['attributes'];
 
 export function generateRandomValue(field: ValidField): number {
   // Get field constraints from step descriptions

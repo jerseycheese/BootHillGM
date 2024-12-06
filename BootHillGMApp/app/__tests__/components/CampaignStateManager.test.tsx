@@ -116,13 +116,9 @@ describe('CampaignStateManager', () => {
           bravery: 10,
           experience: 5
         },
-        skills: {
-          shooting: 50,
-          riding: 50,
-          brawling: 50
-        },
         wounds: [],
-        isUnconscious: false
+        isUnconscious: false,
+        inventory: []
       },
       location: 'Test Town',
       narrative: 'Test narrative',
@@ -216,11 +212,6 @@ describe('CampaignStateManager', () => {
           baseStrength: 10,
           bravery: 10,
           experience: 5
-        },
-        skills: {
-          shooting: 50,
-          riding: 50,
-          brawling: 50
         },
         wounds: [],
         isUnconscious: false

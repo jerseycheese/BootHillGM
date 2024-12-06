@@ -41,11 +41,6 @@ describe('gameReducer', () => {
         bravery: 7,
         experience: 3
       },
-      skills: {
-        shooting: 6,
-        riding: 5,
-        brawling: 7
-      },
       wounds: [],
       isUnconscious: false,
       inventory: []
@@ -102,11 +97,6 @@ describe('gameReducer', () => {
         baseStrength: 7,
         bravery: 6,
         experience: 4
-      },
-      skills: {
-        shooting: 5,
-        riding: 6,
-        brawling: 6
       },
       wounds: [],
       isUnconscious: false,
