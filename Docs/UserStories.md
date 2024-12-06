@@ -68,15 +68,6 @@
   **Status:** Not yet implemented.
 
 ### Weapon Combat System - Core
-- [ ] As a player, I want to choose between brawling and weapon combat when a fight starts, so that I have control over my combat approach.
-  **Priority:** High
-  **Risk Level:** Medium
-  **Test Plan:**
-  - Verify combat type selection appears when combat is initiated
-  - Ensure selection is only shown when both options are valid
-  - Test that the correct combat system activates based on selection
-  - Check that the choice is clearly presented in the UI
-  **Status:** Not yet implemented.
 
 - [ ] As a player, I want to see what weapons (if any) both myself and my opponent have available during combat initiation, so that I can make informed combat decisions.
   **Priority:** High

@@ -245,3 +245,15 @@
   - Test player choices that relate to these themes
   - Ensure the game's atmosphere consistently reflects these Western themes
   **Status:** Implemented - Theme system added to AI prompts.
+
+- As a player, I want to choose between brawling and weapon combat when a fight starts, so that I have control over my combat approach.
+  **Test Plan:**
+  - Verify combat type selection appears when combat is initiated
+  - Ensure selection is only shown when both options are valid
+  - Test that the correct combat system activates based on selection
+  - Check that the choice is clearly presented in the UI
+  **Status:** Implemented with CombatTypeSelection component featuring:
+  - Dynamic combat type options based on available weapons
+  - Clear UI with descriptive button text
+  - Weapon availability display
+  - Proper state management integration
