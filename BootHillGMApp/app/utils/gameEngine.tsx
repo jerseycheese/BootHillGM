@@ -398,7 +398,6 @@ export function useGameSession() {
     }
     InventoryManager.equipWeapon(state.character, item);
     dispatch({ type: 'EQUIP_WEAPON', payload: itemId });
-    console.log('Weapon equipped:', itemId);
   }, [state, dispatch]);
 
   const handleUnequipWeapon = useCallback((itemId: string) => {
@@ -408,7 +407,6 @@ export function useGameSession() {
     }
     InventoryManager.unequipWeapon(state.character);
     dispatch({ type: 'UNEQUIP_WEAPON', payload: itemId });
-    console.log('Weapon unequipped:', itemId);
   }, [state, dispatch]);
 
   const retryLastAction = useCallback(() => {

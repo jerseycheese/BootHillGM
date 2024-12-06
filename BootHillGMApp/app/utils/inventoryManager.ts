@@ -85,7 +85,6 @@ export class InventoryManager {
       return;
     }
     character.equippedWeapon = item as unknown as Character['equippedWeapon'];
-    console.log('Weapon equipped:', item.name); // Debug log
   }
 
   /**
@@ -94,6 +93,5 @@ export class InventoryManager {
    */
   static unequipWeapon(character: Character): void {
     character.equippedWeapon = undefined;
-    console.log('Weapon unequipped'); // Debug log
   }
 }

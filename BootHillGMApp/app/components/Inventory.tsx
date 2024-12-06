@@ -59,7 +59,6 @@ export const Inventory: React.FC<InventoryProps> = ({
       setError('No character available');
       return;
     }
-    console.log('Equip weapon called with itemId:', itemId); // Debug log
     handleEquipWeapon?.(itemId);
   }, [state.character, handleEquipWeapon]);
 

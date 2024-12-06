@@ -13,7 +13,7 @@
 
 'use client';
 
-import React, { useEffect, useState} from 'react';
+import React, { useEffect } from 'react';
 import { Character } from '../../types/character';
 import { calculateCurrentStrength } from '../../utils/strengthSystem';
 import { CombatState } from '../../types/combat';
@@ -110,13 +110,7 @@ const StrengthDisplay: React.FC<StrengthDisplayProps> = ({
 const CombatStatusWithDebug: React.FC<CombatStatusProps> = (props) => {
   // Add debug logging for props
   useEffect(() => {
-    console.log('CombatStatus Props:', {
-      playerStrength: props.playerCharacter?.attributes?.strength,
-      opponentStrength: props.opponent?.attributes?.strength,
-      combatStateOpponentStrength: props.combatState?.opponentStrength,
-      opponent: props.opponent
-    });
-  }, [props.playerCharacter?.attributes?.strength, props.opponent?.attributes?.strength, props.combatState?.opponentStrength]);
+  }, [props.playerCharacter?.attributes?.strength, props.opponent?.attributes?.strength, props.combatState?.opponentStrength, props.opponent]);
 
   return (
     <>
@@ -145,14 +139,7 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   const playerStrength = calculateCurrentStrength(playerCharacter);
   const maxPlayerStrength = playerCharacter.attributes.baseStrength;
   
-  // Debug logging for strength calculations
   useEffect(() => {
-    console.log('Strength Calculations:', {
-      opponent,
-      opponentBaseStrength: opponent?.attributes?.baseStrength,
-      opponentCurrentStrength: opponent?.attributes?.strength,
-      combatStateStrength: combatState?.opponentStrength
-    });
   }, [opponent, combatState]);
 
   // Use combat state strength if available, otherwise fall back to opponent attributes

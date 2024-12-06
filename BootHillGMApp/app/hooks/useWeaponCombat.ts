@@ -235,15 +235,6 @@ export const useWeaponCombat = ({
               payload: updatedOpponent
             });
 
-            // Log the update for debugging
-            console.log('Updating opponent strength:', {
-                before: currentStrength,
-                damage,
-                after: newStrength,
-                opponent: updatedOpponent,
-                combatState: combatState
-            });
-
             return {
               hit: true,
               damage,
@@ -342,7 +333,6 @@ export const useWeaponCombat = ({
 
     try {
         // Player's turn
-        console.log("Processing player's action:", action);
         const result = await resolveWeaponAction(action, true);
         if (!result) {
             setIsProcessing(false);
@@ -369,13 +359,9 @@ export const useWeaponCombat = ({
             round: prev.round + 1,
             lastAction: action.type
         }));
-
-        // EXPLICITLY HANDLE OPPONENT'S TURN
-        console.log("Starting opponent's turn");
         
         // Make sure opponent has a weapon
         if (!weaponState.opponentWeapon) {
-            console.log("No opponent weapon found");
             setIsProcessing(false);
             return;
         }
@@ -385,11 +371,9 @@ export const useWeaponCombat = ({
         };
 
         // Process opponent's action
-        console.log("Resolving opponent's action");
         const opponentResult = await resolveWeaponAction(opponentAction, false);
         
         if (opponentResult) {
-            console.log("Opponent action result:", opponentResult);
             
             addToLog({
                 text: opponentResult.message,
@@ -428,7 +412,6 @@ export const useWeaponCombat = ({
     opponent,
     onCombatEnd,
     isProcessing,
-    currentOpponent,
     playerCharacter,
     weaponState.opponentWeapon
   ]);

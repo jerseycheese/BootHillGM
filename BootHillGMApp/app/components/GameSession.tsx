@@ -28,7 +28,6 @@ export default function GameSession() {
     }
     InventoryManager.equipWeapon(state.character, item);
     dispatch({ type: 'EQUIP_WEAPON', payload: itemId });
-    console.log('Weapon equipped:', itemId); // Debug log
   }, [state, dispatch]);
 
   // Create a session object with all required props
