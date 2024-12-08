@@ -107,17 +107,26 @@ export class InventoryManager {
    * @param item - The weapon item to equip.
    */
   static equipWeapon(character: Character, item: InventoryItem): void {
-    console.log('Item being equipped:', item);
-    console.log('Character equipped weapon before:', character.equippedWeapon);
-
     if (item.category !== 'weapon') {
       console.error('Item is not a valid weapon');
       return;
     }
 
-    character.equippedWeapon = item;
+    // First unequip any currently equipped weapons
+    const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+    inventory.forEach((invItem: InventoryItem) => {
+      if (invItem.category === 'weapon') {
+        invItem.isEquipped = false;
+      }
+    });
 
-    console.log('Character equipped weapon after:', character.equippedWeapon);
+    // Find and equip the new weapon
+    const weaponToEquip = inventory.find((i: InventoryItem) => i.id === item.id);
+    if (weaponToEquip) {
+      weaponToEquip.isEquipped = true;
+    }
+
+    localStorage.setItem('inventory', JSON.stringify(inventory));
   }
 
   /**
@@ -125,6 +134,12 @@ export class InventoryManager {
    * @param character - The character to unequip the weapon from.
    */
   static unequipWeapon(character: Character): void {
-    character.equippedWeapon = undefined;
+    const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+    inventory.forEach((item: InventoryItem) => {
+      if (item.category === 'weapon') {
+        item.isEquipped = false;
+      }
+    });
+    localStorage.setItem('inventory', JSON.stringify(inventory));
   }
 }

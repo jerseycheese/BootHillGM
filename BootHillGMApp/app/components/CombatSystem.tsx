@@ -67,6 +67,11 @@ export const CombatSystem: React.FC<{
 
   const handleCombatTypeSelect = (type: CombatType) => {
     setCombatType(type);
+    
+    // Find equipped weapon in player's inventory
+    const equippedWeapon = playerCharacter.inventory
+      .find(item => item.category === 'weapon' && item.equipped) as Weapon | undefined;
+    
     dispatch({
       type: 'UPDATE_COMBAT_STATE',
       payload: {
@@ -84,9 +89,9 @@ export const CombatSystem: React.FC<{
         } : undefined,
         weapon: type === 'weapon' ? {
           round: 1,
-          playerWeapon: null,
+          playerWeapon: equippedWeapon || null,
           opponentWeapon: null,
-          currentRange: 0,
+          currentRange: 10, // Set a default starting range
           roundLog: [],
           lastAction: undefined
         } : undefined

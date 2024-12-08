@@ -143,6 +143,12 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           return;
         }
 
+        // Find equipped weapon
+        const equippedWeaponItem = state.inventory?.find(
+          item => item.category === 'weapon' && item.isEquipped
+        );
+        const equippedWeapon = equippedWeaponItem?.weapon || null;
+
         // Set combat active first
         dispatch({ type: 'SET_COMBAT_ACTIVE', payload: true });
 
@@ -159,6 +165,13 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           opponentStrength: newOpponent.attributes.strength,
           currentTurn: 'player',
           winner: null,
+          weapon: {
+            round: 1,
+            playerWeapon: equippedWeapon,
+            opponentWeapon: null,
+            currentRange: 10,
+            roundLog: [],
+          }
         });
 
         // Update combat state with proper type conversion
@@ -175,7 +188,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         isUpdatingRef.current = false;
       }
     },
-    [dispatch, state.character, onUpdateNarrative]
+    [dispatch, state.character, state.inventory, onUpdateNarrative]
   );
 
   /**

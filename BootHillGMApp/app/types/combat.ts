@@ -131,20 +131,34 @@ export const rollForMalfunction = (weapon: Weapon): boolean => {
 };
 
 export const parseWeaponDamage = (damageString: string): number => {
-  const [diceCount, diceType] = damageString.split('d');
-  const [baseDice, modifier] = diceType.split('+');
+  // Handle empty or invalid input
+  if (!damageString) {
+    return 0;
+  }
+
+  // Split into dice and modifier parts
+  const [diceCount, rest] = damageString.split('d');
+  
+  // If no 'd' found in string, return 0
+  if (!rest) {
+    return 0;
+  }
+
+  // Split the rest into base dice and modifier if it exists
+  const [baseDice, modifierStr] = rest.includes('+') ? rest.split('+') : [rest, '0'];
   
   let total = 0;
-  const count = parseInt(diceCount);
-  const sides = parseInt(baseDice);
+  const count = parseInt(diceCount) || 0;
+  const sides = parseInt(baseDice) || 0;
+  const modifier = parseInt(modifierStr) || 0;
   
+  // Roll the dice
   for (let i = 0; i < count; i++) {
     total += Math.floor(Math.random() * sides) + 1;
   }
   
-  if (modifier) {
-    total += parseInt(modifier);
-  }
+  // Add modifier
+  total += modifier;
   
   return total;
 };
