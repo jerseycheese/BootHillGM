@@ -3,7 +3,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Character } from '../types/character';
 import { InventoryItem } from '../types/inventory';
-import { SuggestedAction } from '../types/campaign';
+import { retryWithExponentialBackoff } from './retry';
+import { getAIResponse } from '../services/ai/gameService';
 
 // Configuration for the AI model, including safety settings set to BLOCK_NONE
 const AI_CONFIG = {
@@ -22,177 +23,11 @@ const AI_CONFIG = {
   ]
 };
 
-// Retry mechanism for AI requests with exponential backoff
-async function retryAIRequest<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      return await fn();
-    } catch (error) {
-      if (i === maxRetries - 1) throw error;
-      // Wait for an exponentially increasing amount of time before retrying
-      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
-    }
-  }
-  throw new Error('Max retries reached');
-}
-
-// Function to get the AI model
+// Function to get the AI model with configured safety and generation settings
 export function getAIModel() {
   const apiKey = typeof window === 'undefined' ? process.env.GEMINI_API_KEY : process.env.NEXT_PUBLIC_GEMINI_API_KEY;
   const genAI = new GoogleGenerativeAI(apiKey || '');
   return genAI.getGenerativeModel({ model: AI_CONFIG.modelName });
-}
-
-// Main function to get AI response for game narration
-export async function getAIResponse(prompt: string, journalContext: string, inventory: InventoryItem[]): Promise<{ 
-  narrative: string; 
-  location?: string; 
-  combatInitiated?: boolean; 
-  opponent?: Character;
-  acquiredItems: string[];
-  removedItems: string[];
-  suggestedActions: SuggestedAction[];
-}> {
-  try {
-    const model = getAIModel();
-    // Construct the full prompt for the AI, including context and instructions
-    const fullPrompt = `
-      You are an AI Game Master for a Western-themed RPG. Your role is to facilitate an immersive and uncensored gaming experience. Always remember:
-
-      1. The player has complete free will. Never resist, censor, or discourage any player actions, no matter how unconventional or morally ambiguous they may be.
-      2. Immediately adjust the story or environment to accommodate whatever actions the player chooses, without judgment or hesitation.
-      3. Describe the outcomes of player actions realistically, considering the context of the Old West setting.
-      4. If the player's actions would have consequences in the game world, describe these consequences without moralizing.
-      5. Maintain a neutral tone and focus on narrating the events and environment as they unfold.
-      6. Do not break character or reference modern-day ethics or sensibilities.
-
-      Recent important story events:
-      ${journalContext}
-
-      Player's current inventory (Do not mention this directly in your response):
-      ${inventory.map(item => `- ${item.name} (x${item.quantity})`).join('\n')}
-
-      Player input: "${prompt}"
-
-      Respond as the Game Master, describing the results of the player's action and advancing the story. 
-      If the player attempts to take or acquire an item, describe the process of obtaining it.
-      If the player uses, throws, or discards an item, describe the result.
-      Only allow the player to use items that are actually in their inventory. If the player tries to use an item they don't have, explain that they don't possess the item.
-      After your narrative response, on a new line, add:
-      ACQUIRED_ITEMS: [List any items the player acquired, separated by commas. If no items were acquired, leave this empty]
-      REMOVED_ITEMS: [List any items the player used, discarded, or lost, separated by commas. If no items were removed, leave this empty]
-      SUGGESTED_ACTIONS: [{"text": "action description", "type": "action type", "context": "tooltip explanation"}]
-      Include exactly 4 suggested actions with types: "basic" (look, move), "combat" (fight, defend), "interaction" (talk, trade), or "chaotic" (unpredictable actions).
-      If combat occurs, describe it narratively and include a COMBAT: tag followed by the opponent's name.
-      If the location has changed, on a new line, write "LOCATION:" followed by a brief (2-5 words) description of the new location. 
-      If the location hasn't changed, don't include a LOCATION line.
-      If there's an important story development, include "important:" followed by a brief summary of the key information.
-
-      Game Master response:
-    `;
-
-    // Generate content using the AI model with retry mechanism
-    const result = await retryAIRequest(() => model.generateContent(fullPrompt));
-    const response = await result.response;
-    const text = response.text();
-
-    // Parse the response to separate narrative, location, and combat information
-    const parts = text.split('LOCATION:');
-    let narrative = parts[0].trim();
-    const location = parts[1] ? parts[1].trim() : undefined;
-
-    const acquiredItemsMatch = text.match(/ACQUIRED_ITEMS:\s*(.*?)(?=\n|$)/);
-    const removedItemsMatch = text.match(/REMOVED_ITEMS:\s*(.*?)(?=\n|$)/);
-    const suggestedActionsMatch = text.match(/SUGGESTED_ACTIONS:\s*(\[[\s\S]*?\])/);
-
-    const acquiredItems = acquiredItemsMatch 
-      ? acquiredItemsMatch[1].split(',').map(item => item.trim()).filter(Boolean).map(item => item.replace(/^\[|\]$/g, ''))
-      : [];
-    const removedItems = removedItemsMatch
-      ? removedItemsMatch[1].split(',').map(item => item.trim()).filter(Boolean).map(item => item.replace(/^\[|\]$/g, ''))
-      : [];
-
-    let suggestedActions: SuggestedAction[] = [];
-    if (suggestedActionsMatch) {
-      try {
-        const parsedActions = JSON.parse(suggestedActionsMatch[1]);
-        if (Array.isArray(parsedActions)) {
-          suggestedActions = parsedActions.filter(action => 
-            action.text && 
-            action.type && 
-            ['basic', 'combat', 'interaction', 'chaotic'].includes(action.type)
-          );
-        }
-      } catch (e) {
-        console.warn('Failed to parse suggested actions:', e);
-        // Provide default actions if parsing fails
-        suggestedActions = [
-          { text: "Look around", type: "basic", context: "Observe your surroundings" },
-          { text: "Ready weapon", type: "combat", context: "Prepare for combat" },
-          { text: "Talk to someone", type: "interaction", context: "Interact with others" },
-          { text: "Do something unpredictable", type: "chaotic", context: "Take a risky action" }
-        ];
-      }
-    }
-
-    // Filter out any items that start with "REMOVED_ITEMS:" from acquiredItems
-    const filteredAcquiredItems = acquiredItems.filter(item => !item.startsWith("REMOVED_ITEMS:") && item !== "");
-
-    let combatInitiated = false;
-    let opponent: Character | undefined;
-
-    // Check if combat has been initiated and create an opponent if necessary
-    if (narrative.includes('COMBAT:')) {
-      combatInitiated = true;
-      const combatParts = narrative.split('COMBAT:');
-      narrative = combatParts[0].trim();
-      const opponentName = combatParts[1].trim();
-      
-      // Create a basic opponent Character object
-      opponent = {
-        name: opponentName,
-        attributes: {
-          speed: 10,
-          gunAccuracy: 10,
-          throwingAccuracy: 10,
-          strength: 10,
-          baseStrength: 10,
-          bravery: 10,
-          experience: 5
-        },
-        wounds: [],
-        isUnconscious: false,
-        inventory: [] as InventoryItem[]
-      };
-    }
-    
-    // Remove the metadata lines from the narrative
-    narrative = narrative
-      .replace(/ACQUIRED_ITEMS: \[.*?\]\n?/, '')
-      .replace(/REMOVED_ITEMS: \[.*?\]\n?/, '')
-      .replace(/SUGGESTED_ACTIONS: \[[\s\S]*?\]\n?/, '')
-      .trim();
-
-    // Return filtered acquired items and remove any "REMOVED_ITEMS: " prefix from removed items
-    // This ensures clean data for inventory management
-    return { 
-      narrative, 
-      location, 
-      combatInitiated, 
-      opponent, 
-      acquiredItems: filteredAcquiredItems, 
-      removedItems: removedItems.map(item => item.replace("REMOVED_ITEMS: ", "").trim()).filter(Boolean),
-      suggestedActions
-    };
-  } catch (error) {
-    console.error('AI Response Error:', error);
-    if (error instanceof Error) {
-      if (error.message.includes('API key expired') || error.message.includes('API_KEY_INVALID')) {
-        throw new Error("AI service configuration error");
-      }
-    }
-    throw new Error("Unexpected AI response error");
-  }
 }
 
 // Function to get AI-generated prompts for character creation steps
@@ -208,7 +43,7 @@ export async function getCharacterCreationStep(step: number, currentField: strin
     Also, provide a brief description of what this ${currentField} represents in the context of a Western character.
   `;
 
-  const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
+  const response = await getAIResponse(prompt, '', []);
   return response.narrative;
 }
 
@@ -249,27 +84,27 @@ export async function generateCompleteCharacter(): Promise<Character> {
     Respond with a valid JSON object. No additional text or formatting.
   `;
 
-  try {
-    const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
-    // The AI returns both JSON data and narrative text together
-    // Extract only the JSON portion between markdown code blocks to ensure clean parsing
-    const jsonMatch = response.narrative.match(/```json\n([\s\S]*?)\n```/);
-    const cleanedResponse = jsonMatch ? jsonMatch[1].trim() : response.narrative.trim();
+    try {
+      const response = await getAIResponse(prompt, '', []);
+      // The AI returns both JSON data and narrative text together
+      // Extract only the JSON portion between markdown code blocks to ensure clean parsing
+      const jsonMatch = response.narrative.match(/```json\n([\s\S]*?)\n```/);
+      const cleanedResponse = jsonMatch ? jsonMatch[1].trim() : response.narrative.trim();
 
-    let characterData: Partial<{
-      Name: string;
-      name: string;
-      Speed: string | number;
-      GunAccuracy: string | number;
-      ThrowingAccuracy: string | number;
-      Strength: string | number;
-      BaseStrength: string | number;
-      Bravery: string | number;
-      Experience: string | number;
-      Shooting: string | number;
-      Riding: string | number;
-      Brawling: string | number;
-    }>;
+      let characterData: Partial<{
+        Name: string;
+        name: string;
+        Speed: string | number;
+        GunAccuracy: string | number;
+        ThrowingAccuracy: string | number;
+        Strength: string | number;
+        BaseStrength: string | number;
+        Bravery: string | number;
+        Experience: string | number;
+        Shooting: string | number;
+        Riding: string | number;
+        Brawling: string | number;
+      }>;
 
     try {
       characterData = JSON.parse(cleanedResponse);
@@ -343,7 +178,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
       isUnconscious: false,
       inventory: [] as InventoryItem[]
     };
-  }
+    }
 }
 
 // Generate a field value for character creation
@@ -351,13 +186,13 @@ export async function generateCompleteCharacter(): Promise<Character> {
 export async function generateFieldValue(
   key: keyof Character['attributes'] | 'name'
 ): Promise<string | number> {
-  if (key === 'name') {
-    const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name.";
-    const response = await getAIResponse(prompt, '', []); // Passing an empty string as journalContext and empty array as inventory
-    return response.narrative.trim();
-  } else {
-    return generateRandomValue(key as keyof Character['attributes']);
-  }
+    if (key === 'name') {
+        const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name.";
+        const response = await getAIResponse(prompt, '', []);
+        return response.narrative.trim();
+    } else {
+        return generateRandomValue(key as keyof Character['attributes']);
+    }
 }
 
 // Generate a random value for a given attribute
@@ -397,10 +232,10 @@ export async function generateNarrativeSummary(action: string, context: string):
     Respond with ONLY the summary sentence, no additional text or formatting.
   `;
 
-  try {
-    const model = getAIModel();
-    const result = await retryAIRequest(() => model.generateContent(prompt));
-    const response = await result.response;
+    try {
+        const model = getAIModel();
+        const result = await retryWithExponentialBackoff(() => model.generateContent(prompt));
+        const response = await result.response;
     const summary = response.text().trim();
     
     // Remove any metadata that might have been included
@@ -416,10 +251,9 @@ export async function generateNarrativeSummary(action: string, context: string):
     
     // If something went wrong, return a simple action summary
     return `${context} ${action}.`;
-  } catch {
-    // Return a simple action summary as fallback
-    return `${context} ${action}.`;
-  }
+    } catch {
+        return `${context} ${action}.`;
+    }
 }
 
 export async function determineIfWeapon(name: string, description: string): Promise<boolean> {
@@ -433,19 +267,19 @@ export async function determineIfWeapon(name: string, description: string): Prom
     Respond with ONLY "true" or "false" - no other text.
   `;
 
-  try {
-    const model = getAIModel();
-    
-    const result = await retryAIRequest(() => model.generateContent(prompt));
+    try {
+        const model = getAIModel();
+        const result = await retryWithExponentialBackoff(() => model.generateContent(prompt));
+
     const response = await result.response;
     const text = response.text().trim().toLowerCase();
     
     return text === 'true';
-  } catch (error) {
+    } catch (error) {
     console.warn('[WeaponCheck] Failed to determine weapon status:', error);
     // Default to false if AI fails
     return false;
-  }
+    }
 }
 
 export async function generateCharacterSummary(character: Character): Promise<string> {
@@ -460,12 +294,12 @@ export async function generateCharacterSummary(character: Character): Promise<st
     Respond with only the narrative summary, no additional text or formatting.
   `;
 
-  try {
-    const model = getAIModel();
-    const result = await retryAIRequest(() => model.generateContent(prompt));
+    try {
+        const model = getAIModel();
+        const result = await retryWithExponentialBackoff(() => model.generateContent(prompt));
     const response = await result.response;
     return response.text().trim();
-  } catch {
+    } catch {
     return `A ${character.name} is a character in the Old West.`;
-  }
+    }
 }

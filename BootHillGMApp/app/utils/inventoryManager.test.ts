@@ -2,6 +2,7 @@ import { InventoryManager } from './inventoryManager';
 import { Character } from '../types/character';
 import { GameState } from '../types/campaign';
 import { InventoryItem } from '../types/inventory';
+import { WEAPONS } from './weaponDefinitions';
 
 describe('InventoryManager', () => {
   const mockCharacter: Character = {
@@ -17,7 +18,8 @@ describe('InventoryManager', () => {
       experience: 0
     },
     wounds: [],
-    isUnconscious: false
+    isUnconscious: false,
+    equippedWeapon: undefined
   };
 
   const mockGameState: GameState = {
@@ -34,7 +36,8 @@ describe('InventoryManager', () => {
     isCombatActive: false,
     opponent: null,
     isClient: false,
-    suggestedActions: []
+    suggestedActions: [],
+    combatState: undefined
   };
 
   describe('validateItemUse', () => {
@@ -160,6 +163,98 @@ describe('InventoryManager', () => {
 
       const prompt = InventoryManager.getItemUsePrompt(item);
       expect(prompt).toBe('use Test Item');
+    });
+  });
+
+  describe('Weapon Addition', () => {
+    test('should add Colt Peacemaker with correct weapon stats', () => {
+      const coltPeacemaker: InventoryItem = {
+        id: 'colt_peacemaker',
+        name: 'Colt Peacemaker',
+        description: 'A reliable revolver with a long barrel.',
+        quantity: 1,
+        category: 'weapon',
+        weapon: WEAPONS['Colt Peacemaker']
+      };
+
+      InventoryManager.addItem(coltPeacemaker);
+
+      const item = InventoryManager.getItem(coltPeacemaker.id);
+      expect(item).toBeDefined();
+      expect(item?.name).toBe('Colt Peacemaker');
+      expect(item?.category).toBe('weapon');
+      expect(item?.weapon).toEqual(WEAPONS['Colt Peacemaker']);
+    });
+
+    test('should add Derringer with correct weapon stats', () => {
+      const derringer: InventoryItem = {
+        id: 'derringer',
+        name: 'Derringer',
+        description: 'A small, concealable revolver.',
+        quantity: 1,
+        category: 'weapon',
+        weapon: WEAPONS['Derringer']
+      };
+
+      InventoryManager.addItem(derringer);
+
+      const item = InventoryManager.getItem(derringer.id);
+      expect(item).toBeDefined();
+      expect(item?.name).toBe('Derringer');
+      expect(item?.category).toBe('weapon');
+      expect(item?.weapon).toEqual(WEAPONS['Derringer']);
+    });
+
+    test('should add non-weapon item without weapon stats', () => {
+      const bandage: InventoryItem = {
+        id: 'bandage',
+        name: 'Bandage',
+        description: 'A simple bandage for treating wounds.',
+        quantity: 5,
+        category: 'medical'
+      };
+
+      InventoryManager.addItem(bandage);
+
+      const item = InventoryManager.getItem(bandage.id);
+      expect(item).toBeDefined();
+      expect(item?.name).toBe('Bandage');
+      expect(item?.category).toBe('medical');
+      expect(item?.weapon).toBeUndefined();
+    });
+  });
+
+  describe('Weapon Equipping', () => {
+    test('should equip Colt Peacemaker with correct weapon stats', () => {
+      const coltPeacemaker: InventoryItem = {
+        id: 'colt_peacemaker',
+        name: 'Colt Peacemaker',
+        description: 'A reliable revolver with a long barrel.',
+        quantity: 1,
+        category: 'weapon',
+        weapon: WEAPONS['Colt Peacemaker']
+      };
+
+      InventoryManager.addItem(coltPeacemaker);
+      InventoryManager.equipWeapon(mockCharacter, coltPeacemaker);
+
+      expect(mockCharacter.equippedWeapon).toEqual(coltPeacemaker);
+    });
+
+    test('should equip Horseshoe Hammer with Other Melee Weapon stats', () => {
+      const horseshoeHammer: InventoryItem = {
+        id: 'horseshoe_hammer',
+        name: 'Horseshoe Hammer',
+        description: 'A makeshift melee weapon.',
+        quantity: 1,
+        category: 'weapon',
+        weapon: WEAPONS['Other Melee Weapon'] // Ensure correct weapon stats
+      };
+
+      InventoryManager.addItem(horseshoeHammer);
+      InventoryManager.equipWeapon(mockCharacter, horseshoeHammer);
+
+      expect(mockCharacter.equippedWeapon?.weapon).toEqual(WEAPONS['Other Melee Weapon']);
     });
   });
 });

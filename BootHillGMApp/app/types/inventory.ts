@@ -1,16 +1,17 @@
-// BootHillGMApp/app/types/inventory.ts
-
-export type ItemCategory = 'weapon' | 'general' | 'consumable';
-
-export interface WeaponStats {
-  accuracy: number;
-  range: number;
-  reliability: number;
-  damage: string;
-  speed: number;
-  ammunition?: number;
-  maxAmmunition?: number;
+export interface InventoryItem {
+  id: string;
+  name: string;
+  description: string;
+  quantity: number;
+  category: ItemCategory;
+  requirements?: ItemRequirements;
+  effect?: ItemEffect;
+  usePrompt?: string;
+  weapon?: Weapon; // Updated to use Weapon type
+  isEquipped?: boolean; // Added isEquipped property
 }
+
+export type ItemCategory = 'general' | 'weapon' | 'consumable' | 'medical';
 
 export interface ItemRequirements {
   minStrength?: number;
@@ -19,22 +20,26 @@ export interface ItemRequirements {
 }
 
 export interface ItemEffect {
-  type: 'heal' | 'buff' | 'utility';
-  value?: number;
-  duration?: number;
+  type: 'heal' | 'damage' | 'other';
+  value: number;
 }
 
-export interface InventoryItem {
+export interface WeaponModifiers {
+  accuracy: number;     // Base accuracy modifier
+  reliability: number; // Chance of malfunction (1-100)
+  speed: number;       // Initiative modifier
+  range: number;       // Effective range in yards
+  damage: string;      // Damage dice (e.g. "1d6+1")
+  ammunition?: number;  // Current ammunition
+  maxAmmunition?: number; // Maximum ammunition capacity
+}
+
+export interface Weapon {
   id: string;
   name: string;
-  quantity: number;
-  description: string;
-  category: ItemCategory;
-  requirements?: ItemRequirements;
-  effect?: ItemEffect;
-  usePrompt?: string;
-  weaponStats?: WeaponStats;
-  isEquipped?: boolean;
+  modifiers: WeaponModifiers;
+  ammunition?: number;
+  maxAmmunition?: number;
 }
 
 export interface ItemValidationResult {

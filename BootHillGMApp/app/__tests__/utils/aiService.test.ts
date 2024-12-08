@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { getAIResponse, generateCharacterSummary, generateNarrativeSummary } from '../../utils/aiService';
+import { getAIResponse } from '../../services/ai/gameService';
+import { generateCharacterSummary, generateNarrativeSummary } from '../../utils/aiService';
 import { Character } from '../../types/character';
 
 jest.mock("@google/generative-ai");

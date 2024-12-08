@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { initialGameState } from '../types/campaign';
-import { getAIResponse } from '../services/ai';
+import { getAIResponse } from '../services/ai/gameService';
 import { INITIAL_INVENTORY } from '../utils/constants';
 
 // Hook to handle game session initialization and state management

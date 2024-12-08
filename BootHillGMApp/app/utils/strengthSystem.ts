@@ -7,7 +7,8 @@
  * - Character defeat conditions
  * - Unconsciousness checks
  */
-import { Character, Wound } from '../types/character';
+import { Character } from '../types/character';
+import { Wound } from '../types/wound';
 
 /**
  * Constants representing the strength reduction effects of different wound severities.

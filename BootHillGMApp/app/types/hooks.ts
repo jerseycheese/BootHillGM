@@ -1,6 +1,6 @@
 import { Character } from './character';
 import { Dispatch } from 'react';
-import { CombatLogEntry } from '../types/character';
+import { CombatLogEntry } from './character';
 
 export interface UseBrawlingCombatProps {
   playerCharacter: Character;

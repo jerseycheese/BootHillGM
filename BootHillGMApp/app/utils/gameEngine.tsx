@@ -6,6 +6,8 @@ import { SuggestedAction } from '../types/campaign';
 import { CombatType, CombatState, ensureCombatState } from '../types/combat';
 import { determineIfWeapon } from '../services/ai';
 import { InventoryManager } from './inventoryManager';
+import { WEAPONS } from './weaponDefinitions';
+import { Weapon } from '../types/combat';
 
 // Define the structure of the game state
 export interface GameState {
@@ -73,6 +75,70 @@ export const initialState: GameState = {
   combatState: undefined
 };
 
+// Function to determine if a weapon is melee based on its stats
+function isMeleeWeapon(weapon: Weapon): boolean {
+  return weapon.modifiers.range === 1;
+}
+
+// Function to find the closest matching weapon
+export function findClosestWeapon(weaponName: string): Weapon {
+  const weaponNameLower = weaponName.toLowerCase();
+  const weaponKeys = Object.keys(WEAPONS);
+
+  // Check for exact match
+  const exactMatch = WEAPONS[weaponName];
+  if (exactMatch) {
+    console.debug(`[findClosestWeapon] Exact match found for ${weaponName}:`, exactMatch);
+    return exactMatch;
+  }
+
+  // Determine if the weapon is likely a melee weapon
+  const isWeaponMelee = weaponNameLower.includes('knife') || weaponNameLower.includes('tomahawk') || weaponNameLower.includes('lance') || weaponNameLower.includes('hammer');
+
+  // Determine if the weapon is a shotgun
+  const isWeaponShotgun = weaponNameLower.includes('shotgun');
+
+  // Initialize closestMatch and weaponsToCheck
+  let closestMatch: Weapon;
+  let closestMatchScore = -1;
+  let weaponsToCheck: string[];
+
+  if (isWeaponShotgun) {
+    weaponsToCheck = weaponKeys.filter(key => key.toLowerCase().includes('shotgun'));
+    closestMatch = WEAPONS['Shotgun'] as Weapon; // Default to Shotgun if no better match is found
+  } else if (isWeaponMelee) {
+    weaponsToCheck = weaponKeys.filter(key => isMeleeWeapon(WEAPONS[key]));
+    closestMatch = WEAPONS['Other Melee Weapon'] as Weapon; // Default to Other Melee Weapon if no better match is found
+  } else {
+    weaponsToCheck = weaponKeys.filter(key => !isMeleeWeapon(WEAPONS[key]) && !key.toLowerCase().includes('shotgun'));
+    closestMatch = WEAPONS['Other Carbines'] as Weapon; // Default to Other Carbines if no better match is found
+  }
+
+  // Check for closest match in the appropriate category
+  for (const key of weaponsToCheck) {
+    const keyLower = key.toLowerCase();
+    const score = similarityScore(weaponNameLower, keyLower);
+    if (score > closestMatchScore) {
+      closestMatchScore = score;
+      closestMatch = WEAPONS[key] as Weapon;
+    }
+  }
+
+  console.debug(`[findClosestWeapon] Closest match found for ${weaponName}: ${closestMatch.name}`, closestMatch);
+  return closestMatch;
+}
+
+// Function to calculate similarity score between two strings
+function similarityScore(str1: string, str2: string): number {
+  if (str1 === str2) return 1;
+  if (!str1 || !str2) return 0;
+
+  const maxLength = Math.max(str1.length, str2.length);
+  const commonLength = Array.from(str1).reduce((acc, char) => acc + (str2.includes(char) ? 1 : 0), 0);
+
+  return commonLength / maxLength;
+}
+
 // Reducer function to handle state updates based on dispatched actions
 export function gameReducer(state: GameState, action: GameEngineAction): GameState {
   switch (action.type) {
@@ -97,28 +163,25 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         const newItem = { ...action.payload };
         if (!newItem.category) {
           newItem.category = 'general';
-          determineIfWeapon(newItem.name, newItem.description)
-            .then((isWeapon: boolean) => {
-              if (isWeapon) {
-                newItem.category = 'weapon';
-              }
-            })
-            .catch((error: Error) => {
-              console.error(`[Inventory] Error during weapon determination for "${newItem.name}":`, error);
-            });
-        } else {
-          if (newItem.category === 'general') {
-            determineIfWeapon(newItem.name, newItem.description)
-              .then((isWeapon: boolean) => {
-                if (isWeapon) {
-                  newItem.category = 'weapon';
-                }
-              })
-              .catch((error: Error) => {
-                console.error(`[Inventory] Error during weapon verification for "${newItem.name}":`, error);
-              });
-          }
         }
+        determineIfWeapon(newItem.name, newItem.description)
+          .then((isWeapon: boolean) => {
+            if (isWeapon) {
+              newItem.category = 'weapon';
+              const closestWeapon = findClosestWeapon(newItem.name); // Call findClosestWeapon only if it's a weapon
+              if (closestWeapon) { // Check if a closest weapon was found
+                newItem.weapon = closestWeapon;
+                console.log(`[Inventory] Added weapon: ${newItem.name} with stats:`, newItem.weapon);
+              } else {
+                console.debug(`[Inventory] No matching weapon found for ${newItem.name}.`);
+              }
+            } else {
+              console.debug(`[Inventory] Item ${newItem.name} is not classified as a weapon.`);
+            }
+          })
+          .catch((error: Error) => {
+            console.error(`[Inventory] Error during weapon determination for "${newItem.name}":`, error);
+          });
         return { ...state, inventory: [...state.inventory, newItem] };
       }
     }
@@ -270,6 +333,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'EQUIP_WEAPON': {
       const weaponItem = state.inventory.find(item => item.id === action.payload);
       if (!weaponItem || weaponItem.category !== 'weapon') {
+        console.error('Invalid item to equip');
         return state;
       }
 
@@ -278,18 +342,30 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         isEquipped: item.id === action.payload ? true : false
       }));
 
+      const weapon: Weapon = {
+        id: weaponItem.id,
+        name: weaponItem.name,
+        modifiers: weaponItem.weapon?.modifiers ?? {
+          accuracy: 0,
+          range: 0,
+          reliability: 0,
+          damage: '0',
+          speed: 0,
+          ammunition: 0,
+          maxAmmunition: 0
+        },
+        ammunition: weaponItem.weapon?.ammunition ?? 0,
+        maxAmmunition: weaponItem.weapon?.maxAmmunition ?? 0
+      };
+
+      console.debug(`[EQUIP_WEAPON] Equipping weapon:`, weapon);
+
       return {
         ...state,
         inventory: updatedInventory,
         character: state.character ? {
           ...state.character,
-          weapon: weaponItem.weaponStats ? {
-            id: weaponItem.id,
-            name: weaponItem.name,
-            modifiers: weaponItem.weaponStats,
-            ammunition: weaponItem.weaponStats.ammunition,
-            maxAmmunition: weaponItem.weaponStats.maxAmmunition
-          } : undefined
+          weapon: weapon
         } : null
       };
     }
@@ -298,6 +374,8 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         ...item,
         isEquipped: false
       }));
+
+      console.debug(`[UNEQUIP_WEAPON] Unequipping weapon`);
 
       return {
         ...state,

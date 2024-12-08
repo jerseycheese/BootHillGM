@@ -1,5 +1,6 @@
 import { InventoryItem } from './inventory';
-import { Weapon } from './combat';
+import { Weapon } from './inventory';
+import { Wound } from './wound';
 
 /**
  * Character type definitions following Boot Hill v2 rules
@@ -30,24 +31,6 @@ export const CHARACTER_CREATION_STEPS = [
   { key: 'summary', type: 'review' }
 ] as const;
 
-/** Represents a wound sustained by a character */
-export interface Wound {
-  /** Location of the wound on the body */
-  location: 'head' | 'chest' | 'abdomen' | 'leftArm' | 'rightArm' | 'leftLeg' | 'rightLeg';
-  /** Severity level of the wound */
-  severity: 'light' | 'serious' | 'mortal';
-  /** Amount of strength reduction caused by the wound */
-  strengthReduction: number;
-  /** Combat turn when the wound was received */
-  turnReceived: number;
-}
-
-export interface CombatLogEntry {
-  text: string;
-  type: 'hit' | 'miss' | 'critical' | 'info';
-  timestamp: number;
-}
-
 export interface Character {
   /** Character's full name */
   name: string;
@@ -73,7 +56,6 @@ export interface Character {
     experience: number;
   };
 
-
   /** Track active wounds and their effects */
   wounds: Wound[];
 
@@ -84,5 +66,11 @@ export interface Character {
   weapon?: Weapon;
 
   /** Equipped weapon */
-  equippedWeapon?: Weapon;
+  equippedWeapon?: InventoryItem;
+}
+
+export interface CombatLogEntry {
+  text: string;
+  type: 'hit' | 'miss' | 'critical' | 'info';
+  timestamp: number;
 }
