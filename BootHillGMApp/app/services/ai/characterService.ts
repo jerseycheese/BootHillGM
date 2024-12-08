@@ -1,7 +1,13 @@
 import { Character } from '../../types/character';
-import { getAIModel } from './config';
+import { getAIModel } from '../../utils/aiService';
 import { retryWithExponentialBackoff } from '../../utils/retry';
 
+/**
+ * Generates a complete character for the Boot Hill RPG.
+ * Uses AI to generate character attributes and a summary.
+ * 
+ * @returns A Promise that resolves to a Character object
+ */
 export async function generateCompleteCharacter(): Promise<Character> {
   const prompt = `
     Generate a complete character for the Boot Hill RPG. Provide values for the following attributes:
@@ -117,6 +123,12 @@ export async function generateCompleteCharacter(): Promise<Character> {
 const recentNames: string[] = [];
 const MAX_RECENT_NAMES = 10;
 
+/**
+ * Checks if a new name is too similar to recently generated names.
+ * 
+ * @param newName - The name to check
+ * @returns A boolean indicating if the name is too similar
+ */
 function isNameTooSimilar(newName: string): boolean {
   return recentNames.some(existingName => {
     // Convert both names to lowercase for comparison
@@ -135,6 +147,11 @@ function isNameTooSimilar(newName: string): boolean {
   });
 }
 
+/**
+ * Adds a name to the list of recently generated names.
+ * 
+ * @param name - The name to add
+ */
 function addToRecentNames(name: string) {
   recentNames.unshift(name);
   if (recentNames.length > MAX_RECENT_NAMES) {
@@ -142,6 +159,12 @@ function addToRecentNames(name: string) {
   }
 }
 
+/**
+ * Generates a single name for a character in a Western-themed RPG.
+ * Uses AI to generate a name, with fallback to random generation if AI fails.
+ * 
+ * @returns A Promise that resolves to a string containing the character's name
+ */
 export async function generateFieldValue(): Promise<string> {
     const prompt = `Generate a single name for a character in a Western-themed RPG set in the American Old West (1865-1890).
     - Should be a full name (first and last)
@@ -216,6 +239,12 @@ export async function generateFieldValue(): Promise<string> {
     }
   }
 
+/**
+ * Generates a random value for a character attribute based on a d100 roll.
+ * 
+ * @param key - The attribute key ('speed', 'gunAccuracy', 'throwingAccuracy', 'strength', 'baseStrength', 'bravery', 'experience')
+ * @returns A number representing the attribute value
+ */
 export function generateRandomValue(key: keyof Character['attributes']): number {
   // Roll d100 for initial value
   const roll = Math.floor(Math.random() * 100) + 1;
@@ -292,6 +321,13 @@ export function generateRandomValue(key: keyof Character['attributes']): number 
   return 10; // Fallback default
 }
 
+/**
+ * Generates a brief, engaging summary for a character in a Western-themed RPG.
+ * Uses AI to generate a summary based on the character's attributes.
+ * 
+ * @param character - The character object to generate a summary for
+ * @returns A Promise that resolves to a string containing the character summary
+ */
 export async function generateCharacterSummary(character: Character): Promise<string> {
   const prompt = `
     Generate a brief, engaging summary for a character in a Western-themed RPG based on the following attributes:

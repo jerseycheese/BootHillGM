@@ -16,8 +16,14 @@ describe('promptBuilder', () => {
 
   test('should include inventory items', () => {
     const inventory: InventoryItem[] = [
-      { id: '1', name: 'Gun', quantity: 1, description: 'A rusty revolver' },
-      { id: '2', name: 'Bullets', quantity: 6, description: 'Six rounds' }
+      {
+        id: '1', name: 'Gun', quantity: 1, description: 'A rusty revolver',
+        category: 'weapon'
+      },
+      {
+        id: '2', name: 'Bullets', quantity: 6, description: 'Six rounds',
+        category: 'weapon'
+      }
     ];
 
     const prompt = buildGamePrompt(

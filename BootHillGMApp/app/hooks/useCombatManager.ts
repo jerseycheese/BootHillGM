@@ -143,9 +143,6 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           return;
         }
 
-        // Debug: Log opponent name
-        console.log('Opponent Name:', newOpponent.name);
-
         // Set combat active first
         dispatch({ type: 'SET_COMBAT_ACTIVE', payload: true });
 

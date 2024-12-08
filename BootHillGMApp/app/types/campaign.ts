@@ -2,13 +2,38 @@ import { Character } from './character';
 import { JournalEntry } from './journal';
 import { InventoryItem } from './inventory';
 
+/**
+ * Defines the structure of a suggested action in the campaign.
+ * 
+ * @property text - The description of the action
+ * @property type - The type of the action ('basic', 'combat', 'interaction', 'chaotic')
+ * @property context - Optional tooltip explanation for the action
+ */
 export interface SuggestedAction {
   text: string;
-  type: 'basic' | 'combat' | 'interaction';
+  type: 'basic' | 'combat' | 'interaction' | 'chaotic';
   context?: string;
 }
 
 // Define the structure of the campaign state
+/**
+ * Defines the structure of the campaign state.
+ * 
+ * @property currentPlayer - The current player's identifier
+ * @property npcs - List of NPC identifiers
+ * @property character - The player's character object
+ * @property location - The current location in the game
+ * @property savedTimestamp - Optional timestamp of when the game state was last saved
+ * @property gameProgress - The current progress of the game
+ * @property journal - List of journal entries
+ * @property narrative - The current narrative text
+ * @property inventory - List of inventory items
+ * @property quests - List of quest identifiers
+ * @property isCombatActive - Boolean indicating if combat is active
+ * @property opponent - The opponent character object if combat is active
+ * @property isClient - Optional boolean indicating if the state is on the client side
+ * @property suggestedActions - List of suggested actions for the player
+ */
 export interface CampaignState {
   currentPlayer: string;
   npcs: string[];
@@ -26,6 +51,9 @@ export interface CampaignState {
   suggestedActions: SuggestedAction[];
 }
 
+/**
+ * Initial state of the campaign.
+ */
 export const initialGameState: CampaignState = {
   currentPlayer: '',
   npcs: [],
@@ -42,8 +70,10 @@ export const initialGameState: CampaignState = {
   suggestedActions: []
 };
 
-
 // Union type of all possible actions
+/**
+ * Union type of all possible actions that can be dispatched to update the campaign state.
+ */
 export type GameAction =
   | { type: 'SET_PLAYER'; payload: string }
   | { type: 'ADD_NPC'; payload: string }
@@ -67,4 +97,7 @@ export type GameAction =
   | { type: 'SET_SUGGESTED_ACTIONS'; payload: SuggestedAction[] };
 
 // Export GameState type alias for compatibility
+/**
+ * Type alias for CampaignState for compatibility.
+ */
 export type GameState = CampaignState;

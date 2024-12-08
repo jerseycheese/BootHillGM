@@ -24,26 +24,38 @@ export default function InputManager({
     }
   }, [isLoading, onSubmit]);
 
-  const actionClass = (type: string) => 
-    `px-3 py-1 text-sm rounded hover:bg-opacity-80 disabled:opacity-50 text-white bg-${
-      type === 'combat' ? 'red' : type === 'basic' ? 'blue' : 'green'
-    }-500`;
+  /**
+   * Determines the CSS class for a suggested action button based on its type.
+   * 
+   * @param type - The type of the suggested action ('combat', 'basic', 'interaction', 'chaotic')
+   * @returns A string containing the CSS class for the button
+   */
+  const actionClass = (type: string) => {
+    return `px-3 py-1 text-sm rounded hover:bg-opacity-80 disabled:opacity-50 text-white ${
+      type === 'combat' ? 'bg-red-500' : 
+      type === 'basic' ? 'bg-blue-500' : 
+      type === 'interaction' ? 'bg-green-500' : 
+      'bg-black'
+    }`;
+  };
 
   return (
     <div className="wireframe-section space-y-4">
       {suggestedActions.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {suggestedActions.map((action, index) => (
-            <button
-              key={`${action.type}-${index}`}
-              onClick={() => handleAction(action.text)}
-              disabled={isLoading}
-              className={actionClass(action.type)}
-              title={action.context || action.text}
-            >
-              {action.text}
-            </button>
-          ))}
+          {suggestedActions.map((action, index) => {
+            return (
+              <button
+                key={`${action.type}-${index}`}
+                onClick={() => handleAction(action.text)}
+                disabled={isLoading}
+                className={actionClass(action.type)}
+                title={action.context || action.text}
+              >
+                {action.text}
+              </button>
+            );
+          })}
         </div>
       )}
 

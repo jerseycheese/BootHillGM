@@ -1,9 +1,17 @@
 import { Character } from '../../types/character';
 import { InventoryItem } from '../../types/inventory';
 import { SuggestedAction } from '../../types/campaign';
-import { getAIModel } from './config';
+import { getAIModel } from '../../utils/aiService';
 import { retryWithExponentialBackoff } from '../../utils/retry';
 
+/**
+ * Retrieves a response from the AI Game Master based on player input and game context.
+ * 
+ * @param prompt - The player's input action
+ * @param journalContext - Recent important story events
+ * @param inventory - The player's current inventory
+ * @returns A Promise that resolves to an object containing the narrative, location, combat status, opponent, acquired items, removed items, and suggested actions
+ */
 export async function getAIResponse(prompt: string, journalContext: string, inventory: InventoryItem[]): Promise<{ 
   narrative: string; 
   location?: string; 
@@ -41,7 +49,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       ACQUIRED_ITEMS: [List any items the player acquired, separated by commas. If no items were acquired, leave this empty]
       REMOVED_ITEMS: [List any items the player used, discarded, or lost, separated by commas. If no items were removed, leave this empty]
       SUGGESTED_ACTIONS: [{"text": "action description", "type": "action type", "context": "tooltip explanation"}]
-      Include exactly 3 suggested actions with types: "basic" (look, move), "combat" (fight, defend), or "interaction" (talk, trade).
+      Include exactly 4 suggested actions with types: "basic" (look, move), "combat" (fight, defend), "interaction" (talk, trade), or "chaotic" (unpredictable actions).
       If combat occurs, describe it narratively and include a COMBAT: tag followed by the opponent's name.
       If the location has changed, on a new line, write "LOCATION:" followed by a brief (2-5 words) description of the new location. 
       If the location hasn't changed, don't include a LOCATION line.
@@ -53,7 +61,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
     const result = await retryWithExponentialBackoff(() => model.generateContent(fullPrompt));
     const response = await result.response;
     const text = response.text();
-    
+
     const parts = text.split('LOCATION:');
     let narrative = parts[0].trim();
     const location = parts[1] ? parts[1].trim() : undefined;
@@ -77,11 +85,18 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
           suggestedActions = parsedActions.filter(action => 
             action.text && 
             action.type && 
-            ['basic', 'combat', 'interaction'].includes(action.type)
+            ['basic', 'combat', 'interaction', 'chaotic'].includes(action.type)
           );
         }
       } catch (e) {
         console.warn('Failed to parse suggested actions:', e);
+        // Provide default actions if parsing fails
+        suggestedActions = [
+          { text: "Look around", type: "basic", context: "Observe your surroundings" },
+          { text: "Ready weapon", type: "combat", context: "Prepare for combat" },
+          { text: "Talk to someone", type: "interaction", context: "Interact with others" },
+          { text: "Do something unpredictable", type: "chaotic", context: "Take a risky action" }
+        ];
       }
     }
 
@@ -113,6 +128,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       };
     }
     
+    // Remove the metadata lines from the narrative
     narrative = narrative
       .replace(/ACQUIRED_ITEMS: \[.*?\]\n?/, '')
       .replace(/REMOVED_ITEMS: \[.*?\]\n?/, '')
@@ -141,6 +157,13 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
   }
 }
 
+/**
+ * Generates a brief, journal-style summary of a player action in a Western RPG.
+ * 
+ * @param action - The player's action
+ * @param context - The context of the action
+ * @returns A Promise that resolves to a string containing the summary sentence
+ */
 export async function generateNarrativeSummary(action: string, context: string): Promise<string> {
   const prompt = `
     Create a very brief (1 sentence) journal-style summary of this player action in a Western RPG:
@@ -186,6 +209,13 @@ export async function generateNarrativeSummary(action: string, context: string):
   }
 }
 
+/**
+ * Determines if an item would likely be used as a weapon in an Old West setting.
+ * 
+ * @param name - The name of the item
+ * @param description - The description of the item
+ * @returns A Promise that resolves to a boolean indicating if the item is a weapon
+ */
 export async function determineIfWeapon(name: string, description: string): Promise<boolean> {
   const prompt = `
     Analyze if this item would likely be used as a weapon in an Old West setting:

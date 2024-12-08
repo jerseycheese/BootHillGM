@@ -37,7 +37,7 @@ async function retryAIRequest<T>(fn: () => Promise<T>, maxRetries = 3): Promise<
 }
 
 // Function to get the AI model
-function getAIModel() {
+export function getAIModel() {
   const apiKey = typeof window === 'undefined' ? process.env.GEMINI_API_KEY : process.env.NEXT_PUBLIC_GEMINI_API_KEY;
   const genAI = new GoogleGenerativeAI(apiKey || '');
   return genAI.getGenerativeModel({ model: AI_CONFIG.modelName });
@@ -82,7 +82,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       ACQUIRED_ITEMS: [List any items the player acquired, separated by commas. If no items were acquired, leave this empty]
       REMOVED_ITEMS: [List any items the player used, discarded, or lost, separated by commas. If no items were removed, leave this empty]
       SUGGESTED_ACTIONS: [{"text": "action description", "type": "action type", "context": "tooltip explanation"}]
-      Include exactly 3 suggested actions with types: "basic" (look, move), "combat" (fight, defend), or "interaction" (talk, trade).
+      Include exactly 4 suggested actions with types: "basic" (look, move), "combat" (fight, defend), "interaction" (talk, trade), or "chaotic" (unpredictable actions).
       If combat occurs, describe it narratively and include a COMBAT: tag followed by the opponent's name.
       If the location has changed, on a new line, write "LOCATION:" followed by a brief (2-5 words) description of the new location. 
       If the location hasn't changed, don't include a LOCATION line.
@@ -95,7 +95,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
     const result = await retryAIRequest(() => model.generateContent(fullPrompt));
     const response = await result.response;
     const text = response.text();
-    
+
     // Parse the response to separate narrative, location, and combat information
     const parts = text.split('LOCATION:');
     let narrative = parts[0].trim();
@@ -120,16 +120,22 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
           suggestedActions = parsedActions.filter(action => 
             action.text && 
             action.type && 
-            ['basic', 'combat', 'interaction'].includes(action.type)
+            ['basic', 'combat', 'interaction', 'chaotic'].includes(action.type)
           );
         }
       } catch (e) {
         console.warn('Failed to parse suggested actions:', e);
+        // Provide default actions if parsing fails
+        suggestedActions = [
+          { text: "Look around", type: "basic", context: "Observe your surroundings" },
+          { text: "Ready weapon", type: "combat", context: "Prepare for combat" },
+          { text: "Talk to someone", type: "interaction", context: "Interact with others" },
+          { text: "Do something unpredictable", type: "chaotic", context: "Take a risky action" }
+        ];
       }
     }
 
     // Filter out any items that start with "REMOVED_ITEMS:" from acquiredItems
-    // This prevents incorrectly adding items that should be removed
     const filteredAcquiredItems = acquiredItems.filter(item => !item.startsWith("REMOVED_ITEMS:") && item !== "");
 
     let combatInitiated = false;
@@ -160,7 +166,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       };
     }
     
-    // Remove the ACQUIRED_ITEMS, REMOVED_ITEMS, and SUGGESTED_ACTIONS lines from the narrative
+    // Remove the metadata lines from the narrative
     narrative = narrative
       .replace(/ACQUIRED_ITEMS: \[.*?\]\n?/, '')
       .replace(/REMOVED_ITEMS: \[.*?\]\n?/, '')
@@ -179,7 +185,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       suggestedActions
     };
   } catch (error) {
-    // Error handling for API issues
+    console.error('AI Response Error:', error);
     if (error instanceof Error) {
       if (error.message.includes('API key expired') || error.message.includes('API_KEY_INVALID')) {
         throw new Error("AI service configuration error");
