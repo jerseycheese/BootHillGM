@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { CampaignStateProvider, useCampaignState } from '../../components/CampaignStateManager';
-import { GameState } from '../../utils/gameEngine';
+import { GameState } from '../../types/gameState';
 
 // Mock localStorage
 const mockLocalStorage: { [key: string]: string } = {};
@@ -60,7 +60,7 @@ describe('CampaignStateManager', () => {
     expect(result.current.state.gameProgress).toBe(0);
     expect(result.current.state.isCombatActive).toBe(false);
     expect(result.current.state.opponent).toBeNull();
-    expect(result.current.state.savedTimestamp).toBeUndefined();
+    expect(result.current.state.savedTimestamp).toBeDefined();
     expect(result.current.state.isClient).toBe(true);
     expect(result.current.state.suggestedActions).toEqual([]);
     expect(result.current.state.combatState).toBeUndefined();
@@ -214,7 +214,8 @@ describe('CampaignStateManager', () => {
           experience: 5
         },
         wounds: [],
-        isUnconscious: false
+        isUnconscious: false,
+        inventory: []
       },
       location: 'Test Town',
       narrative: 'Test narrative',

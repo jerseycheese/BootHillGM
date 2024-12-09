@@ -1,7 +1,10 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useCallback, useEffect, useRef, useMemo } from 'react';
-import { GameState, GameEngineAction, gameReducer, initialState as initialGameState } from '../utils/gameEngine';
+import { GameEngineAction } from '../types/gameActions';
+import { gameReducer } from '../reducers/gameReducer';
+import { GameState } from '../types/gameState';
+import { initialState as initialGameState } from '../types/initialState';
 import { useCampaignStateRestoration } from '../hooks/useCampaignStateRestoration';
 import { InventoryItem } from '../types/inventory';
 import { ensureCombatState } from '../types/combat';

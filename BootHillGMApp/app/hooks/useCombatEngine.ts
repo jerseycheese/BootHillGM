@@ -27,7 +27,7 @@ import {
   formatMissMessage,
   calculateCombatDamage
 } from '../utils/combatUtils';
-import { GameEngineAction } from '../utils/gameEngine';
+import { GameEngineAction } from '../types/gameActions';
 
 interface UseCombatEngineProps {
   playerCharacter: Character;

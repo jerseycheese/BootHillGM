@@ -1,4 +1,6 @@
-import { gameReducer, GameState, GameEngineAction } from '../../utils/gameEngine';
+import { gameReducer } from '../../reducers/gameReducer';
+import { GameState } from '../../types/gameState';
+import { GameEngineAction } from '../../types/gameActions';
 import { Character } from '../../types/character';
 import { InventoryItem, ItemCategory } from '../../types/inventory';
 import { NarrativeJournalEntry } from '../../types/journal';

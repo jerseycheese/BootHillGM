@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { cleanCharacterName } from '../utils/combatUtils';
 import { AIService } from '../services/ai';
 import { GameState, SuggestedAction } from '../types/campaign';
-import { GameEngineAction } from '../utils/gameEngine';
+import { GameEngineAction } from '../types/gameActions'; // Corrected import path
 import { JournalEntry } from '../types/journal';
 import { Character } from '../types/character';
 import { generateNarrativeSummary } from '../utils/aiService';

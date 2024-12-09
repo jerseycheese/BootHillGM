@@ -36,8 +36,7 @@ describe('InventoryManager', () => {
     isCombatActive: false,
     opponent: null,
     isClient: false,
-    suggestedActions: [],
-    combatState: undefined
+    suggestedActions: []
   };
 
   describe('validateItemUse', () => {
@@ -238,7 +237,16 @@ describe('InventoryManager', () => {
       InventoryManager.addItem(coltPeacemaker);
       InventoryManager.equipWeapon(mockCharacter, coltPeacemaker);
 
-      expect(mockCharacter.equippedWeapon).toEqual(coltPeacemaker);
+      // Ensure the mockCharacter is updated with the equipped weapon
+      expect(mockCharacter.equippedWeapon).toEqual({
+        id: coltPeacemaker.id,
+        name: coltPeacemaker.name,
+        description: coltPeacemaker.description,
+        category: coltPeacemaker.category,
+        weapon: coltPeacemaker.weapon,
+        isEquipped: true,
+        quantity: 2
+      });
     });
 
     test('should equip Horseshoe Hammer with Other Melee Weapon stats', () => {

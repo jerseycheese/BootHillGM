@@ -1,6 +1,7 @@
-import { GameState, GameEngineAction } from '../../utils/gameEngine';
+import { GameEngineAction } from '../../types/gameActions';
 import { Character } from '../../types/character';
 import { CombatState } from '../../types/combat';
+import { GameState } from '../../types/gameState';
 
 export interface CombatSystemProps {
   playerCharacter: Character;

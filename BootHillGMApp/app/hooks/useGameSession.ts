@@ -148,8 +148,8 @@ export const useGameSession = () => {
       
       // Skip item removal if using an item through the Use button
       if (!isUsingItem && response.removedItems?.length > 0) {
-        response.removedItems.forEach(itemName => {
-          const itemToRemove = currentInventory.find(item => item.name === itemName);
+        response.removedItems.forEach((itemName: string) => {
+          const itemToRemove = currentInventory.find((item: InventoryItem) => item.name === itemName);
           if (itemToRemove) {
             dispatch({ type: 'REMOVE_ITEM', payload: itemToRemove.id });
           }
@@ -184,7 +184,7 @@ export const useGameSession = () => {
   // Handles using an item from the inventory
   // Updates both the inventory state and narrative display
   const handleUseItem = useCallback(async (itemId: string) => {
-    const item = state.inventory?.find(i => i.id === itemId);
+    const item = state.inventory?.find((i: InventoryItem) => i.id === itemId);
     if (item) {
       try {
         setIsUsingItem(true);

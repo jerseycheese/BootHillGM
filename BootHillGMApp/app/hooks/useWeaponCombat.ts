@@ -12,7 +12,7 @@ import {
   WEAPON_STATS,
   parseWeaponDamage
 } from '../types/combat';
-import { GameEngineAction } from '../utils/gameEngine';
+import { GameEngineAction } from '../types/gameActions';
 import { calculateHitChance, isCritical } from '../utils/combatRules';
 
 /**

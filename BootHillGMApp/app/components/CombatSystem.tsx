@@ -13,10 +13,11 @@ import { BrawlingControls } from './Combat/BrawlingControls';
 import { WeaponCombatControls } from './Combat/WeaponCombatControls';
 import { useBrawlingCombat } from '../hooks/useBrawlingCombat';
 import { useWeaponCombat } from '../hooks/useWeaponCombat';
-import { GameEngineAction } from '../utils/gameEngine';
+import { GameEngineAction } from '../types/gameActions';
 import { CombatTypeSelection } from './Combat/CombatTypeSelection';
 import { CombatType, CombatState, WeaponCombatAction } from '../types/combat';
 import { cleanCombatLogEntry } from '../utils/textCleaningUtils';
+import { Weapon } from '../types/inventory';
 
 export const CombatSystem: React.FC<{
   playerCharacter: Character;
@@ -31,15 +32,17 @@ export const CombatSystem: React.FC<{
   dispatch,
   initialCombatState
 }) => {
+  // State to track the type of combat (brawling or weapon)
   const [combatType, setCombatType] = useState<CombatType>(null);
 
   useEffect(() => {
-    // Only set combatType if initialCombatState exists and has a non-null combatType
+    // Set combatType if initialCombatState is provided and has a non-null combatType
     if (initialCombatState && initialCombatState.combatType !== null) {
       setCombatType(initialCombatState.combatType);
     }
   }, [initialCombatState]);
   
+  // Brawling combat logic and state
   const { brawlingState, isProcessing: isBrawlingProcessing, processRound } = useBrawlingCombat({
     playerCharacter,
     opponent,
@@ -48,6 +51,7 @@ export const CombatSystem: React.FC<{
     initialCombatState: initialCombatState?.brawling
   });
 
+  // Weapon combat logic and state
   const {
     weaponState,
     isProcessing: isWeaponProcessing,
@@ -55,7 +59,7 @@ export const CombatSystem: React.FC<{
     canAim,
     canFire,
     canReload,
-    currentOpponent // Add this to track current opponent state
+    currentOpponent // Track current opponent state
   } = useWeaponCombat({
     playerCharacter,
     opponent,
@@ -65,13 +69,15 @@ export const CombatSystem: React.FC<{
     combatState: initialCombatState || { isActive: false, combatType: null, winner: null, playerStrength: 0, opponentStrength: 0, brawling: undefined, weapon: undefined, currentTurn: 'player' }
   });
 
+  // Handle combat type selection
   const handleCombatTypeSelect = (type: CombatType) => {
     setCombatType(type);
     
     // Find equipped weapon in player's inventory
     const equippedWeapon = playerCharacter.inventory
-      .find(item => item.category === 'weapon' && item.equipped) as Weapon | undefined;
+      .find(item => item.category === 'weapon' && item.isEquipped) as Weapon | undefined;
     
+    // Update combat state with selected combat type and equipped weapon
     dispatch({
       type: 'UPDATE_COMBAT_STATE',
       payload: {
@@ -91,7 +97,7 @@ export const CombatSystem: React.FC<{
           round: 1,
           playerWeapon: equippedWeapon || null,
           opponentWeapon: null,
-          currentRange: 10, // Set a default starting range
+          currentRange: 10, // Default starting range
           roundLog: [],
           lastAction: undefined
         } : undefined
@@ -99,6 +105,7 @@ export const CombatSystem: React.FC<{
     });
   };
 
+  // Render combat controls based on selected combat type
   const renderCombatContent = () => {
     if (!combatType) {
       return (
@@ -138,6 +145,7 @@ export const CombatSystem: React.FC<{
 
   return (
     <div className="combat-system wireframe-section space-y-4">
+      {/* Display combat status for both player and opponent */}
       <CombatStatus
         playerCharacter={playerCharacter}
         opponent={currentOpponent || opponent}
@@ -157,8 +165,10 @@ export const CombatSystem: React.FC<{
         }}
       />
       
+      {/* Render combat controls based on selected combat type */}
       {renderCombatContent()}
       
+      {/* Display combat log for brawling */}
       {brawlingState?.roundLog?.length > 0 && (
         <div className="combat-log mt-4">
           {brawlingState.roundLog.map((log, index) => (
@@ -169,6 +179,7 @@ export const CombatSystem: React.FC<{
         </div>
       )}
 
+      {/* Display combat log for weapon combat */}
       {weaponState.roundLog.length > 0 && (
         <div className="combat-log mt-4">
           {weaponState.roundLog.map((log, index) => (

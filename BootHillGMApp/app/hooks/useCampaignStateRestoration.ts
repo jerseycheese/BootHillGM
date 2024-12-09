@@ -1,7 +1,7 @@
 import { GameState } from '../types/campaign';
 import { InventoryItem } from '../types/inventory';
 import { Character } from '../types/character';
-import { initialState as initialGameState } from '../utils/gameEngine';
+import { initialState as initialGameState } from '../types/initialState';
 
 interface RestoreStateOptions {
   isInitializing: boolean;

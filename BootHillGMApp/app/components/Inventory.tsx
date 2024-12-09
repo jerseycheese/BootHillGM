@@ -31,15 +31,27 @@ export const Inventory: React.FC<InventoryProps> = ({
   const handleUseItem = useCallback((itemId: string) => {
     const item = state.inventory.find(i => i.id === itemId);
     
-    if (!item || !state.character) {
+    if (!item || !state.character || state.currentPlayer === null) {
       setError('Unable to use item');
+      return;
+    }
+
+    // Type assertion to ensure currentPlayer is a string
+    const campaignState = {
+      ...state,
+      currentPlayer: state.currentPlayer as string
+    };
+
+    // Type guard to ensure state is of the correct type
+    if (!('location' in campaignState) || typeof campaignState.isCombatActive !== 'boolean') {
+      setError('Invalid game state');
       return;
     }
 
     const validation = InventoryManager.validateItemUse(
       item,
       state.character,
-      state
+      campaignState
     );
 
     if (!validation.valid) {

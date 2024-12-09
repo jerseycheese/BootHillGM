@@ -124,6 +124,7 @@ export class InventoryManager {
     const weaponToEquip = inventory.find((i: InventoryItem) => i.id === item.id);
     if (weaponToEquip) {
       weaponToEquip.isEquipped = true;
+      character.equippedWeapon = weaponToEquip; // Update character's equipped weapon
     }
 
     localStorage.setItem('inventory', JSON.stringify(inventory));
@@ -131,9 +132,8 @@ export class InventoryManager {
 
   /**
    * Unequips the current weapon from the character.
-   * @param character - The character to unequip the weapon from.
    */
-  static unequipWeapon(character: Character): void {
+  static unequipWeapon(): void {
     const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
     inventory.forEach((item: InventoryItem) => {
       if (item.category === 'weapon') {

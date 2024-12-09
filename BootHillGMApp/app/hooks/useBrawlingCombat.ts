@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { BrawlingEngine } from '../utils/brawlingEngine';
 import { BrawlingState, LogEntry, ensureCombatState } from '../types/combat';
 import { Wound } from '../types/wound';
-import { GameEngineAction } from '../utils/gameEngine';
+import { GameEngineAction } from '../types/gameActions';
 import { Character } from '../types/character';
 import * as brawlingSystem from '../utils/brawlingSystem';
 
