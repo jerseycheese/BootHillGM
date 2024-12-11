@@ -1,8 +1,8 @@
-import { InventoryManager } from './inventoryManager';
-import { Character } from '../types/character';
-import { GameState } from '../types/campaign';
-import { InventoryItem } from '../types/inventory';
-import { WEAPONS } from './weaponDefinitions';
+import { InventoryManager } from '../../utils/inventoryManager';
+import { Character } from '../../types/character';
+import { GameState } from '../../types/campaign';
+import { InventoryItem } from '../../types/inventory';
+import { WEAPONS } from '../../utils/weaponDefinitions';
 
 describe('InventoryManager', () => {
   const mockCharacter: Character = {

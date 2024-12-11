@@ -322,7 +322,6 @@ Implemented a reusable StateProtection utility that provides:
 - Provides timeout protection
 - Maintains error handling consistency
 
-
 ## ADR 8: Brawling Combat System Refactoring
 
 ### Date: 2024-11-09
@@ -384,3 +383,44 @@ Implemented a unified LoadingScreen component with type-specific messages and bu
 #### Negative
 - Slightly more complex component API
 - Need to update existing loading screen usage
+
+## ADR 10: Refactoring of useWeaponCombat Hook
+
+### Date: 2024-12-10
+### Status: Accepted
+
+### Context
+The `useWeaponCombat` hook was becoming complex and difficult to maintain due to handling both combat state and action resolution.
+
+### Decision
+Refactored `useWeaponCombat` into two separate hooks:
+- `useWeaponCombatState` for managing combat state
+- `useWeaponCombatAction` for resolving combat actions
+
+Additionally, extracted combat action resolution logic into utility functions:
+- `weaponCombatActions` for processing player and opponent actions
+- `weaponCombatResolver` for resolving individual actions
+- `weaponCombatState` for updating combat state based on action results
+
+### Rationale
+- Separates concerns between state management and action resolution
+- Improves testability and maintainability
+- Follows single responsibility principle
+- Enhances readability and modularity
+
+### Consequences
+
+#### Positive
+- Cleaner and more modular code
+- Better testability
+- Easier maintenance
+- Improved readability
+
+#### Negative
+- Additional files to maintain
+- Slight increase in complexity
+
+### Implementation Notes
+- Used TypeScript for type safety
+- Maintained existing hook interface for compatibility
+- Added comments to explain the purpose and functionality of new code

@@ -1,6 +1,5 @@
 import { Character } from '../types/character';
 import { cleanText } from './textCleaningUtils';
-import { parseWeaponDamage } from '../types/combat';
 
 export interface CombatMessageParams {
   attackerName: string;
@@ -78,6 +77,16 @@ export const formatMissMessage = (
   const cleanedDefender = cleanCharacterName(defenderName);
   
   return `${cleanedAttacker} misses ${cleanedDefender}! [Roll: ${roll}/${hitChance}]`;
+};
+
+export const parseWeaponDamage = (damageString: string): number => {
+  // Assuming damageString is in the format "XdY" (e.g., "1d6")
+  const [count, sides] = damageString.split('d').map(Number);
+  let totalDamage = 0;
+  for (let i = 0; i < count; i++) {
+    totalDamage += Math.floor(Math.random() * sides) + 1;
+  }
+  return totalDamage;
 };
 
 export const calculateCombatDamage = (weapon?: { modifiers: { damage: string } }): number => {

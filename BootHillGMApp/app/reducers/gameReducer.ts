@@ -6,6 +6,13 @@ import { ensureCombatState } from '../types/combat';
 import { determineIfWeapon } from '../services/ai/index';
 import { findClosestWeapon } from '../utils/weaponUtils';
 
+/**
+ * Reducer function to handle game state updates based on actions.
+ * 
+ * @param state - The current game state.
+ * @param action - The action to be processed.
+ * @returns The updated game state.
+ */
 export function gameReducer(state: GameState, action: GameEngineAction): GameState {
   switch (action.type) {
     case 'SET_PLAYER':
@@ -37,16 +44,11 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
               const closestWeapon = findClosestWeapon(newItem.name);
               if (closestWeapon) {
                 newItem.weapon = closestWeapon;
-                console.log(`[Inventory] Added weapon: ${newItem.name} with stats:`, newItem.weapon);
-              } else {
-                console.debug(`[Inventory] No matching weapon found for ${newItem.name}.`);
               }
-            } else {
-              console.debug(`[Inventory] Item ${newItem.name} is not classified as a weapon.`);
             }
           })
           .catch((error: Error) => {
-            console.error(`[Inventory] Error during weapon determination for "${newItem.name}":`, error);
+            // Handle error during weapon determination
           });
         return { ...state, inventory: [...state.inventory, newItem] };
       }
@@ -193,7 +195,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'EQUIP_WEAPON': {
       const weaponItem = state.inventory.find(item => item.id === action.payload);
       if (!weaponItem || weaponItem.category !== 'weapon') {
-        console.error('Invalid item to equip');
+        // Handle invalid item to equip
         return state;
       }
 
@@ -218,8 +220,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         maxAmmunition: weaponItem.weapon?.maxAmmunition ?? 0
       };
 
-      console.debug(`[EQUIP_WEAPON] Equipping weapon:`, weapon);
-
       return {
         ...state,
         inventory: updatedInventory,
@@ -234,8 +234,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         ...item,
         isEquipped: false
       }));
-
-      console.debug(`[UNEQUIP_WEAPON] Unequipping weapon`);
 
       return {
         ...state,

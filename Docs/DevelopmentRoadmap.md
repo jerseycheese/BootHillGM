@@ -78,8 +78,10 @@
 - [x] Add health tracking for player and opponent
 - [x] Create combat log for narrating fight progression
 - [x] Add initial weapon combat framework
-- [ ] Implement critical hits and misses
-- [ ] Add combat-specific inventory interactions
+- [x] Implement critical hits and misses
+- [x] Add combat-specific inventory interactions
+- [x] Refactor combat hooks (`useWeaponCombat`, `useWeaponCombatAction`, `useWeaponCombatState`)
+- [x] Improve combat log with detailed action descriptions and outcomes
 
 3.4 Inventory System Refinements
 - [x] Implement basic inventory data structure
@@ -88,7 +90,7 @@
 - [ ] Implement item usage restrictions and logical checks
   - Prevent usage of items not in inventory
   - Provide feedback for attempted use of unavailable items
-- [ ] Integrate inventory with other game systems
+- [x] Integrate inventory with other game systems
 
 3.5 Journal Integration
 - [x] Implement automatic journal entry creation
@@ -99,6 +101,7 @@
   - [x] Virtualized scrolling for performance
   - [x] Enhanced entry formatting
   - [x] Comprehensive test coverage
+- [x] Update combat log entries in combat system for detailed combat results and summaries
 
 ## Phase 4: Polish and Testing (Next Phase)
 

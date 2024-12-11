@@ -79,6 +79,8 @@ export interface WeaponCombatAction {
 }
 
 export type WeaponCombatResult = {
+  type: 'aim' | 'fire' | 'reload' | 'move' | 'malfunction';
+  targetRange?: number;  // For move actions
   hit: boolean;
   damage?: number;
   critical?: boolean;
