@@ -47,7 +47,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
               }
             }
           })
-          .catch((error: Error) => {
+          .catch(() => {
             // Handle error during weapon determination
           });
         return { ...state, inventory: [...state.inventory, newItem] };

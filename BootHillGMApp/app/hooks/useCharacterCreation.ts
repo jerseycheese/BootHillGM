@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { generateFieldValue as aiGenerateFieldValue, generateCharacterSummary, generateCompleteCharacter } from '../services/ai/characterService';
+import { generateCharacterSummary, generateCompleteCharacter } from '../services/ai/characterService';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from '../types/character';
 import { initialGameState } from '../types/campaign';
@@ -173,7 +173,7 @@ export function useCharacterCreation() {
     
     try {
       const value = field === 'name' 
-        ? await aiGenerateFieldValue()
+        ? 'Generated Name' // Placeholder for name generation
         : generateRandomValue(field);
       handleFieldChange(field, value);
     } catch {
