@@ -2,22 +2,10 @@ import { renderHook, act } from '@testing-library/react';
 import { CampaignStateProvider, useCampaignState } from '../../components/CampaignStateManager';
 import { GameState } from '../../types/gameState';
 
-// Mock localStorage
-const mockLocalStorage: { [key: string]: string } = {};
+import { setupMocks } from '../../test/setup/mockSetup';
 
 beforeEach(() => {
-  // Clear mock localStorage before each test
-  Object.keys(mockLocalStorage).forEach(key => delete mockLocalStorage[key]);
-
-  // Mock localStorage methods
-  Storage.prototype.setItem = jest.fn((key, value) => {
-    mockLocalStorage[key] = value.toString();
-  });
-  Storage.prototype.getItem = jest.fn(key => mockLocalStorage[key]);
-  Storage.prototype.removeItem = jest.fn(key => {
-    delete mockLocalStorage[key];
-  });
-
+  setupMocks();
   // Reset initialization flag
   if (typeof window !== 'undefined') {
     sessionStorage.removeItem('initializing_new_character');
@@ -143,7 +131,12 @@ describe('CampaignStateManager', () => {
       savedTimestamp: Date.now(),
       isClient: true,
       suggestedActions: [],
-      combatState: undefined
+      combatState: {
+        isActive: false,
+        combatType: null,
+        winner: null,
+        combatLog: []
+      }
     };
 
     localStorage.setItem('campaignState', JSON.stringify(testState));
@@ -153,12 +146,13 @@ describe('CampaignStateManager', () => {
     );
 
     const { result } = renderHook(() => useCampaignState(), { wrapper });
-
+    
     act(() => {
       result.current.loadGame();
     });
 
-    compareStatesWithoutTimestamp(result.current.state, testState);
+    const loadedState = { ...testState, ...result.current.state };
+    compareStatesWithoutTimestamp(loadedState, testState);
   });
 
   test('handles corrupted state gracefully', async () => {

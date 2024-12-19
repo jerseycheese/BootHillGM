@@ -2,10 +2,11 @@ import { renderHook, act } from '@testing-library/react';
 import { useCombatManager } from '../../hooks/useCombatManager';
 import { createStateProtection } from '../../utils/stateProtection';
 import { CampaignStateProvider } from '../../components/CampaignStateManager';
-import { GameState } from '../../utils/gameEngine';
+import { GameState } from '../../types/gameState';
 import { Character } from '../../types/character';
 import { ensureCombatState } from '../../types/combat';
 import React from 'react';
+import { setupMocks } from '../../test/setup/mockSetup';
 
 // Mock state protection with simple async behavior
 jest.mock('../../utils/stateProtection', () => ({
@@ -83,52 +84,13 @@ describe('useCombatManager', () => {
   
   beforeEach(() => {
     jest.clearAllMocks();
+    const { mockLocalStorage } = setupMocks();
     
-    // Mock sessionStorage to ensure we're not in initialization mode
-    Object.defineProperty(window, 'sessionStorage', {
-      value: {
-        getItem: jest.fn((key) => {
-          if (key === 'initializing_new_character') return null;
-          return null;
-        }),
-        setItem: jest.fn(),
-        removeItem: jest.fn(),
-        clear: jest.fn(),
-        length: 0,
-        key: jest.fn(),
-      },
-      writable: true
-    });
-
-    // Mock localStorage with properly structured state
-    Object.defineProperty(window, 'localStorage', {
-      value: {
-        getItem: jest.fn((key) => {
-          if (key === 'campaignState') {
-            // Create a properly structured state that matches what the reducer expects
-            const state = {
-              ...mockInitialState,
-              character: mockInitialState.character ? createCharacter(mockInitialState.character) : null,
-              opponent: mockInitialState.opponent ? createCharacter(mockInitialState.opponent) : null,
-              isCombatActive: Boolean(mockInitialState.isCombatActive),
-              isClient: true,
-              savedTimestamp: Date.now(),
-              inventory: mockInitialState.inventory.map(item => ({ ...item })),
-              journal: [...mockInitialState.journal],
-              combatState: mockInitialState.combatState ? ensureCombatState(mockInitialState.combatState) : undefined
-            };
-            return JSON.stringify(state);
-          }
-          return null;
-        }),
-        setItem: jest.fn(),
-        removeItem: jest.fn(),
-        clear: jest.fn(),
-        length: 0,
-        key: jest.fn(),
-      },
-      writable: true
-    });
+    // Set up initial state in localStorage before each test
+    mockLocalStorage.setItem('campaignState', JSON.stringify({
+      ...mockInitialState,
+      savedTimestamp: Date.now()
+    }));
   });
 
   const renderHookWithProvider = () => {
@@ -143,15 +105,22 @@ describe('useCombatManager', () => {
   };
 
   test('handles combat end with state protection', async () => {
-    
     const { result } = renderHookWithProvider();
     
-    // Verify initial state
+    // Wait for state to be loaded from localStorage
+    await act(async () => {
+      await Promise.resolve();
+    });
+    
+    // Verify initial state matches mockInitialState
     expect(result.current.character?.name).toBe('Test Character');
     expect(result.current.opponent?.name).toBe('Unknown Opponent');
+    expect(result.current.character).toEqual(mockInitialState.character);
+    expect(result.current.opponent).toEqual(mockInitialState.opponent);
+    expect(result.current.combatState).toEqual(mockInitialState.combatState);
 
     await act(async () => {
-      await result.current.handleCombatEnd('player');
+      await result.current.handleCombatEnd('player', 'Test combat results');
     });
 
     expect(mockUpdateNarrative).toHaveBeenCalledWith(
@@ -174,7 +143,7 @@ describe('useCombatManager', () => {
     const { result } = renderHookWithProvider();
 
     await act(async () => {
-      await result.current.handleCombatEnd('player');
+      await result.current.handleCombatEnd('player', 'Test combat results');
     });
 
     expect(mockUpdateNarrative).toHaveBeenCalledWith(
@@ -205,7 +174,7 @@ describe('useCombatManager', () => {
 
     let combatEndPromise: Promise<void>;
     await act(async () => {
-      combatEndPromise = Promise.resolve(result.current.handleCombatEnd('player'));
+      combatEndPromise = Promise.resolve(result.current.handleCombatEnd('player', 'Test combat results'));
     });
 
     // isProcessing should be true after operation starts
@@ -234,5 +203,4 @@ describe('useCombatManager', () => {
     expect(mockStateProtection.getQueueLength).toHaveBeenCalled();
     expect(result.current.combatQueueLength).toBe(0);
   });
-
 });

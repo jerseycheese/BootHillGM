@@ -11,14 +11,13 @@ jest.mock('../../utils/combatUtils', () => ({
   cleanCharacterName: jest.fn(name => name.split(' ACQUIRED_ITEMS:')[0])
 }));
 
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-};
-Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
+import { setupMocks } from '../../test/setup/mockSetup';
+
+const { mockLocalStorage } = setupMocks();
+
+beforeEach(() => {
+  setupMocks();
+});
 
 describe('CombatSystem', () => {
   const mockPlayer: Character = {

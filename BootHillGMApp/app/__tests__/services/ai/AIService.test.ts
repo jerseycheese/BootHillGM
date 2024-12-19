@@ -10,7 +10,13 @@ jest.mock('../../../utils/retry', () => ({
 jest.mock('@google/generative-ai', () => ({
   GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
     getGenerativeModel: jest.fn().mockReturnValue({
-      generateContent: jest.fn()
+      generateContent: jest.fn().mockImplementation(() => {
+        return Promise.resolve({
+          response: {
+            text: () => 'test'
+          }
+        })
+      })
     })
   }))
 }));
