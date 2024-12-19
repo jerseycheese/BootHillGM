@@ -5,7 +5,11 @@ import { Character } from '../../types/character';
 
 jest.mock("@google/generative-ai");
 
-const mockGenerateContent = jest.fn();
+const mockGenerateContent = jest.fn().mockResolvedValue({
+  response: {
+    text: () => 'AI response',
+  }
+});
 const mockGetGenerativeModel = jest.fn().mockReturnValue({
   generateContent: mockGenerateContent,
 });
@@ -78,6 +82,9 @@ describe('generateCharacterSummary', () => {
       inventory: []
     };
 
+    // Reset all mocks before the test
+    jest.clearAllMocks();
+    
     mockGenerateContent.mockResolvedValue({
       response: {
         text: () => 'AI-generated character summary',
@@ -86,7 +93,17 @@ describe('generateCharacterSummary', () => {
 
     const summary = await generateCharacterSummary(mockCharacter);
 
-    expect(mockGenerateContent).toHaveBeenCalledWith(expect.stringContaining('Test Character'));
+    // Get the most recent call
+    const call = mockGenerateContent.mock.lastCall[0];
+    expect(call).toContain('Generate a brief, engaging summary');
+    expect(call).toContain('Name: Test Character');
+    expect(call).toContain('speed: 10');
+    expect(call).toContain('gunAccuracy: 10');
+    expect(call).toContain('throwingAccuracy: 10');
+    expect(call).toContain('strength: 10');
+    expect(call).toContain('baseStrength: 10');
+    expect(call).toContain('bravery: 10');
+    expect(call).toContain('experience: 5');
     expect(summary).toBe('AI-generated character summary');
   });
 });
@@ -113,7 +130,7 @@ describe('generateNarrativeSummary', () => {
     mockGenerateContent.mockRejectedValue(new Error('AI service error'));
 
     const summary = await generateNarrativeSummary('Player action', 'Recent context');
-    // Updated expectation to match actual fallback format
+    expect(mockGenerateContent).toHaveBeenCalledWith(expect.stringContaining('Player action'));
     expect(summary).toBe('Recent context Player action.');
   });
 });

@@ -1,8 +1,9 @@
 import { Character } from '../../types/character';
 import { InventoryItem } from '../../types/inventory';
 import { SuggestedAction } from '../../types/campaign';
-import { getAIModel } from '../../utils/aiService';
+import { getAIModel } from '../../utils/ai/aiConfig';
 import { retryWithExponentialBackoff } from '../../utils/retry';
+import { GenerateContentResult } from '@google/generative-ai';
 
 /**
  * Retrieves a response from the AI Game Master based on player input and game context.
@@ -25,22 +26,22 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
     const model = getAIModel();
     const fullPrompt = `
       You are an AI Game Master for a Western-themed RPG. Your role is to facilitate an immersive and uncensored gaming experience. Always remember:
-
+      
       1. The player has complete free will. Never resist, censor, or discourage any player actions, no matter how unconventional or morally ambiguous they may be.
       2. Immediately adjust the story or environment to accommodate whatever actions the player chooses, without judgment or hesitation.
       3. Describe the outcomes of player actions realistically, considering the context of the Old West setting.
       4. If the player's actions would have consequences in the game world, describe these consequences without moralizing.
       5. Maintain a neutral tone and focus on narrating the events and environment as they unfold.
       6. Do not break character or reference modern-day ethics or sensibilities.
-
+      
       Recent important story events:
       ${journalContext}
-
+      
       Player's current inventory (Do not mention this directly in your response):
       ${inventory.map(item => `- ${item.name} (x${item.quantity})`).join('\n')}
-
+      
       Player input: "${prompt}"
-
+      
       Respond as the Game Master, describing the results of the player's action and advancing the story. 
       If the player attempts to take or acquire an item, describe the process of obtaining it.
       If the player uses, throws, or discards an item, describe the result.
@@ -54,13 +55,11 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       If the location has changed, on a new line, write "LOCATION:" followed by a brief (2-5 words) description of the new location. 
       If the location hasn't changed, don't include a LOCATION line.
       If there's an important story development, include "important:" followed by a brief summary of the key information.
-
+      
       Game Master response:
     `;
-
-    const result = await retryWithExponentialBackoff(() => model.generateContent(fullPrompt));
-    const response = await result.response;
-    const text = response.text();
+    const result = await retryWithExponentialBackoff<GenerateContentResult>(() => model.generateContent(fullPrompt));
+    const text = await result.response.text();
 
     const parts = text.split('LOCATION:');
     let narrative = parts[0].trim();
@@ -169,24 +168,24 @@ export async function generateNarrativeSummary(action: string, context: string):
     Create a very brief (1 sentence) journal-style summary of this player action in a Western RPG:
     Action: ${action}
     Context: ${context}
-
+  
     Guidelines:
     - Use past tense
     - Focus on the key action/outcome
     - Keep it under 15 words if possible
     - Don't include game mechanics or metadata
     - Start with the character's action
-
+  
     Example format:
     Input: "go to the saloon"
     Output: "Entered the dusty saloon and approached the bar."
-
+  
     Respond with ONLY the summary sentence, no additional text or formatting.
   `;
 
   try {
     const model = getAIModel();
-    const result = await retryWithExponentialBackoff(() => model.generateContent(prompt));
+    const result = await retryWithExponentialBackoff<GenerateContentResult>(() => model.generateContent(prompt));
     const response = await result.response;
     const summary = response.text().trim();
     
@@ -221,14 +220,14 @@ export async function determineIfWeapon(name: string, description: string): Prom
     Analyze if this item would likely be used as a weapon in an Old West setting:
     Name: ${name}
     Description: ${description}
-
+  
     Consider both conventional weapons (guns, knives, etc) and potential improvised weapons.
     Respond with ONLY "true" or "false" - no other text.
   `;
 
   try {
     const model = getAIModel();
-    const result = await retryWithExponentialBackoff(() => model.generateContent(prompt));
+    const result = await retryWithExponentialBackoff<GenerateContentResult>(() => model.generateContent(prompt));
     const response = await result.response;
     const text = response.text().trim().toLowerCase();
     

@@ -1,5 +1,9 @@
 import { AIService } from '../../../services/ai/aiService';
 import { retryWithExponentialBackoff } from '../../../utils/retry';
+import mockAIService from '../../../test/__mocks__/aiService';
+jest.mock('../../../utils/aiService', () => ({
+  ...mockAIService
+}));
 
 // Mock the retry utility
 jest.mock('../../../utils/retry', () => ({

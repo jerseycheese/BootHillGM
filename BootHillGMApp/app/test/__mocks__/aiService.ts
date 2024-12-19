@@ -22,9 +22,14 @@ const mockAIService = {
     const [min, max] = ranges[key] || [1, 100];
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }),
-  generateCharacterSummary: jest.fn().mockResolvedValue('Character summary'),
+  generateCharacterSummary: jest.fn().mockResolvedValue('AI-generated character summary'),
   getCharacterCreationStep: jest.fn().mockResolvedValue('Mock AI prompt'),
-  validateAttributeValue: jest.fn().mockReturnValue(true)
+  validateAttributeValue: jest.fn().mockReturnValue(true),
+  generateNarrativeSummary: jest.fn().mockResolvedValue('Generated narrative summary'),
+  getAIModel: jest.fn().mockResolvedValue({
+    generateContent: jest.fn().mockResolvedValue({ response: { text: () => 'AI response' } }),
+  }),
+  determineIfWeapon: jest.fn().mockResolvedValue(false),
 };
 
 export default mockAIService;
