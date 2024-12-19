@@ -12,7 +12,7 @@ export class AIService {
   constructor(apiKey: string, config?: Partial<AIConfig>) {
     this.model = new GoogleGenerativeAI(apiKey);
     this.config = {
-      modelName: "gemini-1.5-pro",
+      modelName: "gemini-2.0-flash-exp",
       maxRetries: 3,
       temperature: 0.7,
       ...config
