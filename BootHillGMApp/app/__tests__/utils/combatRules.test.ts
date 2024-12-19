@@ -32,5 +32,20 @@ describe('Combat Rules', () => {
       // 50 (base) + 10 (accuracy) + 3 (bravery >= 50) + 2 (experience >= 5)
       expect(result).toBe(65);
     });
+
+    test('calculates hit chance with wound modifiers', () => {
+      const woundedCharacter: Character = {
+        ...mockCharacter,
+        wounds: [{
+          location: 'chest',
+          severity: 'serious',
+          strengthReduction: 7,
+          turnReceived: 1
+        }]
+      };
+      const result = calculateHitChance(woundedCharacter);
+      // 65 (base) - 7 (wound modifier)
+      expect(result).toBe(58);
+    });
   });
 });

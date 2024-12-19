@@ -45,7 +45,7 @@ export const processPlayerAction = async (
     combatState
   );
 
-  return { result, turnResult };
+  return { result, turnResult: { ...turnResult, updatedCharacter: turnResult.updatedCharacter || opponent } };
 };
 
 export const processOpponentAction = async (
@@ -55,19 +55,38 @@ export const processOpponentAction = async (
   dispatch: React.Dispatch<GameEngineAction>,
   combatState: CombatState
 ) => {
-  const opponentAction: WeaponCombatAction = { type: 'fire' };
+  // Basic AI: Choose a random action from available actions
+  const availableActions: WeaponCombatAction['type'][] = ['fire', 'aim', 'reload', 'move'];
+  const randomAction = availableActions[Math.floor(Math.random() * availableActions.length)];
+  const opponentAction: WeaponCombatAction = { type: randomAction };
+  
+  const defaultWeapon = {
+    id: 'default_weapon',
+    name: 'Default Weapon',
+    category: 'weapon',
+    isEquipped: true,
+    modifiers: {
+      accuracy: 0,
+      range: 0,
+      reliability: 0,
+      damage: "0",
+      speed: 0,
+    },
+  };
 
   const result = await resolveWeaponAction({
     action: opponentAction,
     attacker: opponent,
     defender: playerCharacter,
-    weapon: weaponState.opponentWeapon!,
+    weapon: weaponState.playerWeapon || defaultWeapon, // Give the opponent the same weapon as the player, or a default weapon
     currentRange: weaponState.currentRange,
     aimBonus: 0,
     debugMode: false
   });
 
-  if (!result) return null;
+  if (!result) {
+    return null;
+  }
 
   const turnResult = await processWeaponCombatTurn(
     result,

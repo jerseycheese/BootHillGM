@@ -43,7 +43,9 @@ BootHillGM is an AI-driven, web-based RPG set in the American Old West, based on
 - Combat log with detailed actions
 - Weapon-specific modifiers
 - Combat state persistence
-- Auto-processing of opponent turns
+- Auto-processing of opponent turns with basic AI
+- Wound system with severity levels (light, serious, mortal)
+- Refactored aim, move, and reload actions
 
 ### 3.4 Inventory System
 - Item tracking and management
@@ -99,11 +101,11 @@ BootHillGM is an AI-driven, web-based RPG set in the American Old West, based on
 
 ### 5.2 Combat Loop
 1. Initiative determination
-2. Turn-based actions
-3. Damage calculation
+2. Turn-based actions (player then opponent)
+3. Damage calculation with wound application
 4. State updates
 5. Combat log updates
-6. Victory/defeat conditions
+6. Victory/defeat conditions (based on strength or mortal wounds)
 7. State restoration if interrupted
 
 ### 5.3 Inventory Management

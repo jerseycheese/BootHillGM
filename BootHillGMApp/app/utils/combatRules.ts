@@ -23,8 +23,14 @@ export const calculateHitChance = (character: Character): number => {
   // Simple bravery and experience modifiers for MVP
   const braveryMod = character.attributes.bravery >= 50 ? 3 : 0;
   const experienceMod = character.attributes.experience >= 5 ? 2 : -5;
-  
-  return baseNumber + accuracyMod + braveryMod + experienceMod;
+
+  let woundModifier = 0;
+  if (character.wounds && character.wounds.length > 0) {
+    woundModifier = character.wounds.reduce((sum, wound) => sum + wound.strengthReduction, 0);
+    console.debug(`Wound modifier: ${woundModifier}`);
+  }
+
+  return baseNumber + accuracyMod + braveryMod + experienceMod - woundModifier;
 };
 
 export const rollD100 = (): number => {

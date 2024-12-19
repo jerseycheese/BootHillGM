@@ -43,7 +43,10 @@ export const processCombatTurn = async ({
     combatState
   );
 
-  setWeaponState(prev => addLogEntry(prev, turnResult.logEntry));
+  setWeaponState(prev => {
+    const newState = addLogEntry(prev, turnResult.logEntry);
+    return newState;
+  });
   
   if (result && result.type === 'move') {
     const targetRange = result.targetRange !== undefined ? result.targetRange : 0;
@@ -72,9 +75,7 @@ export const processCombatTurn = async ({
 
   setWeaponState(prev => updateWeaponState(prev, action.type, turnResult.logEntry));
 
-  // Process opponent's action if they have a weapon
-  if (!weaponState.opponentWeapon) return;
-
+  // Process opponent's action after player's action
   const opponentTurn = await processOpponentAction(
     opponent,
     playerCharacter,

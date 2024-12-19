@@ -86,7 +86,8 @@ describe('useWeaponCombat', () => {
         roll: 10,
         modifiedRoll: 12,
         targetNumber: 15,
-        message: 'Default action'
+        message: 'Default action',
+        newStrength: 10
       },
       turnResult: {
         updatedCharacter: null,
@@ -122,7 +123,8 @@ describe('useWeaponCombat', () => {
         hit: false,
         roll: 0,
         modifiedRoll: 0,
-        targetNumber: 0
+        targetNumber: 0,
+        newStrength: 10
       },
       turnResult: {
         updatedCharacter: null,
@@ -162,7 +164,8 @@ describe('useWeaponCombat', () => {
         hit: false,
         roll: 10,
         modifiedRoll: 12,
-        targetNumber: 15
+        targetNumber: 15,
+        newStrength: 10
       },
       turnResult: {
         updatedCharacter: null,
@@ -200,7 +203,8 @@ describe('useWeaponCombat', () => {
         hit: false,
         roll: 0,
         modifiedRoll: 0,
-        targetNumber: 0
+        targetNumber: 0,
+        newStrength: 10
       },
       turnResult: {
         updatedCharacter: null,
@@ -297,5 +301,44 @@ describe('useWeaponCombat', () => {
 
     // Should still be able to fire after aiming
     expect(result.current.canFire).toBe(true);
+  });
+
+  test('handles reload action', async () => {
+    jest.mocked(processPlayerAction).mockResolvedValue({
+      result: {
+        type: 'reload',
+        message: 'Player reloads Colt Revolver',
+        hit: false,
+        roll: 0,
+        modifiedRoll: 0,
+        targetNumber: 0,
+        newStrength: 10
+      },
+      turnResult: {
+        updatedCharacter: null,
+        logEntry: {
+          text: 'Player reloads Colt Revolver',
+          type: 'info',
+          timestamp: Date.now()
+        },
+        shouldEndCombat: false
+      }
+    });
+
+    const { result } = renderHook(() => useWeaponCombat({
+      playerCharacter: mockPlayer,
+      opponent: mockOpponent,
+      onCombatEnd: mockOnCombatEnd,
+      dispatch: mockDispatch,
+      combatState: mockCombatState
+    }));
+
+    await act(async () => {
+      await result.current.processAction({ type: 'reload' });
+    });
+
+    expect(result.current.weaponState.roundLog[0].text)
+      .toContain('reloads Colt Revolver');
+    expect(result.current.isProcessing).toBe(false);
   });
 });

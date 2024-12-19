@@ -76,7 +76,8 @@ export const useWeaponCombatAction = ({
       });
 
       // Reset aim bonus if the action is not a fire action
-      if (shouldResetAim(action.type)) {
+      if (shouldResetAim()) {
+        // Reset the aim bonus to 0
         setAimBonus(0);
       }
     } catch (error) {

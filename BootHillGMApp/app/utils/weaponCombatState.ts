@@ -1,6 +1,7 @@
 import { Character } from '../types/character';
-import { WeaponCombatState, WeaponCombatResult, CombatState, LogEntry, WeaponCombatAction } from '../types/combat';
+import { WeaponCombatState, WeaponCombatResult, CombatState, LogEntry, WeaponCombatAction, Wound } from '../types/combat';
 import { GameEngineAction } from '../types/gameActions';
+import { WOUND_EFFECTS } from './strengthSystem';
 
 /**
  * Updates the weapon combat state with new values.
@@ -21,9 +22,7 @@ export const updateWeaponState = (
     ...updates,
     round: prevState.round + 1,
     lastAction: action,
-    roundLog: logEntry 
-      ? [...prevState.roundLog, logEntry]
-      : prevState.roundLog
+    roundLog: prevState.roundLog,
   };
 };
 
@@ -57,13 +56,12 @@ export const processWeaponCombatTurn = async (
     attacker,
     defender,
     dispatch,
-    combatState,
-    result.newStrength
+    combatState
   );
 
   // Ensure updatedCharacter is not null and attributes.strength is defined
   const shouldEndCombat = Boolean(
-    (updatedCharacter?.attributes?.strength ?? 0) <= 0 || 
+    (updatedCharacter?.attributes?.strength ?? 0) <= 0 ||
     (result.damage && result.damage >= (defender.attributes.strength || 0))
   );
 
@@ -95,10 +93,10 @@ export const createLogEntry = (
  * @param turnReceived - The turn number when the wound was received.
  * @returns A wound object.
  */
-export const createWound = (damage: number, turnReceived: number) => ({
+export const createWound = (damage: number, turnReceived: number): Wound => ({
   location: 'chest' as const,
-  severity: damage >= 5 ? 'serious' as const : 'light' as const,
-  strengthReduction: damage,
+  severity: damage >= 7 ? 'mortal' : damage >= 3 ? 'serious' : 'light',
+  strengthReduction: damage >= 7 ? WOUND_EFFECTS.MORTAL : damage >= 3 ? WOUND_EFFECTS.SERIOUS : WOUND_EFFECTS.LIGHT,
   turnReceived
 });
 
@@ -137,32 +135,27 @@ export const updateCharacterAfterHit = (
  * @param defender - The character receiving the action.
  * @param dispatch - The dispatch function for updating the global state.
  * @param combatState - The current combat state.
- * @param newStrength - The new strength of the defender.
  * @returns The updated character object or null if no update is needed.
  */
+// Updates character state after a hit
 export const handleCombatResult = (
   result: WeaponCombatResult,
   isPlayerAction: boolean,
   attacker: Character,
   defender: Character,
   dispatch: React.Dispatch<GameEngineAction>,
-  combatState: CombatState,
-  newStrength: number | undefined
+  combatState: CombatState
 ): Character | null => {
-  if (!result.hit || newStrength === undefined) return null;
-
   const damage = result.damage || 0;
+  const newStrength = result.newStrength ?? defender.attributes.strength;
   const turnReceived = combatState.weapon?.round || 1;
 
+  let updatedOpponent = null;
   if (isPlayerAction) {
-    const updatedOpponent = updateCharacterAfterHit(
-      defender,
-      damage,
-      newStrength,
-      turnReceived,
-      true
-    );
+    // Update the opponent character
+    updatedOpponent = updateCharacterAfterHit(defender, damage, newStrength, turnReceived, true);
 
+    // Dispatch actions to update opponent and combat state
     dispatch({
       type: 'UPDATE_COMBAT_STATE',
       payload: {
@@ -178,13 +171,10 @@ export const handleCombatResult = (
 
     return updatedOpponent;
   } else {
-    const updatedPlayer = updateCharacterAfterHit(
-      defender,
-      damage,
-      newStrength,
-      turnReceived
-    );
+    // Update the player character
+    const updatedPlayer = updateCharacterAfterHit(defender, damage, newStrength, turnReceived);
 
+    // Dispatch action to update player character
     dispatch({
       type: 'UPDATE_CHARACTER',
       payload: updatedPlayer

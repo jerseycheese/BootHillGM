@@ -1,18 +1,30 @@
-export const MAX_AIM_BONUS = 20;
-export const AIM_BONUS_INCREMENT = 10;
+import { Character } from '../types/character';
+import { WeaponCombatResult } from '../types/combat';
+import { AIM_MAX_BONUS_MESSAGE, AIM_SUCCESS_MESSAGE } from './weaponCombatMessages';
 
-export const calculateNewAimBonus = (currentBonus: number): number => {
-  const newBonus = currentBonus + AIM_BONUS_INCREMENT;
-  return newBonus <= MAX_AIM_BONUS ? newBonus : currentBonus;
+export const resolveAimAction = (attacker: Character, currentAimBonus: number): WeaponCombatResult => {
+  const newAimBonus = currentAimBonus + 10;
+  if (newAimBonus <= 20) {
+    return {
+      type: 'aim',
+      hit: false,
+      roll: 0,
+      modifiedRoll: 0,
+      targetNumber: 0,
+      message: AIM_SUCCESS_MESSAGE(attacker.name)
+    };
+  }
+  return {
+    type: 'aim',
+    hit: false,
+    roll: 0,
+    modifiedRoll: 0,
+    targetNumber: 0,
+    message: AIM_MAX_BONUS_MESSAGE(attacker.name)
+  };
 };
 
-export const shouldResetAim = (actionType: string): boolean => {
-  return actionType !== 'fire';
-};
-
-export const getAimMessage = (characterName: string, currentBonus: number): string => {
-  const canAimMore = currentBonus < MAX_AIM_BONUS;
-  return canAimMore
-    ? `${characterName} takes aim carefully`
-    : `${characterName} cannot aim any more carefully`;
+// Always reset aim bonus after an action
+export const shouldResetAim = (): boolean => {
+  return true;
 };

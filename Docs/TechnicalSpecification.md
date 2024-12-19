@@ -80,6 +80,14 @@ interface CombatState {
   opponentHealth: number;
   currentTurn: 'player' | 'opponent';
   combatLog: string[];
+  weapon?: {
+    round: number;
+    playerWeapon: Weapon | null;
+    opponentWeapon: Weapon | null;
+    currentRange: number;
+    roundLog: LogEntry[];
+    lastAction?: WeaponCombatAction['type'];
+  };
 }
 
 interface CombatMessageParams {
@@ -98,6 +106,26 @@ interface UseCombatEngineProps {
   onPlayerHealthChange: (health: number) => void;
   dispatch: React.Dispatch<GameEngineAction>;
   initialState?: CombatState;
+}
+
+interface Wound {
+  location: 'chest';
+  severity: 'light' | 'serious' | 'mortal';
+  strengthReduction: number;
+  turnReceived: number;
+}
+
+interface WeaponCombatResult {
+  type: 'fire' | 'aim' | 'move' | 'reload' | 'malfunction';
+  hit: boolean;
+  roll: number;
+  modifiedRoll: number;
+  targetNumber: number;
+  message: string;
+  damage?: number;
+  newStrength?: number;
+  targetRange?: number;
+  weaponMalfunction?: boolean;
 }
 ```
 

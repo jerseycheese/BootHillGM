@@ -191,3 +191,10 @@ export function ensureCombatState(state?: Partial<CombatState>): CombatState {
     combatLog: state?.combatLog ?? []
   };
 }
+
+export type Wound = {
+  location: 'chest';
+  severity: 'light' | 'serious' | 'mortal';
+  strengthReduction: number;
+  turnReceived: number;
+};
