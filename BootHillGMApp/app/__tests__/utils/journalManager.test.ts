@@ -26,7 +26,7 @@ describe('JournalManager', () => {
 
   describe('Legacy Functions', () => {
     it('should add journal entry using legacy function', async () => {
-      const result = await addJournalEntry(emptyJournal, 'Test content', 'Test context');
+      const result = await addJournalEntry(emptyJournal, 'Test content');
       
       expect(result).toHaveLength(1);
       expect(result[0].type).toBe('narrative');
@@ -96,7 +96,7 @@ describe('JournalManager', () => {
         expect(result[0].type).toBe('narrative');
         expect(result[0].content).toBe('Test content');
         expect(result[0].narrativeSummary).toBe('Mocked summary');
-        expect(generateNarrativeSummary).toHaveBeenCalledWith('Test content', 'Test context');
+        expect(generateNarrativeSummary).toHaveBeenCalledWith(['Test content', 'Test context']);
       });
 
       it('should handle AI service errors gracefully', async () => {

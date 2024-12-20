@@ -51,7 +51,7 @@ BootHillGM is a Next.js-based web application that provides an AI-driven Game Ma
 ### 7.1 Core Systems
 - GameProviderWrapper: Global state provider
 - CampaignStateManager: Game state persistence
-- AIService: Gemini API integration
+- AIService: Modularized Gemini API integration.
 - CombatSystem: Turn-based combat management
 - JournalSystem: Automatic history tracking
 

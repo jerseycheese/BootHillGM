@@ -416,11 +416,55 @@ Additionally, extracted combat action resolution logic into utility functions:
 - Easier maintenance
 - Improved readability
 
-#### Negative
-- Additional files to maintain
-- Slight increase in complexity
-
 ### Implementation Notes
 - Used TypeScript for type safety
 - Maintained existing hook interface for compatibility
 - Added comments to explain the purpose and functionality of new code
+
+## ADR 11: AI Service Modularization
+
+### Date: 2024-12-18
+
+### Status: Accepted
+
+### Context and Problem Statement
+
+The `aiService.tsx` file contained a growing number of responsibilities related to AI interactions, making it increasingly complex and harder to maintain. To improve organization and maintainability, it was necessary to refactor the service into smaller, more focused modules.
+
+### Decision
+
+The `aiService.tsx` file has been modularized into several smaller modules located in the `BootHillGMApp/app/utils/ai/` directory. Each module focuses on a specific aspect of AI functionality, promoting a separation of concerns.
+
+### Rationale
+
+- Improves code organization and readability by separating concerns.
+- Enhances maintainability by isolating related functionalities into individual modules.
+- Increases testability by allowing focused testing of individual AI components.
+- Promotes code reuse by creating independent, self-contained modules.
+
+### Consequences
+
+#### Positive
+
+- Improved code organization and readability.
+- Enhanced maintainability and scalability.
+- Increased testability of AI functionalities.
+- Better code reuse potential.
+
+#### Negative
+
+- Requires updating import statements in files that use the modularized functions.
+- Introduces a larger number of files, which might seem initially more complex.
+
+### Implementation Notes
+
+- New modules created under `BootHillGMApp/app/utils/ai/`:
+    - `aiConfig.ts`: Contains the AI configuration and the `getAIModel` function.
+    - `characterCreationPrompts.ts`: Contains the `getCharacterCreationStep` function.
+    - `attributeValidation.ts`: Contains the `validateAttributeValue` function and the `validRanges` object.
+    - `characterGeneration.ts`: Contains the `generateCompleteCharacter` function.
+    - `fieldValueGeneration.ts`: Contains the `generateFieldValue` and `generateRandomValue` functions.
+    - `narrativeSummary.ts`: Contains the `generateNarrativeSummary` function.
+    - `weaponDetermination.ts`: Contains the `determineIfWeapon` function.
+    - `characterSummary.ts`: Contains the `generateCharacterSummary` function.
+- The `aiService.tsx` file was updated to import and re-export these functions from their respective modules, acting as a facade.

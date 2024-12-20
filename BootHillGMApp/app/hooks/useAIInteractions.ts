@@ -8,8 +8,7 @@ import { Character } from '../types/character';
 import { generateNarrativeSummary } from '../utils/aiService';
 import { WEAPON_STATS } from '../types/combat';
 
-const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
-const aiService = new AIService(API_KEY);
+const aiService = new AIService();
 
 type AIResponse = {
   narrative: string;
@@ -128,7 +127,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
 
   const WEAPON_KEYWORDS = ['gun', 'rifle', 'pistol', 'revolver', 'peacemaker'];
 
-  response.acquiredItems.forEach(itemName => {
+  (response.acquiredItems || []).forEach(itemName => {
     const isWeapon = WEAPON_KEYWORDS.some(keyword => 
       itemName.toLowerCase().includes(keyword.toLowerCase())
     );
@@ -176,14 +175,10 @@ export const useAIInteractions = (
 
     try {
       const journalContext = getJournalContext(state.journal || []);
-      const response = await aiService.getResponse(
-        input, 
+      const response = await aiService.getAIResponse(
+        input,
         journalContext,
-        { 
-          inventory: state.inventory || [],
-          character: state.character || undefined,
-          location: state.location
-        }
+        state.inventory || []
       );
 
       const { acquiredItems, removedItems } = await processAIResponse({
@@ -196,7 +191,6 @@ export const useAIInteractions = (
       onInventoryChange(acquiredItems, removedItems);
       return response;
     } catch (err) {
-      console.error('Error in handleUserInput:', err);
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
       return null;
     } finally {

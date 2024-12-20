@@ -17,10 +17,9 @@ import {
 // Legacy exports for backward compatibility
 export const addJournalEntry = async (
   journal: JournalEntry[],
-  entry: string | JournalEntry,
-  context: string = ''
+  entry: string | JournalEntry
 ): Promise<JournalEntry[]> => {
-  return JournalManager.addJournalEntry(journal, entry, context);
+  return JournalManager.addJournalEntry(journal, entry);
 };
 
 export const addCombatJournalEntry = (
@@ -47,12 +46,12 @@ export class JournalManager {
   static async addNarrativeEntry(
     journal: JournalEntry[],
     content: string,
-    context: string = ''
+    context?: string
   ): Promise<JournalEntry[]> {
     try {
       const cleanedContent = cleanText(content);
-      const narrativeSummary = await generateNarrativeSummary(cleanedContent, context);
-      
+      const narrativeSummary = await generateNarrativeSummary([cleanedContent, context ?? '']);
+
       // Create a new narrative journal entry
       const newEntry: NarrativeJournalEntry = {
         type: 'narrative',
@@ -151,11 +150,10 @@ export class JournalManager {
   // Backward compatibility method
   static async addJournalEntry(
     journal: JournalEntry[],
-    entry: string | JournalEntry,
-    context: string = ''
+    entry: string | JournalEntry
   ): Promise<JournalEntry[]> {
     if (typeof entry === 'string') {
-      return this.addNarrativeEntry(journal, entry, context);
+      return this.addNarrativeEntry(journal, entry);
     }
     
     // If it's already a JournalEntry, ensure it has required fields

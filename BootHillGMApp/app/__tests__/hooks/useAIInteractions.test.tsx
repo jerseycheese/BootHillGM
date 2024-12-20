@@ -3,18 +3,15 @@ import { useAIInteractions } from '../../hooks/useAIInteractions';
 import { GameState } from '../../types/campaign';
 import { Character } from '../../types/character';
 
-const mockGetResponse = jest.fn();
-
-// Mock the AIService and narrative summary generation
 jest.mock('../../services/ai', () => {
-  return {
-    AIService: jest.fn().mockImplementation(() => {
-      return {
-        getResponse: () => mockGetResponse()
-      };
-    })
-  };
+  const mockGetResponse = jest.fn();
+  const AIService = jest.fn().mockImplementation(() => ({
+    getAIResponse: mockGetResponse
+  }));
+  return { AIService, mockGetResponse };
 });
+
+const { mockGetResponse } = jest.requireMock('../../services/ai');
 
 jest.mock('../../utils/aiService', () => ({
   generateNarrativeSummary: jest.fn().mockResolvedValue('Test summary')
@@ -138,9 +135,7 @@ describe('useAIInteractions', () => {
         opponent: mockOpponent,
         acquiredItems: [],
         removedItems: [],
-        suggestedActions: [
-          { text: 'Fight', type: 'combat' as const, context: 'Combat initiated' }
-        ]
+        suggestedActions: []
       };
 
       mockGetResponse.mockResolvedValueOnce(mockResponse);
@@ -155,8 +150,13 @@ describe('useAIInteractions', () => {
         await result.current.handleUserInput('attack');
       });
 
-      // Verify combat initialization dispatches
-      expect(mockDispatch).toHaveBeenCalledWith({
+      // Get all calls to mockDispatch
+      const dispatchCalls = mockDispatch.mock.calls;
+
+      // Find the SET_OPPONENT call
+      const setOpponentCall = dispatchCalls.find(call => call[0].type === 'SET_OPPONENT');
+      expect(setOpponentCall).toBeTruthy();
+      expect(setOpponentCall[0]).toEqual({
         type: 'SET_OPPONENT',
         payload: expect.objectContaining({
           name: mockOpponent.name,
@@ -168,7 +168,10 @@ describe('useAIInteractions', () => {
         })
       });
 
-      expect(mockDispatch).toHaveBeenCalledWith({
+      // Find the UPDATE_COMBAT_STATE call
+      const updateCombatStateCall = dispatchCalls.find(call => call[0].type === 'UPDATE_COMBAT_STATE');
+      expect(updateCombatStateCall).toBeTruthy();
+      expect(updateCombatStateCall[0]).toEqual({
         type: 'UPDATE_COMBAT_STATE',
         payload: expect.objectContaining({
           isActive: true,
@@ -177,7 +180,10 @@ describe('useAIInteractions', () => {
         })
       });
 
-      expect(mockDispatch).toHaveBeenCalledWith({
+      // Find the SET_COMBAT_ACTIVE call
+      const setCombatActiveCall = dispatchCalls.find(call => call[0].type === 'SET_COMBAT_ACTIVE');
+      expect(setCombatActiveCall).toBeTruthy();
+      expect(setCombatActiveCall[0]).toEqual({
         type: 'SET_COMBAT_ACTIVE',
         payload: true
       });
@@ -234,10 +240,7 @@ describe('useAIInteractions', () => {
 
   describe('error handling', () => {
     it('should handle AI service errors gracefully', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-      
-      const error = new Error('AI service error');
-      mockGetResponse.mockRejectedValueOnce(error);
+      mockGetResponse.mockRejectedValueOnce(new Error('AI service error'));
 
       const { result } = renderHook(() => useAIInteractions(
         mockInitialState,
@@ -246,14 +249,12 @@ describe('useAIInteractions', () => {
       ));
 
       await act(async () => {
-        const response = await result.current.handleUserInput('test input');
-        expect(response).toBeNull();
+        await result.current.handleUserInput('test input');
       });
 
       expect(result.current.error).toBe('AI service error');
       expect(mockOnInventoryChange).not.toHaveBeenCalled();
-      
-      consoleSpy.mockRestore();
+      expect(mockDispatch).not.toHaveBeenCalled();
     });
 
     it('should handle undefined response values', async () => {

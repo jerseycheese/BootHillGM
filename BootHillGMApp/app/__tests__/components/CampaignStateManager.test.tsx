@@ -1,5 +1,19 @@
 import { renderHook, act } from '@testing-library/react';
 import { CampaignStateProvider, useCampaignState } from '../../components/CampaignStateManager';
+
+jest.mock('../../hooks/useAIInteractions', () => ({
+  useAIInteractions: jest.fn().mockReturnValue({
+    handleUserInput: jest.fn(),
+    retryLastAction: jest.fn(),
+    isLoading: false,
+    error: null
+  })
+}));
+import mockAIService from '../../test/__mocks__/aiService';
+
+jest.mock('../../services/ai/aiService', () => ({
+  AIService: jest.fn().mockImplementation(() => mockAIService)
+}));
 import { GameState } from '../../types/gameState';
 
 import { setupMocks } from '../../test/setup/mockSetup';

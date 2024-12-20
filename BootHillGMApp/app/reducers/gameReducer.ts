@@ -3,7 +3,7 @@ import { GameEngineAction } from '../types/gameActions';
 import { Character } from '../types/character';
 import { Weapon } from '../types/combat';
 import { ensureCombatState } from '../types/combat';
-import { determineIfWeapon } from '../services/ai/index';
+import { determineIfWeapon } from '../utils/ai/aiUtils';
 import { findClosestWeapon } from '../utils/weaponUtils';
 
 /**
@@ -37,19 +37,14 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         if (!newItem.category) {
           newItem.category = 'general';
         }
-        determineIfWeapon(newItem.name, newItem.description)
-          .then((isWeapon: boolean) => {
-            if (isWeapon) {
-              newItem.category = 'weapon';
-              const closestWeapon = findClosestWeapon(newItem.name);
-              if (closestWeapon) {
-                newItem.weapon = closestWeapon;
-              }
-            }
-          })
-          .catch(() => {
-            // Handle error during weapon determination
-          });
+        const isWeapon = determineIfWeapon(newItem.name);
+        if (isWeapon) {
+          newItem.category = 'weapon';
+          const closestWeapon = findClosestWeapon(newItem.name);
+          if (closestWeapon) {
+            newItem.weapon = closestWeapon;
+          }
+        }
         return { ...state, inventory: [...state.inventory, newItem] };
       }
     }

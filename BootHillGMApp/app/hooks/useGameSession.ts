@@ -98,8 +98,7 @@ export const useGameSession = () => {
       // Update journal with the new action
       const updatedJournal = await addJournalEntry(
         currentJournal,
-        input,
-        getJournalContext(currentJournal)
+        input
       );
       
       // Update campaign state with new journal

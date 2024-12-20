@@ -49,29 +49,7 @@ type GameEngineAction =
 ```
 
 ### 2.2 AI Integration
-```typescript
-interface AIResponse {
-  narrative: string;
-  location?: string;
-  combatInitiated?: boolean;
-  opponent?: Character;
-  acquiredItems: string[];
-  removedItems: string[];
-  suggestedActions: SuggestedAction[];
-}
-
-interface AIConfig {
-  modelName: string;
-  maxRetries: number;
-  temperature: number;
-}
-
-interface PromptOptions {
-  inventory?: InventoryItem[];
-  character?: Character;
-  location?: string;
-}
-```
+The AI service in `aiService.tsx` handles communication with the Gemini API to generate narrative content, character attributes, and other dynamic game elements. It manages API requests, processes responses, and updates the game state accordingly.
 
 ### 2.3 Combat System
 ```typescript
@@ -409,7 +387,6 @@ export const useAIInteractions = (
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // ... AI interaction logic
 };
 ```
 

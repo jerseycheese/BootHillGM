@@ -1,9 +1,5 @@
 import { AIService } from '../../../services/ai/aiService';
 import { retryWithExponentialBackoff } from '../../../utils/retry';
-import mockAIService from '../../../test/__mocks__/aiService';
-jest.mock('../../../utils/aiService', () => ({
-  ...mockAIService
-}));
 
 // Mock the retry utility
 jest.mock('../../../utils/retry', () => ({
@@ -14,13 +10,7 @@ jest.mock('../../../utils/retry', () => ({
 jest.mock('@google/generative-ai', () => ({
   GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
     getGenerativeModel: jest.fn().mockReturnValue({
-      generateContent: jest.fn().mockImplementation(() => {
-        return Promise.resolve({
-          response: {
-            text: () => 'test'
-          }
-        })
-      })
+      generateContent: jest.fn().mockResolvedValue({ response: { text: () => 'AI response' } }),
     })
   }))
 }));
@@ -30,7 +20,7 @@ describe('AIService', () => {
   
   beforeEach(() => {
     jest.clearAllMocks();
-    aiService = new AIService('mock-key');
+    aiService = new AIService();
   });
 
   test('should generate basic response', async () => {
@@ -40,21 +30,23 @@ describe('AIService', () => {
           You see a dusty saloon.
           ACQUIRED_ITEMS: []
           REMOVED_ITEMS: []
+          SUGGESTED_ACTIONS: [{"text": "Look around", "type": "basic", "context": "Observe your surroundings"}, {"text": "Ready weapon", "type": "combat", "context": "Prepare for combat"}, {"text": "Talk to someone", "type": "interaction", "context": "Interact with others"}, {"text": "Do something unpredictable", "type": "chaotic", "context": "Take a risky action"}]
         `
       }
     };
 
     (retryWithExponentialBackoff as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-    const result = await aiService.getResponse(
+    const result = await aiService.getAIResponse(
       'look around',
       'You entered the saloon',
-      { inventory: [] }
+      []
     );
 
     expect(result.narrative).toContain('dusty saloon');
     expect(result.acquiredItems).toEqual([]);
     expect(result.removedItems).toEqual([]);
+    expect(result.suggestedActions).toBeDefined();
   });
 
   test('should handle combat initiation', async () => {
@@ -63,33 +55,32 @@ describe('AIService', () => {
         text: () => `
           A bandit draws his gun!
           COMBAT: Angry Bandit
-          ACQUIRED_ITEMS: []
-          REMOVED_ITEMS: []
         `
       }
     };
 
     (retryWithExponentialBackoff as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-    const result = await aiService.getResponse(
+    const result = await aiService.getAIResponse(
       'attack the bandit',
       'test context',
-      { inventory: [] }
+      []
     );
 
     expect(result.combatInitiated).toBe(true);
     expect(result.opponent).toBeDefined();
     expect(result.opponent?.name).toBe('Angry Bandit');
+    expect(result.suggestedActions).toBeDefined();
   });
 
   test('handles API errors gracefully', async () => {
     const apiError = new Error('AI service error');
     (retryWithExponentialBackoff as jest.Mock).mockRejectedValueOnce(apiError);
 
-    await expect(aiService.getResponse(
+    await expect(aiService.getAIResponse(
       'test action',
       'test context',
-      { inventory: [] }
-    )).rejects.toThrow('AI service error');
+      []
+    )).rejects.toThrow('Unexpected AI response error');
   });
 });

@@ -135,57 +135,49 @@ describe('CombatSystem', () => {
 ```
 
 ### 2.4 AI Integration Testing
-Areas to test:
+Areas to test, focusing on the modularized structure:
+
+- **Individual AI Modules:** Test each module (`aiConfig.ts`, `characterCreationPrompts.ts`, etc.) in isolation to ensure their functions operate correctly.
+- **aiService.tsx:** Test the `aiService.tsx` file to ensure it correctly imports and exports functions from the individual modules and that its main functions behave as expected.
+
 ```typescript
+// Example: Testing aiConfig.ts
+import { getAIModel } from '../../utils/ai/aiConfig';
+
+describe('aiConfig', () => {
+  test('getAIModel returns the correct model', () => {
+    const model = getAIModel();
+    expect(model).toBeDefined(); // Add more specific assertions based on your configuration
+  });
+});
+
+// Example: Testing characterCreationPrompts.ts
+import { getCharacterCreationStep } from '../../utils/ai/characterCreationPrompts';
+
+describe('characterCreationPrompts', () => {
+  test('getCharacterCreationStep returns a prompt', () => {
+    const prompt = getCharacterCreationStep('name');
+    expect(prompt).toBeDefined();
+    expect(prompt).toContain('name'); // Add more specific assertions based on your prompts
+  });
+});
+
+// Example: Testing aiService.tsx
+import * as aiService from '../../utils/aiService';
+import * as characterGeneration from '../../utils/ai/characterGeneration';
+
+jest.mock('../../utils/ai/characterGeneration', () => ({
+  generateCompleteCharacter: jest.fn(),
+}));
+
 describe('AIService', () => {
-  test('generates basic response', async () => {
-    const mockResponse = {
-      response: {
-        text: () => `
-          You see a dusty saloon.
-          ACQUIRED_ITEMS: []
-          REMOVED_ITEMS: []
-        `
-      }
-    };
-
-    mockRetry.mockResolvedValueOnce(mockResponse);
-
-    const result = await aiService.getResponse(
-      'look around',
-      'You entered the saloon',
-      { inventory: [] }
-    );
-
-    expect(result.narrative).toContain('dusty saloon');
-    expect(result.acquiredItems).toEqual([]);
-    expect(result.removedItems).toEqual([]);
+  test('calls generateCompleteCharacter correctly', async () => {
+    const mockContext = 'test context';
+    await aiService.generateCharacter(mockContext);
+    expect(characterGeneration.generateCompleteCharacter).toHaveBeenCalledWith(mockContext);
   });
 
-  test('handles combat initiation', async () => {
-    const mockResponse = {
-      response: {
-        text: () => `
-          A bandit draws his gun!
-          COMBAT: Angry Bandit
-          ACQUIRED_ITEMS: []
-          REMOVED_ITEMS: []
-        `
-      }
-    };
-
-    mockRetry.mockResolvedValueOnce(mockResponse);
-
-    const result = await aiService.getResponse(
-      'attack the bandit',
-      'test context',
-      { inventory: [] }
-    );
-
-    expect(result.combatInitiated).toBe(true);
-    expect(result.opponent).toBeDefined();
-    expect(result.opponent?.name).toBe('Angry Bandit');
-  });
+  // Add more tests for other functions in aiService.tsx, mocking the individual modules as needed.
 });
 ```
 
