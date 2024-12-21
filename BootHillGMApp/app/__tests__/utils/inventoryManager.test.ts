@@ -4,6 +4,17 @@ import { GameState } from '../../types/campaign';
 import { InventoryItem } from '../../types/inventory';
 import { WEAPONS } from '../../utils/weaponDefinitions';
 
+const localStorageMock = (() => {
+  let store: { [key: string]: string } = {};
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => { store[key] = String(value); },
+    clear: () => { store = {}; },
+    removeItem: (key: string) => { delete store[key]; },
+  };
+})();
+Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+
 describe('InventoryManager', () => {
   const mockCharacter: Character = {
     name: 'Test Character',
@@ -38,6 +49,11 @@ describe('InventoryManager', () => {
     isClient: false,
     suggestedActions: []
   };
+
+  beforeEach(() => {
+    InventoryManager.clearInventory();
+    localStorage.clear();
+  });
 
   describe('validateItemUse', () => {
     test('validates basic item without requirements', () => {
@@ -175,17 +191,15 @@ describe('InventoryManager', () => {
         category: 'weapon',
         weapon: WEAPONS['Colt Peacemaker']
       };
-
-      InventoryManager.addItem(coltPeacemaker);
-
+ 
+      InventoryManager.addItem(coltPeacemaker)
       const item = InventoryManager.getItem(coltPeacemaker.id);
+ 
       expect(item).toBeDefined();
       expect(item?.name).toBe('Colt Peacemaker');
       expect(item?.category).toBe('weapon');
       expect(item?.weapon).toEqual(WEAPONS['Colt Peacemaker']);
-    });
-
-    test('should add Derringer with correct weapon stats', () => {
+    });    test('should add Derringer with correct weapon stats', () => {
       const derringer: InventoryItem = {
         id: 'derringer',
         name: 'Derringer',
@@ -194,9 +208,8 @@ describe('InventoryManager', () => {
         category: 'weapon',
         weapon: WEAPONS['Derringer']
       };
-
-      InventoryManager.addItem(derringer);
-
+ 
+      InventoryManager.addItem(derringer)
       const item = InventoryManager.getItem(derringer.id);
       expect(item).toBeDefined();
       expect(item?.name).toBe('Derringer');
@@ -212,9 +225,8 @@ describe('InventoryManager', () => {
         quantity: 5,
         category: 'medical'
       };
-
-      InventoryManager.addItem(bandage);
-
+ 
+      InventoryManager.addItem(bandage)
       const item = InventoryManager.getItem(bandage.id);
       expect(item).toBeDefined();
       expect(item?.name).toBe('Bandage');
@@ -233,20 +245,20 @@ describe('InventoryManager', () => {
         category: 'weapon',
         weapon: WEAPONS['Colt Peacemaker']
       };
-
-      InventoryManager.addItem(coltPeacemaker);
+ 
+      InventoryManager.addItem(coltPeacemaker)
       InventoryManager.equipWeapon(mockCharacter, coltPeacemaker);
-
+ 
       // Ensure the mockCharacter is updated with the equipped weapon
-      expect(mockCharacter.equippedWeapon).toEqual({
+      expect(mockCharacter.equippedWeapon).toEqual( {
         id: coltPeacemaker.id,
         name: coltPeacemaker.name,
         description: coltPeacemaker.description,
         category: coltPeacemaker.category,
         weapon: coltPeacemaker.weapon,
         isEquipped: true,
-        quantity: 2
-      });
+        quantity: 1
+      } );
     });
 
     test('should equip Horseshoe Hammer with Other Melee Weapon stats', () => {
@@ -258,7 +270,7 @@ describe('InventoryManager', () => {
         category: 'weapon',
         weapon: WEAPONS['Other Melee Weapon'] // Ensure correct weapon stats
       };
-
+ 
       InventoryManager.addItem(horseshoeHammer);
       InventoryManager.equipWeapon(mockCharacter, horseshoeHammer);
 

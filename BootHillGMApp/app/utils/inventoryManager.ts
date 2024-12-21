@@ -1,4 +1,4 @@
-import { InventoryItem, ItemValidationResult, createInventoryItem } from '../types/inventory';
+import { InventoryItem, ItemValidationResult, createInventoryItem, ItemCategory } from '../types/inventory';
 import { Character } from '../types/character';
 import { CampaignState } from '../types/campaign';
 
@@ -7,7 +7,36 @@ import { CampaignState } from '../types/campaign';
  * Handles validation of item requirements based on character stats, location,
  * and combat state restrictions.
  */
+
+/**
+ * Manages inventory-related operations including item validation and usage prompts.
+ * Handles validation of item requirements based on character stats, location,
+ * and combat state restrictions.
+ */
 export class InventoryManager {
+  /**
+   * Determines the category of an item based on its properties.
+   */
+  static determineItemCategory(item: InventoryItem): ItemCategory {
+    if (item.category) {
+      return item.category;
+    }
+
+    if (InventoryManager.determineIfWeapon(item)) {
+      return 'weapon';
+    }
+
+    if (item.effect?.type === 'heal' || item.category === 'medical') {
+      return 'medical';
+    }
+
+    return 'general';
+  }
+
+  static determineIfWeapon(item: InventoryItem): boolean {
+    return !!item.weapon;
+  }
+
   /**
    * Validates whether an item can be used based on:
    * - Item existence and quantity
@@ -81,15 +110,32 @@ export class InventoryManager {
   static addItem(item: InventoryItem): void {
     const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
     const existingItem = inventory.find((i: InventoryItem) => i.id === item.id);
-
+ 
     if (existingItem) {
-        existingItem.quantity += item.quantity;
+      console.log('addItem: Item already exists', item.id, 'current category:', existingItem.category);
+      const newCategory = InventoryManager.determineItemCategory(item);
+      console.log('addItem: determined category', newCategory);
+      existingItem.category = newCategory;
+      existingItem.quantity += item.quantity;
+      console.log('addItem: Item updated', item.id, 'new category:', existingItem.category);
     } else {
-      const newItem = createInventoryItem(item);
+      console.log('addItem: New item', item.id);
+      const newItem = { ...createInventoryItem(item) };
+      const newCategory = InventoryManager.determineItemCategory(item);
+      console.log('addItem: determined category', newCategory);
+      newItem.category = newCategory
       inventory.push(newItem);
+      console.log('addItem: Item added', item.id, 'category:', newItem.category);
     }
 
     localStorage.setItem('inventory', JSON.stringify(inventory));
+  }
+
+  /**
+   * Clears the inventory from local storage.
+   */
+  static clearInventory(): void {
+    localStorage.removeItem('inventory');
   }
 
   /**
