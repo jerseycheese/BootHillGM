@@ -11,6 +11,13 @@ export interface InventoryItem {
   isEquipped?: boolean; // Added isEquipped property
 }
 
+export function createInventoryItem(itemData: Omit<InventoryItem, 'category'>): InventoryItem {
+  return {
+    ...itemData,
+    category: itemData.weapon ? 'weapon' : 'general',
+  };
+}
+
 export type ItemCategory = 'general' | 'weapon' | 'consumable' | 'medical';
 
 export interface ItemRequirements {

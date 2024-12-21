@@ -1,4 +1,4 @@
-import { InventoryItem, ItemValidationResult } from '../types/inventory';
+import { InventoryItem, ItemValidationResult, createInventoryItem } from '../types/inventory';
 import { Character } from '../types/character';
 import { CampaignState } from '../types/campaign';
 
@@ -83,9 +83,10 @@ export class InventoryManager {
     const existingItem = inventory.find((i: InventoryItem) => i.id === item.id);
 
     if (existingItem) {
-      existingItem.quantity += item.quantity;
+        existingItem.quantity += item.quantity;
     } else {
-      inventory.push(item);
+      const newItem = createInventoryItem(item);
+      inventory.push(newItem);
     }
 
     localStorage.setItem('inventory', JSON.stringify(inventory));

@@ -167,7 +167,7 @@ export class JournalManager {
    switch (type) {
      case 'narrative':
        const cleanedContent = cleanText(entry.content);
-       const narrativeSummary = await generateNarrativeSummary(cleanedContent, entry.action || '');
+       const narrativeSummary = await generateNarrativeSummary(cleanedContent, '');
        return [...journal, {
          ...entry,
          timestamp: timestamp,
