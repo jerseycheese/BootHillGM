@@ -126,7 +126,7 @@ class AIService {
           { text: "Look around", type: "basic", context: "Observe your surroundings" },
           { text: "Ready weapon", type: "combat", context: "Prepare for combat" },
           { text: "Talk to someone", type: "interaction", context: "Interact with others" },
-          { text: "Do something unpredictable", type: "chaotic", context: "Take a risky action" }
+          { text: "Do something chaotic", type: "chaotic", context: "Take a risky action" }
         ];
       }
     }

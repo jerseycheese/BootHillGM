@@ -50,7 +50,8 @@ export class JournalManager {
   ): Promise<JournalEntry[]> {
     try {
       const cleanedContent = cleanText(content);
-      const narrativeSummary = await generateNarrativeSummary([cleanedContent, context ?? '']);
+      const narrativeSummary = await generateNarrativeSummary(cleanedContent, context ?? '');
+      
 
       // Create a new narrative journal entry
       const newEntry: NarrativeJournalEntry = {
@@ -72,9 +73,10 @@ export class JournalManager {
     playerName: string,
     opponentName: string,
     outcome: CombatJournalEntry['outcome'],
-    summary: string
-  ): JournalEntry[] {
-    // Clean the summary and remove metadata
+   summary: string
+ ): JournalEntry[] {
+   // Clean the summary and remove metadata
+   console.debug('JournalManager.addCombatEntry: summary:', summary);
     const cleanedSummary = cleanCombatLogEntry(summary);
     
     // Create a new combat journal entry
@@ -99,9 +101,10 @@ export class JournalManager {
     removedItems: string[],
     context: string
   ): JournalEntry[] {
-    if (acquiredItems.length === 0 && removedItems.length === 0) {
-      return journal;
-    }
+   if (acquiredItems.length === 0 && removedItems.length === 0) {
+     return journal;
+   }
+   console.debug('JournalManager.addInventoryEntry: acquiredItems:', acquiredItems, 'removedItems:', removedItems, 'context:', context);
 
     // Create a new inventory journal entry
     const newEntry: InventoryJournalEntry = {
@@ -161,12 +164,16 @@ export class JournalManager {
     const type = entry.type || 'narrative';
     
     // Create a properly typed entry based on the type
-    switch (type) {
-      case 'narrative':
-        return [...journal, {
-          ...entry,
-          timestamp,
-          type: 'narrative'
+   switch (type) {
+     case 'narrative':
+       const cleanedContent = cleanText(entry.content);
+       const narrativeSummary = await generateNarrativeSummary(cleanedContent, entry.action || '');
+       return [...journal, {
+         ...entry,
+         timestamp: timestamp,
+          type: 'narrative',
+          content: cleanedContent,
+          narrativeSummary
         } as NarrativeJournalEntry];
       case 'combat':
         return [...journal, {
@@ -174,16 +181,16 @@ export class JournalManager {
           timestamp,
           type: 'combat'
         } as CombatJournalEntry];
-      case 'inventory':
+     case 'inventory':
         return [...journal, {
-          ...entry,
-          timestamp,
+         ...entry,
+         timestamp: timestamp,
           type: 'inventory'
         } as InventoryJournalEntry];
-      case 'quest':
-        return [...journal, {
-          ...entry,
-          timestamp,
+     case 'quest':
+       return [...journal, {
+         ...entry,
+         timestamp: timestamp,
           type: 'quest'
         } as JournalEntry];
       default:

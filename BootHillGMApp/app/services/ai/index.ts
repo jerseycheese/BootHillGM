@@ -1,4 +1,5 @@
-import { generateNarrativeSummary, determineIfWeapon } from '../../utils/ai/aiUtils';
+import { determineIfWeapon } from '../../utils/ai/aiUtils';
+import { generateNarrativeSummary } from '../../utils/ai/narrativeSummary';
 
 export { AIService } from './aiService';
 export { generateCompleteCharacter, generateCharacterSummary } from './characterService';

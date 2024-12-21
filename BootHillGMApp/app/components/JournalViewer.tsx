@@ -12,7 +12,7 @@ const JournalEntry = memo(({ entry, formatDate }: {
 }) => {
   const formattedContent = useMemo(() => {
     if (isNarrativeEntry(entry)) {
-      return entry.narrativeSummary || entry.content;
+      return entry.narrativeSummary ? `${entry.narrativeSummary}` : entry.content;
     } else if (isCombatEntry(entry)) {
       return entry.narrativeSummary || entry.content;
     } else if (isInventoryEntry(entry)) {

@@ -21,7 +21,7 @@ export async function generateNarrativeSummary(action: string, context: string):
 
     Respond with ONLY the summary sentence, no additional text or formatting.
   `;
-
+ 
     try {
         const model = getAIModel();
         const result = await retryWithExponentialBackoff(() => model.generateContent(prompt));
@@ -38,7 +38,7 @@ export async function generateNarrativeSummary(action: string, context: string):
     if (cleanSummary && typeof cleanSummary === 'string') {
       return cleanSummary;
     }
-    
+     
     // If something went wrong, return a simple action summary
     return `${context} ${action}.`;
     } catch {

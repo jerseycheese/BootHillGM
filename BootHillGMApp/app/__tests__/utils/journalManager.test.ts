@@ -96,7 +96,7 @@ describe('JournalManager', () => {
         expect(result[0].type).toBe('narrative');
         expect(result[0].content).toBe('Test content');
         expect(result[0].narrativeSummary).toBe('Mocked summary');
-        expect(generateNarrativeSummary).toHaveBeenCalledWith(['Test content', 'Test context']);
+        expect(generateNarrativeSummary).toHaveBeenCalledWith('Test content', 'Test context');
       });
 
       it('should handle AI service errors gracefully', async () => {
