@@ -22,7 +22,6 @@ export async function determineIfWeapon(name: string, description: string): Prom
     
     return text === 'true';
     } catch (error) {
-    console.warn('[WeaponCheck] Failed to determine weapon status:', error);
     // Default to false if AI fails
     return false;
     }

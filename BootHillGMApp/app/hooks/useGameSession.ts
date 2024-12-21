@@ -203,7 +203,6 @@ export const useGameSession = () => {
         }
       } catch (err) {
         // If AI processing fails, don't update inventory
-        console.error('Failed to process item use:', err);
       } finally {
         setIsUsingItem(false);
       }

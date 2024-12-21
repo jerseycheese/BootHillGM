@@ -74,7 +74,6 @@ export const useCampaignStateRestoration = ({
       journal: savedState.journal || []
     };
   } catch (error) {
-    console.error('Error parsing saved state:', error);
     return { 
       ...initialGameState, 
       isClient: true 

@@ -81,7 +81,6 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           });
         });
       } catch (error) {
-        console.error('Error ending combat:', error);
         onUpdateNarrative(
           'There was an error processing the combat end. Please try again.'
         );
@@ -131,14 +130,12 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
       try {
         // Ensure player character is available
         if (!state.character) {
-          console.error('No player character available to initiate combat');
           onUpdateNarrative('No player character available to initiate combat.');
           return;
         }
 
         // Ensure opponent character is available
         if (!newOpponent) {
-          console.error('No opponent character available to initiate combat');
           onUpdateNarrative('No opponent character available to initiate combat.');
           return;
         }
@@ -180,7 +177,6 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           payload: combatState,
         });
       } catch (error) {
-        console.error('Error initiating combat:', error);
         onUpdateNarrative(
           'There was an error processing the combat initiation. Please try again.'
         );
@@ -196,7 +192,6 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
    */
   const executeCombatRound = useCallback(async () => {
     if (!state.character || !state.opponent) {
-      console.error('Error executing combat round: Missing character or opponent data.');
       onUpdateNarrative('Error executing combat round: Missing character or opponent data.');
       return;
     }

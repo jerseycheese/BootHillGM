@@ -63,7 +63,6 @@ export class JournalManager {
       
       return [...journal, newEntry];
     } catch (error) {
-      console.error('Error adding narrative entry:', error);
       return journal;
     }
   }

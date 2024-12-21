@@ -51,7 +51,6 @@ function useCharacterCreationHandler() {
           
         }
       } catch (error) {
-        console.error(error);
       }
     }
   };

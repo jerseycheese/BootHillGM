@@ -112,20 +112,14 @@ export class InventoryManager {
     const existingItem = inventory.find((i: InventoryItem) => i.id === item.id);
  
     if (existingItem) {
-      console.log('addItem: Item already exists', item.id, 'current category:', existingItem.category);
       const newCategory = InventoryManager.determineItemCategory(item);
-      console.log('addItem: determined category', newCategory);
       existingItem.category = newCategory;
       existingItem.quantity += item.quantity;
-      console.log('addItem: Item updated', item.id, 'new category:', existingItem.category);
     } else {
-      console.log('addItem: New item', item.id);
       const newItem = { ...createInventoryItem(item) };
       const newCategory = InventoryManager.determineItemCategory(item);
-      console.log('addItem: determined category', newCategory);
       newItem.category = newCategory
       inventory.push(newItem);
-      console.log('addItem: Item added', item.id, 'category:', newItem.category);
     }
 
     localStorage.setItem('inventory', JSON.stringify(inventory));
@@ -155,7 +149,6 @@ export class InventoryManager {
    */
   static equipWeapon(character: Character, item: InventoryItem): void {
     if (item.category !== 'weapon') {
-      console.error('Item is not a valid weapon');
       return;
     }
 

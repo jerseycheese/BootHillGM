@@ -38,7 +38,6 @@ export default function CharacterSheet() {
             saveGame(newState);
             dispatch({ type: 'SET_STATE', payload: newState });
           } catch {
-            console.error('Error loading last created character.');
           }
         }
       }

@@ -42,7 +42,6 @@ export function useGameSession() {
   // Handle player health change by updating character attributes
   const handlePlayerHealthChange = useCallback((newStrength: number) => {
     if (!state.character) {
-      console.error('No character available to change health');
       return;
     }
     
@@ -68,12 +67,10 @@ export function useGameSession() {
   // Handle weapon equipping by updating character's equipped weapon
   const handleEquipWeapon = useCallback((itemId: string) => {
     if (!state.character) {
-      console.error('No character available to equip weapon');
       return;
     }
     const item = state.inventory.find(i => i.id === itemId);
     if (!item || item.category !== 'weapon') {
-      console.error('Invalid item to equip');
       return;
     }
     InventoryManager.equipWeapon(state.character, item);
@@ -83,7 +80,6 @@ export function useGameSession() {
   // Handle weapon unequipping by clearing character's equipped weapon
   const handleUnequipWeapon = useCallback((itemId: string) => {
     if (!state.character) {
-      console.error('No character available to unequip weapon');
       return;
     }
     InventoryManager.unequipWeapon();

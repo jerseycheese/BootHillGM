@@ -43,13 +43,11 @@ const JournalViewer: React.FC<JournalViewerProps> = ({ entries }) => {
 const formatDate = (timestamp: number): string => {
     try {
       if (!timestamp || isNaN(timestamp)) {
-        console.warn('Invalid timestamp received:', timestamp);
         return 'Invalid date';
       }
 
       const date = new Date(timestamp); // Fix: create date object
       if (isNaN(date.getTime())) {
-        console.warn('Invalid date object created from timestamp:', timestamp);
         return 'Invalid date';
       }
 
@@ -59,7 +57,6 @@ const formatDate = (timestamp: number): string => {
         year: 'numeric'
       }).format(date);
     } catch (error) {
-      console.error('Error formatting date:', error);
       return 'Invalid date';
     }
   };

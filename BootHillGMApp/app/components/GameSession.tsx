@@ -18,12 +18,10 @@ export default function GameSession() {
 
   const handleEquipWeapon = useCallback((itemId: string) => {
     if (!state.character) {
-      console.error('No character available to equip weapon');
       return;
     }
     const item = state.inventory.find(i => i.id === itemId);
     if (!item || item.category !== 'weapon') {
-      console.error('Invalid item to equip');
       return;
     }
     InventoryManager.equipWeapon(state.character, item);

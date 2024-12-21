@@ -81,7 +81,6 @@ export const useWeaponCombatAction = ({
         setAimBonus(0);
       }
     } catch (error) {
-      console.error('Combat action error:', error);
     } finally {
       setIsProcessing(false);
     }

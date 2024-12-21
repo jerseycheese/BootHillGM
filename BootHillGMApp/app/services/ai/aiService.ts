@@ -120,7 +120,6 @@ class AIService {
           );
         }
       } catch (e) {
-        console.warn('Failed to parse suggested actions:', e);
         // Provide default actions if parsing fails
         suggestedActions = [
           { text: "Look around", type: "basic", context: "Observe your surroundings" },
