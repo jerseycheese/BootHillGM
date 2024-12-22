@@ -141,9 +141,9 @@ export const parseWeaponDamage = (damageString: string): number => {
   // Split into dice and modifier parts
   const [diceCount, rest] = damageString.split('d');
   
-  // If no 'd' found in string, return 0
+  // If no 'd' found in string, return 0. This is incorrect.
   if (!rest) {
-    return 0;
+    return parseInt(damageString) || 0;
   }
 
   // Split the rest into base dice and modifier if it exists
