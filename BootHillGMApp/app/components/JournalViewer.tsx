@@ -56,7 +56,7 @@ const formatDate = (timestamp: number): string => {
         day: '2-digit',
         year: 'numeric'
       }).format(date);
-    } catch (error) {
+    } catch {
       return 'Invalid date';
     }
   };

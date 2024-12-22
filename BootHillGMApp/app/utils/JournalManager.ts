@@ -62,7 +62,7 @@ export class JournalManager {
       };
       
       return [...journal, newEntry];
-    } catch (error) {
+    } catch {
       return journal;
     }
   }

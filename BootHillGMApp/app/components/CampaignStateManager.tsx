@@ -89,7 +89,7 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
       localStorage.setItem('campaignState', JSON.stringify(cleanState));
       lastSavedRef.current = timestamp;
-    } catch (error) {
+    } catch {
     }
   }, [isInitializing]);
 
@@ -198,7 +198,7 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
       
       dispatch({ type: 'SET_STATE', payload: restoredState });
       return restoredState;
-    } catch (error) {
+    } catch {
       return null;
     }
   }, [dispatch]);

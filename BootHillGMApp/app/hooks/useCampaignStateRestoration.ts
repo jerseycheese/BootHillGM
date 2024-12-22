@@ -73,7 +73,7 @@ export const useCampaignStateRestoration = ({
       inventory: savedState.inventory?.map((item: InventoryItem) => ({ ...item })) || [],
       journal: savedState.journal || []
     };
-  } catch (error) {
+  } catch {
     return { 
       ...initialGameState, 
       isClient: true 

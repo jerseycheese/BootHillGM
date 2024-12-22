@@ -87,7 +87,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
             ['basic', 'combat', 'interaction', 'chaotic'].includes(action.type)
           );
         }
-      } catch (e) {
+      } catch {
         // Provide default actions if parsing fails
         suggestedActions = [
           { text: "Look around", type: "basic", context: "Observe your surroundings" },

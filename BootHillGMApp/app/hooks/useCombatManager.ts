@@ -80,7 +80,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             }),
           });
         });
-      } catch (error) {
+      } catch {
         onUpdateNarrative(
           'There was an error processing the combat end. Please try again.'
         );
@@ -176,7 +176,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           type: 'UPDATE_COMBAT_STATE',
           payload: combatState,
         });
-      } catch (error) {
+      } catch {
         onUpdateNarrative(
           'There was an error processing the combat initiation. Please try again.'
         );

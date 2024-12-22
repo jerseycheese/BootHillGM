@@ -50,7 +50,7 @@ function useCharacterCreationHandler() {
           
           
         }
-      } catch (error) {
+      } catch {
       }
     }
   };

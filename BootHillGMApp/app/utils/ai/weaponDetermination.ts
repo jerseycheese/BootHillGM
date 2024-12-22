@@ -21,7 +21,7 @@ export async function determineIfWeapon(name: string, description: string): Prom
     const text = response.text().trim().toLowerCase();
     
     return text === 'true';
-    } catch (error) {
+    } catch {
     // Default to false if AI fails
     return false;
     }

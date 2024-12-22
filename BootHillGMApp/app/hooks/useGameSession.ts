@@ -164,8 +164,8 @@ export const useGameSession = () => {
       }
 
       return response;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } catch {
+      setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -201,8 +201,7 @@ export const useGameSession = () => {
             removedItems: [item.name]
           });
         }
-      } catch (err) {
-        // If AI processing fails, don't update inventory
+      } catch {
       } finally {
         setIsUsingItem(false);
       }
