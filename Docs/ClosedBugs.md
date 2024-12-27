@@ -100,3 +100,8 @@ This document tracks resolved bugs in the BootHillGM project. For active bugs, s
 - Status: Fixed
 - Resolution: Enhanced text cleaning implementation and improved metadata handling in narrative processing
 - Closed Date: 2024-11-27
+
+[BUG-026] Character Creation Progress Not Saved During Process
+  - Description: Character creation progress is not saved incrementally, risking loss of progress if page is refreshed
+  - Resolution: Character creation is no longer a multi-step process, so this bug is no longer relevant
+  - Closed Date: 2024-12-26

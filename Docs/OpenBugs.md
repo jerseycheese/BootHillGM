@@ -54,17 +54,6 @@ This document tracks bugs found during development and testing. Each bug entry s
   - Status: Open
   - Priority: Medium
 
-[BUG-026] Character Creation Progress Not Saved During Process
-  - Description: Character creation progress is not saved incrementally, risking loss of progress if page is refreshed
-  - Steps to Reproduce: 
-    1. Begin character creation
-    2. Complete several steps
-    3. Encounter an error or refresh the page
-  - Expected Behavior: Progress should be saved after each step completion
-  - Actual Behavior: Progress is lost on page refresh
-  - Status: Open
-  - Priority: High
-
 [BUG-027] Incorrect Location Display in Game Session
   - Description: The location display sometimes includes more information than just the location name.
   - Steps to Reproduce: 
