@@ -45,4 +45,55 @@ describe('resolveBrawlingRound', () => {
       nextRoundModifier: expect.any(Number)
     });
   });
+
+  // Test specific table entries for punching
+  describe('Punching Table Results', () => {
+    const testCases = [
+      { roll: 2, expected: PUNCHING_TABLE[2] },
+      { roll: 3, expected: PUNCHING_TABLE[3] },
+      { roll: 4, expected: PUNCHING_TABLE[4] },
+      { roll: 5, expected: PUNCHING_TABLE[5] },
+      { roll: 6, expected: PUNCHING_TABLE[6] }
+    ];
+
+    testCases.forEach(({ roll, expected }) => {
+      it(`should return correct result for roll ${roll}`, () => {
+        const result = resolveBrawlingRound(0, true, roll); // Force specific roll
+        expect(result).toMatchObject(expected);
+      });
+    });
+  });
+
+  // Test specific table entries for grappling
+  describe('Grappling Table Results', () => {
+    const testCases = [
+      { roll: 2, expected: GRAPPLING_TABLE[2] },
+      { roll: 3, expected: GRAPPLING_TABLE[3] },
+      { roll: 4, expected: GRAPPLING_TABLE[4] },
+      { roll: 5, expected: GRAPPLING_TABLE[5] },
+      { roll: 6, expected: GRAPPLING_TABLE[6] }
+    ];
+
+    testCases.forEach(({ roll, expected }) => {
+      it(`should return correct result for roll ${roll}`, () => {
+        const result = resolveBrawlingRound(0, false, roll); // Force specific roll
+        expect(result).toMatchObject(expected);
+      });
+    });
+  });
+
+  // Test dice rolling integration edge cases
+  describe('Dice Rolling Integration', () => {
+    it('should handle minimum dice roll correctly', () => {
+      const result = resolveBrawlingRound(-10, true);
+      expect(result.roll).toBe(2);
+      expect(result).toMatchObject(PUNCHING_TABLE[2]);
+    });
+
+    it('should handle maximum dice roll correctly', () => {
+      const result = resolveBrawlingRound(10, true);
+      expect(result.roll).toBe(6);
+      expect(result).toMatchObject(PUNCHING_TABLE[6]);
+    });
+  });
 });

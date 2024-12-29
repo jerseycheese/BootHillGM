@@ -65,10 +65,19 @@ export const GRAPPLING_TABLE: BrawlingTable = {
  * Resolves a brawling round based on the provided modifier and attack type.
  * @param modifier Modifier to the dice roll.
  * @param isPunching True if punching, false if grappling.
+ * @param forceRoll Optional parameter to force a specific roll value (for testing)
  * @returns The result of the brawling round.
  */
-export const resolveBrawlingRound = (modifier: number, isPunching: boolean): BrawlingResult => {
-  const roll = Math.max(2, Math.min(6, rollDice({ count: 1, sides: 6, modifier }) + modifier));
+export const resolveBrawlingRound = (
+  modifier: number, 
+  isPunching: boolean,
+  forceRoll?: number
+): BrawlingResult => {
+  // Use forced roll if provided, otherwise roll dice with modifier
+  const roll = forceRoll !== undefined ? 
+    Math.max(2, Math.min(6, forceRoll)) :
+    Math.max(2, Math.min(6, rollDice({ count: 1, sides: 6, modifier })));
+    
   const table = isPunching ? PUNCHING_TABLE : GRAPPLING_TABLE;
   const result = table[roll];
 
