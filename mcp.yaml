@@ -1,0 +1,16 @@
+servers:
+  - name: react-project
+    type: filesystem
+    root: /Users/jackhaas/Projects/BootHillGM/
+    resources:
+      - name: boothill-gm-app
+        path: BootHillGMApp/
+        description: React source code
+      - name: docs
+        path: Docs/
+        description: Technical documentation
+    tools:
+      - name: analyze-component
+        description: Analyze React component structure and dependencies
+      - name: search-docs
+        description: Search technical documentation
