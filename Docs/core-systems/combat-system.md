@@ -158,11 +158,25 @@ For weapon details, see [[../boot-hill-rules/weapons-chart|Weapons Reference]].
 
 The combat system utilizes the `rollDice` function from `diceUtils.ts` to handle all dice rolls during combat. This function provides a centralized and comprehensive way to manage dice rolls, supporting various options like the number of dice, sides, modifiers, advantage, and disadvantage.
 
+### Brawling Combat Integration
+The `rollDice` function has been fully integrated into the brawling combat system, replacing the previous local implementation. This change:
+- Centralizes dice rolling logic across all combat systems
+- Improves code reuse and maintainability
+- Supports consistent dice rolling behavior
+- Enables future enhancements like advantage/disadvantage in brawling
+
 **Integration of `rollDice`:**
 
-- The `rollDice` function is called whenever a dice roll is needed within the combat system, such as during attack rolls, damage calculations, and skill checks.
+- The `rollDice` function is called whenever a dice roll is needed within the combat system, including:
+  - Brawling attack rolls
+  - Weapon attack rolls
+  - Damage calculations
+  - Skill checks
 - The function's parameters are determined based on the specific combat situation, taking into account factors like weapon type, character stats, and situational modifiers.
 - The results of the dice rolls are then used to determine the outcome of combat actions, such as whether an attack hits, how much damage is dealt, and whether any special effects are triggered.
+
+**Testing and Validation:**
+The integration of `rollDice` into the brawling combat system has been thoroughly tested, with all unit tests passing successfully. This ensures the system maintains its existing behavior while benefiting from the centralized dice rolling logic.
 
 **Next Steps for Rule Tables:**
 

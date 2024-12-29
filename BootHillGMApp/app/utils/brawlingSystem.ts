@@ -9,24 +9,7 @@
  * - Combat modifiers based on previous actions
  */
 
-// Dice rolling utility
-/**
- * Rolls a specified number of dice with a given number of sides.
- * @param numDice The number of dice to roll.
- * @param sides The number of sides on each die.
- * @returns The total result of the dice rolls.
- * @throws Error if invalid input is provided (e.g., non-positive number of dice or sides).
- */
-const rollDice = (numDice: number, sides: number): number => {
-  if (numDice <= 0 || sides <= 0) {
-    throw new Error("Invalid input: numDice and sides must be positive integers.");
-  }
-  let total = 0;
-  for (let i = 0; i < numDice; i++) {
-    total += Math.floor(Math.random() * sides) + 1;
-  }
-  return total;
-};
+import { rollDice } from './diceUtils';
 
 /**
  * Represents the result of a brawling round.
@@ -85,7 +68,7 @@ export const GRAPPLING_TABLE: BrawlingTable = {
  * @returns The result of the brawling round.
  */
 export const resolveBrawlingRound = (modifier: number, isPunching: boolean): BrawlingResult => {
-  const roll = Math.max(2, Math.min(6, rollDice(1, 6) + modifier));
+  const roll = Math.max(2, Math.min(6, rollDice({ count: 1, sides: 6, modifier }) + modifier));
   const table = isPunching ? PUNCHING_TABLE : GRAPPLING_TABLE;
   const result = table[roll];
 

@@ -71,12 +71,6 @@ This document provides a list of features and functionalities currently in devel
   - Ensure that combat can end early if the AI agrees to the truce
   **Related:** [[../../core-systems/combat-system|Combat System]]
 
-- [ ] As a developer, I want to integrate the `rollDice` function from `diceUtils.ts` into the `CombatSystem.tsx` component, so that the combat system uses the new, comprehensive dice rolling logic.
-  **Test Plan:**
-  - Verify that `CombatSystem.tsx` uses the `rollDice` function from `diceUtils.ts` for all dice rolls.
-  - Test various combat scenarios to ensure that dice rolls are handled correctly and consistently.
-  - Check that the results of dice rolls are accurately reflected in the combat log and game state.
-  **Related:** [[../../core-systems/combat-system|Combat System]], [[../../../BootHillGMApp/app/utils/diceUtils.ts|diceUtils.ts]]
 
 ## Weapon Combat System
 
