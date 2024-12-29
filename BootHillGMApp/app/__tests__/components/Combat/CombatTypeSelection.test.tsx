@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
-import { CombatTypeSelection } from '../CombatTypeSelection';
-import { useCampaignState } from '../../CampaignStateManager';
+import { CombatTypeSelection } from '../../../components/Combat/CombatTypeSelection';
+import { useCampaignState } from '../../../components/CampaignStateManager';
 import { Character } from '../../../types/character';
 
 // Mock the campaign state hook
-jest.mock('../../CampaignStateManager');
+jest.mock('../../../components/CampaignStateManager');
 
 describe('CombatTypeSelection', () => {
   const mockOnSelectType = jest.fn();

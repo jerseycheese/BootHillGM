@@ -17,9 +17,15 @@
 - Verified integration through existing test suite
 
 ## Action Items
-- [ ] Review combat system tests for additional coverage
+- [x] Review combat system tests for additional coverage
+- [x] Add descriptive comments to test files
 - [ ] Monitor combat system performance with new dice rolling logic
 - [ ] Document integration details in combat system documentation
+
+## Documentation Updates
+- Added clear comments to diceUtils.test.ts explaining each test case
+- Updated completed user stories to reflect dice rolling implementation
+- Removed completed stories from current-stories.md
 
 ## Knowledge Base Updates
 - Added details about dice rolling integration to:

@@ -280,3 +280,26 @@ updated: 2024-12-28
   - Clear UI with descriptive button text
   - Weapon availability display
   - Proper state management integration
+
+## Dice Rolling and Rule Tables
+- [x] As a player, I want to see "Roll Dice" instead of "Generate" for numerical values.
+  **Test Plan:**
+  - Verify button text is changed to "Roll Dice"
+  - Ensure dice roll results are displayed with clear explanation
+  - Check that rolls follow Boot Hill rules
+  - Verify dice roll explanation appears before the Next Step button
+  **Status:** Implemented with centralized dice rolling system in diceUtils.ts
+
+- [x] As a developer, I want to research the specific Boot Hill rule tables needed for the game (e.g., hit location, damage modifiers, range modifiers, skill check difficulties), so that I can expand and refine the `RuleTable`, `TableEntry`, and `TableModifier` type definitions in `ruleTableTypes.ts` to accurately represent these tables.
+  **Test Plan:**
+  - Identify all required rule tables from the Boot Hill rulebook.
+  - Verify that the `RuleTable`, `TableEntry`, and `TableModifier` types can accommodate all necessary data for each table.
+  - Test the type definitions with mock data to ensure they work as expected.
+  **Status:** Implemented with comprehensive rule table types in ruleTableTypes.ts
+
+- [x] As a developer, I want to create a test suite for the rule table system, so that I can ensure the accuracy and robustness of the system once it's implemented.
+  **Test Plan:**
+  - Create test cases for each rule table, covering different scenarios and edge cases.
+  - Verify that the system correctly retrieves and applies data from the rule tables.
+  - Test the system's handling of invalid or missing data.
+  **Status:** Implemented with comprehensive test coverage in diceUtils.test.ts and brawlingSystem.test.ts
