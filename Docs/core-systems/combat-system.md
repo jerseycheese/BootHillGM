@@ -154,6 +154,28 @@ For weapon details, see [[../boot-hill-rules/weapons-chart|Weapons Reference]].
 - Action validation
 - State restoration fallbacks
 
+## Dice Rolling and Rule Tables
+
+The combat system utilizes the `rollDice` function from `diceUtils.ts` to handle all dice rolls during combat. This function provides a centralized and comprehensive way to manage dice rolls, supporting various options like the number of dice, sides, modifiers, advantage, and disadvantage.
+
+**Integration of `rollDice`:**
+
+- The `rollDice` function is called whenever a dice roll is needed within the combat system, such as during attack rolls, damage calculations, and skill checks.
+- The function's parameters are determined based on the specific combat situation, taking into account factors like weapon type, character stats, and situational modifiers.
+- The results of the dice rolls are then used to determine the outcome of combat actions, such as whether an attack hits, how much damage is dealt, and whether any special effects are triggered.
+
+**Next Steps for Rule Tables:**
+
+- The current combat system does not yet fully incorporate all Boot Hill rule tables.
+- The next step is to integrate these tables using the type definitions provided in `ruleTableTypes.ts`.
+- This will involve:
+  1. **Gathering Information:** Researching and documenting the specific rule tables needed for the game, such as hit location tables, damage modifier tables, range modifier tables, and skill check difficulty tables.
+  2. **Refining Type Definitions:** Expanding and refining the `RuleTable`, `TableEntry`, and `TableModifier` types in `ruleTableTypes.ts` to accurately represent the structure and data of these tables.
+  3. **Implementing Table Integration:** Modifying the combat system to look up and apply data from the rule tables during combat calculations. This will likely involve creating functions that take the current combat state as input and return the appropriate table entries or modifiers based on the situation.
+  4. **Testing:** Thoroughly testing the integration of rule tables to ensure they are being applied correctly and produce the expected results in various combat scenarios.
+
+By completing these steps, the combat system will become more accurate and aligned with the Boot Hill rule set, providing a more authentic and engaging gameplay experience.
+
 ## Related Documentation
 - [[../boot-hill-rules/combat-rules|Boot Hill Combat Rules]]
 - [[../ai/prompt-engineering/combat|Combat Prompts]]

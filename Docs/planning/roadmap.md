@@ -82,6 +82,7 @@
 - [x] Add combat-specific inventory interactions
 - [x] Refactor combat hooks (`useWeaponCombat`, `useWeaponCombatAction`, `useWeaponCombatState`)
 - [x] Improve combat log with detailed action descriptions and outcomes
+- [x] Implement core dice rolling system (diceUtils.ts)
 
 3.4 Inventory System Refinements
 - [x] Implement basic inventory data structure
@@ -137,7 +138,7 @@
 - Regular testing and validation
 
 ## Critical Path Items
-1. Complete combat system enhancements
+1. Complete combat system enhancements (Core dice rolling system implemented)
 2. Finish inventory system logical checks
 3. Implement journal narrative summaries
 4. Add loading indicators and feedback

@@ -71,6 +71,13 @@ This document provides a list of features and functionalities currently in devel
   - Ensure that combat can end early if the AI agrees to the truce
   **Related:** [[../../core-systems/combat-system|Combat System]]
 
+- [ ] As a developer, I want to integrate the `rollDice` function from `diceUtils.ts` into the `CombatSystem.tsx` component, so that the combat system uses the new, comprehensive dice rolling logic.
+  **Test Plan:**
+  - Verify that `CombatSystem.tsx` uses the `rollDice` function from `diceUtils.ts` for all dice rolls.
+  - Test various combat scenarios to ensure that dice rolls are handled correctly and consistently.
+  - Check that the results of dice rolls are accurately reflected in the combat log and game state.
+  **Related:** [[../../core-systems/combat-system|Combat System]], [[../../../BootHillGMApp/app/utils/diceUtils.ts|diceUtils.ts]]
+
 ## Weapon Combat System
 
 - [ ] As a player, I want to see available weapons during combat initiation.
@@ -153,3 +160,17 @@ This document provides a list of features and functionalities currently in devel
   - Verify that the journal displays correctly
   - Ensure that the Game Session page layout improves
   **Related:** [[../../core-systems/journal-system|Journal System]]
+
+- [ ] As a developer, I want to research the specific Boot Hill rule tables needed for the game (e.g., hit location, damage modifiers, range modifiers, skill check difficulties), so that I can expand and refine the `RuleTable`, `TableEntry`, and `TableModifier` type definitions in `ruleTableTypes.ts` to accurately represent these tables.
+  **Test Plan:**
+  - Identify all required rule tables from the Boot Hill rulebook.
+  - Verify that the `RuleTable`, `TableEntry`, and `TableModifier` types can accommodate all necessary data for each table.
+  - Test the type definitions with mock data to ensure they work as expected.
+  **Related:** [[../../boot-hill-rules/|Boot Hill Rules]], [[../../../BootHillGMApp/app/types/ruleTableTypes.ts|ruleTableTypes.ts]]
+
+- [ ] As a developer, I want to create a test suite for the rule table system, so that I can ensure the accuracy and robustness of the system once it's implemented.
+  **Test Plan:**
+  - Create test cases for each rule table, covering different scenarios and edge cases.
+  - Verify that the system correctly retrieves and applies data from the rule tables.
+  - Test the system's handling of invalid or missing data.
+  **Related:** [[../../technical-guides/testing|Testing Guide]], [[../../../BootHillGMApp/app/types/ruleTableTypes.ts|ruleTableTypes.ts]]
