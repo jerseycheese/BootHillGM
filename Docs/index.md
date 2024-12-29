@@ -1,40 +1,96 @@
-# Documentation Index
+---
+title: Boot Hill GM Documentation
+aliases: [Home, Documentation Home]
+tags: [documentation, home, index]
+created: 2024-12-28
+updated: 2024-12-28
+---
 
-This document provides a list of all the documentation files available in this repository, along with a brief description of each.
+# Boot Hill GM Documentation
 
-## General Documentation
+> [!note]
+> This documentation uses Obsidian for optimal viewing. Maps of Content (MOC) are available for each major section.
 
-- **AIGameMasterLogic.md**: Describes the logic and behavior of the AI Game Master.
-- **ArchitectureDecisionRecord.md**: Records architectural decisions made during the development process.
-- **ClosedBugs.md**: Lists bugs that have been closed.
-- **CompletedUserStories.md**: Lists user stories that have been completed.
-- **ComponentBreakdown.md**: Breaks down the components used in the application.
-- **DevelopmentRoadmap.md**: Outlines the development roadmap for the project.
-- **GameDesignDocument.md**: Contains the game design document.
-- **OpenBugs.md**: Lists bugs that are currently open.
-- **ProjectOverview.md**: Provides an overview of the project.
-- **RiskAssessment.md**: Assesses potential risks associated with the project.
-- **TechnicalSpecification.md**: Contains technical specifications for the project.
-- **TestStrategy.md**: Describes the test strategy for the project.
-- **UserStories.md**: Lists user stories for the project.
+## Quick Navigation
+- 🎮 [[meta/project-overview|Project Overview]]
+- 📋 [[planning/roadmap|Development Roadmap]]
+- 🔧 [[technical-guides/setup|Development Setup]]
+- ❗ [[issues/open-issues|Open Issues]]
 
-## BootHill Rules
+## System Documentation
+### Core Systems
+> [[core-systems/_index|Core Systems Overview]]
+- [[core-systems/combat-system|Combat System]]
+- [[core-systems/state-management|State Management]]
+- [[core-systems/journal-system|Journal System]]
+- [[core-systems/combat-modifiers|Combat Modifiers]]
 
-- **BootHillv2BaseNumbersCalculation.md**: Explains the base numbers calculation for BootHill v2.
-- **BootHillv2BrawlingContext.md**: Describes the brawling context for BootHill v2.
-- **BootHillv2CampaignRules.md**: Outlines the campaign rules for BootHill v2.
-- **BootHillv2CharacterCreationRules.md**: Describes the character creation rules for BootHill v2.
-- **BootHillv2CombatRules.md**: Explains the combat rules for BootHill v2.
-- **BootHillv2EquipmentPriceChart.md**: Provides an equipment price chart for BootHill v2.
-- **BootHillv2GameOverview.md**: Offers an overview of the BootHill v2 game.
-- **BootHillv2MiscCharactersChart.md**: Includes a chart of miscellaneous characters for BootHill v2.
-- **BootHillv2ObservationSightingRules.md**: Describes the observation and sighting rules for BootHill v2.
-- **BootHillv2WeaponsChart.md**: Provides a weapons chart for BootHill v2.
+### Features
+> [[features/_index|Features Overview]]
+- 🚧 **In Development**
+  - [[features/_current/narrative-formatting|Narrative Formatting]]
+  - [[features/_current/inventory-interactions|Inventory Interactions]]
+  - [[features/_current/journal-enhancements|Journal Enhancements]]
+- ✅ **Completed**
+  - [[features/_completed/character-creation|Character Creation]]
+  - [[features/_completed/combat-base|Combat Base]]
+  - [[features/_completed/storytelling|Storytelling]]
 
-## Reference
+### AI Integration
+> [[ai/_index|AI Systems Overview]]
+- [[ai/game-master-logic|Game Master Logic]]
+- [[ai/gemini-integration|Gemini Integration]]
+- [[reference/gemini-api-guide|Gemini API Guide]]
+- [[ai/prompt-engineering/core-prompts|Core Prompts]]
 
-- **Gemini-API-Integration-Guide.md**: Guides the integration of the Gemini API.
+### Technical Architecture
+> [[architecture/_index|Architecture Overview]]
+- [[architecture/architecture-decisions|Architecture Decisions]]
+- [[architecture/component-structure|Component Structure]]
+- [[architecture/api-integration|API Integration]]
 
-## Wireframes
+## Game Documentation
+### Meta
+- [[meta/game-design|Game Design Document]]
+- [[meta/project-overview|Project Overview]]
+- [[meta/claude-context/goals|Project Goals]]
 
-- **UIWireframes.md**: Contains UI wireframes for the application.
+### Boot Hill Rules
+- [[boot-hill-rules/game-overview|Game Overview]]
+- [[boot-hill-rules/combat-rules|Combat Rules]]
+- [[boot-hill-rules/equipment|Equipment]]
+- [[boot-hill-rules/weapons-chart|Weapons Chart]]
+
+## Development
+### Planning
+- [[planning/roadmap|Development Roadmap]]
+- [[planning/requirements/current-stories|Current Stories]]
+- [[planning/requirements/future-stories|Future Stories]]
+
+### Technical Guides
+- [[technical-guides/setup|Development Setup]]
+- [[technical-guides/deployment|Deployment Guide]]
+- [[technical-guides/testing|Testing Guide]]
+- [[technical-guides/contributing|Contributing Guide]]
+
+### Issue Tracking
+- [[issues/open-issues|Open Issues]]
+- [[issues/closed-issues|Resolved Issues]]
+
+---
+
+```mermaid
+graph TD
+    A[Documentation] --> B[System Docs]
+    A --> C[Game Docs]
+    A --> D[Development]
+    B --> E[Core Systems]
+    B --> F[Features]
+    B --> G[AI]
+    B --> H[Architecture]
+    C --> I[Meta]
+    C --> J[Rules]
+    D --> K[Planning]
+    D --> L[Guides]
+    D --> M[Issues]
+```
