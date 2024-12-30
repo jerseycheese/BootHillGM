@@ -1,6 +1,21 @@
 import React from 'react';
 import { Character } from '../../types/character';
-import { CombatType } from '../../types/combat';
+import { CombatType, Weapon } from '../../types/combat';
+import { InventoryItem } from '../../types/inventory';
+
+/**
+ * Extended inventory item interface specifically for weapons
+ * Handles both direct weapon items and nested weapon objects
+ */
+interface WeaponInventoryItem extends InventoryItem {
+  weapon?: {
+    id: string;
+    name: string;
+    modifiers: Weapon['modifiers'];
+  };
+  modifiers?: Weapon['modifiers'];
+}
+
 import { useCampaignState } from '../CampaignStateManager';
 import { getOpponentWeapon } from '../../utils/weaponUtils';
 import { cleanCharacterName } from '../../utils/textCleaningUtils';
@@ -61,17 +76,46 @@ export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
 
       {/* Display available weapons if any */}
       {canUseWeapons && (
-        <div className="mt-4 text-sm">
-          <p>Available Weapons:</p>
-          <ul className="list-disc pl-5">
+        <div className="mt-4">
+          <p className="font-medium mb-2">Available Weapons:</p>
+          <div className="grid grid-cols-1 gap-2">
             {state.inventory
-              .filter(item => item.category === 'weapon')
-              .map(weapon => (
-                <li key={weapon.id}>You: {weapon.name}</li>
-              ))
+              .filter(item => {
+                const weaponItem = item as WeaponInventoryItem;
+                // Check if item is a weapon either through category or nested weapon object
+                const isWeapon = (weaponItem.category === 'weapon' || weaponItem.weapon) && 
+                       (weaponItem.modifiers || weaponItem.weapon?.modifiers) &&
+                       !weaponItem.name.toLowerCase().includes('shells') &&
+                       !weaponItem.name.toLowerCase().includes('cartridges');
+                return isWeapon;
+              })
+              .map(item => {
+                const weapon = item as WeaponInventoryItem;
+                return (
+                  <div key={weapon.id} className="p-2 border rounded">
+                    <p className="font-medium">You: {weapon.name}</p>
+                    <div className="text-sm space-y-1">
+                      <p>Damage: {weapon?.weapon?.modifiers?.damage || weapon?.modifiers?.damage || 'N/A'}</p>
+                      <p>Range: {weapon?.weapon?.modifiers?.range || weapon?.modifiers?.range || 'N/A'} yards</p>
+                      <p>Accuracy: {
+                        (weapon?.weapon?.modifiers?.accuracy !== undefined || weapon?.modifiers?.accuracy !== undefined) ? 
+                        (((weapon?.weapon?.modifiers?.accuracy ?? weapon?.modifiers?.accuracy) || 0) > 0 ? 
+                          `+${weapon?.weapon?.modifiers?.accuracy ?? weapon?.modifiers?.accuracy}` : 
+                          (weapon?.weapon?.modifiers?.accuracy ?? weapon?.modifiers?.accuracy)) : 'N/A'}</p>
+                    </div>
+                  </div>
+                );
+              })
             }
-            <li>{cleanCharacterName(opponent.name)}: {getOpponentWeapon(opponent).name}</li>
-          </ul>
+            <div className="p-2 border rounded">
+              <p className="font-medium">{cleanCharacterName(opponent.name)}: {getOpponentWeapon(opponent).name}</p>
+              <div className="text-sm space-y-1">
+                <p>Damage: {getOpponentWeapon(opponent).modifiers.damage}</p>
+                <p>Range: {getOpponentWeapon(opponent).modifiers.range} yards</p>
+                <p>Accuracy: {getOpponentWeapon(opponent).modifiers.accuracy > 0 ? `+${getOpponentWeapon(opponent).modifiers.accuracy}` : getOpponentWeapon(opponent).modifiers.accuracy}</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

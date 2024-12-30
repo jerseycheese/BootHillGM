@@ -103,9 +103,11 @@ describe('CombatTypeSelection', () => {
       />
     );
 
-    // Check player weapon
-    expect(screen.getByText('You: Colt Peacemaker')).toBeInTheDocument();
-    // Check opponent default weapon
+    // Check opponent weapon
     expect(screen.getByText('Rancher: Colt Revolver')).toBeInTheDocument();
+    // Check weapon stats
+    expect(screen.getByText('Damage: 1d6')).toBeInTheDocument();
+    expect(screen.getByText('Range: 20 yards')).toBeInTheDocument();
+    expect(screen.getByText('Accuracy: +2')).toBeInTheDocument();
   });
 });
