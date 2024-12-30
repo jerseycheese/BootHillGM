@@ -4,7 +4,20 @@ aliases: [Home, Documentation Home]
 tags: [documentation, home, index]
 created: 2024-12-28
 updated: 2024-12-28
+author: Jack Haas
 ---
+
+# Boot Hill GM Documentation
+
+## Overview
+This documentation serves as the central knowledge base for the Boot Hill GM project, covering system architecture, game rules, development processes, and AI integration.
+
+## Purpose
+The documentation aims to:
+- Provide comprehensive technical references for developers
+- Maintain consistent game rules and mechanics
+- Document architectural decisions and implementation details
+- Support onboarding of new contributors
 
 # Boot Hill GM Documentation
 
@@ -12,10 +25,10 @@ updated: 2024-12-28
 > This documentation uses Obsidian for optimal viewing. Maps of Content (MOC) are available for each major section.
 
 ## Quick Navigation
-- 🎮 [[meta/project-overview|Project Overview]]
-- 📋 [[planning/roadmap|Development Roadmap]]
-- 🔧 [[technical-guides/setup|Development Setup]]
-- ❗ [[issues/open-issues|Open Issues]]
+- 🎮 [[../meta/project-overview|Project Overview]]
+- 📋 [[../planning/roadmap|Development Roadmap]]
+- 🔧 [[../technical-guides/setup|Development Setup]]
+- ❗ [[../issues/open-issues|Open Issues]]
 
 ## System Documentation
 ### Core Systems

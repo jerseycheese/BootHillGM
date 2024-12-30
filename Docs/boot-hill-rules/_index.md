@@ -11,20 +11,20 @@ updated: 2024-12-28
 This Map of Content (MOC) provides a comprehensive overview of the Boot Hill v2 rules implementation in BootHillGM.
 
 ## Core Rules
-- [[game-overview|Game Overview]] - Basic game concepts and mechanics
-- [[character-creation|Character Creation]] - Character generation rules
-- [[combat-rules|Combat Rules]] - Core combat mechanics
+- [[./game-overview|Game Overview]] - Basic game concepts and mechanics
+- [[./character-creation|Character Creation]] - Character generation rules
+- [[./combat-rules|Combat Rules]] - Core combat mechanics
 
 ## Equipment and Resources
-- [[equipment|Equipment Rules]] - General equipment rules
-- [[weapons-chart|Weapons Chart]] - Weapon statistics and rules
-- [[misc-characters|Misc Characters Chart]] - NPC statistics
+- [[./equipment|Equipment Rules]] - General equipment rules
+- [[./weapons-chart|Weapons Chart]] - Weapon statistics and rules
+- [[./misc-characters|Misc Characters Chart]] - NPC statistics
 
 ## Game Mechanics
-- [[base-numbers|Base Numbers Calculation]] - Core game calculations
-- [[observation-sighting|Observation and Sighting]] - Perception rules
-- [[brawling-context|Brawling Rules]] - Hand-to-hand combat
-- [[campaign-rules|Campaign Rules]] - Extended gameplay rules
+- [[./base-numbers|Base Numbers Calculation]] - Core game calculations
+- [[./observation-sighting|Observation and Sighting]] - Perception rules
+- [[./brawling-context|Brawling Rules]] - Hand-to-hand combat
+- [[./campaign-rules|Campaign Rules]] - Extended gameplay rules
 
 ## Rules Implementation
 ```mermaid

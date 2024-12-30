@@ -1,10 +1,23 @@
 ---
 title: AI Game Master Integration
 aliases: [AI Integration System, Game Master Bridge, AI Engine Integration]
-tags: [core-system, ai, integration, game-master]
+tags: [core-system, ai, integration, game-master, narrative]
 created: 2024-12-28
 updated: 2024-12-28
+author: Jack Haas
 ---
+
+# AI Game Master Integration
+
+## Overview
+The AI Game Master (GM) is the core component of BootHillGM, responsible for creating and managing the game world.
+
+## Purpose
+The AI Integration documentation aims to:
+- Provide technical implementation details for developers
+- Document AI integration patterns and architecture
+- Serve as a reference for AI-related components
+- Maintain consistency across system integrations
 
 # AI Game Master Integration
 

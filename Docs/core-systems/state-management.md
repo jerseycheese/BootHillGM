@@ -1,10 +1,23 @@
 ---
 title: State Management
 aliases: [Game State System, State Architecture]
-tags: [core-system, architecture, state]
+tags: [core-system, architecture, state, persistence]
 created: 2024-12-28
 updated: 2024-12-28
+author: Jack Haas
 ---
+
+# State Management
+
+## Overview
+BootHillGM uses React Context with useReducer for global state management, implementing atomic state updates and automatic persistence.
+
+## Purpose
+The State Management documentation aims to:
+- Provide technical implementation details for developers
+- Document state architecture and patterns
+- Serve as a reference for state-related components
+- Maintain consistency across system integrations
 
 # State Management
 

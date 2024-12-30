@@ -1,10 +1,23 @@
 ---
 title: Combat System
 aliases: [Combat Engine, Battle System]
-tags: [core-system, combat, mechanics, implementation]
+tags: [core-system, combat, mechanics, implementation, rules]
 created: 2024-12-28
 updated: 2024-12-28
+author: Jack Haas
 ---
+
+# Combat System
+
+## Overview
+The BootHillGM combat system implements turn-based combat following Boot Hill RPG rules, with support for both brawling and weapon-based combat.
+
+## Purpose
+The Combat System documentation aims to:
+- Provide technical implementation details for developers
+- Document combat flow and state management
+- Serve as a reference for combat-related components
+- Maintain consistency with Boot Hill RPG rules
 
 # Combat System
 

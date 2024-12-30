@@ -11,9 +11,9 @@ updated: 2024-12-28
 This Map of Content (MOC) provides a comprehensive overview of BootHillGM's technical architecture and implementation details.
 
 ## Core Architecture
-- [[architecture-decisions|Architecture Decisions]] - Key technical decisions and rationales
-- [[next-js-setup|Next.js Setup]] - Framework configuration and setup
-- [[component-structure|Component Structure]] - UI component organization
+- [[./architecture-decisions|Architecture Decisions]] - Key technical decisions and rationales
+- [[./next-js-setup|Next.js Setup]] - Framework configuration and setup
+- [[./component-structure|Component Structure]] - UI component organization
 
 ## System Design
 ### State Management

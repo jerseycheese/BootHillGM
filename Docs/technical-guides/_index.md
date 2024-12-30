@@ -11,10 +11,10 @@ updated: 2024-12-28
 This Map of Content (MOC) provides a comprehensive overview of technical guides and development documentation for BootHillGM.
 
 ## Development Setup
-- [[setup|Development Setup]] - Initial development environment setup
-- [[environment-configuration|Environment Configuration]] - Development environment setup
-- [[dependencies|Required Dependencies]] - Project dependencies
-- [[workflow|Development Workflow]] - Local development process
+- [[./setup|Development Setup]] - Initial development environment setup
+- [[./environment-configuration|Environment Configuration]] - Development environment setup
+- [[./dependencies|Required Dependencies]] - Project dependencies
+- [[./workflow|Development Workflow]] - Local development process
 
 ## Deployment
 - [[deployment|Deployment Guide]] - Production deployment procedures

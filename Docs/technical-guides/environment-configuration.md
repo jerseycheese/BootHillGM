@@ -81,7 +81,7 @@ NODE_ENV=production
    - Solution: Change port in `next.config.mjs`
 
 ## Related Documentation
-- [[setup|Development Setup]]
-- [[deployment|Deployment Guide]]
+- [[./setup|Development Setup]]
+- [[./deployment|Deployment Guide]]
 - [[../architecture/next-js-setup|Next.js Setup]]
-- [[contributing|Contributing Guide]]
+- [[./contributing|Contributing Guide]]

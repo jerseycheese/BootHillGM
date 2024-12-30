@@ -191,8 +191,8 @@ function calculateDamage(weapon: Weapon, modifiers: CombatModifiers): number {
 5. Submit PR
 
 ## Related Documentation
-- [[setup|Development Setup]]
-- [[testing|Testing Guide]]
-- [[deployment|Deployment Guide]]
+- [[./setup|Development Setup]]
+- [[./testing|Testing Guide]]
+- [[./deployment|Deployment Guide]]
 - [[../architecture/component-structure|Component Structure]]
 - [[../meta/project-overview|Project Overview]]

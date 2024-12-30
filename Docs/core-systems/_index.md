@@ -1,25 +1,38 @@
 ---
 title: Core Systems
 aliases: [Core Systems MOC, Core Systems Overview]
-tags: [moc, core-systems, overview]
+tags: [moc, core-systems, overview, architecture]
 created: 2024-12-28
 updated: 2024-12-28
+author: Jack Haas
 ---
+
+# Core Systems Overview
+
+## Overview
+This document provides a comprehensive overview of the core systems that power the BootHillGM application.
+
+## Purpose
+The Core Systems documentation aims to:
+- Provide a high-level understanding of system architecture
+- Document relationships between different systems
+- Track implementation status and priorities
+- Serve as a reference for developers working on system components
 
 # Core Systems Overview
 
 This Map of Content (MOC) provides an overview of all core systems in the BootHillGM application.
 
 ## Combat Systems
-- [[combat-system|Combat System]] - Main combat engine and mechanics
-- [[combat-modifiers|Combat Modifiers]] - Modifiers affecting combat outcomes
+- [[./combat-system|Combat System]] - Main combat engine and mechanics
+- [[./combat-modifiers|Combat Modifiers]] - Modifiers affecting combat outcomes
 
 ## State Management
-- [[state-management|State Management]] - Game state and persistence
-- [[journal-system|Journal System]] - Game history and event tracking
+- [[./state-management|State Management]] - Game state and persistence
+- [[./journal-system|Journal System]] - Game history and event tracking
 
 ## AI Integration
-- [[ai-integration|AI Integration]] - Core AI system integration
+- [[./ai-integration|AI Integration]] - Core AI system integration
 - Related: [[../ai/game-master-logic|Game Master Logic]]
 
 ## System Relationships

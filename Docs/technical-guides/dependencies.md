@@ -97,7 +97,7 @@ npm update
    - Solution: Clear cache and node_modules
 
 ## Related Documentation
-- [[environment-configuration|Environment Configuration]]
-- [[setup|Development Setup]]
+- [[./environment-configuration|Environment Configuration]]
+- [[./setup|Development Setup]]
 - [[../architecture/next-js-setup|Next.js Setup]]
-- [[workflow|Development Workflow]]
+- [[./workflow|Development Workflow]]

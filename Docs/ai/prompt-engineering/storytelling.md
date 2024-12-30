@@ -1,10 +1,23 @@
 ---
 title: Storytelling Prompt Engineering
 aliases: [Narrative Prompts, Story Generation Guidelines]
-tags: [ai, prompts, storytelling, narrative, gemini]
+tags: [ai, prompts, storytelling, narrative, gemini, integration]
 created: 2024-12-28
 updated: 2024-12-28
+author: Jack Haas
 ---
+
+# Storytelling Prompt Engineering
+
+## Overview
+This document outlines the prompt engineering strategies for generating engaging Western narratives.
+
+## Purpose
+The Storytelling Prompts documentation aims to:
+- Provide technical implementation details for developers
+- Document narrative generation patterns and architecture
+- Serve as a reference for storytelling-related components
+- Maintain consistency across system integrations
 
 # Storytelling Prompt Engineering
 

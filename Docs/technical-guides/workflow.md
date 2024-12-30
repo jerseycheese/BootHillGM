@@ -272,8 +272,8 @@ npm run test:debug
 ```
 
 ## Related Documentation
-- [[setup|Development Setup]]
-- [[environment-configuration|Environment Configuration]]
-- [[dependencies|Required Dependencies]]
-- [[../technical-guides/testing|Testing Guide]]
-- [[../technical-guides/contributing|Contributing Guide]]
+- [[./setup|Development Setup]]
+- [[./environment-configuration|Environment Configuration]]
+- [[./dependencies|Required Dependencies]]
+- [[./testing|Testing Guide]]
+- [[./contributing|Contributing Guide]]

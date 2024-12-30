@@ -1,10 +1,23 @@
 ---
 title: Combat Prompt Engineering
 aliases: [Combat Prompts, Combat AI Guidelines]
-tags: [ai, prompts, combat, gemini]
+tags: [ai, prompts, combat, gemini, integration]
 created: 2024-12-28
 updated: 2024-12-28
+author: Jack Haas
 ---
+
+# Combat Prompt Engineering
+
+## Overview
+This document outlines the prompt engineering strategies for combat scenarios.
+
+## Purpose
+The Combat Prompts documentation aims to:
+- Provide technical implementation details for developers
+- Document combat generation patterns and architecture
+- Serve as a reference for combat-related components
+- Maintain consistency across system integrations
 
 # Combat Prompt Engineering
 

@@ -1,10 +1,23 @@
 ---
 title: Journal System
 aliases: [Game Journal, Event Logging System, Action History]
-tags: [core-system, logging, state-management, ui]
+tags: [core-system, logging, state-management, ui, narrative]
 created: 2024-12-28
 updated: 2024-12-28
+author: Jack Haas
 ---
+
+# Journal System
+
+## Overview
+The journal system provides automatic logging of game events, character interactions, and player actions.
+
+## Purpose
+The Journal System documentation aims to:
+- Provide technical implementation details for developers
+- Document journal entry types and management
+- Serve as a reference for journal-related components
+- Maintain consistency across system integrations
 
 # Journal System
 

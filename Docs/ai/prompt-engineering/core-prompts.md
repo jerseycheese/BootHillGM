@@ -1,10 +1,23 @@
 ---
 title: Core AI Prompts
 aliases: [Base Prompts, Common Prompts, Foundation Prompts]
-tags: [ai, prompts, core, gemini, foundation]
+tags: [ai, prompts, core, gemini, foundation, integration]
 created: 2024-12-28
 updated: 2024-12-28
+author: Jack Haas
 ---
+
+# Core AI Prompts
+
+## Overview
+This document outlines the base prompt engineering system used for common game scenarios.
+
+## Purpose
+The Core Prompts documentation aims to:
+- Provide technical implementation details for developers
+- Document prompt engineering patterns and architecture
+- Serve as a reference for prompt-related components
+- Maintain consistency across system integrations
 
 # Core AI Prompts
 

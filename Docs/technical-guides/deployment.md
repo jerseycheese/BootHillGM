@@ -185,8 +185,8 @@ npm start
 - Recovery testing
 
 ## Related Documentation
-- [[setup|Development Setup]]
-- [[testing|Testing Guide]]
-- [[contributing|Contributing Guide]]
+- [[./setup|Development Setup]]
+- [[./testing|Testing Guide]]
+- [[./contributing|Contributing Guide]]
 - [[../architecture/next-js-setup|Next.js Architecture]]
 - [[../reference/gemini-api-guide|Gemini API Integration]]

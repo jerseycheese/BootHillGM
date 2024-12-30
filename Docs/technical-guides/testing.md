@@ -171,7 +171,7 @@ npm test -- path/to/test
 
 ## Related Documentation
 - [[../development/test-strategy|Test Strategy]]
-- [[setup|Development Setup]]
-- [[deployment|Deployment Guide]]
-- [[contributing|Contributing Guide]]
+- [[./setup|Development Setup]]
+- [[./deployment|Deployment Guide]]
+- [[./contributing|Contributing Guide]]
 - [[../architecture/component-structure|Component Structure]]
