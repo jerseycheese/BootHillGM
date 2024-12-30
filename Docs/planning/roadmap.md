@@ -1,4 +1,26 @@
+---
+title: BootHillGM Development Roadmap (MVP Focus)
+aliases: [Development Timeline, Project Roadmap]
+tags: [documentation, planning, roadmap]
+created: 2024-12-28
+updated: 2024-12-28
+author: Jack Haas
+---
+
 # BootHillGM Development Roadmap (MVP Focus)
+
+## Overview
+This document outlines the development roadmap for BootHillGM, focusing on Minimum Viable Product (MVP) features and implementation phases.
+
+## Purpose
+The purpose of this roadmap is to:
+- Provide a clear development timeline
+- Track progress toward MVP completion
+- Identify critical path items
+- Serve as a reference for development priorities
+
+## Implementation Details
+The roadmap is organized into development phases, with each phase containing specific milestones and tasks. Progress is tracked using checkboxes, with completed items marked with [x] and pending items marked with [ ].
 
 ## Phase 1: Project Setup and Learning ✓
 
@@ -154,3 +176,16 @@
 - [ ] Comprehensive test coverage
 
 This roadmap focuses on completing the MVP features while maintaining code quality and user experience. Priority is given to essential gameplay features and system stability.
+
+## Related Documentation
+- [[../_index|Planning Overview]]
+- [[../../meta/project-overview|Project Overview]]
+- [[../../planning/requirements/current-stories|Current Stories]]
+- [[../../planning/requirements/future-stories|Future Stories]]
+
+## Tags
+#documentation #planning #roadmap #mvp
+
+## Changelog
+- 2024-12-28: Initial version
+- 2024-12-28: Updated to match documentation template

@@ -1,8 +1,34 @@
+---
+title: Closed Issues
+aliases: []
+tags: [documentation, issues, bug-tracking, quality-assurance, resolved]
+created: 2024-01-04
+updated: 2024-01-04
+author: jackhaas
+---
+
 # BootHillGM Closed Bugs
+
+## Overview
+This document tracks all resolved bugs in the BootHillGM project, providing detailed information about each issue including the resolution approach and closure date.
+
+## Purpose
+The purpose of this documentation is to:
+- Maintain a historical record of resolved issues
+- Provide reference material for similar future issues
+- Track resolution patterns and trends
+- Serve as a knowledge base for the development team
+
+## Related Documentation
+- [[../open-issues|Open Issues]]
+- [[../development/test-strategy|Test Strategy]]
+- [[../core-systems/_index|Core Systems]]
 
 This document tracks resolved bugs in the BootHillGM project. For active bugs, see UserStories.md.
 
 ## Closed Bugs
+
+### Detailed Bug List
 
 [BUG-004] Narrative Display UX Issue
 - Description: New AI messages are not automatically visible to the user
@@ -100,3 +126,40 @@ This document tracks resolved bugs in the BootHillGM project. For active bugs, s
 - Status: Fixed
 - Resolution: Enhanced text cleaning implementation and improved metadata handling in narrative processing
 - Closed Date: 2024-11-27
+
+### Summary Table
+
+| Bug ID   | Description | Resolution | Closed Date |
+|----------|-------------|------------|-------------|
+| BUG-004  | Narrative Display UX Issue | Implemented smart auto-scrolling | 2024-10-27 |
+| BUG-002  | Game Session State Reset | Implemented state persistence | 2024-10-24 |
+| BUG-031  | Combat Log Text Metadata | Enhanced text cleaning | 2024-10-31 |
+| BUG-005  | Incomplete Game State Restoration | Improved state restoration | 2024-11-02 |
+| BUG-021  | Character Summary Update Delay | Improved loading states | 2024-11-03 |
+| BUG-034  | Post-Combat Narrative Cleanup | Improved message formatting | 2024-11-22 |
+| BUG-028  | Player Actions Not Distinct | Added visual emphasis | 2024-11-25 |
+| BUG-032  | Combat System UI Polish | Enhanced UI components | 2024-11-27 |
+| BUG-033  | Narrative Metadata Cleanup | Improved metadata handling | 2024-11-27 |
+
+## Issue Statistics
+
+### Monthly Resolution Trends
+```mermaid
+pie title Issues Closed by Month
+    "October 2024": 3
+    "November 2024": 6
+```
+
+### Resolution Types
+```mermaid
+pie title Issue Resolution Types
+    "UI/UX Improvements": 4
+    "State Management": 3
+    "Text Processing": 2
+```
+
+## Notes
+- All bug fixes should include detailed resolution descriptions
+- Closed bugs should be verified by QA before being marked as resolved
+- Related PRs should be referenced in the resolution details
+- Statistics are updated monthly to track project progress

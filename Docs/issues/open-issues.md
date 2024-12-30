@@ -1,6 +1,34 @@
+---
+title: Open Issues
+aliases: []
+tags: [documentation, issues, bug-tracking, quality-assurance]
+created: 2024-01-04
+updated: 2024-01-04
+author: jackhaas
+---
+
 # BootHillGM Open Bugs
 
+## Overview
+This document tracks all currently open bugs in the BootHillGM project, providing detailed information about each issue including reproduction steps, expected behavior, and current status.
+
+## Purpose
+The purpose of this documentation is to:
+- Provide a centralized reference for all open issues
+- Facilitate bug triage and prioritization
+- Track progress on issue resolution
+- Serve as a communication tool between development and QA teams
+
+## Related Documentation
+- [[../closed-issues|Closed Issues]]
+- [[../development/test-strategy|Test Strategy]]
+- [[../core-systems/_index|Core Systems]]
+
 This document tracks bugs found during development and testing. Each bug entry should include a description, steps to reproduce, expected behavior, actual behavior, and current status.
+
+## Open Bugs
+
+### Detailed Bug List
 
 [BUG-003] AI Pacing Issues
   - Description: AI advances the story too quickly, not adjusting for the current setting.
@@ -86,3 +114,40 @@ This document tracks bugs found during development and testing. Each bug entry s
 - Status: Open
 - Priority: High
 - Impact: Combat System Reliability
+
+### Summary Table
+
+| Bug ID   | Description | Priority | Status |
+|----------|-------------|----------|--------|
+| BUG-003  | AI Pacing Issues | Medium | Open |
+| BUG-022  | Generate Random Character Button Malfunction | Medium | Open |
+| BUG-023  | Duplicate Inventory Items | Medium | Open |
+| BUG-024  | Duplicate AI Text Generation | Medium | Open |
+| BUG-025  | Unnecessary Reload of AI Messages | Medium | Open |
+| BUG-026  | Character Creation Progress Not Saved | High | Open |
+| BUG-027  | Incorrect Location Display | Medium | Open |
+| BUG-035  | State Protection Timeout Handling | High | Open |
+
+## Issue Statistics
+
+### Priority Distribution
+```mermaid
+pie title Issue Priority Distribution
+    "High": 2
+    "Medium": 6
+```
+
+### Component Distribution
+```mermaid
+pie title Affected Components
+    "AI System": 3
+    "Character Creation": 4
+    "Combat System": 1
+```
+
+## Notes
+- Bugs should be triaged weekly to assess priority and status
+- High priority bugs should be addressed within 1 sprint
+- Medium priority bugs should be addressed within 2 sprints
+- New bugs should follow the established documentation format
+- Statistics are updated weekly to track project health

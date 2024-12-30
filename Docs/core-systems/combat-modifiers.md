@@ -1,31 +1,45 @@
+---
+title: Combat Modifiers Enhancement
+aliases: []
+tags: [documentation]
+created: 2024-01-04
+updated: 2024-01-04
+author: jackhaas
+---
+
 # Combat Modifiers Enhancement
 
 ## Overview
 Implementation of enhanced combat mechanics with weapon modifiers to provide more detailed and accurate combat simulation based on Boot Hill v2 rules.
 
-## Current Status
-In Development
+## Purpose
+This documentation serves as a technical reference for developers working on combat mechanics, providing insights into the architecture, implementation details, and best practices. It's particularly relevant for:
+- Game mechanics developers implementing combat features
+- Technical reviewers assessing combat system architecture
+- QA engineers testing combat mechanics
 
-## Features
-### Weapon Modifiers
+## Implementation Details
+
+### Features
+
+#### Weapon Modifiers
 - Range-based accuracy modifiers
 - Weapon-specific damage calculations
 - Ammunition type effects
 - Weapon reliability factors
 
-### Environmental Modifiers
+#### Environmental Modifiers
 - Cover and concealment effects
 - Weather impact on accuracy
 - Terrain modifiers
 - Lighting conditions
 
-### Character Status Modifiers
+#### Character Status Modifiers
 - Injury effects on combat
 - Fatigue impact
 - Position-based modifiers
 - Special ability interactions
 
-## Implementation Details
 ### Integration Points
 - Combat system core
 - State management updates
@@ -37,26 +51,26 @@ In Development
 - UI component modifications
 - Testing framework updates
 
-## Development Priorities
+### Development Priorities
 1. Core modifier system implementation
 2. UI updates for modifier display
 3. State management integration
 4. Testing framework expansion
 
-## Testing Strategy
+### Testing Strategy
 - Unit tests for modifier calculations
 - Integration tests for combat system
 - UI component testing
 - State management validation
 
-## Documentation Requirements
-- Updated combat system documentation
-- User interface guidelines
-- API documentation updates
-- Testing documentation
+## Related Documentation
+- [[../index|Main Documentation]]
+- [[../core-systems/_index|Core Systems Overview]]
+- [[../core-systems/combat-system|Combat System Guide]]
+- [[../technical-guides/testing|Testing Guide]]
 
-## Dependencies
-- Combat system core
-- State management system
-- UI components
-- Testing framework
+## Tags
+#documentation #core-systems #combat-modifiers
+
+## Changelog
+- 2024-01-04: Reformatted to follow documentation template

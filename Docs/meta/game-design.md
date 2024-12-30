@@ -1,8 +1,19 @@
 ---
 title: Game Design Document
+aliases: []
+tags: [documentation, game-design, design-document]
 created: 2024-12-28
 updated: 2024-12-28
+author: jackhaas
 ---
+
+## Purpose
+This document serves as the central reference for the game's design, providing:
+- A comprehensive overview of game systems and mechanics
+- Implementation details for core features
+- Design principles and guidelines
+- Technical specifications and architecture
+- Development priorities and testing focus
 
 # Game Design Document
 

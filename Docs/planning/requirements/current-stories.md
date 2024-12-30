@@ -1,12 +1,29 @@
 ---
 title: Current User Stories (MVP)
+aliases: [MVP Stories, Current Features]
+tags: [documentation, planning, requirements]
 created: 2024-12-28
 updated: 2024-12-28
+author: Jack Haas
 ---
 
 # Current User Stories (MVP)
 
-This document provides a list of features and functionalities currently in development, along with high-level test plans. For more detailed explanations of game mechanics and overall vision, see [[../../meta/game-design|Game Design Document]].
+## Overview
+This document tracks the current Minimum Viable Product (MVP) features and their implementation status for Boot Hill GM.
+
+## Purpose
+The purpose of this document is to:
+- Provide a clear view of current development priorities
+- Track implementation progress of core features
+- Serve as a reference for testing and quality assurance
+
+## Implementation Details
+The following sections detail the current user stories being implemented, organized by feature area. Each story includes:
+- Description of the feature
+- Test plan for verification
+- Implementation status
+- Related documentation references
 
 ## Character Creation
 
@@ -147,3 +164,16 @@ This document provides a list of features and functionalities currently in devel
   - Verify that the journal displays correctly
   - Ensure that the Game Session page layout improves
   **Related:** [[../../core-systems/journal-system|Journal System]]
+
+## Related Documentation
+- [[../_index|Planning Overview]]
+- [[../../meta/game-design|Game Design Document]]
+- [[../../planning/requirements/future-stories|Future Stories]]
+- [[../../planning/requirements/completed-user-stories|Completed Stories]]
+
+## Tags
+#documentation #planning #requirements #mvp
+
+## Changelog
+- 2024-12-28: Initial version
+- 2024-12-28: Updated to match documentation template

@@ -1,12 +1,29 @@
 ---
 title: Future User Stories (Post-MVP)
+aliases: [Post-MVP Features, Future Development]
+tags: [documentation, planning, requirements, future]
 created: 2024-12-28
 updated: 2024-12-28
+author: Jack Haas
 ---
 
 # Future User Stories (Post-MVP)
 
-This document outlines planned features for future development after the MVP release. For current development priorities, see [[current-stories|Current User Stories]].
+## Overview
+This document outlines planned features and enhancements for future development after the Minimum Viable Product (MVP) release.
+
+## Purpose
+The purpose of this document is to:
+- Track potential future development directions
+- Maintain a roadmap of post-MVP features
+- Provide reference for long-term planning
+- Serve as a repository for feature ideas and technical considerations
+
+## Implementation Details
+The following sections detail potential future user stories, organized by feature area. Each story includes:
+- Description of the feature
+- Technical considerations
+- Related documentation references
 
 ## Extended Character System
 
@@ -195,3 +212,16 @@ This document outlines planned features for future development after the MVP rel
   - Recovery options
   - Last stand mechanics
   **Related:** [[../../boot-hill-rules/combat-rules|Combat Rules]]
+
+## Related Documentation
+- [[../_index|Planning Overview]]
+- [[../../meta/game-design|Game Design Document]]
+- [[../../planning/requirements/current-stories|Current Stories]]
+- [[../../planning/requirements/completed-user-stories|Completed Stories]]
+
+## Tags
+#documentation #planning #requirements #future
+
+## Changelog
+- 2024-12-28: Initial version
+- 2024-12-28: Updated to match documentation template
