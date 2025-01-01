@@ -35,6 +35,13 @@ The following sections detail potential future user stories, organized by featur
   - Check that skill updates are reflected immediately
   **Related:** [[../../boot-hill-rules/character-creation|Character Creation Rules]]
 
+- [ ] As a player, I want to see character bio/summary on character sheet.
+  **Features:**
+  - Display character summary from creation
+  - Visual integration with existing sheet
+  - Editable text field
+  **Related:** [[../../features/_current/character-sheet|Character Sheet]]
+
 ## Advanced Weapon Combat
 
 - [ ] As a player, I want different weapon types to have unique characteristics.
@@ -113,6 +120,20 @@ The following sections detail potential future user stories, organized by featur
   - Weather effects
   - Time-based events
 
+- [ ] As a developer, I want quick-test action buttons.
+  **Features:**
+  - Common test scenarios
+  - \"Find weapons/ammo\" shortcut
+  - One-click testing
+  **Related:** [[../../development/test-strategy|Test Strategy]]`
+
+- [ ] As a player, I want \"Lawful\" suggested actions to complement existing \"Chaotic\" suggestions.
+  **Features:**
+  - Law-abiding action suggestions
+  - Balances existing chaotic options
+  - Supports varied playstyles
+  **Related:** [[../../ai/game-master-logic|AI Game Master Logic]]
+
 ## Expanded Combat System
 
 - [ ] As a player, I want advanced combat tactics.
@@ -133,6 +154,13 @@ The following sections detail potential future user stories, organized by featur
   - Weather effects
   - Terrain modifiers
   - Time of day impacts
+
+- [ ] As a player, I want combat mechanics clearly explained.
+  **Features:**
+  - Range impact tooltips
+  - Combat modifier explanations
+  - Visual feedback on actions
+  **Related:** [[../../boot-hill-rules/combat-rules|Combat Rules]]
 
 ## NPC Interaction
 
