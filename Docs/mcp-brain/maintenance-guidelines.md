@@ -1,6 +1,22 @@
 # MCP + Obsidian Maintenance Guidelines
-
 ## Session Management
+
+### AI Collaboration
+#### Claude Workflow
+1. Planning (Desktop)
+   - Review requirements/context
+   - Generate implementation prompt
+   - Create verification checklist
+
+2. Implementation (API)
+   - Execute from prompt
+   - Generate code/tests
+   - Provide verification steps
+
+3. Cleanup (API)
+   - Review implementation
+   - Update documentation
+   - Generate commit message
 
 ### Starting a New Session
 1. Create a new session log using the template in `session-logs/_template.md`

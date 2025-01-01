@@ -7,5 +7,4 @@ This directory serves as the primary knowledge base for AI collaboration on the 
 - `session-logs/`: Captures key insights and decisions from Claude Desktop sessions
 - `task-tracking/`: Current tasks, progress, and milestone tracking
 - `knowledge-maps/`: Relationship maps between different project components
-- `implementation-guides/`: Specific technical implementation details and decisions
 - `component-analysis/`: Analysis of React components and architectural decisions

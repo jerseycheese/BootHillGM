@@ -3,7 +3,7 @@ title: Boot Hill GM Documentation
 aliases: [Home, Documentation Home]
 tags: [documentation, home, index]
 created: 2024-12-28
-updated: 2024-12-28
+updated: 2025-01-01
 author: Jack Haas
 ---
 
@@ -75,20 +75,11 @@ The documentation aims to:
 - [[boot-hill-rules/weapons-chart|Weapons Chart]]
 
 ## Development
-### Planning
-- [[planning/roadmap|Development Roadmap]]
-- [[planning/requirements/current-stories|Current Stories]]
-- [[planning/requirements/future-stories|Future Stories]]
-
-### Technical Guides
-- [[technical-guides/setup|Development Setup]]
-- [[technical-guides/deployment|Deployment Guide]]
-- [[technical-guides/testing|Testing Guide]]
-- [[technical-guides/contributing|Contributing Guide]]
-
-### Issue Tracking
-- [[issues/open-issues|Open Issues]]
-- [[issues/closed-issues|Resolved Issues]]
+### Workflows
+> [[development/workflows/index|Development Workflows]]
+- [[development/workflows/feature-workflow|Feature Development]]
+- [[development/workflows/claude-workflow|AI Development]]
+- [[development/workflows/examples/weapon-combat|Example: Weapon Combat]]
 
 ---
 
