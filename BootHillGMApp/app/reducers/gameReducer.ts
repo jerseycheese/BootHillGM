@@ -107,6 +107,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       };
 
       const opponent: Character = {
+        id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: action.payload.name ?? 'Unknown Opponent',
         inventory: action.payload.inventory ?? [],
         attributes: {

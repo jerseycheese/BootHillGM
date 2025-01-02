@@ -107,25 +107,6 @@ const StrengthDisplay: React.FC<StrengthDisplayProps> = ({
   );
 };
 
-// Add debug component wrapper
-const CombatStatusWithDebug: React.FC<CombatStatusProps> = (props) => {
-  // Add debug logging for props
-  useEffect(() => {
-  }, [props.playerCharacter?.attributes?.strength, props.opponent?.attributes?.strength, props.combatState?.opponentStrength, props.opponent]);
-
-  return (
-    <>
-      <BaseCombatStatus {...props} />
-      <TextCleaningDebug />
-    </>
-  );
-};
-
-// Export the wrapped version
-export { CombatStatusWithDebug as CombatStatus };
-
-import { TextCleaningDebug } from '../Debug/TextCleaningDebug';
-
 interface CombatStatusProps {
   playerCharacter: Character;
   opponent: Character;
@@ -140,8 +121,6 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   const playerStrength = calculateCurrentStrength(playerCharacter);
   const maxPlayerStrength = playerCharacter.attributes.baseStrength;
   
-  useEffect(() => {
-  }, [opponent, combatState]);
 
   // Use combat state strength if available, otherwise fall back to opponent attributes
   const currentOpponentStrength = Math.max(0, 
@@ -167,12 +146,17 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
             wounds={playerCharacter.wounds}
             isUnconscious={playerCharacter.isUnconscious}
           />
-          {combatState?.weapon?.playerWeapon && (
-            <div className="p-2 bg-gray-50 rounded mb-4">
-              <h4 className="font-medium mb-1">Your Weapon</h4>
-              <WeaponDisplay weapon={combatState.weapon.playerWeapon} />
-            </div>
-          )}
+          <div className="p-2 bg-gray-50 rounded mb-4">
+            <h4 className="font-medium mb-1">Your Weapon</h4>
+            <WeaponDisplay participant={{
+              id: playerCharacter.id,
+              name: playerName,
+              isNPC: false,
+              weapon: combatState?.weapon?.playerWeapon || null,
+              strength: playerStrength,
+              wounds: playerCharacter.wounds
+            }} isPlayer={true} />
+          </div>
         </div>
         <div>
           <StrengthDisplay
@@ -182,14 +166,33 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
             wounds={opponent.wounds}
             isUnconscious={opponent.isUnconscious}
           />
-          {combatState?.weapon?.opponentWeapon && (
-            <div className="p-2 bg-gray-50 rounded mb-4">
-              <h4 className="font-medium mb-1">Opponent&#39;s Weapon</h4>
-              <WeaponDisplay weapon={combatState.weapon.opponentWeapon} />
-            </div>
-          )}
+          <div className="p-2 bg-gray-50 rounded mb-4">
+            <h4 className="font-medium mb-1">Opponent&#39;s Weapon</h4>
+            <WeaponDisplay participant={{
+              id: opponent.id,
+              name: opponentName,
+              isNPC: true,
+              weapon: combatState?.weapon?.opponentWeapon || {
+                id: 'default-colt',
+                name: 'Colt Revolver',
+                modifiers: {
+                  accuracy: 2,
+                  range: 20,
+                  reliability: 95,
+                  damage: '1d6',
+                  speed: 0,
+                  ammunition: 6,
+                  maxAmmunition: 6
+                }
+              },
+              strength: currentOpponentStrength,
+              wounds: opponent.wounds
+            }} />
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
+export { BaseCombatStatus as CombatStatus };

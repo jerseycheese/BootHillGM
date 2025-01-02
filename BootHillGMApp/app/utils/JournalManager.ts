@@ -74,8 +74,7 @@ export class JournalManager {
     outcome: CombatJournalEntry['outcome'],
    summary: string
  ): JournalEntry[] {
-   // Clean the summary and remove metadata
-   console.debug('JournalManager.addCombatEntry: summary:', summary);
+    // Clean the summary and remove metadata
     const cleanedSummary = cleanCombatLogEntry(summary);
     
     // Create a new combat journal entry
@@ -100,10 +99,9 @@ export class JournalManager {
     removedItems: string[],
     context: string
   ): JournalEntry[] {
-   if (acquiredItems.length === 0 && removedItems.length === 0) {
-     return journal;
-   }
-   console.debug('JournalManager.addInventoryEntry: acquiredItems:', acquiredItems, 'removedItems:', removedItems, 'context:', context);
+    if (acquiredItems.length === 0 && removedItems.length === 0) {
+      return journal;
+    }
 
     // Create a new inventory journal entry
     const newEntry: InventoryJournalEntry = {
@@ -149,7 +147,13 @@ export class JournalManager {
     return parts.join('. ');
   }
 
-  // Backward compatibility method
+  /**
+   * Adds a journal entry, handling both string and JournalEntry inputs
+   * 
+   * @param journal - Current journal entries array
+   * @param entry - Either a string (for narrative entries) or JournalEntry object
+   * @returns Updated journal entries array
+   */
   static async addJournalEntry(
     journal: JournalEntry[],
     entry: string | JournalEntry

@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { cleanCharacterName } from '../utils/combatUtils';
 import { AIService } from '../services/ai';
 import { GameState, SuggestedAction } from '../types/campaign';
-import { GameEngineAction } from '../types/gameActions'; // Corrected import path
+import { GameEngineAction } from '../types/gameActions';
 import { JournalEntry } from '../types/journal';
 import { Character } from '../types/character';
 import { generateNarrativeSummary } from '../utils/aiService';
@@ -70,6 +70,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
 
     // Extract only the structured data fields for the opponent
     const structuredOpponent = {
+      id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: cleanCharacterName(response.opponent.name),
       attributes: {
         speed: response.opponent.attributes.speed,

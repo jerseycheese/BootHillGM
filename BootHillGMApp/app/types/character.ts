@@ -32,6 +32,10 @@ export const CHARACTER_CREATION_STEPS = [
 ] as const;
 
 export interface Character {
+
+  /** Unique character ID */
+  id: string;
+
   /** Character's full name */
   name: string;
 

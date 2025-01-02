@@ -12,6 +12,7 @@ import { getStartingInventory } from '../utils/startingInventory';
 const STORAGE_KEY = 'character-creation-progress';
 
 const initialCharacter: Character = {
+  id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   name: '',
   inventory: [],
   attributes: {

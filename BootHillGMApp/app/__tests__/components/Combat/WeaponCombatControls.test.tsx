@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { WeaponCombatControls } from '../../../components/Combat/WeaponCombatControls';
 import { WeaponCombatState, WEAPON_STATS } from '../../../types/combat';
 import * as combatUtils from '../../../types/combat';
@@ -118,9 +118,14 @@ describe('WeaponCombatControls', () => {
   test('displays weapon modifiers correctly', () => {
     renderComponent();
     
-    expect(screen.getByText(/Damage: 1d6/)).toBeInTheDocument();
-    expect(screen.getByText(/Range: 20y/)).toBeInTheDocument();
-    expect(screen.getByText(/Accuracy: \+2/)).toBeInTheDocument();
+    // Check player weapon stats
+    const playerWeaponSection = screen.getByText('Your Weapon').parentElement!;
+    expect(within(playerWeaponSection).getByText('Damage')).toBeInTheDocument();
+    expect(within(playerWeaponSection).getByText('1d6')).toBeInTheDocument();
+    expect(within(playerWeaponSection).getByText('Range')).toBeInTheDocument();
+    expect(within(playerWeaponSection).getByText(/20\s*y/)).toBeInTheDocument();
+    expect(within(playerWeaponSection).getByText('Accuracy')).toBeInTheDocument();
+    expect(within(playerWeaponSection).getByText('+2')).toBeInTheDocument();
   });
 
   test('shows ammunition when available', () => {
@@ -135,7 +140,8 @@ describe('WeaponCombatControls', () => {
     
     renderComponent({ currentState: stateWithAmmo });
     
-    expect(screen.getByText('Ammo: 6/6')).toBeInTheDocument();
+    expect(screen.getByText('Ammunition')).toBeInTheDocument();
+    expect(screen.getByText(/6\s*\/\s*6/)).toBeInTheDocument();
   });
 
   test('handles malfunction state', () => {

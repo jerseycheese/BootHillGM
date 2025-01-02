@@ -74,6 +74,7 @@ export function parseAIResponse(text: string): AIResponse {
       const opponentName = cleanText(combatMatch[1].trim());
       
       opponent = {
+        id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: opponentName,
         attributes: {
           speed: 10,

@@ -33,6 +33,7 @@ describe('gameReducer', () => {
 
   it('should set character', () => {
     const mockCharacter: Character = {
+      id: 'player-1',
       name: 'John',
       attributes: {
         speed: 5,
@@ -90,6 +91,7 @@ describe('gameReducer', () => {
 
   it('should set opponent', () => {
     const mockOpponent: Character = {
+      id: 'opponent-1',
       name: 'Bandit',
       attributes: {
         speed: 6,
@@ -106,7 +108,10 @@ describe('gameReducer', () => {
     };
     const action: GameEngineAction = { type: 'SET_OPPONENT', payload: mockOpponent };
     const newState = gameReducer(initialState, action);
-    expect(newState.opponent).toEqual(mockOpponent);
+    expect(newState.opponent).toMatchObject({
+      ...mockOpponent,
+      id: expect.stringMatching(/^character_\d+_[a-z0-9]{9}$/)
+    });
   });
 
   it('should add an item to the inventory', () => {

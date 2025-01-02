@@ -9,6 +9,16 @@ import {
 import { calculateRangeModifier } from '../../utils/bootHillCombat';
 import { WeaponDisplay } from './WeaponDisplay';
 
+/**
+ * Props for WeaponCombatControls component
+ * 
+ * @property isProcessing - Indicates if a combat action is currently being processed
+ * @property currentState - The current state of weapon combat
+ * @property onAction - Callback function triggered when a combat action is performed
+ * @property canAim - Indicates if the aim action is currently available
+ * @property canFire - Indicates if the fire action is currently available
+ * @property canReload - Indicates if the reload action is currently available
+ */
 interface WeaponCombatControlsProps {
   isProcessing: boolean;
   currentState: WeaponCombatState;
@@ -18,6 +28,18 @@ interface WeaponCombatControlsProps {
   canReload: boolean;
 }
 
+/**
+ * WeaponCombatControls Component
+ * 
+ * Provides UI controls for weapon-based combat actions including:
+ * - Aiming
+ * - Firing
+ * - Reloading
+ * - Moving to adjust range
+ * 
+ * Displays current weapon status for both player and opponent,
+ * and handles all weapon combat interactions.
+ */
 export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
   isProcessing,
   currentState,
@@ -80,7 +102,14 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
           <div>
             <h4 className="font-medium">Your Weapon</h4>
             {currentState.playerWeapon ? (
-              <WeaponDisplay weapon={currentState.playerWeapon} />
+              <WeaponDisplay participant={{
+                id: 'player',
+                name: 'Player',
+                isNPC: false,
+                weapon: currentState.playerWeapon,
+                strength: 0,
+                wounds: []
+              }} />
             ) : (
               <p className="text-red-600">No weapon equipped</p>
             )}
@@ -88,7 +117,14 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
           <div>
             <h4 className="font-medium">Opponent&#39;s Weapon</h4>
             {currentState.opponentWeapon ? (
-              <WeaponDisplay weapon={currentState.opponentWeapon} />
+              <WeaponDisplay participant={{
+                id: 'opponent',
+                name: 'Opponent',
+                isNPC: true,
+                weapon: currentState.opponentWeapon,
+                strength: 0,
+                wounds: []
+              }} />
             ) : (
               <p className="text-gray-600">No visible weapon</p>
             )}

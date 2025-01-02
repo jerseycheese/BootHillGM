@@ -61,6 +61,7 @@ function parseCharacterData(response: string): Character {
 
 function createCharacterFromData(data: Character): Character {
   const character: Character = {
+    id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     name: data.name || data.name || 'Unknown',
     attributes: {
       speed: Number(data.attributes.speed) || 10,
@@ -99,6 +100,7 @@ function validateCharacter(character: Character): void {
 
 async function createRandomCharacter(): Promise<Character> {
   return {
+    id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     name: await generateName(),
     attributes: generateRandomAttributes(),
     wounds: [],

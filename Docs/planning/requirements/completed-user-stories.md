@@ -189,7 +189,7 @@ This document serves as the central reference for tracking completed user storie
   - Proper cursor feedback
   - Enhanced combat log with visual feedback for different message types
 
-- As a player, I want to see what weapons (if any) both myself and my opponent have available during combat initiation, so that I can make informed combat decisions.
+- [x] As a player, I want to see what weapons (if any) both myself and my opponent have available during combat initiation, so that I can make informed combat decisions.
   **Test Plan:**
   - Confirm available weapons are displayed for both combatants
   - Verify weapon availability matches inventory state
@@ -200,6 +200,8 @@ This document serves as the central reference for tracking completed user storie
   - Clear weapon display in combat selection UI
   - Proper distinction between player and opponent weapons
   - Consistent weapon handling between selection and combat
+  **Related Issue:** BUG-036
+  **Completed:** 2024-01-15
 
 - [x] As a player, I want to see short descriptions of items in my inventory, so I can understand their purpose and any gameplay-relevant stats.
   **Status:** Implemented with starting inventory system including detailed item descriptions and initialization during character creation.

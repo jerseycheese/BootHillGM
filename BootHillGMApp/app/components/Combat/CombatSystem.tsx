@@ -7,18 +7,18 @@
  * - Weapon combat actions and display
  */
 import { useState, useEffect } from 'react';
-import { Character } from '../types/character';
-import { CombatStatus } from './Combat/CombatStatus';
-import { BrawlingControls } from './Combat/BrawlingControls';
-import { WeaponCombatControls } from './Combat/WeaponCombatControls';
-import { useBrawlingCombat } from '../hooks/useBrawlingCombat';
-import { useWeaponCombat } from '../hooks/useWeaponCombat';
-import { GameEngineAction } from '../types/gameActions';
-import { CombatTypeSelection } from './Combat/CombatTypeSelection';
-import { CombatType, CombatState, WeaponCombatAction } from '../types/combat';
-import { cleanCombatLogEntry } from '../utils/textCleaningUtils';
-import { Weapon } from '../types/inventory';
-import { getDefaultWeapon } from '../utils/weaponUtils';
+import { Character } from '../../types/character';
+import { CombatStatus } from './CombatStatus';
+import { BrawlingControls } from './BrawlingControls';
+import { WeaponCombatControls } from './WeaponCombatControls';
+import { useBrawlingCombat } from '../../hooks/useBrawlingCombat';
+import { useWeaponCombat } from '../../hooks/useWeaponCombat';
+import { GameEngineAction } from '../../types/gameActions';
+import { CombatTypeSelection } from './CombatTypeSelection';
+import { CombatType, CombatState, WeaponCombatAction } from '../../types/combat';
+import { cleanCombatLogEntry } from '../../utils/textCleaningUtils';
+import { Weapon } from '../../types/inventory';
+import { getDefaultWeapon } from '../../utils/weaponUtils';
 
 export const CombatSystem: React.FC<{
   playerCharacter: Character;

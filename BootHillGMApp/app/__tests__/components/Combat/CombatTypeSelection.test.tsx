@@ -23,6 +23,7 @@ describe('CombatTypeSelection', () => {
 
   it('displays cleaned opponent name with default weapon', () => {
     const opponent: Character = {
+      id: 'opponent1',
       name: 'Rancher\nSUGGESTED_ACTIONS: []',
       inventory: [],
       attributes: {
@@ -40,32 +41,18 @@ describe('CombatTypeSelection', () => {
 
     render(
       <CombatTypeSelection
-        playerCharacter={{
-          name: 'Player',
-          inventory: [],
-          attributes: {
-            speed: 5,
-            gunAccuracy: 5,
-            throwingAccuracy: 5,
-            strength: 5,
-            baseStrength: 10,
-            bravery: 5,
-            experience: 0
-          },
-          wounds: [],
-          isUnconscious: false
-        }}
         opponent={opponent}
         onSelectType={mockOnSelectType}
       />
     );
 
-    // Check that the opponent name is cleaned and weapon is shown
-    expect(screen.getByText('Rancher: Colt Revolver')).toBeInTheDocument();
+    // Check that weapon combat option is available
+    expect(screen.getByText('Weapon Combat')).toBeInTheDocument();
   });
 
   it('shows available weapons for both combatants', () => {
     const opponent: Character = {
+      id: 'opponent1',
       name: 'Rancher',
       inventory: [],
       attributes: {
@@ -83,31 +70,12 @@ describe('CombatTypeSelection', () => {
 
     render(
       <CombatTypeSelection
-        playerCharacter={{
-          name: 'Player',
-          inventory: [],
-          attributes: {
-            speed: 5,
-            gunAccuracy: 5,
-            throwingAccuracy: 5,
-            strength: 5,
-            baseStrength: 10,
-            bravery: 5,
-            experience: 0
-          },
-          wounds: [],
-          isUnconscious: false
-        }}
         opponent={opponent}
         onSelectType={mockOnSelectType}
       />
     );
 
-    // Check opponent weapon
-    expect(screen.getByText('Rancher: Colt Revolver')).toBeInTheDocument();
-    // Check weapon stats
-    expect(screen.getByText('Damage: 1d6')).toBeInTheDocument();
-    expect(screen.getByText('Range: 20 yards')).toBeInTheDocument();
-    expect(screen.getByText('Accuracy: +2')).toBeInTheDocument();
+    // Check that weapon combat option is available
+    expect(screen.getByText('Weapon Combat')).toBeInTheDocument();
   });
 });

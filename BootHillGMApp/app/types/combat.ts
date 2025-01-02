@@ -193,8 +193,17 @@ export function ensureCombatState(state?: Partial<CombatState>): CombatState {
 }
 
 export type Wound = {
-  location: 'chest';
+  location: 'head' | 'chest' | 'abdomen' | 'leftArm' | 'rightArm' | 'leftLeg' | 'rightLeg';
   severity: 'light' | 'serious' | 'mortal';
   strengthReduction: number;
   turnReceived: number;
 };
+
+export interface CombatParticipant {
+  id: string;
+  name: string;
+  isNPC: boolean;
+  weapon: Weapon | null;
+  strength: number;
+  wounds: Wound[];
+}

@@ -3,7 +3,7 @@
  * Switches between normal input mode and combat system based on game state.
  * Handles loading states and suggested actions during gameplay.
  */
-import { CombatSystem } from '../CombatSystem';
+import { CombatSystem } from '../Combat/CombatSystem';
 import InputManager from '../InputManager';
 import type { GameplayControlsProps } from './types';
 import { ensureCombatState } from '../../types/combat';

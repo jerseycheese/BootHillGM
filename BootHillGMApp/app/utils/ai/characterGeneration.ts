@@ -62,6 +62,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
     
     // Create a Character object from the parsed data
     const character: Character = {
+      id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: characterData.Name || characterData.name || 'Unknown',
       attributes: {
         speed: Number(characterData.Speed) || 10,
@@ -100,6 +101,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
     
     // Return a character with random name and default stats
     return {
+      id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: name.toString(),
       attributes: {
         speed: 10,

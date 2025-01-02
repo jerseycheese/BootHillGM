@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, act, within } from '@testing-library/react';
-import { CombatSystem } from '../../components/CombatSystem';
+import { CombatSystem } from '../../components/Combat/CombatSystem';
 import { Character } from '../../types/character';
 import * as combatUtils from '../../utils/combatUtils';
 import { CampaignStateProvider } from '../../components/CampaignStateManager';

@@ -110,6 +110,7 @@ export async function getAIResponse(prompt: string, journalContext: string, inve
       const opponentName = combatParts[1].trim();
       
       opponent = {
+        id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: opponentName,
         attributes: {
           speed: 10,

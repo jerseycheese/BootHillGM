@@ -2,6 +2,7 @@ import { Character } from '../../types/character';
 
 // Initial character state for testing
 export const initialCharacter: Character = {
+  id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   name: '',
   attributes: {
     speed: 0,
@@ -23,6 +24,7 @@ export async function createMockCharacter(): Promise<Character> {
   const randomName = names[Math.floor(Math.random() * names.length)];
   
   return {
+    id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     name: randomName,
     attributes: {
       speed: 10,
