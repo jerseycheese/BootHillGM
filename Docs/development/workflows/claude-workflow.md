@@ -12,40 +12,7 @@ updated: 2025-01-01
 > Three-stage development process using Claude Desktop and API.
 
 ## Initial Project Analysis
-Before starting development work, use the project analysis prompt to determine the most appropriate next task:
-
-```markdown
-You are an AI assistant acting as a React app developer and project manager for the BootHillGM project. Review the current project state and suggest the next development task.
-
-Key files to review:
-- /Docs/meta/project-overview.md
-- /Docs/planning/requirements/current-stories.md
-- /Docs/planning/requirements/user-stories.md
-- /Docs/issues/open-issues.md
-
-Analyze the project considering:
-1. MVP features status
-2. Critical bugs (especially High priority)
-3. Implementation dependencies
-4. Test coverage needs
-
-Based on your analysis, recommend a single, focused task that:
-- Addresses a critical need (bug fix or MVP feature)
-- Has clear completion criteria
-- Can be completed in a single focused session
-- Follows proper implementation order
-
-Provide your recommendation in this format:
-<next_task>
-1. Task: [Brief description]
-2. Priority: [Why this task is important now]
-3. Focus Area: [Specific component/feature]
-4. Implementation Notes:
-   - Files to modify
-   - Key considerations
-   - Test requirements
-</next_task>
-```
+Before starting development work, use the project analysis prompt to determine the most appropriate next task. See [[examples/project-analysis-prompt|Project Analysis Example]].
 
 ## App Walkthrough
 During app testing, use the documentation assistant to track issues and improvements. See [[examples/walkthrough-documentation-prompt|Documentation Assistant]].
@@ -73,30 +40,61 @@ graph TD
 ## Stages
 
 ### 1. Planning (Desktop)
-- Requirements review
-- Implementation prompt
-- Verification checklist
+Initial planning and setup stage using Claude Desktop:
+- Requirements review: Analyze current stories and open issues
+- Implementation prompt: Create focused prompts for specific tasks
+- Verification checklist: Define completion criteria
 
 ### 2. Implementation (API)
-- Code generation
-- Test creation
-- Documentation
+Main development stage using Claude API or Desktop:
+1. Code Generation
+   - Component implementation
+   - State management
+   - Game rule integration
+
+2. Test Creation
+   - Add focused unit tests for new components
+   - Update existing tests as needed
+   - See [[examples/test-creation-prompt|Test Creation Guide]]
+
+3. Documentation
+   - Update component docs
+   - Add implementation notes
+   - Record key decisions
 
 ### 3. Cleanup (API)
-- Issue fixes
-- Doc updates
-- Commit messages
+Final polish and verification stage:
+- Issue fixes: Address any implementation issues
+- Doc updates: Ensure documentation is current
+- Commit messages: Prepare clear commit descriptions
 
 ## Best Practices
-1. One component per prompt
-2. Include file paths
-3. Reference Boot Hill rules
-4. Test coverage
+
+1. Component Focus
+   - One component per prompt
+   - Clear component boundaries
+   - Focused testing scope
+
+2. Path Management
+   - Include complete file paths
+   - Maintain consistent structure
+   - Follow project organization
+
+3. Game Rules
+   - Reference Boot Hill rules directly
+   - Validate rule implementations
+   - Document rule applications
+
+4. Testing Approach
+   - Focus on key functionality
+   - Unit tests for core features
+   - Practical test coverage
 
 ## Templates
 - [[prompt-guide|Prompt Guide]]
 - [[examples/weapon-combat|Example]]
-- [[examples/project-analysis-prompt|Project Analysis Examples]]
+- [[examples/project-analysis-prompt|Project Analysis]]
+- [[examples/test-creation-prompt|Test Creation]]
 
 ## Related
 - [[feature-workflow|Feature Development]]
