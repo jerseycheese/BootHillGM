@@ -64,9 +64,21 @@ Main development stage using Claude API or Desktop:
 
 ### 3. Cleanup (API)
 Final polish and verification stage:
-- Issue fixes: Address any implementation issues
-- Doc updates: Ensure documentation is current
-- Commit messages: Prepare clear commit descriptions
+1. Code Cleanup
+   - Remove debug code
+   - Add inline documentation
+   - See [[examples/code-cleanup-prompt|Code Cleanup Guide]]
+
+2. Documentation Updates
+   - Create session log
+   - Review and update relevant docs
+   - Prepare commit message
+   - See [[examples/doc-updates-prompt|Documentation Updates Guide]]
+
+3. Final Verification
+   - Check implementation against requirements
+   - Verify test coverage
+   - Confirm documentation is current
 
 ## Best Practices
 
@@ -90,11 +102,18 @@ Final polish and verification stage:
    - Unit tests for core features
    - Practical test coverage
 
+5. Documentation
+   - Keep session logs current
+   - Update planning docs
+   - Clear commit messages
+
 ## Templates
 - [[prompt-guide|Prompt Guide]]
 - [[examples/weapon-combat|Example]]
 - [[examples/project-analysis-prompt|Project Analysis]]
 - [[examples/test-creation-prompt|Test Creation]]
+- [[examples/code-cleanup-prompt|Code Cleanup]]
+- [[examples/doc-updates-prompt|Documentation Updates]]
 
 ## Related
 - [[feature-workflow|Feature Development]]
