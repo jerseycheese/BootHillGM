@@ -18,6 +18,7 @@ import { Character } from '../../types/character';
 import { calculateCurrentStrength } from '../../utils/strengthSystem';
 import { CombatState } from '../../types/combat';
 import { cleanCharacterName } from '../../utils/combatUtils';
+import { WeaponDisplay } from './WeaponDisplay';
 
 interface StrengthDisplayProps {
   current: number;
@@ -157,21 +158,37 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   return (
     <div className="wireframe-section" role="region" aria-label="Combat Status">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <StrengthDisplay
-          current={playerStrength}
-          max={maxPlayerStrength}
-          name={playerName}
-          isPlayer={true}
-          wounds={playerCharacter.wounds}
-          isUnconscious={playerCharacter.isUnconscious}
-        />
-        <StrengthDisplay
-          current={currentOpponentStrength}
-          max={maxOpponentStrength}
-          name={opponentName}
-          wounds={opponent.wounds}
-          isUnconscious={opponent.isUnconscious}
-        />
+        <div>
+          <StrengthDisplay
+            current={playerStrength}
+            max={maxPlayerStrength}
+            name={playerName}
+            isPlayer={true}
+            wounds={playerCharacter.wounds}
+            isUnconscious={playerCharacter.isUnconscious}
+          />
+          {combatState?.weapon?.playerWeapon && (
+            <div className="p-2 bg-gray-50 rounded mb-4">
+              <h4 className="font-medium mb-1">Your Weapon</h4>
+              <WeaponDisplay weapon={combatState.weapon.playerWeapon} />
+            </div>
+          )}
+        </div>
+        <div>
+          <StrengthDisplay
+            current={currentOpponentStrength}
+            max={maxOpponentStrength}
+            name={opponentName}
+            wounds={opponent.wounds}
+            isUnconscious={opponent.isUnconscious}
+          />
+          {combatState?.weapon?.opponentWeapon && (
+            <div className="p-2 bg-gray-50 rounded mb-4">
+              <h4 className="font-medium mb-1">Opponent&#39;s Weapon</h4>
+              <WeaponDisplay weapon={combatState.weapon.opponentWeapon} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -19,6 +19,7 @@ interface WeaponInventoryItem extends InventoryItem {
 import { useCampaignState } from '../CampaignStateManager';
 import { getOpponentWeapon } from '../../utils/weaponUtils';
 import { cleanCharacterName } from '../../utils/textCleaningUtils';
+import { WeaponDisplay } from './WeaponDisplay';
 
 interface CombatTypeSelectionProps {
   playerCharacter: Character;
@@ -95,8 +96,7 @@ export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
                   <div key={weapon.id} className="p-2 border rounded">
                     <p className="font-medium">You: {weapon.name}</p>
                     <div className="text-sm space-y-1">
-                      <p>Damage: {weapon?.weapon?.modifiers?.damage || weapon?.modifiers?.damage || 'N/A'}</p>
-                      <p>Range: {weapon?.weapon?.modifiers?.range || weapon?.modifiers?.range || 'N/A'} yards</p>
+                      <WeaponDisplay weapon={weapon?.weapon || weapon} />
                       <p>Accuracy: {
                         (weapon?.weapon?.modifiers?.accuracy !== undefined || weapon?.modifiers?.accuracy !== undefined) ? 
                         (((weapon?.weapon?.modifiers?.accuracy ?? weapon?.modifiers?.accuracy) || 0) > 0 ? 

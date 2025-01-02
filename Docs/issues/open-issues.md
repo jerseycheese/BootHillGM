@@ -165,15 +165,6 @@ This document tracks bugs found during development and testing. Each bug entry s
   - Status: Open
   - Priority: High
 
-[BUG-041] Missing Opponent Default Weapon
-  - Description: Opponent's default Colt revolver not showing in combat
-  - Steps to Reproduce:
-    1. Enter weapon combat
-    2. Check opponent's weapon display
-  - Expected Behavior: Should show Colt revolver
-  - Actual Behavior: Shows \"No visible weapon\"
-  - Status: Open
-  - Priority: High
 
 [BUG-042] Inventory Use Button Non-Functional
   - Description: \"Use\" button no longer sends item usage message to narrative

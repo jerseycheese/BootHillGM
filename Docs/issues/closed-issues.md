@@ -117,15 +117,26 @@ This document tracks resolved bugs in the BootHillGM project. For active bugs, s
 - Closed Date: 2024-11-27
 
 [BUG-033] Narrative Metadata Cleanup
-- Description: Metadata markers appearing in narrative text and combat logs
-- Steps to Reproduce:
-  1. Engage in combat or narrative interactions
-  2. Check output text for metadata markers
-- Expected Behavior: Clean text without any metadata markers
-- Actual Behavior: Metadata markers visible in output
-- Status: Fixed
-- Resolution: Enhanced text cleaning implementation and improved metadata handling in narrative processing
-- Closed Date: 2024-11-27
+  - Description: Metadata markers appearing in narrative text and combat logs
+  - Steps to Reproduce:
+    1. Engage in combat or narrative interactions
+    2. Check output text for metadata markers
+  - Expected Behavior: Clean text without any metadata markers
+  - Actual Behavior: Metadata markers visible in output
+  - Status: Fixed
+  - Resolution: Enhanced text cleaning implementation and improved metadata handling in narrative processing
+  - Closed Date: 2024-11-27
+
+[BUG-041] Missing Opponent Default Weapon
+  - Description: Opponent's default Colt revolver not showing in combat
+  - Steps to Reproduce:
+    1. Enter weapon combat
+    2. Check opponent's weapon display
+  - Expected Behavior: Should show Colt revolver
+  - Actual Behavior: Shows "No visible weapon"
+  - Status: Resolved
+  - Resolution: Implemented default weapon system with proper weapon display in combat UI
+  - Closed Date: 2025-01-02
 
 ### Summary Table
 

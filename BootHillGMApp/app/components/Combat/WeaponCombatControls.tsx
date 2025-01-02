@@ -5,9 +5,9 @@ import {
   calculateWeaponModifier,
   rollForMalfunction,
   parseWeaponDamage,
-  Weapon,
 } from '../../types/combat';
 import { calculateRangeModifier } from '../../utils/bootHillCombat';
+import { WeaponDisplay } from './WeaponDisplay';
 
 interface WeaponCombatControlsProps {
   isProcessing: boolean;
@@ -74,7 +74,7 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
   }
 
   return (
-    <div className="weapon-combat-controls space-y-4">
+    <div className="weapon-combat-controls space-y-4" data-testid="weapon-combat-controls">
       <div className="current-weapons p-2 bg-gray-100 rounded">
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -171,22 +171,3 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
     </div>
   );
 };
-
-const WeaponDisplay: React.FC<{ weapon: Weapon }> = ({ weapon }) => (
-  <div className="text-sm">
-    <p className="font-medium">{weapon.name}</p>
-    {weapon.modifiers ? (
-      <>
-        <p>Damage: {weapon.modifiers.damage}</p>
-        <p>Range: {weapon.modifiers.range}y</p>
-        <p>Accuracy: {weapon.modifiers.accuracy > 0 ? `+${weapon.modifiers.accuracy}` : weapon.modifiers.accuracy}</p>
-        <p>Reliability: {weapon.modifiers.reliability}%</p>
-        {weapon.ammunition !== undefined && (
-          <p>Ammo: {weapon.ammunition}/{weapon.maxAmmunition}</p>
-        )}
-      </>
-    ) : (
-      <p>Basic weapon</p>
-    )}
-  </div>
-);

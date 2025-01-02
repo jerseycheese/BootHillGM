@@ -155,6 +155,18 @@ This document serves as the central reference for tracking completed user storie
   - Combat log functionality implemented
   - Health tracking and combat resolution in place
 
+✅ As a player, I want to see what weapons (if any) both myself and my opponent have available during combat initiation, so that I can make informed combat decisions.
+  **Test Plan:**
+  - Confirm available weapons are displayed for both combatants
+  - Verify weapon availability matches inventory state
+  - Ensure UI clearly distinguishes between player and opponent weapons
+  - Test cases where either combatant has no weapons
+  **Status:** Implemented with:
+  - Centralized weapon stats and default weapon system
+  - Clear weapon display in combat selection UI
+  - Proper distinction between player and opponent weapons
+  - Consistent weapon handling between selection and combat
+
 ## Inventory System
 ✅ As a player, I want to see my inventory items and their quantities clearly displayed.
   **Implementation Status:**

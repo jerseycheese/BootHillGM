@@ -18,6 +18,7 @@ import { CombatTypeSelection } from './Combat/CombatTypeSelection';
 import { CombatType, CombatState, WeaponCombatAction } from '../types/combat';
 import { cleanCombatLogEntry } from '../utils/textCleaningUtils';
 import { Weapon } from '../types/inventory';
+import { getDefaultWeapon } from '../utils/weaponUtils';
 
 export const CombatSystem: React.FC<{
   playerCharacter: Character;
@@ -93,14 +94,14 @@ export const CombatSystem: React.FC<{
           opponentModifier: 0,
           roundLog: []
         } : undefined,
-        weapon: type === 'weapon' ? {
-          round: 1,
-          playerWeapon: equippedWeapon || null,
-          opponentWeapon: null,
-          currentRange: 10, // Default starting range
-          roundLog: [],
-          lastAction: undefined
-        } : undefined
+          weapon: type === 'weapon' ? {
+            round: 1,
+            playerWeapon: equippedWeapon || null,
+            opponentWeapon: getDefaultWeapon(),
+            currentRange: 10, // Default starting range
+            roundLog: [],
+            lastAction: undefined
+          } : undefined
       }
     });
   };

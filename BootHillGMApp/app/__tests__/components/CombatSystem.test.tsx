@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import { CombatSystem } from '../../components/CombatSystem';
 import { Character } from '../../types/character';
 import * as combatUtils from '../../utils/combatUtils';
@@ -260,10 +260,11 @@ describe('CombatSystem', () => {
     expect(weaponButton).not.toBeDisabled();
     
     fireEvent.click(weaponButton);
-    expect(screen.getByText('Your Weapon')).toBeInTheDocument();
-    expect(screen.getByText('Colt Revolver')).toBeInTheDocument();
-    expect(screen.getByText('Opponent\'s Weapon')).toBeInTheDocument();
-    expect(screen.getByText('Winchester Rifle')).toBeInTheDocument();
+    const weaponControls = screen.getByTestId('weapon-combat-controls');
+    expect(within(weaponControls).getByText('Your Weapon')).toBeInTheDocument();
+    expect(within(weaponControls).getByText('Colt Revolver')).toBeInTheDocument();
+    expect(within(weaponControls).getByText('Opponent\'s Weapon')).toBeInTheDocument();
+    expect(within(weaponControls).getByText('Winchester Rifle')).toBeInTheDocument();
   });
 
   test('cleans metadata from character names', async () => {
