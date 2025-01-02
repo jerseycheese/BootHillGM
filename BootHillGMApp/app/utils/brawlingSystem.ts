@@ -63,20 +63,33 @@ export const GRAPPLING_TABLE: BrawlingTable = {
 
 /**
  * Resolves a brawling round based on the provided modifier and attack type.
- * @param modifier Modifier to the dice roll.
- * @param isPunching True if punching, false if grappling.
- * @param forceRoll Optional parameter to force a specific roll value (for testing)
- * @returns The result of the brawling round.
+ * 
+ * Implements Boot Hill v2 brawling rules:
+ * - Rolls 1d6 with modifiers
+ * - Clamps results between 2 and 6
+ * - Uses separate tables for punching and grappling
+ * - Applies modifiers before clamping to ensure proper minimums
+ * 
+ * @param modifier - Modifier to the dice roll (positive or negative)
+ * @param isPunching - True for punching attack, false for grappling
+ * @param forceRoll - Optional parameter to force a specific roll value (for testing)
+ * @returns BrawlingResult containing roll outcome, damage, and location
+ * @example
+ * // Resolve a punching attack with +2 modifier
+ * const result = resolveBrawlingRound(2, true);
  */
 export const resolveBrawlingRound = (
   modifier: number, 
   isPunching: boolean,
   forceRoll?: number
 ): BrawlingResult => {
-  // Use forced roll if provided, otherwise roll dice with modifier
-  const roll = forceRoll !== undefined ? 
-    Math.max(2, Math.min(6, forceRoll)) :
-    Math.max(2, Math.min(6, rollDice({ count: 1, sides: 6, modifier })));
+  // Get base roll (forced value for testing or random roll)
+  const baseRoll = forceRoll !== undefined ? forceRoll : rollDice({ count: 1, sides: 6 });
+  
+  // Apply modifier and clamp result between 2 and 6
+  // Note: Modifier is applied before clamping to ensure proper minimums
+  const modifiedRoll = baseRoll + modifier;
+  const roll = Math.max(2, Math.min(6, modifiedRoll));
     
   const table = isPunching ? PUNCHING_TABLE : GRAPPLING_TABLE;
   const result = table[roll];

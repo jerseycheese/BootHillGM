@@ -84,15 +84,6 @@ The following sections detail the current user stories being implemented, organi
 
 ## Weapon Combat System
 
-- [ ] As a player, I want to see available weapons during combat initiation.
-  **Priority:** High
-  **Risk Level:** Low
-  **Test Plan:**
-  - Confirm available weapons are displayed for both combatants
-  - Verify weapon availability matches inventory state
-  - Ensure UI clearly distinguishes between player and opponent weapons
-  - Test cases where either combatant has no weapons
-  **Related:** [[../../core-systems/combat-system|Combat System]]
 
 - [ ] As a player, I want weapons to have distinct base damage values.
   **Priority:** High

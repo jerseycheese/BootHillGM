@@ -1,4 +1,5 @@
 import { CombatParticipant } from '../../types/combat';
+import { DefaultWeapons } from '../../data/defaultWeapons';
 
 interface WeaponDisplayProps {
   participant?: CombatParticipant;
@@ -33,11 +34,18 @@ export const WeaponDisplay: React.FC<WeaponDisplayProps> = ({ participant, isPla
     <div className="text-sm">
       <div className="flex items-center justify-between">
         <p className="font-medium">{weapon.name}</p>
-        {isPlayer && (
-          <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-            {participant.isNPC ? 'NPC' : 'Player'}
-          </span>
-        )}
+        <div className="flex gap-1">
+          {weapon.id === DefaultWeapons.coltRevolver.id && (
+            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+              Default Weapon
+            </span>
+          )}
+          {isPlayer && (
+            <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+              {participant.isNPC ? 'NPC' : 'Player'}
+            </span>
+          )}
+        </div>
       </div>
       
       {weapon.modifiers && (

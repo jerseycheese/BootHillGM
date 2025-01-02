@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { Character } from '../types/character';
 import { useCampaignState } from '../components/CampaignStateManager';
+import { DefaultWeapons } from '../data/defaultWeapons';
 import { addCombatJournalEntry } from '../utils/JournalManager';
 import { createStateProtection } from '../utils/stateProtection';
 import { CombatState, ensureCombatState } from '../types/combat';
@@ -165,7 +166,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           weapon: {
             round: 1,
             playerWeapon: equippedWeapon,
-            opponentWeapon: null,
+            opponentWeapon: DefaultWeapons.coltRevolver,
             currentRange: 10,
             roundLog: [],
           }

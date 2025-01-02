@@ -115,15 +115,6 @@ This document tracks bugs found during development and testing. Each bug entry s
 - Priority: High
 - Impact: Combat System Reliability
 
-[BUG-036] Missing Opponent Default Weapon
-  - Description: Opponent's default Colt revolver not showing in combat
-  - Steps to Reproduce:
-    1. Enter weapon combat
-    2. Check opponent's weapon display
-  - Expected Behavior: Should show Colt revolver
-  - Actual Behavior: Shows "No visible weapon"
-  - Status: Open
-  - Priority: High
 
 [BUG-037] Unimplemented Combat Actions Not Disabled
   - Description: Aim/reload/move actions available but not implemented
@@ -237,7 +228,6 @@ This document tracks bugs found during development and testing. Each bug entry s
 | BUG-026  | Character Creation Progress Not Saved | High | Open |
 | BUG-027  | Incorrect Location Display | Medium | Open |
 | BUG-035  | State Protection Timeout Handling | High | Open |
-| BUG-036  | Missing Opponent Default Weapon | High | Open |
 | BUG-037  | Unimplemented Combat Actions | Medium | Open |
 | BUG-038  | Infinite Strength Reduction Display | High | Open |
 | BUG-039  | Abrupt Combat UI Closure | High | Open |

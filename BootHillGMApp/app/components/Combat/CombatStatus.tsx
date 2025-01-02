@@ -148,14 +148,9 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
           />
           <div className="p-2 bg-gray-50 rounded mb-4">
             <h4 className="font-medium mb-1">Your Weapon</h4>
-            <WeaponDisplay participant={{
-              id: playerCharacter.id,
-              name: playerName,
-              isNPC: false,
-              weapon: combatState?.weapon?.playerWeapon || null,
-              strength: playerStrength,
-              wounds: playerCharacter.wounds
-            }} isPlayer={true} />
+            <div className="text-sm">
+              <p className="font-medium">{combatState?.weapon?.playerWeapon?.name || 'No weapon equipped'}</p>
+            </div>
           </div>
         </div>
         <div>
@@ -168,26 +163,14 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
           />
           <div className="p-2 bg-gray-50 rounded mb-4">
             <h4 className="font-medium mb-1">Opponent&#39;s Weapon</h4>
-            <WeaponDisplay participant={{
-              id: opponent.id,
-              name: opponentName,
-              isNPC: true,
-              weapon: combatState?.weapon?.opponentWeapon || {
-                id: 'default-colt',
-                name: 'Colt Revolver',
-                modifiers: {
-                  accuracy: 2,
-                  range: 20,
-                  reliability: 95,
-                  damage: '1d6',
-                  speed: 0,
-                  ammunition: 6,
-                  maxAmmunition: 6
-                }
-              },
-              strength: currentOpponentStrength,
-              wounds: opponent.wounds
-            }} />
+            <div className="text-sm">
+              <p className="font-medium">{combatState?.weapon?.opponentWeapon?.name || 'Colt Revolver'}</p>
+              {!combatState?.weapon?.opponentWeapon && (
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                  Default Weapon
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
