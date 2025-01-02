@@ -41,9 +41,23 @@ graph TD
 
 ### 1. Planning (Desktop)
 Initial planning and setup stage using Claude Desktop:
-- Requirements review: Analyze current stories and open issues
-- Implementation prompt: Create focused prompts for specific tasks
-- Verification checklist: Define completion criteria
+
+1. Requirements Review
+   - Analyze current stories and open issues
+   - Review project status
+   - Identify dependencies
+
+2. Task Selection
+   - Use project analysis prompt
+   - Consider priorities and dependencies
+   - Get specific task recommendation
+   - See [[examples/project-analysis-prompt|Project Analysis]]
+
+3. Completion Criteria
+   - Create verification checklist
+   - Define clear success metrics
+   - Document requirements
+   - See [[examples/verification-checklist-prompt|Verification Checklist]]
 
 ### 2. Implementation (API)
 Main development stage using Claude API or Desktop:
@@ -76,7 +90,7 @@ Final polish and verification stage:
    - See [[examples/doc-updates-prompt|Documentation Updates Guide]]
 
 3. Final Verification
-   - Check implementation against requirements
+   - Check against verification checklist
    - Verify test coverage
    - Confirm documentation is current
 
@@ -111,6 +125,7 @@ Final polish and verification stage:
 - [[prompt-guide|Prompt Guide]]
 - [[examples/weapon-combat|Example]]
 - [[examples/project-analysis-prompt|Project Analysis]]
+- [[examples/verification-checklist-prompt|Verification Checklist]]
 - [[examples/test-creation-prompt|Test Creation]]
 - [[examples/code-cleanup-prompt|Code Cleanup]]
 - [[examples/doc-updates-prompt|Documentation Updates]]

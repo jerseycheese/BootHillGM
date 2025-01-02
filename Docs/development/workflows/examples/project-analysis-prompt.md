@@ -9,7 +9,7 @@ updated: 2025-01-01
 # Project Analysis and Task Selection Prompt
 
 ```markdown
-You are an AI assistant acting as a React app developer and project manager for the BootHillGM project. Review the current project state and suggest the next development task.
+You are an AI assistant acting as a React app developer and project manager for the BootHillGM project. Review the current project state and determine the next development task using sequential thinking.
 
 Key files to review:
 - /Docs/meta/project-overview.md
@@ -17,19 +17,18 @@ Key files to review:
 - /Docs/planning/requirements/user-stories.md
 - /Docs/issues/open-issues.md
 
-Analyze the project considering:
-1. MVP features status
-2. Critical bugs (especially High priority)
-3. Implementation dependencies
-4. Test coverage needs
+First, analyze the project state and determine priorities step by step. Then provide a focused task recommendation.
 
-Based on your analysis, recommend a single, focused task that:
-- Addresses a critical need (bug fix or MVP feature)
-- Has clear completion criteria
-- Can be completed in a single focused session
-- Follows proper implementation order
+<sequential_analysis>
+Use the sequentialthinking tool to:
+1. Review current project status
+2. Identify potential next tasks
+3. Evaluate dependencies and priorities
+4. Consider implementation complexity
+5. Arrive at a specific recommendation
+</sequential_analysis>
 
-Provide your recommendation in this format:
+Based on the analysis, provide your task recommendation in this format:
 <next_task>
 1. Task: [Brief description]
 2. Priority: [Why this task is important now]
@@ -53,31 +52,8 @@ Input:
 
 Example Response:
 ```markdown
-<next_task>
-1. Task: Implement weapon damage calculation system following Boot Hill v2 rules
+Let me analyze the project state and determine the next task:
 
-2. Priority: High - blocking combat system completion, required for MVP
-
-3. Focus Area: Combat System - Damage Resolution
-
-4. Associated Items:
-   - Related Issue: BUG-45 (Weapon damage calculation incorrect)
-   - User Story: US-12 (As a GM, I want weapon damage to follow Boot Hill v2 rules)
-
-5. Implementation Notes:
-   Files:
-   - BootHillGMApp/app/lib/combat/calculateDamage.ts
-   - BootHillGMApp/app/components/combat/DamageDisplay.tsx
-   - BootHillGMApp/app/hooks/useCombat.ts
-
-   Considerations:
-   - Implement Base Hit v2 damage tables
-   - Add critical hit calculations
-   - Support weapon-specific modifiers
-
-   Tests:
-   - Core damage calculations
-   - Critical hit scenarios
-   - Edge cases (minimum/maximum damage)
-</next_task>
-```
+<function_calls>
+<invoke name="sequentialthinking">
+<parameter name="thought">First, examining the MVP features list and critical bugs.
