@@ -34,7 +34,10 @@ Provide your recommendation in this format:
 1. Task: [Brief description]
 2. Priority: [Why this task is important now]
 3. Focus Area: [Specific component/feature]
-4. Implementation Notes:
+4. Associated Items:
+   - Related Issue: [ID from open-issues.md if applicable]
+   - User Story: [ID from current-stories.md if applicable]
+5. Implementation Notes:
    - Files to modify
    - Key considerations
    - Test requirements
@@ -43,33 +46,38 @@ Provide your recommendation in this format:
 
 ## Example Usage
 
-Given the current project state, here's how the prompt would be used:
-
 Input:
 ```markdown
-[Paste the prompt above, keeping the format]
+[Paste the prompt above]
 ```
 
 Example Response:
 ```markdown
 <next_task>
-1. Task: Implement state persistence for character creation process (BUG-026)
-2. Priority: High-priority bug blocking user progress
-3. Focus Area: Character Creation System
+1. Task: Implement weapon damage calculation system following Boot Hill v2 rules
 
-4. Implementation Notes:
+2. Priority: High - blocking combat system completion, required for MVP
+
+3. Focus Area: Combat System - Damage Resolution
+
+4. Associated Items:
+   - Related Issue: BUG-45 (Weapon damage calculation incorrect)
+   - User Story: US-12 (As a GM, I want weapon damage to follow Boot Hill v2 rules)
+
+5. Implementation Notes:
    Files:
-   - BootHillGMApp/app/components/character/CharacterCreationProvider.tsx
-   - BootHillGMApp/app/components/character/useCharacterCreation.ts
+   - BootHillGMApp/app/lib/combat/calculateDamage.ts
+   - BootHillGMApp/app/components/combat/DamageDisplay.tsx
+   - BootHillGMApp/app/hooks/useCombat.ts
 
    Considerations:
-   - Save state after each step completion
-   - Handle page refresh recovery
-   - Consider localStorage limitations
+   - Implement Base Hit v2 damage tables
+   - Add critical hit calculations
+   - Support weapon-specific modifiers
 
    Tests:
-   - Verify state persistence between steps
-   - Test page refresh recovery
-   - Validate data integrity
+   - Core damage calculations
+   - Critical hit scenarios
+   - Edge cases (minimum/maximum damage)
 </next_task>
 ```
