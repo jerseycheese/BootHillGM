@@ -13,12 +13,11 @@
 
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Character } from '../../types/character';
 import { calculateCurrentStrength } from '../../utils/strengthSystem';
 import { CombatState } from '../../types/combat';
 import { cleanCharacterName } from '../../utils/combatUtils';
-import { WeaponDisplay } from './WeaponDisplay';
 
 interface StrengthDisplayProps {
   current: number;

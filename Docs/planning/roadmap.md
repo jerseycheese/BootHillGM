@@ -126,7 +126,13 @@ The roadmap is organized into development phases, with each phase containing spe
   - [x] Comprehensive test coverage
 - [x] Update combat log entries in combat system for detailed combat results and summaries
 
-## Phase 4: Polish and Testing (Next Phase)
+3.6 Character Sheet Enhancements
+- [ ] Implement stat-based skill checks
+- [ ] Add character portrait/image upload
+- [ ] Create character inventory section
+- [ ] Add character background/notes section
+
+## Phase 4: Polish and Testing
 
 4.1 UI/UX Improvements
 - [ ] Add loading indicators for AI responses
@@ -165,6 +171,7 @@ The roadmap is organized into development phases, with each phase containing spe
 3. Implement journal narrative summaries
 4. Add loading indicators and feedback
 5. Complete testing implementation
+6. Implement character sheet enhancements
 
 ## Success Criteria (MVP)
 - [ ] Functional character creation with AI guidance
@@ -172,6 +179,7 @@ The roadmap is organized into development phases, with each phase containing spe
 - [x] Basic inventory management
 - [x] Persistent game state
 - [x] Automated journal system
+- [x] Basic character sheet display
 - [ ] Complete error handling
 - [ ] Comprehensive test coverage
 

@@ -2,7 +2,6 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CombatStatus } from '../../components/Combat/CombatStatus';
 import { Character } from '../../types/character';
-import { CombatState } from '../../types/combat';
 
 describe('CombatStatus', () => {
   const mockPlayer: Character = {

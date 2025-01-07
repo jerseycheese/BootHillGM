@@ -3,18 +3,21 @@
 import { useEffect } from 'react';
 import { useGame } from '../utils/gameEngine';
 import { useCampaignState } from '../components/CampaignStateManager';
-import { debugStorage } from '../utils/debugHelpers';
 import { Wound } from '../types/wound';
+import StatDisplay from '../components/StatDisplay';
+import DerivedStatDisplay from '../components/DerivedStatDisplay';
+import useCharacterStats from '../hooks/useCharacterStats';
 
+/**
+ * CharacterSheet component displays the character's attributes, derived stats, and wounds.
+ * It loads character data from the game state and local storage if available.
+ */
 export default function CharacterSheet() {
   const { state, dispatch } = useGame();
   const { loadGame, saveGame } = useCampaignState();
-  const { character } = state;
+  const { character, derivedStats, setCharacter } = useCharacterStats();
 
   useEffect(() => {
-    // Debug current state
-    debugStorage();
-
     // Try to load game if character is not present
     if (!character) {
       // First try to load from campaign state
@@ -31,25 +34,29 @@ export default function CharacterSheet() {
             const newState = {
               ...state,
               character: lastCharacter,
-              savedTimestamp: Date.now()
+              savedTimestamp: Date.now(),
             };
 
             // Save and update the state
             saveGame(newState);
             dispatch({ type: 'SET_STATE', payload: newState });
-          } catch {
+            setCharacter(lastCharacter);
+          } catch (error) {
+            console.error("Error parsing character from local storage:", error);
           }
         }
+      } else if (loadedState?.character) {
+        setCharacter(loadedState.character);
       }
     }
-  }, [character, loadGame, saveGame, dispatch, state]);
+  }, [character, loadGame, saveGame, dispatch, state, setCharacter]);
 
   if (!character) {
     return (
       <div className="wireframe-container">
         <div>No character found. Please create a character first.</div>
         <div className="text-sm text-gray-500 mt-4">
-          Debug info: Check browser console for state information
+          {/* Consider adding a button to navigate to character creation page */}
         </div>
       </div>
     );
@@ -57,10 +64,10 @@ export default function CharacterSheet() {
 
   const renderWound = (wound: Wound) => (
     <li key={`${wound.location}-${wound.severity}`} className="wireframe-text">
-      {wound.location.charAt(0).toUpperCase() + wound.location.slice(1)}: {wound.severity} ({wound.strengthReduction})
+      {wound.location.charAt(0).toUpperCase() + wound.location.slice(1)}:{' '}
+      {wound.severity} ({wound.strengthReduction})
     </li>
   );
-
 
   return (
     <div className="wireframe-container">
@@ -69,13 +76,37 @@ export default function CharacterSheet() {
       </div>
       <div className="wireframe-section">
         <h3 className="wireframe-subtitle">Attributes</h3>
-        <ul className="wireframe-list">
-          {Object.entries(character.attributes).map(([key, value]) => (
-            <li key={key} className="wireframe-text">
-              {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
-            </li>
-          ))}
-        </ul>
+        <div className="grid grid-cols-2 gap-4">
+          <StatDisplay label="Speed" value={character.attributes.speed} />
+          <StatDisplay
+            label="Gun Accuracy"
+            value={character.attributes.gunAccuracy}
+          />
+          <StatDisplay
+            label="Throwing Accuracy"
+            value={character.attributes.throwingAccuracy}
+          />
+          <StatDisplay label="Strength" value={character.attributes.strength} />
+          <StatDisplay
+            label="Base Strength"
+            value={character.attributes.baseStrength}
+          />
+          <StatDisplay label="Bravery" value={character.attributes.bravery} />
+          <StatDisplay
+            label="Experience"
+            value={character.attributes.experience}
+          />
+        </div>
+      </div>
+      <div className="wireframe-section">
+        <h3 className="wireframe-subtitle">Derived Stats</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <DerivedStatDisplay
+            label="Hit Points"
+            value={derivedStats.hitPoints}
+            description="Calculated from Base Strength"
+          />
+        </div>
       </div>
       {character.wounds && character.wounds.length > 0 && (
         <div className="wireframe-section">

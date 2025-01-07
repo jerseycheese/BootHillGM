@@ -4,6 +4,7 @@ import { CombatType } from '../../types/combat';
 import { useCampaignState } from '../CampaignStateManager';
 
 interface CombatTypeSelectionProps {
+  playerCharacter: Character;
   opponent: Character;
   onSelectType: (type: CombatType) => void;
 }
