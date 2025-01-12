@@ -20,4 +20,3 @@ updated: 2025-01-01
 
 ## Planning
 - 📋 [[../planning/roadmap|Roadmap]]
-- ✅ [[../planning/requirements/current-stories|Current Stories]]

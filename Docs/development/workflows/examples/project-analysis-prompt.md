@@ -1,59 +1,63 @@
----
-title: Project Analysis Prompt
-aliases: [Initial Analysis Prompt]
-tags: [development, process, ai, claude]
-created: 2025-01-01
-updated: 2025-01-01
----
+# Project Analysis (Sonnet)
 
-# Project Analysis and Task Selection Prompt
+> [!note]
+> Select and analyze next highest-value task.
 
+## Initial Prompt Template
 ```markdown
-You are an AI assistant acting as a React app developer and project manager for the BootHillGM project. Review the current project state and determine the next development task using sequential thinking.
+Help me select and analyze the next task to implement.
 
-Key files to review:
-- /Docs/meta/project-overview.md
-- /Docs/planning/requirements/current-stories.md
-- /Docs/planning/requirements/user-stories.md
-- /Docs/issues/open-issues.md
+Review these paths:
+- /Users/jackhaas/Projects/BootHillGM/Docs/planning/
+- /Users/jackhaas/Projects/BootHillGM/Docs/issues/
+- /Users/jackhaas/Projects/BootHillGM/Docs/features/
 
-First, analyze the project state and determine priorities step by step. Then provide a focused task recommendation.
+Selection criteria:
+1. MVP status
+2. Blocking status - does it block other critical features?
+3. Dependencies - are its dependencies complete?
+4. Technical complexity
+5. Value/effort ratio
 
-<sequential_analysis>
-Use the sequentialthinking tool to:
-1. Review current project status
-2. Identify potential next tasks
-3. Evaluate dependencies and priorities
-4. Consider implementation complexity
-5. Arrive at a specific recommendation
-</sequential_analysis>
-
-Based on the analysis, provide your task recommendation in this format:
-<next_task>
-1. Task: [Brief description]
-2. Priority: [Why this task is important now]
-3. Focus Area: [Specific component/feature]
-4. Associated Items:
-   - Related Issue: [ID from open-issues.md if applicable]
-   - User Story: [ID from current-stories.md if applicable]
-5. Implementation Notes:
-   - Files to modify
-   - Key considerations
-   - Test requirements
-</next_task>
+Provide:
+1. Selected task with rationale
+2. Clear implementation handoff using standard template
 ```
 
-## Example Usage
+## Example Conversation
+Human: [Sends prompt above]
 
-Input:
+Claude: Analyzing project state and priorities...
+
+Task Selection Analysis:
+1. MVP Requirements: Inventory validation needed
+2. Blockers: Blocking combat improvements
+3. Dependencies: None pending
+4. Complexity: Low
+5. Value/Effort: High - quick win with big impact
+
 ```markdown
-[Paste the prompt above]
+TASK ANALYSIS
+Story/Issue: INV-2 Inventory Validation
+Description: Prevent usage of non-existent items in inventory
+Priority: High (blocks combat system improvements)
+MVP Status: Required
+Current State: Basic inventory exists but lacks validation
+
+IMPLEMENTATION PLAN
+Files to Modify:
+- src/components/Inventory.tsx: Add validation checks
+- src/hooks/useInventory.ts: Add validation methods
+Files to Create:
+- src/utils/inventoryUtils.ts: Validation helper functions
+
+SUCCESS CRITERIA
+- [ ] Attempting to use missing item throws error
+- [ ] Error messages clearly indicate the issue
+- [ ] Edge cases (null/undefined) handled gracefully
+
+TECHNICAL NOTES
+- Use TypeScript strict null checks
+- Add error messages to constants file
+- Consider adding validation HOC for reuse
 ```
-
-Example Response:
-```markdown
-Let me analyze the project state and determine the next task:
-
-<function_calls>
-<invoke name="sequentialthinking">
-<parameter name="thought">First, examining the MVP features list and critical bugs.

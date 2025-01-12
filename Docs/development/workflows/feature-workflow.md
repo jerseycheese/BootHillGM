@@ -3,7 +3,7 @@ title: Feature Development Workflow
 aliases: [Feature Process]
 tags: [development, feature, process]
 created: 2025-01-01
-updated: 2025-01-01
+updated: 2025-01-10
 ---
 
 # Feature Development Workflow
@@ -20,6 +20,13 @@ graph TD
     B -->|API| E[Code/Tests]
     C -->|API| F[Review/Commit]
 ```
+
+## Issue Tracking
+All feature-related bugs and tasks are tracked in [GitHub Issues](https://github.com/jerseycheese/BootHillGM/issues). When working on features:
+- Create related issues for bugs found
+- Link commits to issues using #issue-number
+- Use labels to categorize issues (feature, bug, enhancement)
+- Close issues when resolved
 
 ## Stages
 
