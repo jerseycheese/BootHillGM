@@ -96,10 +96,6 @@ The project's documentation is organized in the Docs folder:
 - [[../planning/roadmap|Development Roadmap]]: Development timeline and milestone tracking
 - [[../architecture/component-structure|Component Structure]]: Detailed component relationships
 - [[../architecture/architecture-decisions|Architecture Decisions]]: Key architectural decisions
-- [[../planning/requirements/current-stories|Current User Stories]]: Active user stories
-- [[../planning/requirements/future-stories|Future User Stories]]: Planned features
-- [[../issues/open-issues|Open Issues]]: List of known bugs and issues
-- [[../issues/closed-issues|Resolved Issues]]: History of resolved bugs
 
 ### Reference Documentation
 - [[../boot-hill-rules/game-overview|Boot Hill Rules]]: Boot Hill RPG rules documentation

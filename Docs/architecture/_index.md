@@ -85,7 +85,6 @@ graph TD
 
 ### Planning
 - [[../planning/roadmap|Development Roadmap]]
-- [[../planning/requirements/current-stories|Current Stories]]
 
 ### Core Systems
 - [[../core-systems/combat-system|Combat System]]

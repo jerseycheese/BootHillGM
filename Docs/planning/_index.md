@@ -3,7 +3,7 @@ title: Planning Overview
 aliases: [Planning MOC, Development Planning]
 tags: [moc, planning, roadmap, requirements]
 created: 2024-12-28
-updated: 2024-12-28
+updated: 2025-01-10
 ---
 
 # Planning Overview
@@ -15,21 +15,19 @@ This Map of Content (MOC) provides a comprehensive overview of BootHillGM's deve
 
 ## Requirements
 ### Current Development
-- [[requirements/current-stories|Current User Stories]] - Active development items
 - [[requirements/combat|Combat Requirements]] - Combat system specifications
 - [[requirements/storytelling|Storytelling Requirements]] - Narrative system specs
 - [[requirements/characters|Character Requirements]] - Character system specs
 
-### Future Planning
-- [[requirements/future-stories|Future User Stories]] - Planned features and enhancements
+Note: As of January 2025, all user stories and feature tracking has been migrated to GitHub Issues for better task management and collaboration.
 
 ## Development Status
 ```mermaid
 graph TD
-    A[Current Stories] --> B[Combat]
+    A[GitHub Issues] --> B[Combat]
     A --> C[Storytelling]
     A --> D[Characters]
-    E[Future Stories] --> F[Planned Features]
+    A --> F[Features]
     F --> G[Enhancement Requests]
     F --> H[New Features]
 ```
@@ -61,4 +59,4 @@ graph TD
 ## Related Documentation
 - [[../meta/project-overview|Project Overview]]
 - [[../meta/game-design|Game Design Document]]
-- [[../issues/open-issues|Open Issues]]
+- GitHub Issues Tracker (for current development tasks and feature tracking)

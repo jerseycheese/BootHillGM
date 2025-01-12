@@ -42,7 +42,6 @@ graph TD
 ## Development Metrics
 - Completed Features: 3
 - Features in Development: 3
-- Planned Features: See [[../planning/requirements/future-stories|Future Stories]]
 
 ## Integration Points
 ### Core Systems
@@ -56,10 +55,7 @@ graph TD
 
 ## Feature Planning
 - [[../planning/roadmap|Development Roadmap]]
-- [[../planning/requirements/current-stories|Current User Stories]]
 - [[../meta/game-design|Game Design Document]]
 
 ## Quality Assurance
 - Feature Testing Status: [[../technical-guides/testing|Testing Guide]]
-- Known Issues: [[../issues/open-issues|Open Issues]]
-- Recent Fixes: [[../issues/closed-issues|Resolved Issues]]

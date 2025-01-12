@@ -3,7 +3,7 @@ title: Boot Hill GM Documentation
 aliases: [Home, Documentation Home]
 tags: [documentation, home, index]
 created: 2024-12-28
-updated: 2025-01-01
+updated: 2025-01-10
 author: Jack Haas
 ---
 
@@ -28,7 +28,7 @@ The documentation aims to:
 - 🎮 [[../meta/project-overview|Project Overview]]
 - 📋 [[../planning/roadmap|Development Roadmap]]
 - 🔧 [[../technical-guides/setup|Development Setup]]
-- ❗ [[../issues/open-issues|Open Issues]]
+- ❗ [GitHub Issues](https://github.com/jerseycheese/BootHillGM/issues)
 
 ## System Documentation
 ### Core Systems

@@ -92,4 +92,3 @@ graph TD
 ## Related Documentation
 - [[../meta/project-overview|Project Overview]]
 - [[../planning/roadmap|Development Roadmap]]
-- [[../issues/open-issues|Open Issues]]

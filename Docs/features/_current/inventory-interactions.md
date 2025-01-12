@@ -47,7 +47,6 @@ For implementation details, see [[../../core-systems/state-management|State Mana
 ## Related Documentation
 - [[../../boot-hill-rules/equipment|Equipment Rules]]
 - [[../../boot-hill-rules/weapons-chart|Weapons Reference]]
-- [[../../planning/requirements/current-stories|Current User Stories]]
 
 ## Item Categories
 1. Weapons

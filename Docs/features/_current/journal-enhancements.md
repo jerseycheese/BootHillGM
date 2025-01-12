@@ -39,4 +39,3 @@ For core system details, see [[../../core-systems/journal-system|Journal System]
 ## Related Documentation
 - [[../../technical-guides/setup|Development Setup]]
 - [[../../architecture/state-management|State Management Architecture]]
-- [[../../planning/requirements/current-stories|Current User Stories]]
