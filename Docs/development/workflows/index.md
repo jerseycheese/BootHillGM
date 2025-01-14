@@ -19,7 +19,6 @@ updated: 2025-01-01
 ## AI-Assisted Development
 - 🤖 [[claude-workflow|Claude Workflow]] - Primary development workflow
 - ✍️ [[prompt-guide|Prompt Writing Guide]]
-- 📚 [[examples/weapon-combat|Example: Weapon Combat]]
 
 ## Quick Reference
 

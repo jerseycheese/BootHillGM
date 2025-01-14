@@ -79,7 +79,6 @@ The documentation aims to:
 > [[development/workflows/index|Development Workflows]]
 - [[development/workflows/feature-workflow|Feature Development]]
 - [[development/workflows/claude-workflow|AI Development]]
-- [[development/workflows/examples/weapon-combat|Example: Weapon Combat]]
 
 ---
 

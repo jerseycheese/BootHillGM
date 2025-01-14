@@ -45,10 +45,6 @@ All feature-related bugs and tasks are tracked in [GitHub Issues](https://github
 - Update docs
 - Commit changes
 
-## Examples
-> [!example]
-> See [[examples/weapon-combat|Weapon Combat Example]] for complete workflow
-
 ## Related
 - [[prompt-guide|Prompt Writing Guide]]
 - [[testing-workflow|Testing Workflow]]

@@ -1,60 +1,253 @@
-# Implementation & Testing (Sonnet)
+# Implementation Planning Prompt
 
-> [!note]
-> Implement task and verify functionality.
-
-## Initial Prompt Template
+## Quick Use Prompt
 ```markdown
-Help me implement and test this task. Here's the analysis handoff:
+Help me create a detailed technical specification for implementing this task. Here's the task analysis:
 
-[PASTE HANDOFF]
+[PASTE TASK ANALYSIS HERE]
 
-Project paths:
-- /Users/jackhaas/Projects/BootHillGM/src/
-- /Users/jackhaas/Projects/BootHillGM/src/tests/
+Please create a complete technical specification that includes:
+1. Detailed technical design and data flow
+2. Specific files to modify with exact changes
+3. Complete interface definitions
+4. Comprehensive test plan
+5. Step-by-step migration plan with rollback procedures
 
-Please:
-1. Implement required changes
-2. Add essential tests
-3. Verify build/tests
-4. Create review handoff using standard template
+Use this format:
+
+IMPLEMENTATION SPECIFICATION
+Component: [name]
+Issue: [reference]
+
+TECHNICAL DESIGN
+Data Flow:
+- [Data flow point 1]
+- [Data flow point 2]
+
+Core Changes:
+1. [Change Area 1]
+   - Location: [file]
+   - Details: [specifics]
+   
+INTERFACES
+[Interface definitions]
+
+TEST PLAN
+1. Unit Tests
+2. Integration Tests
+3. E2E Tests
+
+MIGRATION PLAN
+1. [Step 1]
+2. [Step 2]
+
+ROLLBACK PLAN
+1. [Step 1]
+2. [Step 2]
 ```
 
-## Example Conversation
-Human: [Sends prompt with handoff about inventory validation]
+## Purpose
+Transform high-level task analysis into concrete, actionable technical specifications that can be handed off for implementation.
 
-Claude: Implementing inventory validation...
+## Input Requirements
+1. Completed task analysis document
+2. Project technical standards
+3. Current codebase architecture
+4. Coding patterns and practices
 
-[Implementation code...]
+## Planning Process
 
-Running verification:
-```bash
-npm run build  # Pass
-npm test      # Pass
-```
+### 1. Technical Design
+- Map complete data flow
+- Identify all affected components
+- Define interface changes
+- Plan state management
+
+### 2. Interface Definition
+- Create/update TypeScript interfaces
+- Define function signatures
+- Document type constraints
+- Specify error types
+
+### 3. Test Strategy
+- Define unit test scenarios
+- Plan integration tests
+- Identify edge cases
+- Error condition testing
+
+### 4. Migration Planning
+- Break down implementation steps
+- Define rollback procedures
+- Consider data migration
+- Plan feature flags
+
+## Output Format
 
 ```markdown
-IMPLEMENTATION COMPLETE
-Task: Add inventory item validation system
-Story/Issue: INV-2 Inventory Validation
-Build Status: Pass
-Test Status: Pass
+IMPLEMENTATION SPECIFICATION
+Component: [Component Name]
+Issue: [Issue Reference]
 
-CHANGES MADE
-Files Modified:
-- src/components/Inventory.tsx: Added validation checks
-- src/hooks/useInventory.ts: Added validation methods
-Files Created:
-- src/utils/inventoryUtils.ts: Added validation helpers
+TECHNICAL DESIGN
+Data Flow:
+- [Data flow point 1]
+- [Data flow point 2]
+- [Data flow point n]
 
-DOCUMENTATION UPDATES
-Files to Update:
-- /docs/planning/roadmap.md: Mark inventory validation complete
-- /docs/features/inventory.md: Document validation system
-Items to Mark Complete:
-- Inventory system validation
-- Item usage restrictions
-Future Improvements:
-- Add validation HOC
-- Enhance error message system
+Core Changes:
+1. [Major Change Area 1]
+   - Location: [file path]
+   - New Constants: [list]
+   - New Types: [list]
+   - Changes: [specific changes]
+   
+2. [Major Change Area 2]
+   - Location: [file path]
+   - Props/Interface changes
+   - State changes
+   
+3. [Major Change Area n]
+   - Location: [file path]
+   - Integration points
+   - State management
+
+INTERFACES
+```typescript
+// New or modified interfaces
+interface Example {
+  property: type;
+}
+```
+
+TEST PLAN
+1. Unit Tests:
+   - [Test scenario 1]
+   - [Test scenario 2]
+2. Integration Tests:
+   - [Test scenario 1]
+   - [Test scenario 2]
+3. E2E Tests:
+   - [Test scenario 1]
+   - [Test scenario 2]
+
+MIGRATION PLAN
+1. [Implementation step 1]
+2. [Implementation step 2]
+3. [Implementation step n]
+
+ROLLBACK PLAN
+1. [Rollback step 1]
+2. [Rollback step 2]
+```
+
+## Guidelines
+
+### Technical Precision
+- Use exact file paths
+- Define complete interfaces
+- Specify exact function signatures
+- Include type definitions
+
+### Completeness
+- Cover all affected components
+- Define all new interfaces
+- Include error handling
+- Specify state management
+
+### Testing Coverage
+- Define unit test scenarios
+- Specify integration points
+- Include edge cases
+- Error condition testing
+
+### Migration Safety
+- Staged implementation
+- State handling
+- Rollback procedures
+- Feature flags if needed
+
+## Example
+
+```markdown
+IMPLEMENTATION SPECIFICATION
+Component: AuthenticationManager
+Issue: #45 Add User Authentication
+
+TECHNICAL DESIGN
+Data Flow:
+- User initiates OAuth flow
+- System redirects to provider
+- Provider returns auth token
+- System validates token
+- User session created
+- State persisted
+
+Core Changes:
+1. Authentication Service
+   - Location: src/services/auth.ts
+   - New Constants:
+     OAUTH_ENDPOINTS
+     TOKEN_STORAGE_KEY
+   - New Types:
+     OAuthConfig
+     TokenResponse
+     UserSession
+   - Changes:
+     - Add OAuth initialization
+     - Add token management
+     - Add session handling
+   
+2. User Context
+   - Location: src/contexts/UserContext.tsx
+   - Add auth state
+   - Add login/logout actions
+   - Update provider wrapper
+
+INTERFACES
+```typescript
+interface OAuthConfig {
+  clientId: string;
+  redirectUri: string;
+  scopes: string[];
+}
+
+interface TokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
+
+interface UserSession {
+  user: User;
+  token: TokenResponse;
+  lastActive: Date;
+}
+```
+
+TEST PLAN
+1. Unit Tests:
+   - OAuth configuration validation
+   - Token parsing and validation
+   - Session management
+   - Error handling
+2. Integration Tests:
+   - Complete auth flow
+   - Token refresh flow
+   - Session persistence
+3. E2E Tests:
+   - User login journey
+   - Session recovery
+   - Error scenarios
+
+MIGRATION PLAN
+1. Add interfaces and types
+2. Implement auth service
+3. Add context provider
+4. Update protected routes
+5. Add UI components
+
+ROLLBACK PLAN
+1. Revert to mock auth
+2. Clear session storage
+3. Remove UI changes
 ```

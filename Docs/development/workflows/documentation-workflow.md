@@ -53,6 +53,3 @@ graph TD
 ## Testing
 [Coverage]
 ```
-
-> [!example]
-> See [[examples/weapon-combat]] for complete example

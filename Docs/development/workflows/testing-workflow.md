@@ -28,6 +28,3 @@ graph TD
 - Unit: Component functionality
 - Integration: System interaction
 - Edge Cases: Error handling
-
-> [!example]
-> See [[examples/weapon-combat]] for example

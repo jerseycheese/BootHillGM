@@ -71,4 +71,3 @@ Add weapon selection to combat system
 
 ## Related
 - [[feature-workflow|Feature Workflow]]
-- [[examples/weapon-combat|Complete Example]]
