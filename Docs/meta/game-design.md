@@ -4,7 +4,6 @@ aliases: []
 tags: [documentation, game-design, design-document]
 created: 2024-12-28
 updated: 2024-12-28
-author: jackhaas
 ---
 
 ## Purpose

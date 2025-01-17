@@ -4,7 +4,6 @@ aliases: []
 tags: [documentation]
 created: 2024-01-04
 updated: 2024-01-04
-author: jackhaas
 ---
 
 # API Integration

@@ -4,7 +4,6 @@ aliases: []
 tags: [documentation, risk-assessment, project-management]
 created: 2024-12-28
 updated: 2024-12-28
-author: jackhaas
 ---
 
 ## Purpose
