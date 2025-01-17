@@ -35,18 +35,22 @@ describe('gameReducer', () => {
     const mockCharacter: Character = {
       id: 'player-1',
       name: 'John',
+      isNPC: false,
+      isPlayer: true,
       attributes: {
         speed: 5,
         gunAccuracy: 7,
         throwingAccuracy: 6,
         strength: 8,
-        baseStrength: 8,  // Added baseStrength
+        baseStrength: 8,
         bravery: 7,
         experience: 3
       },
       wounds: [],
       isUnconscious: false,
-      inventory: []
+      inventory: [],
+      weapon: undefined,
+      equippedWeapon: undefined
     };
     const action: GameEngineAction = { type: 'SET_CHARACTER', payload: mockCharacter };
     const newState = gameReducer(initialState, action);
@@ -93,6 +97,8 @@ describe('gameReducer', () => {
     const mockOpponent: Character = {
       id: 'opponent-1',
       name: 'Bandit',
+      isNPC: true,
+      isPlayer: false,
       attributes: {
         speed: 6,
         gunAccuracy: 6,
@@ -104,12 +110,20 @@ describe('gameReducer', () => {
       },
       wounds: [],
       isUnconscious: false,
-      inventory: []
+      inventory: [],
+      weapon: undefined,
+      equippedWeapon: undefined
     };
     const action: GameEngineAction = { type: 'SET_OPPONENT', payload: mockOpponent };
     const newState = gameReducer(initialState, action);
     expect(newState.opponent).toMatchObject({
-      ...mockOpponent,
+      name: mockOpponent.name,
+      attributes: mockOpponent.attributes,
+      wounds: mockOpponent.wounds,
+      isUnconscious: mockOpponent.isUnconscious,
+      inventory: mockOpponent.inventory,
+      isNPC: mockOpponent.isNPC,
+      isPlayer: mockOpponent.isPlayer,
       id: expect.stringMatching(/^character_\d+_[a-z0-9]{9}$/)
     });
   });

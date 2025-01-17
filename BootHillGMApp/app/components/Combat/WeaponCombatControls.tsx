@@ -106,9 +106,20 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
                 id: 'player',
                 name: 'Player',
                 isNPC: false,
+                isPlayer: true,
                 weapon: currentState.playerWeapon,
-                strength: 0,
-                wounds: []
+                attributes: {
+                  strength: 0,
+                  speed: 0,
+                  gunAccuracy: 0,
+                  throwingAccuracy: 0,
+                  baseStrength: 0,
+                  bravery: 0,
+                  experience: 0
+                },
+                wounds: [],
+                isUnconscious: false,
+                inventory: []
               }} />
             ) : (
               <p className="text-red-600">No weapon equipped</p>
@@ -121,12 +132,15 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
                 id: 'opponent',
                 name: 'Opponent',
                 isNPC: true,
+                isPlayer: false,
                 weapon: currentState.opponentWeapon,
-                strength: 0,
-                wounds: []
+                strength: currentState.opponentStrength || 10, // Default to 10 if not set
+                initialStrength: currentState.opponentStrength || 10, // Match initial to current
+                wounds: [],
+                isUnconscious: false,
               }} />
             ) : (
-              <p className="text-gray-600">No visible weapon</p>
+              <p className="text-red-600">No weapon equipped</p>
             )}
           </div>
         </div>

@@ -15,7 +15,9 @@ export const initialCharacter: Character = {
   },
   wounds: [],
   isUnconscious: false,
-  inventory: []
+  inventory: [],
+  isNPC: false,
+  isPlayer: true
 };
 
 // Dynamically generate mock character with AI-generated name
@@ -37,7 +39,9 @@ export async function createMockCharacter(): Promise<Character> {
     },
     wounds: [],
     isUnconscious: false,
-    inventory: []
+    inventory: [],
+    isNPC: false,
+    isPlayer: true
   };
 }
 

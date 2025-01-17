@@ -8,6 +8,7 @@
  */
 import { useState, useEffect } from 'react';
 import { Character } from '../../types/character';
+import { characterToCombatParticipant } from '../../utils/combatUtils';
 import { CombatStatus } from './CombatStatus';
 import { BrawlingControls } from './BrawlingControls';
 import { WeaponCombatControls } from './WeaponCombatControls';
@@ -67,7 +68,18 @@ export const CombatSystem: React.FC<{
     onCombatEnd,
     dispatch,
     initialState: initialCombatState?.weapon,
-    combatState: initialCombatState || { isActive: false, combatType: null, winner: null, playerStrength: 0, opponentStrength: 0, brawling: undefined, weapon: undefined, currentTurn: 'player' }
+    combatState: initialCombatState || { 
+      isActive: false, 
+      combatType: null, 
+      winner: null, 
+      playerStrength: 0, 
+      opponentStrength: 0, 
+      brawling: undefined, 
+      weapon: undefined, 
+      currentTurn: 'player',
+      participants: [],
+      rounds: 0
+    }
   });
 
   // Handle combat type selection
@@ -92,6 +104,10 @@ export const CombatSystem: React.FC<{
           round: 1,
           playerModifier: 0,
           opponentModifier: 0,
+          playerStrength: playerCharacter.attributes.strength,
+          playerBaseStrength: playerCharacter.attributes.strength,
+          opponentStrength: opponent.attributes.strength,
+          opponentBaseStrength: opponent.attributes.strength,
           roundLog: []
         } : undefined,
           weapon: type === 'weapon' ? {
@@ -99,6 +115,10 @@ export const CombatSystem: React.FC<{
             playerWeapon: equippedWeapon || null,
             opponentWeapon: getDefaultWeapon(),
             currentRange: 10, // Default starting range
+            playerStrength: playerCharacter.attributes.strength,
+            playerBaseStrength: playerCharacter.attributes.strength,
+            opponentStrength: opponent.attributes.strength,
+            opponentBaseStrength: opponent.attributes.strength,
             roundLog: [],
             lastAction: undefined
           } : undefined
@@ -149,7 +169,7 @@ export const CombatSystem: React.FC<{
       {/* Display combat status for both player and opponent */}
       <CombatStatus
         playerCharacter={playerCharacter}
-        opponent={currentOpponent || opponent}
+        opponent={currentOpponent ? characterToCombatParticipant(currentOpponent, true) : characterToCombatParticipant(opponent, true)}
         combatState={{
           isActive: true,
           combatType,
@@ -159,6 +179,8 @@ export const CombatSystem: React.FC<{
           brawling: brawlingState,
           weapon: weaponState,
           currentTurn: 'player',
+          participants: [playerCharacter, opponent],
+          rounds: brawlingState?.round || weaponState?.round || 0,
           selection: combatType ? undefined : {
             isSelectingType: true,
             availableTypes: ['brawling', 'weapon']

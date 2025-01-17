@@ -15,7 +15,10 @@ jest.mock('../../utils/brawlingSystem', () => ({
 }));
 
 const mockPlayer: Character = {
+  id: 'player-1',
   name: 'Player',
+  isPlayer: true,
+  isNPC: false,
   attributes: {
     speed: 0,
     gunAccuracy: 0,
@@ -31,7 +34,10 @@ const mockPlayer: Character = {
 };
 
 const mockOpponent: Character = {
+  id: 'opponent-1',
   name: 'Opponent',
+  isPlayer: false,
+  isNPC: true,
   attributes: {
     speed: 0,
     gunAccuracy: 0,
@@ -74,6 +80,10 @@ describe('useBrawlingCombat', () => {
       round: 1,
       playerModifier: 0,
       opponentModifier: 0,
+      playerStrength: mockPlayer.attributes.strength,
+      playerBaseStrength: mockPlayer.attributes.baseStrength,
+      opponentStrength: mockOpponent.attributes.strength,
+      opponentBaseStrength: mockOpponent.attributes.baseStrength,
       roundLog: []
     });
     expect(result.current.isProcessing).toBe(false);
@@ -178,8 +188,8 @@ describe('useBrawlingCombat', () => {
     expect(playerEntry.text).toContain('Player');
     expect(opponentEntry.text).toContain('Opponent');
 
-    // Verify dispatch was called twice (once for each character update)
-    expect(mockDispatch).toHaveBeenCalledTimes(2);
+    // Verify dispatch was called twice for each character update in a round.
+    expect(mockDispatch).toHaveBeenCalledTimes(4);
     
     // Clean up
     jest.useRealTimers();

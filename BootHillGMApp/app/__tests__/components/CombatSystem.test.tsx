@@ -7,9 +7,14 @@ import { CampaignStateProvider } from '../../components/CampaignStateManager';
 import { WEAPON_STATS } from '../../types/combat';
 
 // Mock combat utils
-jest.mock('../../utils/combatUtils', () => ({
-  cleanCharacterName: jest.fn(name => name.split(' ACQUIRED_ITEMS:')[0])
-}));
+jest.mock('../../utils/combatUtils', () => {
+  const originalModule = jest.requireActual('../../utils/combatUtils');
+
+  return {
+    ...originalModule, // Import all functions from the original module
+    cleanCharacterName: jest.fn(name => name.split(' ACQUIRED_ITEMS:')[0]),
+  };
+});
 
 import { setupMocks } from '../../test/setup/mockSetup';
 
@@ -21,6 +26,7 @@ beforeEach(() => {
 
 describe('CombatSystem', () => {
   const mockPlayer: Character = {
+    id: 'player-id', // Add id property
     name: 'Player',
     attributes: {
       speed: 10,
@@ -34,6 +40,7 @@ describe('CombatSystem', () => {
     wounds: [],
     isUnconscious: false,
     inventory: [],
+    isNPC: false,
     weapon: {
       id: 'test-weapon',
       name: 'Colt Revolver',
@@ -44,6 +51,7 @@ describe('CombatSystem', () => {
   };
 
   const mockOpponent: Character = {
+    id: 'opponent-id', // Add id property
     name: 'Opponent',
     attributes: {
       speed: 10,
@@ -57,6 +65,7 @@ describe('CombatSystem', () => {
     wounds: [],
     isUnconscious: false,
     inventory: [],
+    isNPC: true,
     weapon: {
       id: 'opponent-weapon',
       name: 'Winchester Rifle',
@@ -128,7 +137,9 @@ describe('CombatSystem', () => {
         isActive: true,
         combatType: null,
         winner: null,
-        combatLog: []
+        combatLog: [],
+        participants: [], // Add participants
+        rounds: 0 // Add rounds
       }
     });
     
@@ -147,7 +158,9 @@ describe('CombatSystem', () => {
           opponentModifier: 0,
           roundLog: []
         },
-        combatLog: []
+        combatLog: [],
+        participants: [], // Add participants
+        rounds: 0 // Add rounds
       }
     });
     

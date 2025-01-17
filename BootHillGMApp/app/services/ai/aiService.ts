@@ -155,7 +155,9 @@ class AIService {
         },
         wounds: [],
         isUnconscious: false,
-        inventory: []
+        inventory: [],
+        isNPC: true,
+        isPlayer: false
       };
     }
     

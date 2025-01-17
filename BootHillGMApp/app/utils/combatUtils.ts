@@ -1,5 +1,25 @@
 import { Character } from '../types/character';
 import { cleanText } from './textCleaningUtils';
+import { CombatParticipant, NPC } from '../types/combat';
+
+export function characterToCombatParticipant(
+  character: Character,
+  isNPC: boolean
+): CombatParticipant {
+  if (!isNPC) {
+    return character;
+  } else {
+    return {
+      id: character.id,
+      name: character.name,
+      isNPC: true,
+      weapon: character.weapon || undefined,
+      strength: character.attributes.strength,
+      wounds: character.wounds,
+      isUnconscious: false,
+    } as NPC;
+  }
+}
 
 export interface CombatMessageParams {
   attackerName: string;

@@ -30,4 +30,5 @@ export type GameEngineAction =
   | { type: 'SET_COMBAT_TYPE'; payload: CombatType }
   | { type: 'UPDATE_OPPONENT'; payload: Character }
   | { type: 'EQUIP_WEAPON'; payload: string }
-  | { type: 'UNEQUIP_WEAPON'; payload: string };
+  | { type: 'UNEQUIP_WEAPON'; payload: string }
+  | { type: 'END_COMBAT' };

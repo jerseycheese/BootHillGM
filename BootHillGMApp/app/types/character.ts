@@ -32,7 +32,9 @@ export const CHARACTER_CREATION_STEPS = [
 ] as const;
 
 export interface Character {
-
+  /** Whether the character is an NPC or not */
+  isNPC: boolean;
+  isPlayer: boolean;
   /** Unique character ID */
   id: string;
 

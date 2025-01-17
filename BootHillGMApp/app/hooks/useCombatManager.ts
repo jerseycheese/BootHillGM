@@ -168,6 +168,10 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             playerWeapon: equippedWeapon,
             opponentWeapon: DefaultWeapons.coltRevolver,
             currentRange: 10,
+            playerStrength: state.character.attributes.strength,
+            playerBaseStrength: state.character.attributes.strength,
+            opponentStrength: newOpponent.attributes.strength,
+            opponentBaseStrength: newOpponent.attributes.strength,
             roundLog: [],
           }
         });

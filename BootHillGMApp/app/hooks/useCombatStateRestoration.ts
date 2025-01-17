@@ -39,6 +39,8 @@ export function useCombatStateRestoration(
 
     if (shouldRestoreCombat && state.opponent && state.combatState) {
       const restoredOpponent: Character = {
+        isNPC: true,
+        isPlayer: false,
         id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: state.opponent.name,
         inventory: state.opponent.inventory ?? [], // Added inventory property

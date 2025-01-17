@@ -5,6 +5,7 @@ import { Weapon } from '../types/combat';
 import { ensureCombatState } from '../types/combat';
 import { determineIfWeapon } from '../utils/ai/aiUtils';
 import { findClosestWeapon } from '../utils/weaponUtils';
+import { validateCombatEndState } from '../utils/combatStateValidation';
 
 /**
  * Reducer function to handle game state updates based on actions.
@@ -68,8 +69,37 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     }
     case 'ADD_QUEST':
       return { ...state, quests: [...state.quests, action.payload] };
-    case 'SET_CHARACTER':
-      return { ...state, character: action.payload };
+    case 'SET_CHARACTER': {
+      if (!action.payload) {
+        return state;
+      }
+      
+      const character: Character = {
+        isNPC: action.payload.isNPC ?? false,
+        isPlayer: action.payload.isPlayer ?? true,
+        id: action.payload.id,
+        name: action.payload.name,
+        inventory: action.payload.inventory ?? [],
+        attributes: {
+          speed: action.payload.attributes?.speed ?? 5,
+          gunAccuracy: action.payload.attributes?.gunAccuracy ?? 5,
+          throwingAccuracy: action.payload.attributes?.throwingAccuracy ?? 5,
+          strength: action.payload.attributes?.strength ?? 5,
+          baseStrength: action.payload.attributes?.baseStrength ?? 5,
+          bravery: action.payload.attributes?.bravery ?? 5,
+          experience: action.payload.attributes?.experience ?? 5
+        },
+        wounds: action.payload.wounds ?? [],
+        isUnconscious: action.payload.isUnconscious ?? false,
+        weapon: action.payload.weapon,
+        equippedWeapon: action.payload.equippedWeapon
+      };
+
+      return {
+        ...state,
+        character
+      };
+    }
     case 'UPDATE_CHARACTER':
       if (!state.character) {
         return state;
@@ -81,7 +111,8 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           ...action.payload,
           attributes: {
             ...state.character.attributes,
-            ...(action.payload.attributes || {})
+            ...(action.payload.attributes || {}),
+            baseStrength: state.character.attributes.baseStrength
           }
         }
       };
@@ -115,12 +146,20 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           ...(action.payload.attributes || {})
         },
         wounds: action.payload.wounds ?? [],
-        isUnconscious: action.payload.isUnconscious ?? false
+        isUnconscious: action.payload.isUnconscious ?? false,
+        isNPC: true,
+        isPlayer: false
       };
 
       return { ...state, opponent };
     }
-    case 'SET_COMBAT_ACTIVE':
+    case 'SET_COMBAT_ACTIVE': {
+      if (!action.payload) { // Only proceed if setting to false
+        const validationResult = state.combatState ? validateCombatEndState(state.combatState) : { isValid: true, errors: [] };
+        if (!validationResult.isValid) {
+          return state; // Keep the state unchanged if validation fails
+        }
+      }
       return {
         ...state,
         isCombatActive: action.payload,
@@ -129,6 +168,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           combatState: undefined
         })
       };
+    }
     case 'UPDATE_COMBAT_STATE':
       return {
         ...state,
@@ -238,6 +278,24 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           ...state.character,
           weapon: undefined
         } : null
+      };
+    }
+    case 'END_COMBAT': {
+      if (!state.combatState) {
+        return state;
+      }
+
+      const validationResult = validateCombatEndState(state.combatState);
+
+      if (!validationResult.isValid) {
+        // TODO: Handle invalid combat end state (e.g., dispatch an error action)
+      }
+      // Forcibly end combat even if validation fails
+      return {
+        ...state,
+        isCombatActive: false,
+        opponent: null,
+        combatState: undefined // Reset combat state
       };
     }
     default:

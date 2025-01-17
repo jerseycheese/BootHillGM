@@ -108,6 +108,7 @@ describe('CampaignStateManager', () => {
     const testState: GameState = {
       currentPlayer: 'Test Player',
       character: {
+        id: 'test-character-id',
         name: 'Test Character',
         attributes: {
           speed: 10,
@@ -120,7 +121,8 @@ describe('CampaignStateManager', () => {
         },
         wounds: [],
         isUnconscious: false,
-        inventory: []
+        inventory: [],
+        isNPC: false
       },
       location: 'Test Town',
       narrative: 'Test narrative',
@@ -145,12 +147,20 @@ describe('CampaignStateManager', () => {
       savedTimestamp: Date.now(),
       isClient: true,
       suggestedActions: [],
-      combatState: {
+      combatState: expect.objectContaining({
         isActive: false,
         combatType: null,
         winner: null,
-        combatLog: []
-      }
+        combatLog: [],
+        brawling: undefined,
+        currentTurn: undefined,
+        opponentStrength: undefined,
+        participants: [],
+        playerStrength: undefined,
+        rounds: 0,
+        selection: undefined,
+        weapon: undefined
+      })
     };
 
     localStorage.setItem('campaignState', JSON.stringify(testState));
@@ -160,7 +170,7 @@ describe('CampaignStateManager', () => {
     );
 
     const { result } = renderHook(() => useCampaignState(), { wrapper });
-    
+
     act(() => {
       result.current.loadGame();
     });
@@ -172,7 +182,7 @@ describe('CampaignStateManager', () => {
   test('handles corrupted state gracefully', async () => {
     // Temporarily suppress console.error for this test
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     localStorage.setItem('campaignState', 'invalid json');
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -192,6 +202,7 @@ describe('CampaignStateManager', () => {
   });
 
   test('handles no saved state gracefully', async () => {
+    localStorage.removeItem('campaignState');
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <CampaignStateProvider>{children}</CampaignStateProvider>
     );
@@ -200,17 +211,18 @@ describe('CampaignStateManager', () => {
 
     act(() => {
       const loadedState = result.current.loadGame();
-      expect(loadedState).toBeNull();
+      expect(loadedState).toEqual(null);
     });
   });
 
   // Test case: Check if the state is saved to localStorage
   test('saves state to localStorage', async () => {
     jest.useFakeTimers();
-    
+
     const testState: GameState = {
       currentPlayer: 'Test Player',
       character: {
+        id: 'test-character-id',
         name: 'Test Character',
         attributes: {
           speed: 10,
@@ -223,21 +235,22 @@ describe('CampaignStateManager', () => {
         },
         wounds: [],
         isUnconscious: false,
-        inventory: []
+        inventory: [],
+        isNPC: false
       },
       location: 'Test Town',
       narrative: 'Test narrative',
-      inventory: [{ 
-        id: '1', 
-        name: 'Test Item', 
-        quantity: 1, 
+      inventory: [{
+        id: '1',
+        name: 'Test Item',
+        quantity: 1,
         description: 'A test item',
         category: 'general'
       }],
       npcs: ['Test NPC'],
       quests: ['Test Quest'],
-      journal: [{ 
-        timestamp: Date.now(), 
+      journal: [{
+        timestamp: Date.now(),
         content: 'Test entry',
         narrativeSummary: 'Test summary',
         type: 'narrative'
@@ -248,7 +261,20 @@ describe('CampaignStateManager', () => {
       savedTimestamp: Date.now(),
       isClient: true,
       suggestedActions: [],
-      combatState: undefined
+      combatState: {
+        isActive: false,
+        combatType: null,
+        winner: null,
+        combatLog: [],
+        brawling: undefined,
+        currentTurn: undefined,
+        opponentStrength: undefined,
+        participants: [],
+        playerStrength: undefined,
+        rounds: 0,
+        selection: undefined,
+        weapon: undefined
+      }
     };
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (

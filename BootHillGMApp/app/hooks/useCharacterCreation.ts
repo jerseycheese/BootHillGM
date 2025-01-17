@@ -12,6 +12,8 @@ import { getStartingInventory } from '../utils/startingInventory';
 const STORAGE_KEY = 'character-creation-progress';
 
 const initialCharacter: Character = {
+  isNPC: false,
+  isPlayer: true,
   id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   name: '',
   inventory: [],
@@ -157,11 +159,12 @@ export function useCharacterCreation() {
           ...prev,
           attributes: {
             ...prev.attributes,
-            [field]: Number(value)
+            [field]: Number(value),
+            ...(field === 'strength' && { baseStrength: Number(value) })
           }
         };
       }
-      
+
       return {
         ...prev
       };
@@ -173,11 +176,17 @@ export function useCharacterCreation() {
     setError('');
     
     try {
-      const value = field === 'name' 
+      const value = field === 'name'
         ? 'Generated Name' // Placeholder for name generation
         : generateRandomValue(field);
       handleFieldChange(field, value);
-    } catch {
+
+      // Ensure baseStrength is set when strength is generated
+      if (field === 'strength') {
+        handleFieldChange('baseStrength', value);
+      }
+    } catch (error) {
+      console.error(`Failed to generate value for ${field}:`, error);
       setError(`Failed to generate value for ${field}`);
     } finally {
       setIsGeneratingField(false);
@@ -190,8 +199,13 @@ export function useCharacterCreation() {
     
     try {
       const generatedCharacter = await generateCompleteCharacter();
+
+      // Ensure baseStrength matches strength
+      generatedCharacter.attributes.baseStrength = generatedCharacter.attributes.strength;
+
       setCharacter(generatedCharacter);
-    } catch {
+    } catch (error) {
+      console.error('Failed to generate character:', error);
       setError('Failed to generate character');
     } finally {
       setIsGeneratingField(false);

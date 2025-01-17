@@ -1,3 +1,8 @@
+import type { Weapon } from './inventory';
+export type { Weapon } from './inventory';
+import type { Wound } from './wound';
+export type { Wound } from './wound';
+ 
 export type CombatType = 'brawling' | 'weapon' | null;
 
 export interface LogEntry {
@@ -10,6 +15,10 @@ export interface BrawlingState {
   round: 1 | 2;
   playerModifier: number;
   opponentModifier: number;
+  playerStrength: number;
+  playerBaseStrength: number;
+  opponentStrength: number;
+  opponentBaseStrength: number;
   roundLog: LogEntry[];
 }
 
@@ -21,14 +30,6 @@ export interface WeaponModifiers {
   speed: number;       // Initiative modifier
   ammunition?: number;  // Current ammunition
   maxAmmunition?: number; // Maximum ammunition capacity
-}
-
-export interface Weapon {
-  id: string;
-  name: string;
-  modifiers: WeaponModifiers;
-  ammunition?: number;
-  maxAmmunition?: number;
 }
 
 // Constants for base weapons
@@ -67,6 +68,10 @@ export interface WeaponCombatState {
   playerWeapon: Weapon | null;
   opponentWeapon: Weapon | null;
   currentRange: number;
+  playerStrength: number;
+  playerBaseStrength: number;
+  opponentStrength: number;
+  opponentBaseStrength: number;
   roundLog: LogEntry[];
   lastAction?: 'aim' | 'fire' | 'reload' | 'move' | 'malfunction';
 }
@@ -92,6 +97,21 @@ export type WeaponCombatResult = {
   newStrength?: number;
 };
 
+export interface ValidationResult {
+  isValid: boolean;
+  errors: ValidationError[];
+  warnings?: string[];
+  cleanedState?: CombatState;
+}
+
+export interface ValidationError {
+  code: 'INVALID_STATE' | 'MISSING_PROPERTY' | 'INVALID_VALUE';
+  message: string;
+  property?: string;
+  expected?: string | number | boolean | string[] | number[] | boolean[];
+  actual?: string | number | boolean | string[] | number[] | boolean[];
+}
+
 export interface CombatState {
   isActive: boolean;
   combatType: CombatType;
@@ -99,10 +119,14 @@ export interface CombatState {
   selection?: CombatSelectionState;
   brawling?: BrawlingState;
   weapon?: WeaponCombatState;
+  participants: CombatParticipant[];
+  rounds: number;
   
   // Additional properties for state restoration and tracking
   playerStrength?: number;
+  playerBaseStrength?: number;
   opponentStrength?: number;
+  opponentBaseStrength?: number;
   currentTurn?: 'player' | 'opponent';
   combatLog?: LogEntry[];
 }
@@ -175,6 +199,10 @@ export function ensureCombatState(state?: Partial<CombatState>): CombatState {
       round: state.brawling.round,
       playerModifier: state.brawling.playerModifier ?? 0,
       opponentModifier: state.brawling.opponentModifier ?? 0,
+      playerStrength: state.brawling.playerStrength ?? 10,
+      playerBaseStrength: state.brawling.playerBaseStrength ?? 10,
+      opponentStrength: state.brawling.opponentStrength ?? 10,
+      opponentBaseStrength: state.brawling.opponentBaseStrength ?? 10,
       roundLog: state.brawling.roundLog ?? []
     } : undefined,
     weapon: state?.weapon ? {
@@ -182,9 +210,15 @@ export function ensureCombatState(state?: Partial<CombatState>): CombatState {
       playerWeapon: state.weapon.playerWeapon,
       opponentWeapon: state.weapon.opponentWeapon,
       currentRange: state.weapon.currentRange ?? 0,
+      playerStrength: state.weapon.playerStrength ?? 10,
+      playerBaseStrength: state.weapon.playerBaseStrength ?? 10,
+      opponentStrength: state.weapon.opponentStrength ?? 10,
+      opponentBaseStrength: state.weapon.opponentBaseStrength ?? 10,
       roundLog: state.weapon.roundLog ?? [],
       lastAction: state.weapon.lastAction
     } : undefined,
+    participants: state?.participants ?? [],
+    rounds: state?.rounds ?? 0,
     playerStrength: state?.playerStrength,
     opponentStrength: state?.opponentStrength,
     currentTurn: state?.currentTurn,
@@ -192,18 +226,20 @@ export function ensureCombatState(state?: Partial<CombatState>): CombatState {
   };
 }
 
-export type Wound = {
-  location: 'head' | 'chest' | 'abdomen' | 'leftArm' | 'rightArm' | 'leftLeg' | 'rightLeg';
-  severity: 'light' | 'serious' | 'mortal';
-  strengthReduction: number;
-  turnReceived: number;
-};
+import { Character } from './character';
 
-export interface CombatParticipant {
+// Simplified NPC type for combat
+export interface NPC {
   id: string;
   name: string;
-  isNPC: boolean;
-  weapon: Weapon | null;
+  isNPC: true;
+  isPlayer: boolean;
+  weapon?: Weapon;
   strength: number;
+  initialStrength: number;
   wounds: Wound[];
+  isUnconscious: boolean;
 }
+
+// CombatParticipant can now be either a Character or an NPC
+export type CombatParticipant = Character | NPC;

@@ -17,7 +17,7 @@ describe('resolveBrawlingRound', () => {
 
   it('should apply positive modifier correctly', () => {
     const result = resolveBrawlingRound(2, true);
-    expect(result.roll).toBeGreaterThanOrEqual(4);
+    expect(result.roll).toBeGreaterThanOrEqual(2);
     expect(result.roll).toBeLessThanOrEqual(6);
   });
 

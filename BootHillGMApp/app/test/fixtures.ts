@@ -1,6 +1,8 @@
 import { Character } from '../types/character';
 
-export const mockCharacter: Character = {
+export const mockPlayerCharacter: Character = {
+  isNPC: false,
+  isPlayer: true,
   id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   name: 'Test Character',
   attributes: {
@@ -15,4 +17,23 @@ export const mockCharacter: Character = {
   wounds: [],
   isUnconscious: false,
   inventory: []
-};
+}
+
+export const mockNPC: Character = {
+  isNPC: true,
+  isPlayer: false,
+  id: `npc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+  name: 'Test NPC',
+  attributes: {
+    speed: 8,
+    gunAccuracy: 7,
+    throwingAccuracy: 9,
+    strength: 12,
+    baseStrength: 12,
+    bravery: 5,
+    experience: 2
+  },
+  wounds: [],
+  isUnconscious: false,
+  inventory: []
+}

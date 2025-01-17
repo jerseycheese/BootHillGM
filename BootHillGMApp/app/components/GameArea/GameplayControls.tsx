@@ -30,6 +30,10 @@ export function GameplayControls({
           round: 1,
           playerModifier: state.combatState.playerStrength ?? 0,
           opponentModifier: state.combatState.opponentStrength ?? 0,
+          playerStrength: state.combatState.playerStrength ?? 10,
+          playerBaseStrength: state.combatState.playerStrength ?? 10,
+          opponentStrength: state.combatState.opponentStrength ?? 10,
+          opponentBaseStrength: state.combatState.opponentStrength ?? 10,
           roundLog: state.combatState.combatLog ?? []
         }
       })

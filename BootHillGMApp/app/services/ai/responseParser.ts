@@ -87,7 +87,9 @@ export function parseAIResponse(text: string): AIResponse {
         },
         wounds: [],
         isUnconscious: false,
-        inventory: []
+        inventory: [],
+        isNPC: true,
+        isPlayer: false
       };
     }
 

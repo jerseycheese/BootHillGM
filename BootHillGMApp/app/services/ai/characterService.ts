@@ -31,33 +31,31 @@ export async function generateCompleteCharacter(): Promise<Character> {
     const response = await result.response;
     const cleanedResponse = response.text().trim();
 
+    console.log('AI Response:', cleanedResponse); // Log the AI's raw response
+
     const characterData = parseCharacterData(cleanedResponse);
+
+    console.log('Parsed Character Data:', characterData); // Log the parsed data
+
     return createCharacterFromData(characterData);
-    
-  } catch {
+  } catch (error) {
+    console.error('Error generating character:', error);
     return createRandomCharacter();
   }
 }
 
-function parseCharacterData(response: string): Character {
-  try {
-    return JSON.parse(response);
-  } catch {
-    // Attempt to fix common JSON issues
-    const fixedResponse = response
-      .replace(/'/g, '"')
-      .replace(/(\w+):/g, '"$1":')
-      .replace(/,\s*([\]}])/g, '$1')
-      .replace(/\n/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
+  function parseCharacterData(response: string): Character {
+    // Remove any leading/trailing backticks and the word "json"
+    const cleanedResponse = response.replace(/^```json|```$/g, '').trim();
+  
     try {
-      return JSON.parse(fixedResponse);
-    } catch {
+      return JSON.parse(cleanedResponse);
+    } catch (error) {
+      console.error('Error parsing character data:', error);
+      console.error('Cleaned response:', cleanedResponse);
       throw new Error('Unable to parse character data');
     }
   }
-}
 
 function createCharacterFromData(data: Character): Character {
   const character: Character = {
@@ -74,7 +72,9 @@ function createCharacterFromData(data: Character): Character {
     },
     wounds: [],
     isUnconscious: false,
-    inventory: []
+    inventory: [],
+    isNPC: false,
+    isPlayer: true
   };
 
   validateCharacter(character);
@@ -105,7 +105,9 @@ async function createRandomCharacter(): Promise<Character> {
     attributes: generateRandomAttributes(),
     wounds: [],
     isUnconscious: false,
-    inventory: []
+    inventory: [],
+    isNPC: false,
+    isPlayer: true
   };
 }
 
