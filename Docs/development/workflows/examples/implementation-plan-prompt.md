@@ -1,3 +1,11 @@
+---
+title: Implementation Planning Prompt
+aliases: [Planning Phase]
+tags: [planning, implementation, workflow, prompt]
+created: 2025-01-13
+updated: 2025-01-13
+---
+
 # Implementation Planning Prompt
 
 ## Quick Use Prompt

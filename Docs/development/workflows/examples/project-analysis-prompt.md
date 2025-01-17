@@ -1,3 +1,11 @@
+---
+title: Project Analysis Prompt
+aliases: [Analysis Phase]
+tags: [analysis, planning, workflow, prompt]
+created: 2025-01-13
+updated: 2025-01-13
+---
+
 # Project Analysis Prompt
 
 ## Quick Use Prompt

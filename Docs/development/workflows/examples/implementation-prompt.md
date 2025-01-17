@@ -1,3 +1,11 @@
+---
+title: Implementation Prompt
+aliases: [Implementation Phase]
+tags: [implementation, development, workflow, prompt]
+created: 2025-01-13
+updated: 2025-01-13
+---
+
 # Implementation Prompt
 
 ## Quick Use Prompt
@@ -5,9 +13,6 @@
 Help me implement this technical specification. Here's the spec:
 
 [PASTE TECHNICAL SPEC]
-
-Project paths:
-- [LIST KEY PROJECT PATHS]
 
 Please:
 1. Write required tests first

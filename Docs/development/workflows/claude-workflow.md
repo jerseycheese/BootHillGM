@@ -1,3 +1,11 @@
+---
+title: Claude Development Workflow
+aliases: [Claude Process, Four-Phase Development]
+tags: [development, workflow, claude, process]
+created: 2025-01-13
+updated: 2025-01-13
+---
+
 # Four-Phase Claude Development Workflow
 
 > [!note] 
@@ -16,7 +24,7 @@ graph TD
 
 ### 1. Project Analysis (Sonnet)
 **Purpose:** Select the next most valuable task to implement
-**Input:** Project docs, issues, development status
+**Input:** Project docs, GitHub issues, development status
 **Output:** Task Analysis Document
 
 > [!tip] Use [[examples/project-analysis-prompt|Project Analysis Prompt]]
@@ -57,18 +65,18 @@ Implementation Steps:
 5. Add essential documentation
 
 ### 4. Cleanup & Documentation (Haiku)
-**Purpose:** Polish implementation and update documentation
+**Purpose:** Clean up implementation and update documentation
 **Input:** Completed implementation, codebase changes
-**Output:** Final documentation, clean codebase
+**Output:** Clean codebase, updated documentation, closed issues
 
-> [!tip] Use [[examples/cleanup-prompt|Cleanup Prompt]]
+> [!tip] Use [[examples/cleanup-prompt|Cleanup Prompt]] and [[examples/doc-updates-prompt|Documentation Updates Prompt]]
 
 Cleanup Steps:
-1. Code review and cleanup
-2. Update documentation
-3. Check test coverage
-4. Verify GitHub issues
-5. Plan related tasks
+1. Review project documentation
+2. Remove debug code
+3. Review/update tests
+4. Add code comments
+5. Update GitHub issues
 
 ## Phase Transitions
 
@@ -172,6 +180,53 @@ MIGRATION PLAN
 2. [Step 2]
 ```
 
+### Documentation Update Report
+```markdown
+UPDATE REPORT
+Component: [name]
+Issue: [reference]
+
+DOCUMENTATION CHANGES
+Planning Updates:
+1. [file]: [changes]
+2. [file]: [changes]
+
+GITHUB UPDATES
+Closed Issues:
+1. #[number]: [completion summary]
+2. #[number]: [completion summary]
+
+New Issues:
+1. Title: [issue title]
+   Labels: [labels]
+   Description: [description]
+
+CODE CLEANUP
+Debug Removal:
+1. [file]: [details]
+2. [file]: [details]
+
+TEST UPDATES
+Modified Tests:
+1. [test]: [changes]
+2. [test]: [changes]
+
+CODE COMMENTS
+Updated Files:
+1. [file]:
+   ```[language]
+   // Comment updates
+   ```
+
+COMMIT MESSAGE
+type(scope): Brief description
+
+- Change detail 1
+- Change detail 2
+
+Issue: #[number]
+```
+
 ## Best Practices
 
 ### Chat Management
@@ -192,9 +247,16 @@ MIGRATION PLAN
 - Test error conditions
 - Verify success criteria
 
+### GitHub Integration
+- Reference issues in commits
+- Close completed issues
+- Create follow-up issues
+- Keep labels current
+
 ## Related Documents
 - [[examples/project-analysis-prompt|Project Analysis Prompt]]
 - [[examples/implementation-plan-prompt|Implementation Plan Prompt]]
 - [[examples/implementation-prompt|Implementation Prompt]]
 - [[examples/cleanup-prompt|Cleanup Prompt]]
+- [[examples/doc-updates-prompt|Documentation Updates Prompt]]
 - GitHub Repository: https://github.com/jerseycheese/BootHillGM
