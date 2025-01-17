@@ -12,10 +12,14 @@ updated: 2025-01-13
 ```markdown
 Help me select and analyze the next task to implement from my GitHub issues.
 
-Repository: [PASTE REPO URL]
-
 Please review these planning documents first for context:
-[LIST KEY DOCS TO REVIEW]
+- /Users/jackhaas/Projects/BootHillGM/Docs/index.md
+- /Users/jackhaas/Projects/BootHillGM/Docs/planning/roadmap.md
+- /Users/jackhaas/Projects/BootHillGM/Docs/architecture/technical-specification.md
+- /Users/jackhaas/Projects/BootHillGM/Docs/core-systems/_index.md
+
+Then review the codebase and issue list as needed:
+Repository: https://github.com/jerseycheese/BootHillGM/
 
 Then consider these selection criteria:
 1. Priority status (using high-priority label)

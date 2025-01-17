@@ -3,8 +3,7 @@ title: Boot Hill GM Documentation
 aliases: [Home, Documentation Home]
 tags: [documentation, home, index]
 created: 2024-12-28
-updated: 2025-01-10
-author: Jack Haas
+updated: 2025-01-17
 ---
 
 # Boot Hill GM Documentation
@@ -19,16 +18,14 @@ The documentation aims to:
 - Document architectural decisions and implementation details
 - Support onboarding of new contributors
 
-# Boot Hill GM Documentation
-
 > [!note]
 > This documentation uses Obsidian for optimal viewing. Maps of Content (MOC) are available for each major section.
 
 ## Quick Navigation
-- 🎮 [[../meta/project-overview|Project Overview]]
-- 📋 [[../planning/roadmap|Development Roadmap]]
-- 🔧 [[../technical-guides/setup|Development Setup]]
-- ❗ [GitHub Issues](https://github.com/jerseycheese/BootHillGM/issues)
+- 🎮 [[meta/project-overview|Project Overview]]
+- 📋 [[planning/roadmap|Development Roadmap]]
+- 🔧 [[technical-guides/setup|Development Setup]]
+- ❗ [[issues/index|Project Issues]]
 
 ## System Documentation
 ### Core Systems
@@ -40,11 +37,11 @@ The documentation aims to:
 
 ### Features
 > [[features/_index|Features Overview]]
-- 🚧 **In Development**
+- 🚧 **Current Development**
   - [[features/_current/narrative-formatting|Narrative Formatting]]
   - [[features/_current/inventory-interactions|Inventory Interactions]]
   - [[features/_current/journal-enhancements|Journal Enhancements]]
-- ✅ **Completed**
+- ✅ **Completed Features**
   - [[features/_completed/character-creation|Character Creation]]
   - [[features/_completed/combat-base|Combat Base]]
   - [[features/_completed/storytelling|Storytelling]]
@@ -53,7 +50,6 @@ The documentation aims to:
 > [[ai/_index|AI Systems Overview]]
 - [[ai/game-master-logic|Game Master Logic]]
 - [[ai/gemini-integration|Gemini Integration]]
-- [[reference/gemini-api-guide|Gemini API Guide]]
 - [[ai/prompt-engineering/core-prompts|Core Prompts]]
 
 ### Technical Architecture
@@ -66,7 +62,6 @@ The documentation aims to:
 ### Meta
 - [[meta/game-design|Game Design Document]]
 - [[meta/project-overview|Project Overview]]
-- [[meta/claude-context/goals|Project Goals]]
 
 ### Boot Hill Rules
 - [[boot-hill-rules/game-overview|Game Overview]]
@@ -78,7 +73,12 @@ The documentation aims to:
 ### Workflows
 > [[development/workflows/index|Development Workflows]]
 - [[development/workflows/feature-workflow|Feature Development]]
-- [[development/workflows/claude-workflow|AI Development]]
+- [[development/workflows/ai-workflow|AI Development]]
+
+### Reference
+- [[reference/_index|Reference Documentation]]
+- [[examples/_index|Code Examples]]
+- [[templates/_index|Document Templates]]
 
 ---
 
@@ -93,7 +93,8 @@ graph TD
     B --> H[Architecture]
     C --> I[Meta]
     C --> J[Rules]
-    D --> K[Planning]
-    D --> L[Guides]
-    D --> M[Issues]
+    D --> K[Workflows]
+    D --> L[Reference]
+    D --> M[Examples]
+    D --> N[Templates]
 ```

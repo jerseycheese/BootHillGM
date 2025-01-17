@@ -4,7 +4,6 @@ aliases: [AI Integration System, Game Master Bridge, AI Engine Integration]
 tags: [core-system, ai, integration, game-master, narrative]
 created: 2024-12-28
 updated: 2024-12-28
-author: Jack Haas
 ---
 
 # AI Game Master Integration

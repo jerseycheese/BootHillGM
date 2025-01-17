@@ -4,7 +4,6 @@ aliases: [Character Prompts, Player Creation Guidelines]
 tags: [ai, prompts, character, creation, integration]
 created: 2024-12-28
 updated: 2024-12-28
-author: Jack Haas
 ---
 
 # Character Creation Prompt Engineering

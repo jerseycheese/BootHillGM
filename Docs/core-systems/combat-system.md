@@ -4,7 +4,6 @@ aliases: [Combat Engine, Battle System]
 tags: [core-system, combat, mechanics, implementation, rules]
 created: 2024-12-28
 updated: 2024-12-28
-author: Jack Haas
 ---
 
 # Combat System

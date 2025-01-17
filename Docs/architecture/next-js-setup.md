@@ -4,7 +4,6 @@ aliases: [Next.js Configuration, Framework Setup]
 tags: [architecture, setup, nextjs, framework]
 created: 2024-12-28
 updated: 2024-12-28
-author: Jack Haas
 ---
 
 # Next.js Setup

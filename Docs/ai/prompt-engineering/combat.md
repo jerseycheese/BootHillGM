@@ -4,7 +4,6 @@ aliases: [Combat Prompts, Combat AI Guidelines]
 tags: [ai, prompts, combat, gemini, integration]
 created: 2024-12-28
 updated: 2024-12-28
-author: Jack Haas
 ---
 
 # Combat Prompt Engineering

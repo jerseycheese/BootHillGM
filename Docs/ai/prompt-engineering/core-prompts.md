@@ -4,7 +4,6 @@ aliases: [Base Prompts, Common Prompts, Foundation Prompts]
 tags: [ai, prompts, core, gemini, foundation, integration]
 created: 2024-12-28
 updated: 2024-12-28
-author: Jack Haas
 ---
 
 # Core AI Prompts

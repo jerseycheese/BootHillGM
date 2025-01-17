@@ -4,7 +4,6 @@ aliases: [AI API Integration, Gemini Implementation]
 tags: [ai, integration, api, performance]
 created: 2024-12-28
 updated: 2024-12-28
-author: Jack Haas
 ---
 
 # Gemini API Integration

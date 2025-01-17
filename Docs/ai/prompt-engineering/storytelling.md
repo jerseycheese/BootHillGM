@@ -4,7 +4,6 @@ aliases: [Narrative Prompts, Story Generation Guidelines]
 tags: [ai, prompts, storytelling, narrative, gemini, integration]
 created: 2024-12-28
 updated: 2024-12-28
-author: Jack Haas
 ---
 
 # Storytelling Prompt Engineering

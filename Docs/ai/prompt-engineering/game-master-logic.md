@@ -4,7 +4,6 @@ aliases: [GM Logic, Decision Making Guidelines]
 tags: [ai, prompts, gm, logic, integration]
 created: 2024-12-28
 updated: 2024-12-28
-author: Jack Haas
 ---
 
 # Game Master Logic Prompt Engineering

@@ -15,7 +15,6 @@ servers:
       - name: search-docs
         description: Search technical documentation
     knowledge_base:
-      - /users/jackhaas/projects/boothillgm/docs/mcp-brain
       - /users/jackhaas/projects/boothillgm/docs/ai
       - /users/jackhaas/projects/boothillgm/docs/architecture
       - /users/jackhaas/projects/boothillgm/docs/planning

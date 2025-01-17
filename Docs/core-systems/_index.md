@@ -4,7 +4,6 @@ aliases: [Core Systems MOC, Core Systems Overview]
 tags: [moc, core-systems, overview, architecture]
 created: 2024-12-28
 updated: 2024-12-28
-author: Jack Haas
 ---
 
 # Core Systems Overview

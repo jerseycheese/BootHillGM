@@ -4,7 +4,6 @@ aliases: [Game Journal, Event Logging System, Action History]
 tags: [core-system, logging, state-management, ui, narrative]
 created: 2024-12-28
 updated: 2024-12-28
-author: Jack Haas
 ---
 
 # Journal System
