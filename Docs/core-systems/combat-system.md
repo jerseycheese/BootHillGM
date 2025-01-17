@@ -163,9 +163,32 @@ For weapon details, see [[../boot-hill-rules/weapons-chart|Weapons Reference]].
 - Optimized combat log management
 
 ### Error Handling
-- Combat state validation
-- Action validation
+
+#### State Validation
+The combat system includes comprehensive state validation to ensure data integrity. The validation system:
+
+- Validates required properties (combatType, participants, rounds, combatLog)
+- Ensures proper data types and value ranges
+- Cleans up unnecessary properties
+- Provides detailed error reporting
+
+Validation occurs during:
+- Combat state initialization
+- Combat state updates
+- Combat state restoration
+- Combat end transitions
+
+#### Action Validation
+- Verifies valid action types
+- Ensures proper action parameters
+- Validates action preconditions
+
+#### State Recovery
 - State restoration fallbacks
+- Error recovery mechanisms
+- Graceful degradation
+
+For implementation details, see [[../architecture/state-management|State Management]] and [[../architecture/technical-specification|Technical Specification]].
 
 ## Dice Rolling and Rule Tables
 

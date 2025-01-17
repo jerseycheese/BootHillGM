@@ -268,12 +268,31 @@ interface GameError extends Error {
 }
 ```
 
+### State Validation System
+The technical architecture includes a comprehensive state validation system with:
+
+- **Validation Layers**
+  - Schema validation for state structure
+  - Type validation for property values
+  - Business rule validation for game logic
+  - Cross-state consistency checks
+
+- **Validation Triggers**
+  - State initialization
+  - State updates
+  - State restoration
+  - Combat transitions
+
 ### Recovery Strategies
 - Automated retry for AI failures
 - State validation on load
 - Combat state restoration
 - Character creation state persistence
 - Initialization flag management
+- Graceful degradation for invalid states
+- State version compatibility checks
+
+For implementation details, see [[../core-systems/combat-system|Combat System]] and [[../architecture/state-management|State Management]] documentation.
 
 For error handling details, see [[../meta/risk-assessment|Risk Assessment]].
 

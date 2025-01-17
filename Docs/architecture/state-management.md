@@ -125,17 +125,31 @@ const GameContext = React.createContext<{
 
 ### Error Handling
 
+#### State Validation
+The state management system includes comprehensive validation for all state types, with special focus on combat state validation:
+
+- **Combat State Validation**
+  - Validates required properties (combatType, participants, rounds, combatLog)
+  - Ensures proper data types and value ranges
+  - Cleans up unnecessary properties
+  - Provides detailed error reporting
+
 #### State Recovery
 - Backup management
 - Corruption detection
 - Fallback states
 - Version migration
+- Automated retry for failed state updates
+- Graceful degradation for invalid states
+- State version compatibility checks
 
 #### Error Boundaries
 - State isolation
 - Error logging
 - Recovery actions
 - User notification
+
+For implementation details, see [[../core-systems/combat-system|Combat System]] and [[../architecture/technical-specification|Technical Specification]].
 
 ### Testing Strategy
 
