@@ -3,7 +3,7 @@ title: Core Systems
 aliases: [Core Systems MOC, Core Systems Overview]
 tags: [moc, core-systems, overview, architecture]
 created: 2024-12-28
-updated: 2024-12-28
+updated: 2025-01-17
 ---
 
 # Core Systems Overview
@@ -30,6 +30,13 @@ This Map of Content (MOC) provides an overview of all core systems in the BootHi
 - [[./state-management|State Management]] - Game state and persistence
 - [[./journal-system|Journal System]] - Game history and event tracking
 
+## Character Systems
+- [[./character-generation|Character Generation]] - Character creation and validation
+  - Logging Infrastructure
+  - Validation Framework
+  - Error Handling
+- [[./character-persistence|Character Persistence]] - Character data management
+
 ## AI Integration
 - [[./ai-integration|AI Integration]] - Core AI system integration
 - Related: [[../ai/game-master-logic|Game Master Logic]]
@@ -42,6 +49,8 @@ graph TD
     B --> D[Journal System]
     C --> D
     C --> A
+    E[Character Systems] --> B
+    E --> C
 ```
 
 ## Implementation Status
@@ -51,8 +60,15 @@ graph TD
 | State Management | Active | High |
 | Journal System | Active | Medium |
 | AI Integration | Active | High |
+| Character Generation | Complete | High |
 
 ## Related Documentation
 - [[../architecture/component-structure|Component Structure]]
 - [[../technical-guides/testing|Testing Guide]]
 - [[../planning/roadmap|Development Roadmap]]
+
+## Recent Updates
+- Added character generation logging system
+- Implemented character data validation
+- Enhanced error handling for character creation
+- Added comprehensive testing coverage

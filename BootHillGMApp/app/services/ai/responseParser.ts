@@ -8,7 +8,35 @@ import { cleanText } from '../../utils/textCleaningUtils';
  * Handles: narrative text, metadata markers, combat initiation, and suggested actions.
  * Cleans and formats content for game state updates.
  */
-export function parseAIResponse(text: string): AIResponse {
+export function parseAIResponse(text: string): AIResponse | Character {
+  // First try to parse as JSON character data
+  try {
+    const characterData = JSON.parse(text);
+    if (characterData.name && characterData.attributes) {
+      return {
+        id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        name: characterData.name,
+        attributes: {
+          speed: characterData.attributes.speed,
+          gunAccuracy: characterData.attributes.gunAccuracy,
+          throwingAccuracy: characterData.attributes.throwingAccuracy,
+          strength: characterData.attributes.strength,
+          baseStrength: characterData.attributes.baseStrength,
+          bravery: characterData.attributes.bravery,
+          experience: characterData.attributes.experience
+        },
+        wounds: [],
+        isUnconscious: false,
+        inventory: [],
+        isNPC: true,
+        isPlayer: false
+      };
+    }
+  } catch {
+    // If JSON parsing fails, fall through to regular parsing
+  }
+
+  // Fall back to regular AI response parsing
   const defaultResponse: AIResponse = {
     narrative: '',
     location: '',

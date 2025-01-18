@@ -1,8 +1,10 @@
-import { Character } from '../../types/character';
+import { Character, ValidationError } from '../../types/character';
 import { getAIModel } from '../../utils/aiService';
 import { retryWithExponentialBackoff } from '../../utils/retry';
 import { generateName } from './nameGenerator';
 import { generateRandomAttributes } from '../character/attributeGenerator';
+import { CharacterLogger } from '../../utils/characterLogging';
+import { validateCharacter } from '../../utils/characterValidation';
 
 /**
  * Generates a complete character for the Boot Hill RPG.
@@ -11,51 +13,87 @@ import { generateRandomAttributes } from '../character/attributeGenerator';
  * @returns A Promise that resolves to a Character object
  */
 export async function generateCompleteCharacter(): Promise<Character> {
-  const prompt = `
-    Generate a complete character for the Boot Hill RPG. Provide values for the following attributes:
-    - Name
-    - Speed (1-20)
-    - GunAccuracy (1-20)
-    - ThrowingAccuracy (1-20)
-    - Strength (8-20)
-    - BaseStrength (8-20)
-    - Bravery (1-20)
-    - Experience (0-11)
-
-    Respond with a valid JSON object. No additional text or formatting.
-  `;
-
+  const logger = new CharacterLogger('generation');
+  
   try {
+    const prompt = `
+      Generate a complete character for the Boot Hill RPG. Provide values for the following attributes:
+      - Name
+      - Speed (1-20)
+      - GunAccuracy (1-20)
+      - ThrowingAccuracy (1-20)
+      - Strength (8-20)
+      - BaseStrength (8-20)
+      - Bravery (1-20)
+      - Experience (0-11)
+
+      Respond with a valid JSON object. No additional text or formatting.
+    `;
+
     const model = getAIModel();
     const result = await retryWithExponentialBackoff(() => model.generateContent(prompt));
     const response = await result.response;
-    const cleanedResponse = response.text().trim();
+    const cleanedResponse = (await response.text()).trim();
 
-    console.log('AI Response:', cleanedResponse); // Log the AI's raw response
+    logger.log('aiResponse', cleanedResponse);
 
     const characterData = parseCharacterData(cleanedResponse);
+    logger.log('parsed', characterData);
 
-    console.log('Parsed Character Data:', characterData); // Log the parsed data
+    try {
+      const validationResult = validateCharacter(characterData);
+      if (!validationResult.isValid) {
+        throw new CharacterGenerationError(validationResult.errors || []);
+      }
+    } catch (error) {
+      // If the error message contains 'validation', re-throw it
+      if (error instanceof Error && error.message.includes('validation')) {
+        throw error;
+      }
+      // Otherwise, let it propagate to the outer catch block
+      throw error;
+    }
 
-    return createCharacterFromData(characterData);
-  } catch (error) {
-    console.error('Error generating character:', error);
-    return createRandomCharacter();
+    const character = createCharacterFromData(characterData);
+    logger.complete(character);
+    return character;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      logger.error(error);
+    } else {
+      logger.error(new Error(String(error)));
+    }
+    
+    // Re-throw validation errors, fall back for other errors
+    if (error instanceof Error && error.message.includes('validation')) {
+      throw error;
+    }
+    
+    // For other errors, fall back to random generation
+    const randomCharacter = await createRandomCharacter();
+    logger.log('fallback', 'Using randomly generated character');
+    return randomCharacter;
   }
 }
 
-  function parseCharacterData(response: string): Character {
-    // Remove any leading/trailing backticks and the word "json"
-    const cleanedResponse = response.replace(/^```json|```$/g, '').trim();
-  
-    try {
-      return JSON.parse(cleanedResponse);
-    } catch (error) {
-      console.error('Error parsing character data:', error);
-      console.error('Cleaned response:', cleanedResponse);
-      throw new Error('Unable to parse character data');
-    }
+class CharacterGenerationError extends Error {
+  constructor(public errors: ValidationError[]) {
+    super('Character generation failed validation');
   }
+}
+
+function parseCharacterData(response: string): Character {
+  // Remove any leading/trailing backticks and the word "json"
+  const cleanedResponse = response.replace(/^```json|```$/g, '').trim();
+
+  try {
+    return JSON.parse(cleanedResponse);
+  } catch (error) {
+    console.error('Error parsing character data:', error);
+    console.error('Cleaned response:', cleanedResponse);
+    throw new Error('Unable to parse character data');
+  }
+}
 
 function createCharacterFromData(data: Character): Character {
   const character: Character = {
@@ -77,11 +115,11 @@ function createCharacterFromData(data: Character): Character {
     isPlayer: true
   };
 
-  validateCharacter(character);
+  validateCharacterData(character);
   return character;
 }
 
-function validateCharacter(character: Character): void {
+function validateCharacterData(character: Character): void {
   const isValid = (
     character.name !== 'Unknown' &&
     !isNaN(character.attributes.speed) &&

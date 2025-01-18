@@ -80,3 +80,46 @@ export interface CombatLogEntry {
   type: 'hit' | 'miss' | 'critical' | 'info';
   timestamp: number;
 }
+
+export interface StartData {
+  timestamp: string;
+}
+
+export type AIResponseData = string | {
+  rawResponse: string;
+};
+
+export interface ParsedData {
+  character: Partial<Character>;
+}
+
+export type CompleteData = Character;
+
+export interface ErrorData {
+  error: string;
+  stack?: string;
+}
+
+export interface CharacterGenerationLog {
+  timestamp: string;
+  stage: 'start' | 'aiResponse' | 'parsed' | 'complete' | 'error';
+  data: StartData | AIResponseData | ParsedData | CompleteData | ErrorData;
+  context: string;
+}
+
+export interface ValidationResult {
+  isValid: boolean;
+  errors?: ValidationError[];
+}
+
+export interface ValidationError {
+  field: string;
+  message: string;
+  code: string;
+}
+
+export class CharacterGenerationError extends Error {
+  constructor(public errors: ValidationError[]) {
+    super('Character generation failed validation');
+  }
+}

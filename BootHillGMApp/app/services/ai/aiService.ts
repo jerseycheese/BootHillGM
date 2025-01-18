@@ -22,6 +22,39 @@ class AIService {
     this.model = getAIModel();
   }
 
+  async generateFromAI(): Promise<string> {
+    const prompt = `
+      Generate a complete character following Boot Hill v2 rules. Include:
+      - Name
+      - Attributes (speed, gunAccuracy, throwingAccuracy, strength, bravery, experience)
+      - Background story
+      - Starting equipment
+      - Status
+      
+      Format the response as JSON with the following structure:
+      {
+        "name": string,
+        "attributes": {
+          "speed": number,
+          "gunAccuracy": number,
+          "throwingAccuracy": number,
+          "strength": number,
+          "baseStrength": number,
+          "bravery": number,
+          "experience": number
+        },
+        "background": string,
+        "equipment": string[],
+        "status": "active"
+      }
+    `;
+    
+    const result = await retryWithExponentialBackoff<GenerateContentResult>(() =>
+      this.model.generateContent(prompt)
+    );
+    return result.response.text();
+  }
+
   async getAIResponse(prompt: string, journalContext: string, inventory: InventoryItem[]): Promise<{ 
     narrative: string; 
     location?: string; 
