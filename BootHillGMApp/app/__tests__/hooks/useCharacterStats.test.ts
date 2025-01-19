@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
-import useCharacterStats from './useCharacterStats';
-import { Character } from '../types/character';
+import useCharacterStats from '../../hooks/useCharacterStats';
+import { Character } from '../../types/character';
 
 const mockCharacter: Character = {
   id: 'test',
@@ -17,6 +17,8 @@ const mockCharacter: Character = {
   wounds: [],
   isUnconscious: false,
   inventory: [],
+  isNPC: false,
+  isPlayer: false
 };
 
 describe('useCharacterStats', () => {
