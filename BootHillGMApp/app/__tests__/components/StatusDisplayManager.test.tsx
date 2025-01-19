@@ -6,6 +6,9 @@ import { CampaignStateProvider } from '../../components/CampaignStateManager';
 
 describe('StatusDisplayManager', () => {
   const mockCharacter: Character = {
+    isNPC: false,
+    isPlayer: true,
+    id: 'some-id',
     name: 'Test Character',
     inventory: [],
     attributes: {
@@ -87,5 +90,56 @@ describe('StatusDisplayManager', () => {
     );
 
     expect(screen.getByText('(Unconscious)')).toBeInTheDocument();
+  });
+  test('displays strength correctly', () => {
+    render(
+      <CampaignStateProvider>
+        <StatusDisplayManager
+          character={{
+            ...mockCharacter,
+            attributes: { ...mockCharacter.attributes, strength: 50 },
+          }}
+          location="Test Town"
+        />
+      </CampaignStateProvider>
+    );
+    expect(screen.getByTestId('status-display')).toHaveTextContent('50 STR');
+    expect(screen.getByText(/50 STR/).closest('div')).toHaveClass('text-green-600');
+  });
+
+  test('shows yellow text at 10 strength', () => {
+    render(
+      <CampaignStateProvider>
+        <StatusDisplayManager
+          character={{
+            ...mockCharacter,
+            attributes: { ...mockCharacter.attributes, strength: 10 },
+          }}
+          location="Test Town"
+        />
+      </CampaignStateProvider>
+    );
+    expect(screen.getByTestId('status-display')).toHaveTextContent('10 STR');
+    expect(screen.getByText(/10 STR/).closest('div')).toHaveClass('text-yellow-600');
+  });
+
+  test('shows red text at zero strength', () => {
+    render(
+      <CampaignStateProvider>
+        <StatusDisplayManager
+          character={{
+            ...mockCharacter,
+            attributes: { ...mockCharacter.attributes, strength: 0, baseStrength: 0 },
+            wounds: [] // Clear wounds to ensure strength is 0
+          }}
+          location="Test Town"
+        />
+      </CampaignStateProvider>
+    );
+    expect(screen.getByTestId('status-display')).toHaveTextContent('0 STR');
+    const strengthValueElement = screen.getByTestId('strength-value');
+    console.log(`Current strength in test: ${strengthValueElement.textContent}`);
+    console.log(`Applied class in test: ${strengthValueElement.className}`);
+    expect(strengthValueElement).toHaveClass('text-red-600');
   });
 });

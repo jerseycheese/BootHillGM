@@ -86,6 +86,7 @@ The roadmap is organized into development phases, with each phase containing spe
 - [x] Refactor combat hooks (`useWeaponCombat`, `useWeaponCombatAction`, `useWeaponCombatState`)
 - [x] Improve combat log with detailed action descriptions and outcomes
 - [x] Implement core dice rolling system (diceUtils.ts)
+- [x] Add strength validation system with wound effects and stacking
 3.4 Inventory System Refinements
 - [x] Implement basic inventory data structure
 - [x] Create Inventory component for displaying items

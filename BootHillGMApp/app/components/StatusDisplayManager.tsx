@@ -13,6 +13,7 @@ import { Character } from '../types/character';
 import { calculateCurrentStrength } from '../utils/strengthSystem';
 import { cleanLocationText } from '../utils/textCleaningUtils';
 import { useCampaignState } from './CampaignStateManager';
+import { StatusDisplay } from './StatusDisplay';
 
 interface StrengthBarProps {
   current: number;
@@ -36,7 +37,7 @@ const StrengthBar: React.FC<StrengthBarProps> = ({
   isUnconscious = false,
   onReset
 }) => {
-  const strengthPercentage = (current / max) * 100;
+  const strengthPercentage = Math.max(1, (current / max) * 100);
   
   const getBarColor = (percentage: number): string => {
     if (percentage <= 25) return 'bg-red-500';
@@ -50,8 +51,12 @@ const StrengthBar: React.FC<StrengthBarProps> = ({
         <div className="flex justify-between items-center mb-1">
           <span className="text-sm font-medium">Strength</span>
           <div className="flex items-center gap-2">
-            <span 
-              className={`text-sm font-bold ${current <= max / 2 ? 'text-red-600' : ''}`}
+            <span
+              className={`text-sm font-bold ${
+                current < 6 ? 'text-red-600' :
+                current >= 6 && current <= 12 ? 'text-yellow-600' :
+                'text-green-600'
+              } transition-colors duration-300`}
               data-testid="strength-value"
             >
               {current}/{max}
@@ -190,9 +195,10 @@ const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
         max={maxStrength}
         isUnconscious={character.isUnconscious}
         onReset={handleResetStrength}
-      />
+     />
+     <StatusDisplay character={character} />
 
-      <WoundDisplay wounds={character.wounds} />
+     <WoundDisplay wounds={character.wounds} />
     </div>
   );
 };

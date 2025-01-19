@@ -25,12 +25,14 @@ export const WOUND_EFFECTS = {
  * @param character The character whose strength is being calculated.
  * @returns The character's current strength.
  */
-export const calculateCurrentStrength = (character: Character): number => {
+export const calculateCurrentStrength = (character: Character, allowZero: boolean = false): number => {
   const totalStrengthReduction = character.wounds.reduce(
-    (total: number, wound: Wound) => total + wound.strengthReduction, 
+    (total: number, wound: Wound) => total + wound.strengthReduction,
     0
   );
-  return Math.max(0, character.attributes.baseStrength - totalStrengthReduction);
+  const calculatedStrength = character.attributes.baseStrength - totalStrengthReduction;
+  // Minimum strength is 1 unless checking defeat conditions
+  return allowZero ? calculatedStrength : Math.max(1, calculatedStrength);
 };
 
 /**
@@ -40,7 +42,8 @@ export const calculateCurrentStrength = (character: Character): number => {
  * @returns True if the character is defeated, false otherwise.
  */
 export const isCharacterDefeated = (character: Character): boolean => {
-  return character.isUnconscious || 
+  const currentStrength = calculateCurrentStrength(character, true);
+  return character.isUnconscious ||
          character.wounds.some((w: Wound) => w.severity === 'mortal') ||
-         calculateCurrentStrength(character) <= 0;
+         currentStrength <= 0;
 };

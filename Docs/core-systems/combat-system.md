@@ -79,6 +79,41 @@ interface Wound {
 }
 ```
 
+### Strength Validation System
+The strength validation system ensures combat participants' strength values remain within valid ranges and properly accounts for wound effects.
+
+#### Key Features
+- Validates strength values during combat state updates
+- Handles wound stacking and timing
+- Maintains minimum strength threshold (1)
+- Tracks strength reduction adjustments
+
+#### Wound Effects
+```typescript
+const WOUND_EFFECTS = {
+  LIGHT: 3,
+  SERIOUS: 7,
+  MORTAL: Infinity
+};
+```
+
+#### Strength Calculation
+```typescript
+function calculateCurrentStrength(character: Character): number {
+  const totalReduction = character.wounds.reduce(
+    (total, wound) => total + wound.strengthReduction,
+    0
+  );
+  return Math.max(1, character.attributes.baseStrength - totalReduction);
+}
+```
+
+#### Integration Points
+- Combat state initialization
+- Damage application
+- Wound processing
+- Defeat condition checks
+
 ### Combat Results
 ```typescript
 interface WeaponCombatResult {

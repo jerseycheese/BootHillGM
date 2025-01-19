@@ -4,15 +4,46 @@
  * Handles all strength-related calculations for combat participants
  */
 
+import { validateStrength, MIN_STRENGTH } from './combat/strengthUtils';
 import { CombatParticipant } from '../types/combat';
 import { Character } from '../types/character';
+import { StrengthReductionResult } from '../types/interfaces';
+
+/**
+ * Calculates new strength after damage
+ * @param {number} currentStrength - Current strength value
+ * @param {number} damage - Damage amount
+ * @returns {StrengthReductionResult} New strength details
+ */
+export function calculateStrengthReduction(
+  currentStrength: number,
+  damage: number
+): StrengthReductionResult {
+
+  // Clamp damage to minimum 0
+  const effectiveDamage = Math.max(0, damage);
+  const rawNewStrength = currentStrength - effectiveDamage;
+  const validated = validateStrength(rawNewStrength);
+
+  // Special case: If we're exactly at MIN_STRENGTH, consider it adjusted
+  const isExactlyMin = validated.value === MIN_STRENGTH &&
+    rawNewStrength <= MIN_STRENGTH;
+
+  return {
+    newStrength: validated.value,
+    reduction: currentStrength - validated.value,
+    wasAdjusted: validated.wasAdjusted || isExactlyMin
+  };
+}
 
 /**
  * Calculates the reduced strength after applying wound penalties
  * @param participant The combat participant
  * @returns The current strength value after applying wound penalties
  */
-export function calculateReducedStrength(participant: CombatParticipant): number {
+export function calculateReducedStrength(
+  participant: CombatParticipant
+): number {
   const isCharacter = (
     participant: CombatParticipant
   ): participant is Character => {
@@ -27,15 +58,6 @@ export function calculateReducedStrength(participant: CombatParticipant): number
     0
   );
   return Math.max(1, baseStrength - woundPenalty);
-}
-
-/**
- * Validates that strength values are within acceptable ranges
- * @param strength The strength value to validate
- * @returns true if strength is valid, false otherwise
- */
-export function validateStrength(strength: number): boolean {
-  return strength >= 1 && strength <= 20;
 }
 
 /**
