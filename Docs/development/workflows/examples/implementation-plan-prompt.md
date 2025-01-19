@@ -42,16 +42,6 @@ INTERFACES
 
 TEST PLAN
 1. Unit Tests
-2. Integration Tests
-3. E2E Tests
-
-MIGRATION PLAN
-1. [Step 1]
-2. [Step 2]
-
-ROLLBACK PLAN
-1. [Step 1]
-2. [Step 2]
 ```
 
 ## Purpose
@@ -131,21 +121,7 @@ TEST PLAN
 1. Unit Tests:
    - [Test scenario 1]
    - [Test scenario 2]
-2. Integration Tests:
-   - [Test scenario 1]
-   - [Test scenario 2]
-3. E2E Tests:
-   - [Test scenario 1]
-   - [Test scenario 2]
 
-MIGRATION PLAN
-1. [Implementation step 1]
-2. [Implementation step 2]
-3. [Implementation step n]
-
-ROLLBACK PLAN
-1. [Rollback step 1]
-2. [Rollback step 2]
 ```
 
 ## Guidelines
@@ -165,14 +141,7 @@ ROLLBACK PLAN
 ### Testing Coverage
 - Define unit test scenarios
 - Specify integration points
-- Include edge cases
 - Error condition testing
-
-### Migration Safety
-- Staged implementation
-- State handling
-- Rollback procedures
-- Feature flags if needed
 
 ## Example
 
@@ -238,24 +207,4 @@ TEST PLAN
    - Token parsing and validation
    - Session management
    - Error handling
-2. Integration Tests:
-   - Complete auth flow
-   - Token refresh flow
-   - Session persistence
-3. E2E Tests:
-   - User login journey
-   - Session recovery
-   - Error scenarios
-
-MIGRATION PLAN
-1. Add interfaces and types
-2. Implement auth service
-3. Add context provider
-4. Update protected routes
-5. Add UI components
-
-ROLLBACK PLAN
-1. Revert to mock auth
-2. Clear session storage
-3. Remove UI changes
 ```

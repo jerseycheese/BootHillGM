@@ -19,8 +19,40 @@ Please:
 2. Implement the core changes
 3. Add/update interfaces
 4. Verify against success criteria
-5. Create implementation summary using standard format
-```
+5. Create implementation summary using this format:
+```markdown
+IMPLEMENTATION COMPLETE
+Task: [task name]
+Story/Issue: [reference]
+Branch: [branch name]
+Build Status: [Pass/Fail]
+Test Status: [Pass/Fail]
+
+CHANGES MADE
+Files Modified:
+- [path]: [what changed]
+Files Created:
+- [path]: [purpose]
+
+TEST COVERAGE
+New Tests:
+- [test description]
+- [test description]
+
+DOCUMENTATION
+Updates Required:
+- [doc path]: [what to update]
+- [doc path]: [what to update]
+
+VERIFICATION
+Success Criteria:
+- [ ] [criterion from spec]
+- [ ] [criterion from spec]
+
+NOTES
+- [implementation note]
+- [implementation note]
+``````
 
 ## Purpose
 Execute the technical specification through concrete code changes while maintaining project quality standards.
@@ -59,39 +91,7 @@ Execute the technical specification through concrete code changes while maintain
 
 ## Output Format
 
-```markdown
-IMPLEMENTATION COMPLETE
-Task: [task name]
-Story/Issue: [reference]
-Branch: [branch name]
-Build Status: [Pass/Fail]
-Test Status: [Pass/Fail]
 
-CHANGES MADE
-Files Modified:
-- [path]: [what changed]
-Files Created:
-- [path]: [purpose]
-
-TEST COVERAGE
-New Tests:
-- [test description]
-- [test description]
-
-DOCUMENTATION
-Updates Required:
-- [doc path]: [what to update]
-- [doc path]: [what to update]
-
-VERIFICATION
-Success Criteria:
-- [ ] [criterion from spec]
-- [ ] [criterion from spec]
-
-NOTES
-- [implementation note]
-- [implementation note]
-```
 
 ## Guidelines
 

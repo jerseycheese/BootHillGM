@@ -10,7 +10,7 @@ updated: 2025-01-13
 
 ## Quick Use Prompt
 ```markdown
-Help me select and analyze the next task to implement from my GitHub issues.
+Help me select and analyze the next task to implement from my GitHub issues. Use MCP tools.
 
 Please review these planning documents first for context:
 - /Users/jackhaas/Projects/BootHillGM/Docs/index.md
