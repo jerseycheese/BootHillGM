@@ -4,7 +4,7 @@ import { useCampaignState } from '../components/CampaignStateManager';
 import { DefaultWeapons } from '../data/defaultWeapons';
 import { addCombatJournalEntry } from '../utils/JournalManager';
 import { createStateProtection } from '../utils/stateProtection';
-import { CombatState, ensureCombatState } from '../types/combat';
+import { CombatState, CombatSummary, ensureCombatState } from '../types/combat';
 import { cleanCharacterName, resolveCombat } from '../utils/combatUtils';
 
 /**
@@ -63,23 +63,45 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             ),
           });
 
-          // Clear opponent state BEFORE setting combat inactive
-          dispatch({ type: 'SET_OPPONENT', payload: {} });
+          // Calculate final combat statistics by comparing initial and current strength values
+          const initialPlayerStrength = state.character?.attributes?.strength || 0;
+          const currentPlayerStrength = state.combatState?.playerStrength || 0;
+          const initialOpponentStrength = state.opponent?.attributes?.strength || 0;
+          const currentOpponentStrength = state.combatState?.opponentStrength || 0;
 
-          // Then clear combat state
-          dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
+          // Create combat summary with calculated statistics
+          // - Damage dealt is the difference between opponent's initial and current strength
+          // - Damage taken is the difference between player's initial and current strength
+          // - Use Math.max to ensure non-negative values in case of state inconsistencies
+          const combatSummary: CombatSummary = {
+            winner,
+            results: combatResults,
+            stats: {
+              rounds: state.combatState?.rounds || 0,
+              damageDealt: Math.max(0, initialOpponentStrength - currentOpponentStrength),
+              damageTaken: Math.max(0, initialPlayerStrength - currentPlayerStrength)
+            }
+          };
 
+          // Update combat state with summary first
           dispatch({
             type: 'UPDATE_COMBAT_STATE',
             payload: ensureCombatState({
-              isActive: false,
+              isActive: true, // Keep active until we've updated the summary
               combatType: null,
               winner: winner,
               brawling: undefined,
               weapon: undefined,
               selection: undefined,
+              summary: combatSummary
             }),
           });
+
+          // Then clear opponent state
+          dispatch({ type: 'SET_OPPONENT', payload: {} });
+
+          // Finally set combat inactive
+          dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
         });
       } catch {
         onUpdateNarrative(

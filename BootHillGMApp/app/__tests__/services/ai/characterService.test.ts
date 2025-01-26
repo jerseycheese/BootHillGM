@@ -62,12 +62,7 @@ describe('generateCompleteCharacter', () => {
   });
 
   it('should generate a character with valid data', async () => {
-    console.log('Starting character generation test');
-    const startTime = Date.now();
-    const character = await generateCompleteCharacter();
-    console.log('Character generated:', character);
-    console.log('Time taken:', Date.now() - startTime, 'ms');
-
+    await generateCompleteCharacter();
     expect(mockLogger.log).toHaveBeenCalledWith('aiResponse', expect.any(String));
     expect(mockLogger.log).toHaveBeenCalledWith('parsed', expect.any(Object));
     expect(mockLogger.complete).toHaveBeenCalledWith(expect.any(Object));
@@ -93,9 +88,6 @@ describe('generateCompleteCharacter', () => {
 
     const result = await generateCompleteCharacter();
     expect(result).toBeDefined();
-    expect(mockLogger.log).toHaveBeenCalledWith(
-      'fallback',
-      'Using randomly generated character'
-    );
+    expect(mockLogger.log).toHaveBeenCalledWith('fallback', 'Using randomly generated character');
   });
 });

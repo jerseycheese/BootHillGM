@@ -87,6 +87,7 @@ The roadmap is organized into development phases, with each phase containing spe
 - [x] Improve combat log with detailed action descriptions and outcomes
 - [x] Implement core dice rolling system (diceUtils.ts)
 - [x] Add strength validation system with wound effects and stacking
+- [x] Implement combat summary with detailed stats tracking (#67)
 3.4 Inventory System Refinements
 - [x] Implement basic inventory data structure
 - [x] Create Inventory component for displaying items
@@ -104,7 +105,7 @@ The roadmap is organized into development phases, with each phase containing spe
   - [x] Virtualized scrolling for performance
   - [x] Enhanced entry formatting
   - [x] Comprehensive test coverage
-- [x] Update combat log entries in combat system for detailed combat results and summaries
+  - [x] Update combat log entries in combat system for detailed combat results and summaries
 3.6 Character Sheet Enhancements
 - [ ] Implement stat-based skill checks
 - [ ] Add character portrait/image upload

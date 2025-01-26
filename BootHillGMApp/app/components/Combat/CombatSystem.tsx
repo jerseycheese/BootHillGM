@@ -6,7 +6,7 @@
  * - Punch and grapple options
  * - Weapon combat actions and display
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Character } from '../../types/character';
 import { characterToCombatParticipant } from '../../utils/combatUtils';
 import { CombatStatus } from './CombatStatus';
@@ -16,10 +16,16 @@ import { useBrawlingCombat } from '../../hooks/useBrawlingCombat';
 import { useWeaponCombat } from '../../hooks/useWeaponCombat';
 import { GameEngineAction } from '../../types/gameActions';
 import { CombatTypeSelection } from './CombatTypeSelection';
-import { CombatType, CombatState, WeaponCombatAction } from '../../types/combat';
-import { cleanCombatLogEntry } from '../../utils/textCleaningUtils';
+import { 
+  CombatType, 
+  CombatState, 
+  WeaponCombatAction, 
+  ensureCombatState,
+  CombatSummary 
+} from '../../types/combat';
 import { Weapon } from '../../types/inventory';
 import { getDefaultWeapon } from '../../utils/weaponUtils';
+import { CombatLog } from './CombatLog';
 
 export const CombatSystem: React.FC<{
   playerCharacter: Character;
@@ -27,15 +33,21 @@ export const CombatSystem: React.FC<{
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
   dispatch: React.Dispatch<GameEngineAction>;
   initialCombatState?: CombatState;
+  currentCombatState?: CombatState;
 }> = ({
   playerCharacter,
   opponent,
   onCombatEnd,
   dispatch,
-  initialCombatState
+  initialCombatState,
+  currentCombatState
 }) => {
+
   // State to track the type of combat (brawling or weapon)
   const [combatType, setCombatType] = useState<CombatType>(null);
+  const [combatSummary, setCombatSummary] = useState<CombatSummary | undefined>(
+    currentCombatState?.summary || initialCombatState?.summary
+  );
 
   useEffect(() => {
     // Set combatType if initialCombatState is provided and has a non-null combatType
@@ -43,12 +55,28 @@ export const CombatSystem: React.FC<{
       setCombatType(initialCombatState.combatType);
     }
   }, [initialCombatState]);
-  
+
   // Brawling combat logic and state
-  const { brawlingState, isProcessing: isBrawlingProcessing, processRound } = useBrawlingCombat({
+  const { 
+    brawlingState, 
+    isProcessing: isBrawlingProcessing, 
+    isCombatEnded: isBrawlingEnded,
+    processRound 
+  } = useBrawlingCombat({
     playerCharacter,
     opponent,
-    onCombatEnd,
+    onCombatEnd: (winner, summary) => {
+      setCombatSummary({
+        winner,
+        results: summary,
+        stats: {
+          rounds: brawlingState?.round || 0,
+          damageDealt: playerCharacter.attributes.baseStrength - (brawlingState?.opponentStrength || opponent.attributes.strength),
+          damageTaken: opponent.attributes.baseStrength - (brawlingState?.playerStrength || playerCharacter.attributes.strength)
+        }
+      });
+      onCombatEnd(winner, summary);
+    },
     dispatch,
     initialCombatState: initialCombatState?.brawling
   });
@@ -61,29 +89,50 @@ export const CombatSystem: React.FC<{
     canAim,
     canFire,
     canReload,
-    currentOpponent // Track current opponent state
+    currentOpponent
   } = useWeaponCombat({
     playerCharacter,
     opponent,
-    onCombatEnd,
+    onCombatEnd: (winner, summary) => {
+      setCombatSummary({
+        winner,
+        results: summary,
+        stats: {
+          rounds: weaponState?.round || 0,
+          damageDealt: playerCharacter.attributes.baseStrength - (weaponState?.opponentStrength || opponent.attributes.strength),
+          damageTaken: opponent.attributes.baseStrength - (weaponState?.playerStrength || playerCharacter.attributes.strength)
+        }
+      });
+      onCombatEnd(winner, summary);
+    },
     dispatch,
     initialState: initialCombatState?.weapon,
-    combatState: initialCombatState || { 
-      isActive: false, 
-      combatType: null, 
-      winner: null, 
-      playerStrength: 0, 
-      opponentStrength: 0, 
-      brawling: undefined, 
-      weapon: undefined, 
-      currentTurn: 'player',
-      participants: [],
-      rounds: 0
-    }
+    combatState: initialCombatState || ensureCombatState()
   });
 
+  // Handle returning to narrative UI
+  const handleReturnToNarrative = useCallback(() => {
+    dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
+    dispatch({ type: 'END_COMBAT' });
+  }, [dispatch]);
+
+  // Memoize combat log entries to prevent unnecessary re-renders
+  const combatLogEntries = useMemo(() => {
+    const entries = [
+      ...(brawlingState?.roundLog || []),
+      ...(weaponState?.roundLog || [])
+    ].sort((a, b) => a.timestamp - b.timestamp);
+
+    // Remove duplicate entries by comparing timestamps only
+    const uniqueEntries = entries.filter((entry, index) => 
+      entries.findIndex(e => e.timestamp === entry.timestamp) === index
+    );
+
+    return uniqueEntries;
+  }, [brawlingState?.roundLog, weaponState?.roundLog]);
+
   // Handle combat type selection
-  const handleCombatTypeSelect = (type: CombatType) => {
+  const handleCombatTypeSelect = useCallback((type: CombatType) => {
     setCombatType(type);
     
     // Find equipped weapon in player's inventory
@@ -93,7 +142,7 @@ export const CombatSystem: React.FC<{
     // Update combat state with selected combat type and equipped weapon
     dispatch({
       type: 'UPDATE_COMBAT_STATE',
-      payload: {
+      payload: ensureCombatState({
         isActive: true,
         combatType: type,
         playerStrength: playerCharacter.attributes.strength,
@@ -101,7 +150,7 @@ export const CombatSystem: React.FC<{
         currentTurn: 'player',
         winner: null,
         brawling: type === 'brawling' ? {
-          round: 1,
+          round: 1 as const,
           playerModifier: 0,
           opponentModifier: 0,
           playerStrength: playerCharacter.attributes.strength,
@@ -110,47 +159,88 @@ export const CombatSystem: React.FC<{
           opponentBaseStrength: opponent.attributes.strength,
           roundLog: []
         } : undefined,
-          weapon: type === 'weapon' ? {
-            round: 1,
-            playerWeapon: equippedWeapon || null,
-            opponentWeapon: getDefaultWeapon(),
-            currentRange: 10, // Default starting range
-            playerStrength: playerCharacter.attributes.strength,
-            playerBaseStrength: playerCharacter.attributes.strength,
-            opponentStrength: opponent.attributes.strength,
-            opponentBaseStrength: opponent.attributes.strength,
-            roundLog: [],
-            lastAction: undefined
-          } : undefined
-      }
+        weapon: type === 'weapon' ? {
+          round: 1,
+          playerWeapon: equippedWeapon || null,
+          opponentWeapon: getDefaultWeapon(),
+          currentRange: 10,
+          playerStrength: playerCharacter.attributes.strength,
+          playerBaseStrength: playerCharacter.attributes.strength,
+          opponentStrength: opponent.attributes.strength,
+          opponentBaseStrength: opponent.attributes.strength,
+          roundLog: [],
+          lastAction: undefined
+        } : undefined
+      })
     });
-  };
+  }, [playerCharacter, opponent, dispatch]);
 
-  // Render combat controls based on selected combat type
-  const renderCombatContent = () => {
-    if (!combatType) {
-      return (
+  // Handle brawling actions with proper state validation
+  const handleBrawlingAction = useCallback(async (isPunching: boolean) => {
+
+    if (isBrawlingEnded || brawlingState?.playerStrength <= 0 || brawlingState?.opponentStrength <= 0) {
+      return;
+    }
+
+    await processRound(true, isPunching);
+  }, [brawlingState, processRound, isBrawlingEnded]);
+
+  // Get current combat state for status display
+  const currentCombatStateForDisplay: CombatState = useMemo(() => ensureCombatState({
+    isActive: !isBrawlingEnded,
+    combatType,
+    winner: combatSummary?.winner || null,
+    playerStrength: brawlingState?.playerStrength || playerCharacter.attributes.strength,
+    opponentStrength: brawlingState?.opponentStrength || (currentOpponent?.attributes?.strength || opponent.attributes.strength),
+    brawling: brawlingState,
+    weapon: weaponState,
+    currentTurn: 'player',
+    participants: [playerCharacter, opponent],
+    rounds: brawlingState?.round || weaponState?.round || 0,
+    selection: combatType ? undefined : {
+      isSelectingType: true,
+      availableTypes: ['brawling', 'weapon'] as CombatType[]
+    },
+    summary: combatSummary
+  }), [
+    combatType,
+    brawlingState,
+    weaponState,
+    playerCharacter,
+    opponent,
+    currentOpponent,
+    isBrawlingEnded,
+    combatSummary
+  ]);
+
+  return (
+    <div className="combat-system wireframe-section space-y-4">
+      {/* Display combat status for both player and opponent */}
+      <CombatStatus
+        playerCharacter={playerCharacter}
+        opponent={currentOpponent ? characterToCombatParticipant(currentOpponent, true) : characterToCombatParticipant(opponent, true)}
+        combatState={currentCombatStateForDisplay}
+      />
+      
+      {/* Render combat controls based on selected combat type */}
+      {!isBrawlingEnded && !combatType && (
         <CombatTypeSelection
           playerCharacter={playerCharacter}
           opponent={opponent}
           onSelectType={handleCombatTypeSelect}
         />
-      );
-    }
-
-    if (combatType === 'brawling') {
-      return (
+      )}
+      
+      {!isBrawlingEnded && combatType === 'brawling' && (
         <BrawlingControls
           isProcessing={isBrawlingProcessing}
-          onPunch={() => processRound(true, true)}
-          onGrapple={() => processRound(true, false)}
+          onPunch={() => handleBrawlingAction(true)}
+          onGrapple={() => handleBrawlingAction(false)}
           round={brawlingState?.round || 1}
         />
-      );
-    }
-
-    if (combatType === 'weapon') {
-      return (
+      )}
+      
+      {!isBrawlingEnded && combatType === 'weapon' && (
         <WeaponCombatControls
           isProcessing={isWeaponProcessing}
           currentState={weaponState}
@@ -159,57 +249,24 @@ export const CombatSystem: React.FC<{
           canFire={canFire}
           canReload={canReload}
         />
-      );
-    }
-    return null;
-  };
-
-  return (
-    <div className="combat-system wireframe-section space-y-4">
-      {/* Display combat status for both player and opponent */}
-      <CombatStatus
-        playerCharacter={playerCharacter}
-        opponent={currentOpponent ? characterToCombatParticipant(currentOpponent, true) : characterToCombatParticipant(opponent, true)}
-        combatState={{
-          isActive: true,
-          combatType,
-          winner: null,
-          playerStrength: playerCharacter.attributes.strength,
-          opponentStrength: currentOpponent?.attributes?.strength || opponent.attributes.strength,
-          brawling: brawlingState,
-          weapon: weaponState,
-          currentTurn: 'player',
-          participants: [playerCharacter, opponent],
-          rounds: brawlingState?.round || weaponState?.round || 0,
-          selection: combatType ? undefined : {
-            isSelectingType: true,
-            availableTypes: ['brawling', 'weapon']
-          }
-        }}
-      />
-      
-      {/* Render combat controls based on selected combat type */}
-      {renderCombatContent()}
-      
-      {/* Display combat log for brawling */}
-      {brawlingState?.roundLog?.length > 0 && (
-        <div className="combat-log mt-4">
-          {brawlingState.roundLog.map((log, index) => (
-            <div key={index} className="text-sm mb-1 even:text-right">
-              {cleanCombatLogEntry(log.text)}
-            </div>
-          ))}
-        </div>
       )}
+      
+      {/* Display unified combat log */}
+      <CombatLog
+        entries={combatLogEntries}
+        summary={combatSummary}
+        isCombatEnded={isBrawlingEnded}
+      />
 
-      {/* Display combat log for weapon combat */}
-      {weaponState.roundLog.length > 0 && (
-        <div className="combat-log mt-4">
-          {weaponState.roundLog.map((log, index) => (
-            <div key={index} className="text-sm mb-1 even:text-right">
-              {cleanCombatLogEntry(log.text)}
-            </div>
-          ))}
+      {/* Return to Narrative button shown when combat ends */}
+      {isBrawlingEnded && (
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={handleReturnToNarrative}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            Return to Narrative
+          </button>
         </div>
       )}
     </div>

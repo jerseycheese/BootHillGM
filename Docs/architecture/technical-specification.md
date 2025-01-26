@@ -72,11 +72,22 @@ For AI integration details, see [[../ai/gemini-integration|Gemini Integration]].
 
 ### Combat System
 ```typescript
+interface CombatSummary {
+  winner: 'player' | 'opponent';
+  results: string;
+  stats: {
+    rounds: number;
+    damageDealt: number;
+    damageTaken: number;
+  }
+}
+
 interface CombatState {
   playerHealth: number;
   opponentHealth: number;
   currentTurn: 'player' | 'opponent';
-  combatLog: string[];
+  combatLog: LogEntry[];
+  summary?: CombatSummary;
   weapon?: {
     round: number;
     playerWeapon: Weapon | null;

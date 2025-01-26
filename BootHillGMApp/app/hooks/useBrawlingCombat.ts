@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useReducer } from 'react';
 import { BrawlingEngine } from '../utils/brawlingEngine';
 import { BrawlingState, LogEntry, ensureCombatState } from '../types/combat';
 import { Wound } from '../types/wound';
@@ -14,14 +14,96 @@ interface UseBrawlingCombatProps {
   initialCombatState?: BrawlingState;
 }
 
-/**
- * Manages brawling combat state and coordinates combat actions
- * Uses BrawlingEngine for combat calculations while managing:
- * - Combat rounds and turn order
- * - Wound application and health updates
- * - Combat log entries
- * - Win/loss conditions
- */
+// Action types for the reducer
+type BrawlingAction =
+  | { type: 'APPLY_DAMAGE'; target: 'player' | 'opponent'; damage: number; location: string }
+  | { type: 'ADD_LOG_ENTRY'; entry: LogEntry }
+  | { type: 'UPDATE_MODIFIERS'; player?: number; opponent?: number }
+  | { type: 'END_ROUND' }
+  | { type: 'END_COMBAT'; winner: 'player' | 'opponent'; summary: string }
+  | { type: 'SYNC_STRENGTH'; playerStrength: number; opponentStrength: number };
+
+// Reducer function for atomic state updates
+function brawlingReducer(state: BrawlingState, action: BrawlingAction): BrawlingState {
+  
+  switch (action.type) {
+    case 'APPLY_DAMAGE': {
+      const newState = {
+        ...state,
+        playerStrength: action.target === 'player' 
+          ? Math.max(0, state.playerStrength - action.damage)
+          : state.playerStrength,
+        opponentStrength: action.target === 'opponent'
+          ? Math.max(0, state.opponentStrength - action.damage)
+          : state.opponentStrength
+      };
+      return newState;
+    }
+    
+    case 'ADD_LOG_ENTRY': {
+      // Only check timestamp for duplicates
+      const isDuplicate = state.roundLog.some(
+        entry => entry.timestamp === action.entry.timestamp
+      );
+      return isDuplicate ? state : {
+        ...state,
+        roundLog: [...state.roundLog, action.entry]
+      };
+    }
+    
+    case 'UPDATE_MODIFIERS': {
+      return {
+        ...state,
+        playerModifier: action.player ?? state.playerModifier,
+        opponentModifier: action.opponent ?? state.opponentModifier
+      };
+    }
+    
+    case 'END_ROUND': {
+      const newRound = (state.round === 1 ? 2 : 1) as 1 | 2;
+      return {
+        ...state,
+        round: newRound
+      };
+    }
+
+    case 'END_COMBAT': {
+      return {
+        ...state,
+        roundLog: [
+          ...state.roundLog,
+          {
+            text: action.summary,
+            type: 'info',
+            timestamp: Date.now()
+          }
+        ]
+      };
+    }
+
+    case 'SYNC_STRENGTH': {
+      return {
+        ...state,
+        playerStrength: action.playerStrength,
+        opponentStrength: action.opponentStrength
+      };
+    }
+    
+    default:
+      return state;
+  }
+}
+
+function isValidCombatState(state: BrawlingState): boolean {
+  const isValid = (
+    state.playerStrength >= 0 &&
+    state.opponentStrength >= 0 &&
+    (state.round === 1 || state.round === 2) &&
+    Array.isArray(state.roundLog)
+  );
+  return isValid;
+}
+
 export const useBrawlingCombat = ({
   playerCharacter,
   opponent,
@@ -29,7 +111,8 @@ export const useBrawlingCombat = ({
   dispatch,
   initialCombatState
 }: UseBrawlingCombatProps) => {
-  const [brawlingState, setBrawlingState] = useState<BrawlingState>({
+  
+  const [brawlingState, dispatchBrawling] = useReducer(brawlingReducer, {
     round: initialCombatState?.round || 1,
     playerModifier: initialCombatState?.playerModifier || 0,
     opponentModifier: initialCombatState?.opponentModifier || 0,
@@ -40,9 +123,106 @@ export const useBrawlingCombat = ({
     roundLog: initialCombatState?.roundLog || []
   });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCombatEnded, setIsCombatEnded] = useState(false);
+
+  const endCombat = useCallback((winner: 'player' | 'opponent', summary: string) => {
+    
+    setIsCombatEnded(true);
+    dispatchBrawling({ type: 'END_COMBAT', winner, summary });
+    
+    // Update global state with combat end
+    dispatch({
+      type: 'UPDATE_COMBAT_STATE',
+      payload: ensureCombatState({
+        ...brawlingState,
+        isActive: true, // Keep active until user dismisses
+        combatType: 'brawling',
+        winner,
+        summary: {
+          winner,
+          results: summary,
+          stats: {
+            rounds: brawlingState.round,
+            damageDealt: playerCharacter.attributes.baseStrength - brawlingState.opponentStrength,
+            damageTaken: opponent.attributes.baseStrength - brawlingState.playerStrength
+          }
+        }
+      })
+    });
+
+    // Update final character states
+    dispatch({
+      type: 'SET_CHARACTER',
+      payload: {
+        ...playerCharacter,
+        attributes: {
+          ...playerCharacter.attributes,
+          strength: brawlingState.playerStrength,
+          baseStrength: playerCharacter.attributes.baseStrength
+        }
+      }
+    });
+
+    dispatch({
+      type: 'SET_OPPONENT',
+      payload: {
+        ...opponent,
+        attributes: {
+          ...opponent.attributes,
+          strength: brawlingState.opponentStrength,
+          baseStrength: opponent.attributes.baseStrength
+        }
+      }
+    });
+
+    // Notify combat end
+    onCombatEnd(winner, summary);
+  }, [brawlingState, dispatch, onCombatEnd, playerCharacter, opponent]);
+
+  const syncWithGlobalState = useCallback((state: BrawlingState) => {
+    
+    // Update character states
+    dispatch({
+      type: 'SET_CHARACTER',
+      payload: {
+        ...playerCharacter,
+        attributes: {
+          ...playerCharacter.attributes,
+          strength: state.playerStrength,
+          baseStrength: playerCharacter.attributes.baseStrength
+        }
+      }
+    });
+
+    dispatch({
+      type: 'SET_OPPONENT',
+      payload: {
+        ...opponent,
+        attributes: {
+          ...opponent.attributes,
+          strength: state.opponentStrength,
+          baseStrength: opponent.attributes.baseStrength
+        }
+      }
+    });
+
+    // Update combat state
+    dispatch({
+      type: 'UPDATE_COMBAT_STATE',
+      payload: ensureCombatState({
+        ...state,
+        isActive: !isCombatEnded,
+        combatType: 'brawling'
+      })
+    });
+  }, [dispatch, isCombatEnded, playerCharacter, opponent]);
 
   const applyWound = useCallback((isPlayer: boolean, location: "head" | "chest" | "abdomen" | "leftArm" | "rightArm" | "leftLeg" | "rightLeg", damage: number) => {
-    const target = isPlayer ? playerCharacter : opponent;
+    
+    const target = !isPlayer ? playerCharacter : opponent;
+    const currentStrength = !isPlayer ? brawlingState.playerStrength : brawlingState.opponentStrength;
+    const newStrength = Math.max(0, currentStrength - damage);
+
     const wound: Wound = {
       location,
       severity: 'light',
@@ -50,163 +230,151 @@ export const useBrawlingCombat = ({
       turnReceived: Date.now()
     };
 
-    // Calculate new strength without modifying base strength
-    const newStrength = Math.max(0, target.attributes.strength - damage);
-
-    console.log('applyWound - Before:', {
-      currentStrength: target.attributes.strength,
-      baseStrength: target.attributes.baseStrength,
-      damage
-    });
-
+    // Update character state first
     const updatedTarget = {
       ...target,
       wounds: [...target.wounds, wound],
       attributes: {
         ...target.attributes,
         strength: newStrength,
-        baseStrength: target.attributes.baseStrength // Preserve base strength
+        baseStrength: target.attributes.baseStrength
       },
       isUnconscious: newStrength <= 0
     };
 
-    console.log('applyWound - After:', {
-      currentStrength: updatedTarget.attributes.strength,
-      baseStrength: updatedTarget.attributes.baseStrength
-    });
-
-    // Update both character state and combat state
+    // Update global character state
     dispatch({
-      type: isPlayer ? 'SET_CHARACTER' : 'SET_OPPONENT',
+      type: !isPlayer ? 'SET_CHARACTER' : 'SET_OPPONENT',
       payload: updatedTarget
     });
 
-    // Update combat state with current strength
-    dispatch({
-      type: 'UPDATE_COMBAT_STATE',
-      payload: {
-        ...brawlingState,
-        [isPlayer ? 'playerStrength' : 'opponentStrength']: newStrength
-      }
+    // Update combat state atomically
+    dispatchBrawling({
+      type: 'APPLY_DAMAGE',
+      target: !isPlayer ? 'player' : 'opponent',
+      damage,
+      location
     });
 
-    console.log('applyWound - State Updated:', {
-      combatStrength: newStrength,
-      isPlayer
-    });
-
-    return updatedTarget;
-  }, [playerCharacter, opponent, dispatch, brawlingState]);
+    return { newStrength, location };
+  }, [brawlingState, playerCharacter, opponent, dispatch]);
 
   const handleCombatAction = useCallback((isPlayer: boolean, isPunching: boolean) => {
-    const modifier = isPlayer ? brawlingState.playerModifier : brawlingState.opponentModifier;
+
+    // Only check end conditions if already ended
+    if (isCombatEnded) {
+      return true;
+    }
 
     const result = brawlingSystem.resolveBrawlingRound(
-      modifier,
+      isPlayer ? brawlingState.playerModifier : brawlingState.opponentModifier,
       isPunching
     );
-    console.log('handleCombatAction - Result:', result);
+
     const attacker = isPlayer ? playerCharacter : opponent;
-    const defender = isPlayer ? opponent : playerCharacter;
     
-    // Add new log entry
-    const message = BrawlingEngine.formatCombatMessage(
-      attacker.name,
-      result,
-      result.roll > 2  // Only show punch/grapple message on hits
-        ? isPunching
-        : isPunching
-    );
-    
+    // Add log entry atomically
     const newLogEntry: LogEntry = {
-      text: message,
-      type: 'info',
+      text: BrawlingEngine.formatCombatMessage(
+        attacker.name,
+        result,
+        isPunching // Use actual punch/grapple choice
+      ),
+      type: result.damage > 0 ? 'hit' : 'miss',
       timestamp: Date.now()
     };
     
-    setBrawlingState((prev: BrawlingState) => ({
-      ...prev,
-      playerModifier: isPlayer ? result.nextRoundModifier : prev.playerModifier,
-      opponentModifier: !isPlayer ? result.nextRoundModifier : prev.opponentModifier,
-      roundLog: [...prev.roundLog, newLogEntry]
-    }));
+    dispatchBrawling({
+      type: 'ADD_LOG_ENTRY',
+      entry: newLogEntry
+    });
 
     // Apply damage if hit landed
     if (result.damage > 0) {
-      const updatedTarget = applyWound(!isPlayer, result.location, result.damage);
-      
-      if (BrawlingEngine.isKnockout(updatedTarget.attributes.strength, result.damage)) {
-        const winner = isPlayer ? 'player' : 'opponent';
-        const summary = `${attacker.name} emerges victorious, defeating ${defender.name} with a ${isPunching ? 'devastating punch' : 'powerful grapple'} to the ${result.location}!`;
-        console.log('handleCombatAction - Knockout! Winner:', winner, 'Summary:', summary);
-        // Update combat state before ending
-        dispatch({
-          type: 'UPDATE_COMBAT_STATE',
-          payload: ensureCombatState({
-            isActive: false,
-            combatType: 'brawling',
-            winner,
-            brawling: brawlingState
-          })
-        });
+      const { newStrength } = applyWound(!isPlayer, result.location, result.damage);
 
-        onCombatEnd(winner, summary);
+      // Update modifiers atomically
+      dispatchBrawling({
+        type: 'UPDATE_MODIFIERS',
+        player: isPlayer ? result.nextRoundModifier : undefined,
+        opponent: !isPlayer ? result.nextRoundModifier : undefined
+      });
+
+      // Sync with global state
+      syncWithGlobalState(brawlingState);
+
+      // Check for combat end conditions
+      if (newStrength <= 0 || BrawlingEngine.isKnockout(newStrength, result.damage)) {
+        
+        const loser = !isPlayer ? playerCharacter.name : opponent.name;
+        const winner = isPlayer ? 'player' : 'opponent';
+        const summary = `${attacker.name} emerges victorious, defeating ${loser} with a ${isPunching ? 'devastating punch' : 'powerful grapple'} to the ${result.location}!`;
+        
+        endCombat(winner, summary);
         return true;
       }
+    } else {
+      // Update modifiers only on miss
+      dispatchBrawling({
+        type: 'UPDATE_MODIFIERS',
+        player: isPlayer ? result.nextRoundModifier : undefined,
+        opponent: !isPlayer ? result.nextRoundModifier : undefined
+      });
+      
+      syncWithGlobalState(brawlingState);
     }
     return false;
-  }, [brawlingState, opponent, playerCharacter, onCombatEnd, applyWound, dispatch]);
+  }, [brawlingState, opponent, playerCharacter, applyWound, syncWithGlobalState, endCombat, isCombatEnded]);
 
   const processRound = useCallback(async (isPlayer: boolean, isPunching: boolean) => {
+    
+    if (isCombatEnded) {
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      console.log('processRound - Current brawlingState:', brawlingState);
-      if (isPlayer) {
-        // Process player's action
-        const playerKnockout = handleCombatAction(true, isPunching);
-        if (playerKnockout) return;
-
-        // Add delay for opponent's response
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Opponent randomly chooses punch (true) or grapple (false)
-        const opponentPunching = Math.random() < 0.6; // 60% chance to punch
-        const opponentKnockout = handleCombatAction(false, opponentPunching);
-        
-        // Only advance the round if neither participant is knocked out
-        if (!playerKnockout && !opponentKnockout) {
-          setBrawlingState((prev: BrawlingState) => {
-            console.log('setBrawlingState - Previous state:', prev);
-            const updatedState: BrawlingState = {
-              ...prev,
-              round: prev.round === 1 ? 2 : 1,
-              roundLog: prev.roundLog
-            };
-            console.log('setBrawlingState - Updated state:', updatedState);
-            return updatedState;
-          });
-        } else {
-          // If either participant is knocked out, end combat
-          dispatch({
-            type: 'UPDATE_COMBAT_STATE',
-            payload: ensureCombatState({
-              isActive: false,
-              combatType: 'brawling',
-              winner: playerKnockout ? 'opponent' : 'player',
-              brawling: brawlingState
-            })
-          });
-          return;
-        }
+      // Validate current state
+      if (!isValidCombatState(brawlingState)) {
+        throw new Error('Invalid combat state');
       }
+
+      // Process player's action
+      const playerKnockout = handleCombatAction(true, isPunching);
+      if (playerKnockout) {
+        return;
+      }
+
+      // Store intermediate state
+      const midRoundState = { ...brawlingState };
+
+      // Add delay for opponent's response
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Opponent randomly chooses punch (true) or grapple (false)
+      const opponentPunching = Math.random() < 0.6; // 60% chance to punch
+      const opponentKnockout = handleCombatAction(false, opponentPunching);
+      if (opponentKnockout) {
+        return;
+      }
+
+      // If combat continues, update round and sync states
+      if (!isCombatEnded && brawlingState.playerStrength > 0 && brawlingState.opponentStrength > 0) {
+        
+        dispatchBrawling({ type: 'END_ROUND' });
+        syncWithGlobalState(brawlingState);
+      }
+    } catch (error) {
+      throw error;
     } finally {
       setIsProcessing(false);
     }
-  }, [handleCombatAction, brawlingState, dispatch]);
+  }, [brawlingState, handleCombatAction, syncWithGlobalState, isCombatEnded]);
 
   return {
     brawlingState,
     isProcessing,
+    isCombatEnded,
     processRound
   };
 };

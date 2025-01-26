@@ -25,6 +25,7 @@ This Map of Content (MOC) provides an overview of all core systems in the BootHi
 ## Combat Systems
 - [[./combat-system|Combat System]] - Main combat engine and mechanics
 - [[./combat-modifiers|Combat Modifiers]] - Modifiers affecting combat outcomes
+- Combat Summary - Detailed stats tracking
 
 ## State Management
 - [[./state-management|State Management]] - Game state and persistence
@@ -57,10 +58,17 @@ graph TD
 | System | Status | Priority |
 |--------|---------|-----------|
 | Combat System | Active | High |
+|   - Combat Summary | Complete | High |
 | State Management | Active | High |
 | Journal System | Active | Medium |
 | AI Integration | Active | High |
 | Character Generation | Complete | High |
+
+## Recent Combat System Updates
+- Added combat summary system with detailed stats tracking
+  - Victory/defeat messages
+  - Combat statistics (rounds, damage)
+  - Integration with combat log display
 
 ## Related Documentation
 - [[../architecture/component-structure|Component Structure]]

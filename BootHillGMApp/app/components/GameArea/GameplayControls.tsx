@@ -48,6 +48,7 @@ export function GameplayControls({
           onCombatEnd={onCombatEnd}
           dispatch={dispatch}
           initialCombatState={transformedCombatState}
+          currentCombatState={state.combatState ? ensureCombatState(state.combatState) : undefined}
         />
       ) : (
         <InputManager

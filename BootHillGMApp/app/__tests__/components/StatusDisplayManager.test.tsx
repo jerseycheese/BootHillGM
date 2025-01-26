@@ -138,8 +138,6 @@ describe('StatusDisplayManager', () => {
     );
     expect(screen.getByTestId('status-display')).toHaveTextContent('0 STR');
     const strengthValueElement = screen.getByTestId('strength-value');
-    console.log(`Current strength in test: ${strengthValueElement.textContent}`);
-    console.log(`Applied class in test: ${strengthValueElement.className}`);
     expect(strengthValueElement).toHaveClass('text-red-600');
   });
 });

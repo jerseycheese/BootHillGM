@@ -160,8 +160,6 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
       : (opponent as NPC).initialStrength ?? 10
   };
 
-  console.log('Opponent strength:', opponentStrength);
-
     const playerName = cleanCharacterName(playerCharacter.name);
     const opponentName = cleanCharacterName(opponent.name);
 

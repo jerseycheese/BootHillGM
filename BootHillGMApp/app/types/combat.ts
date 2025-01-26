@@ -5,10 +5,33 @@ export type { Wound } from './wound';
  
 export type CombatType = 'brawling' | 'weapon' | null;
 
+/**
+ * Represents a single entry in the combat log
+ */
 export interface LogEntry {
   text: string;
   type: 'hit' | 'miss' | 'critical' | 'info';
   timestamp: number;
+}
+
+/**
+ * Represents the final summary of a combat encounter
+ * Includes the winner, results narrative, and combat statistics
+ */
+export interface CombatSummary {
+  /** The victor of the combat ('player' or 'opponent') */
+  winner: 'player' | 'opponent';
+  /** Narrative description of the combat results */
+  results: string;
+  /** Combat statistics tracking */
+  stats: {
+    /** Total number of rounds in the combat */
+    rounds: number;
+    /** Total damage dealt to opponent */
+    damageDealt: number;
+    /** Total damage taken by player */
+    damageTaken: number;
+  }
 }
 
 export interface BrawlingState {
@@ -129,11 +152,22 @@ export interface CombatState {
   opponentBaseStrength?: number;
   currentTurn?: 'player' | 'opponent';
   combatLog?: LogEntry[];
+  summary?: CombatSummary;
 }
 
 export interface CombatSelectionState {
   isSelectingType: boolean;
   availableTypes: CombatType[];
+}
+
+export interface CombatSummary {
+  winner: 'player' | 'opponent';
+  results: string;
+  stats: {
+    rounds: number;
+    damageDealt: number;
+    damageTaken: number;
+  };
 }
 
 // Utility type to ensure non-null properties
