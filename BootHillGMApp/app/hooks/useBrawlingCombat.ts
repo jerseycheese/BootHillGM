@@ -5,6 +5,7 @@ import { Wound } from '../types/wound';
 import { GameEngineAction } from '../types/gameActions';
 import { Character } from '../types/character';
 import * as brawlingSystem from '../utils/brawlingSystem';
+import { isKnockout, calculateUpdatedStrength } from '../utils/strengthSystem';
 
 interface UseBrawlingCombatProps {
   playerCharacter: Character;
@@ -30,11 +31,11 @@ function brawlingReducer(state: BrawlingState, action: BrawlingAction): Brawling
     case 'APPLY_DAMAGE': {
       const newState = {
         ...state,
-        playerStrength: action.target === 'player' 
-          ? Math.max(0, state.playerStrength - action.damage)
+        playerStrength: action.target === 'player'
+          ? calculateUpdatedStrength(state.playerStrength, action.damage)
           : state.playerStrength,
         opponentStrength: action.target === 'opponent'
-          ? Math.max(0, state.opponentStrength - action.damage)
+          ? calculateUpdatedStrength(state.opponentStrength, action.damage)
           : state.opponentStrength
       };
       return newState;
@@ -221,7 +222,7 @@ export const useBrawlingCombat = ({
     
     const target = !isPlayer ? playerCharacter : opponent;
     const currentStrength = !isPlayer ? brawlingState.playerStrength : brawlingState.opponentStrength;
-    const newStrength = Math.max(0, currentStrength - damage);
+    const newStrength = calculateUpdatedStrength(currentStrength, damage);
 
     const wound: Wound = {
       location,
@@ -302,9 +303,9 @@ export const useBrawlingCombat = ({
 
       // Sync with global state
       syncWithGlobalState(brawlingState);
-
+      
       // Check for combat end conditions
-      if (newStrength <= 0 || BrawlingEngine.isKnockout(newStrength, result.damage)) {
+      if (newStrength <= 0 || isKnockout(newStrength, result.damage)) {
         
         const loser = !isPlayer ? playerCharacter.name : opponent.name;
         const winner = isPlayer ? 'player' : 'opponent';
@@ -344,9 +345,6 @@ export const useBrawlingCombat = ({
       if (playerKnockout) {
         return;
       }
-
-      // Store intermediate state
-      const midRoundState = { ...brawlingState };
 
       // Add delay for opponent's response
       await new Promise(resolve => setTimeout(resolve, 1000));

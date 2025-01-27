@@ -50,20 +50,4 @@ export class BrawlingEngine {
     return `${attacker} ${action} with ${result.result} (Roll: ${result.roll}) dealing ${result.damage} damage to ${result.location}`;
   }
 
-  /**
-   * Determines if an attack will result in a knockout
-   * A knockout occurs when remaining strength would be reduced to 0
-   */
-  static isKnockout(currentStrength: number, damage: number): boolean {
-    const remainingStrength = Math.max(0, currentStrength - damage);
-    return remainingStrength === 0;
-  }
-
-  /**
-   * Calculates new strength value after taking damage
-   * Ensures strength never goes below 0
-   */
-  static calculateUpdatedStrength(currentStrength: number, damage: number): number {
-    return Math.max(0, currentStrength - damage);
-  }
 }

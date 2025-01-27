@@ -17,7 +17,7 @@ export function StatusDisplay({ character }: StatusDisplayProps) {
 
   return (
     <div className="status-display" data-testid="status-display">
-      <div className={`strength-value ${strengthColor}`}>
+      <div className={`strength-value ${strengthColor}`} data-testid="status-display-strength-value">
         {strength} STR
       </div>
     </div>

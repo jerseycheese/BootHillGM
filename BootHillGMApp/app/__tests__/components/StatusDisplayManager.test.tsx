@@ -140,4 +140,36 @@ describe('StatusDisplayManager', () => {
     const strengthValueElement = screen.getByTestId('strength-value');
     expect(strengthValueElement).toHaveClass('text-red-600');
   });
+
+  test('updates strength display after taking damage', () => {
+    const testCharacter = { ...mockCharacter }; // Create mutable copy
+    const { rerender } = render(
+      <CampaignStateProvider>
+        <StatusDisplayManager character={testCharacter} location="Test Town" />
+      </CampaignStateProvider>
+    );
+    expect(screen.getByTestId('strength-value')).toHaveTextContent('7/10');
+
+    // Simulate damage - add a new wound
+    const damagedCharacter = {
+      ...testCharacter,
+      wounds: [
+        ...testCharacter.wounds,
+        {
+          location: 'leftArm' as const,
+          severity: 'light' as const,
+          strengthReduction: 3,
+          turnReceived: 3, // Example turn
+        },
+      ],
+    };
+
+    // Re-render component with updated character
+    rerender(
+      <CampaignStateProvider>
+        <StatusDisplayManager character={damagedCharacter} location="Test Town" />
+      </CampaignStateProvider>
+    );
+    expect(screen.getAllByTestId('strength-value')[0]).toHaveTextContent('4/10'); // Expect updated strength in StrengthBar
+  });
 });

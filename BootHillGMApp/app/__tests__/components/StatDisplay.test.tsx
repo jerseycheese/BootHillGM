@@ -36,4 +36,13 @@ describe('StatDisplay component', () => {
     expect(container.firstChild).toHaveClass('flex-col');
     expect(container.firstChild).toHaveClass('gap-2');
   });
+
+  it('updates stat value when value prop changes', () => {
+    const { rerender } = render(<StatDisplay label="Strength" value={8} max={10} />);
+    expect(screen.getByText('8')).toBeInTheDocument();
+
+    // Re-render with updated value
+    rerender(<StatDisplay label="Strength" value={5} max={10} />);
+    expect(screen.getByText('5')).toBeInTheDocument(); // Value should be updated
+  });
 });

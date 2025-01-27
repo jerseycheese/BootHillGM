@@ -1,19 +1,6 @@
-/**
- * Boot Hill v2 Strength System
- * 
- * Handles:
- * - Base strength tracking
- * - Wound-based strength reduction
- * - Character defeat conditions
- * - Unconsciousness checks
- */
 import { Character } from '../types/character';
 import { Wound } from '../types/wound';
 
-/**
- * Constants representing the strength reduction effects of different wound severities.
- * These values are derived from the official Boot Hill v2 rules.
- */
 export const WOUND_EFFECTS = {
   LIGHT: 3,
   SERIOUS: 7,
@@ -46,4 +33,21 @@ export const isCharacterDefeated = (character: Character): boolean => {
   return character.isUnconscious ||
          character.wounds.some((w: Wound) => w.severity === 'mortal') ||
          currentStrength <= 0;
+};
+
+/**
+ * Determines if an attack will result in a knockout
+ * A knockout occurs when remaining strength would be reduced to 0
+ */
+export const isKnockout = (currentStrength: number, damage: number): boolean => {
+  const remainingStrength = Math.max(0, currentStrength - damage);
+  return remainingStrength === 0;
+};
+
+/**
+ * Calculates new strength value after taking damage
+ * Ensures strength never goes below 0
+ */
+export const calculateUpdatedStrength = (currentStrength: number, damage: number): number => {
+  return Math.max(0, currentStrength - damage);
 };
