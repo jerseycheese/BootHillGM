@@ -3,7 +3,7 @@ title: Cleanup & Documentation Prompt
 aliases: [Cleanup & Docs Phase]
 tags: [cleanup, documentation, workflow, prompt]
 created: 2025-01-26
-updated: 2025-01-26
+updated: 2025-01-27
 ---
 
 # Cleanup & Documentation Prompt
@@ -50,6 +50,7 @@ Issues to Create:
   Follow [[../../issue_templates/bug_report|Bug Report Template]] or [[../../issue_templates/feature_request|Feature Request Template]]
   Labels: [labels]
   Description: [details]
+  # Include any identified follow-up tasks here as new issues
 
 Commit Message:
 ```
@@ -60,10 +61,6 @@ Commit Message:
 
 Issue: #[number]
 ```
-
-FOLLOW-UP TASKS
-- [ ] [Future task 1] 
-- [ ] [Future task 2]
 ```
 
 ## Phase Handoff

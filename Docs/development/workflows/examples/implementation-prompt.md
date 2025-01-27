@@ -64,6 +64,10 @@ TEST STATUS
 - Integration: [status]
 - Coverage: [percentage]
 
+MANUAL TESTING STEPS
+- [manual testing step]
+- [manual testing step]
+
 CLEANUP NOTES
 - [cleanup task]
 - [cleanup task]
