@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import StatDisplay from './StatDisplay';
+import StatDisplay from '../../components/StatDisplay';
 
 describe('StatDisplay component', () => {
   it('renders basic stat without max value', () => {

@@ -53,10 +53,17 @@ export function calculateReducedStrength(
   const baseStrength = isCharacter(participant)
     ? participant.attributes.baseStrength
     : participant.strength;
+    
   const woundPenalty = participant.wounds.reduce(
-    (sum, wound) => sum + wound.strengthReduction,
+    (sum: number, wound: { strengthReduction: number }) => sum + wound.strengthReduction,
     0
   );
+
+  // If woundPenalty is 0 or negative, return the original strength
+  if (woundPenalty <= 0) {
+    return baseStrength;
+  }
+
   return Math.max(1, baseStrength - woundPenalty);
 }
 

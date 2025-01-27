@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import DerivedStatDisplay from './DerivedStatDisplay';
+import DerivedStatDisplay from '../../components/DerivedStatDisplay';
 
 describe('DerivedStatDisplay component', () => {
   it('renders derived stat without description', () => {
