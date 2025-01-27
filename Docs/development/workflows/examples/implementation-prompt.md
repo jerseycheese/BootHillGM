@@ -8,157 +8,63 @@ updated: 2025-01-13
 
 # Implementation Prompt
 
-## Quick Use Prompt
 ```markdown
-Help me implement this technical specification. Here's the spec:
+Help me implement this technical specification:
 
-[PASTE TECHNICAL SPEC]
+[PASTE IMPLEMENTATION PLAN HERE]
 
-Please:
-1. Write required tests first
-2. Implement the core changes
-3. Add/update interfaces
-4. Verify against success criteria
-5. Create implementation summary using this format:
-```markdown
-IMPLEMENTATION COMPLETE
-Task: [task name]
-Story/Issue: [reference]
-Branch: [branch name]
-Build Status: [Pass/Fail]
-Test Status: [Pass/Fail]
+Please follow these requirements:
+1. Test-driven development
+2. Incremental implementation
+3. Clean code principles
+4. Error handling
+5. Edge cases
 
-CHANGES MADE
-Files Modified:
-- [path]: [what changed]
-Files Created:
-- [path]: [purpose]
+Use this format:
 
-TEST COVERAGE
-New Tests:
-- [test description]
-- [test description]
+IMPLEMENTATION PROGRESS
+Component: [name]
+Current Step: [step number/name]
 
-DOCUMENTATION
-Updates Required:
-- [doc path]: [what to update]
-- [doc path]: [what to update]
+CURRENT IMPLEMENTATION
+File: [current file]
+Status: [In Progress/Complete]
+
+CODE CHANGES
+```[language]
+[Actual code changes]
+```
 
 VERIFICATION
-Success Criteria:
-- [ ] [criterion from spec]
-- [ ] [criterion from spec]
+- [ ] Unit tests
+- [ ] Integration tests
+- [ ] Code standards
+- [ ] Error handling
+```
 
-NOTES
-- [implementation note]
-- [implementation note]
-``````
-
-## Purpose
-Execute the technical specification through concrete code changes while maintaining project quality standards.
-
-## Input Requirements
-1. Complete technical specification document
-2. Access to relevant codebase files
-3. Project coding standards
-4. Testing requirements
-
-## Implementation Process
-
-### 1. Test Implementation
-- Create test files first
-- Cover specified scenarios
-- Test edge cases
-- Verify error handling
-
-### 2. Interface Creation
-- Add type definitions
-- Create/update interfaces
-- Document public APIs
-- Verify type safety
-
-### 3. Core Implementation
-- Follow specification
-- Handle errors
-- Update state
-- Add logging
-
-### 4. Documentation
-- Update comments
-- Add JSDoc
-- Update README
-- Note decisions
-
-## Output Format
-
-
-
-## Guidelines
-
-### Test-First Development
-- Write tests before implementation
-- Cover edge cases
-- Test error conditions
-- Verify success criteria
-
-### Clean Code Standards
-- Follow project patterns
-- Use clear naming
-- Add proper documentation
-- Maintain consistency
-
-### Incremental Changes
-- Make small, focused changes
-- Verify each change
-- Maintain working state
-- Document as you go
-
-### Error Handling
-- Handle edge cases
-- Provide clear errors
-- Maintain type safety
-- Consider recovery
-
-## Example Implementation
+## Implementation Handoff
+When completing this phase, provide a summary in this format:
 
 ```markdown
 IMPLEMENTATION COMPLETE
-Task: Add User Authentication
-Story/Issue: AUTH-123
-Branch: feature/auth-system
-Build Status: Pass
-Test Status: Pass
+Component: [name]
+Issue: #[number]
 
 CHANGES MADE
 Files Modified:
-- src/services/auth.ts: Added OAuth handlers
-- src/contexts/UserContext.tsx: Added auth state
+- [file]: [changes]
+- [file]: [changes]
+
 Files Created:
-- src/components/Auth/LoginForm.tsx: OAuth login UI
-- src/services/__tests__/auth.test.ts: Auth tests
+- [file]: [purpose]
+- [file]: [purpose]
 
-TEST COVERAGE
-New Tests:
-- OAuth initialization tests
-- Token validation tests
-- Session management tests
-- Error handling tests
+TEST STATUS
+- Unit Tests: [status]
+- Integration: [status]
+- Coverage: [percentage]
 
-DOCUMENTATION
-Updates Required:
-- README.md: Add OAuth setup steps
-- docs/api/auth.md: Document new methods
-- docs/deployment.md: Add OAuth config
-
-VERIFICATION
-Success Criteria:
-- [x] OAuth flow works end-to-end
-- [x] Session persists on refresh
-- [x] Error states handled
-- [x] Test coverage >90%
-
-NOTES
-- Used httpOnly cookies for tokens
-- Added rate limiting to auth endpoints
-- Browser compatibility verified
+CLEANUP NOTES
+- [cleanup task]
+- [cleanup task]
 ```

@@ -3,7 +3,7 @@ title: Development Documentation
 aliases: [Development]
 tags: [development, documentation]
 created: 2025-01-01
-updated: 2025-01-01
+updated: 2025-01-26
 ---
 
 # Development Documentation
@@ -20,3 +20,7 @@ updated: 2025-01-01
 
 ## Planning
 - 📋 [[../planning/roadmap|Roadmap]]
+
+## Templates
+- 🐛 [[bug-report|Bug Report Template]]
+- ✨ [[feature-request|Feature Request Template]]
