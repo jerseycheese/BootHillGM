@@ -11,19 +11,21 @@ updated: 2025-01-13
 ```markdown
 Help me select and analyze the next task to implement from my GitHub issues.
 
-Please review these planning documents for context:
-- /Docs/planning/roadmap.md
-- /Docs/architecture/technical-specification.md
-- /Docs/core-systems/_index.md
+Please review:
+1. Open issues at https://github.com/jerseycheese/BootHillGM/issues
+2. Project documentation in /Docs, such as:
+    - /Docs/planning/roadmap.md
+    - /Docs/architecture/technical-specification.md
+    - /Docs/core-systems/_index.md
 
-Consider:
-1. Priority (using high-priority label)
-2. Blocking status
-3. Dependencies
-4. Technical complexity
-5. Value/effort ratio
+Based on these sources, help identify:
+- Highest priority open issues
+- Dependencies between issues
+- Implementation complexity
+- Value to effort assessment
+- Alignment with roadmap goals
 
-Please provide analysis in this format:
+Please analyze the selected task using the format below.
 
 TASK ANALYSIS
 GitHub Issue: #[number] [title]
