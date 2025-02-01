@@ -11,14 +11,72 @@ export function validateCombatEndState(state: CombatState): ValidationResult {
   const cleanedState = {} as PartialNullableCombatState;
 
   // Validate required properties
-  if (state.combatType !== 'brawling') {
+  if (!state.combatType) {
+    errors.push({
+      code: 'MISSING_PROPERTY',
+      message: 'Missing required property: combatType',
+      property: 'combatType',
+    });
+  }
+
+  if (state.combatType !== 'brawling' && state.combatType !== 'weapon' && state.combatType !== null) {
     errors.push({
       code: 'INVALID_VALUE',
       message: 'Invalid value for combatType',
       property: 'combatType',
-      expected: 'brawling',
+      expected: 'brawling | weapon | null',
       actual: state.combatType as string
     });
+  }
+
+  if (state.combatType === 'brawling' && !state.brawling) {
+    errors.push({
+      code: 'MISSING_PROPERTY',
+      message: 'Missing required property: brawling state for brawling combat',
+      property: 'brawling'
+    });
+  }
+
+  if (state.combatType === 'weapon' && !state.weapon) {
+    errors.push({
+      code: 'MISSING_PROPERTY',
+      message: 'Missing required property: weapon state for weapon combat',
+      property: 'weapon'
+    });
+  }
+
+  if (state.brawling) {
+    if (!state.brawling.playerCharacterId) {
+      errors.push({
+        code: 'MISSING_PROPERTY',
+        message: 'Missing required property: playerCharacterId in brawling state',
+        property: 'brawling.playerCharacterId'
+      });
+    }
+    if (!state.brawling.opponentCharacterId) {
+      errors.push({
+        code: 'MISSING_PROPERTY',
+        message: 'Missing required property: opponentCharacterId in brawling state',
+        property: 'brawling.opponentCharacterId'
+      });
+    }
+  }
+
+  if (state.weapon) {
+    if (!state.weapon.playerCharacterId) {
+      errors.push({
+        code: 'MISSING_PROPERTY',
+        message: 'Missing required property: playerCharacterId in weapon state',
+        property: 'weapon.playerCharacterId'
+      });
+    }
+    if (!state.weapon.opponentCharacterId) {
+      errors.push({
+        code: 'MISSING_PROPERTY',
+        message: 'Missing required property: opponentCharacterId in weapon state',
+        property: 'weapon.opponentCharacterId'
+      });
+    }
   }
 
   if (!state.participants) {

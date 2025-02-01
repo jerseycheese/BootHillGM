@@ -1,10 +1,11 @@
 import { renderHook } from '@testing-library/react';
 import { useCombatStateRestoration } from '../../hooks/useCombatStateRestoration';
-import { GameState } from '../../utils/gameEngine';
+import { GameState } from '../../types/gameState';
 import { Character } from '../../types/character';
 
 describe('useCombatStateRestoration', () => {
   const mockOpponent: Character = {
+    id: 'character_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
     name: 'Test Opponent',
     attributes: {
       speed: 10,
@@ -17,7 +18,9 @@ describe('useCombatStateRestoration', () => {
     },
     wounds: [],
     isUnconscious: false,
-    inventory: []
+    inventory: [],
+    isNPC: true,
+    isPlayer: false
   };
 
   const mockState: GameState = {
@@ -27,6 +30,7 @@ describe('useCombatStateRestoration', () => {
     inventory: [],
     quests: [],
     character: {
+      id: 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
       name: 'Player1',
       attributes: {
         speed: 10,
@@ -39,7 +43,9 @@ describe('useCombatStateRestoration', () => {
       },
       wounds: [],
       isUnconscious: false,
-      inventory: []
+      inventory: [],
+      isNPC: false,
+      isPlayer: true
     },
     narrative: '',
     gameProgress: 0,
@@ -48,13 +54,13 @@ describe('useCombatStateRestoration', () => {
     opponent: mockOpponent,
     suggestedActions: [],
     combatState: {
-      playerStrength: 100,
-      opponentStrength: 100,
       currentTurn: 'player' as const,
       combatLog: [{ text: 'Combat started', type: 'info', timestamp: Date.now() }],
       isActive: true,
       combatType: 'brawling',
-      winner: null
+      winner: null,
+      participants: [],
+      rounds: 0
     }
   };
 
@@ -93,8 +99,6 @@ describe('useCombatStateRestoration', () => {
         weapon: undefined
       }),
       expect.objectContaining({
-        playerStrength: 100,
-        opponentStrength: 100,
         currentTurn: 'player',
         combatLog: [{ text: 'Combat started', type: 'info', timestamp: expect.any(Number) }]
       })

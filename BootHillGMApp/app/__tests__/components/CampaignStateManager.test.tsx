@@ -122,7 +122,8 @@ describe('CampaignStateManager', () => {
         wounds: [],
         isUnconscious: false,
         inventory: [],
-        isNPC: false
+        isNPC: false,
+        isPlayer: true
       },
       location: 'Test Town',
       narrative: 'Test narrative',
@@ -147,20 +148,14 @@ describe('CampaignStateManager', () => {
       savedTimestamp: Date.now(),
       isClient: true,
       suggestedActions: [],
-      combatState: expect.objectContaining({
+      combatState: {
         isActive: false,
         combatType: null,
         winner: null,
         combatLog: [],
-        brawling: undefined,
-        currentTurn: undefined,
-        opponentStrength: undefined,
         participants: [],
-        playerStrength: undefined,
-        rounds: 0,
-        selection: undefined,
-        weapon: undefined
-      })
+        rounds: 0
+      }
     };
 
     localStorage.setItem('campaignState', JSON.stringify(testState));
@@ -236,7 +231,8 @@ describe('CampaignStateManager', () => {
         wounds: [],
         isUnconscious: false,
         inventory: [],
-        isNPC: false
+        isNPC: false,
+        isPlayer: true
       },
       location: 'Test Town',
       narrative: 'Test narrative',
@@ -268,9 +264,7 @@ describe('CampaignStateManager', () => {
         combatLog: [],
         brawling: undefined,
         currentTurn: undefined,
-        opponentStrength: undefined,
         participants: [],
-        playerStrength: undefined,
         rounds: 0,
         selection: undefined,
         weapon: undefined

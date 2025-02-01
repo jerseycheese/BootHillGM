@@ -38,10 +38,14 @@ export interface BrawlingState {
   round: 1 | 2;
   playerModifier: number;
   opponentModifier: number;
-  playerStrength: number;
-  playerBaseStrength: number;
-  opponentStrength: number;
-  opponentBaseStrength: number;
+  playerCharacterId: string; // Reference to player Character
+  opponentCharacterId: string; // Reference to opponent Character
+  
+  // No more strength values here
+  // playerStrength: number;
+  // playerBaseStrength: number;
+  // opponentStrength: number;
+  // opponentBaseStrength: number;
   roundLog: LogEntry[];
 }
 
@@ -91,10 +95,13 @@ export interface WeaponCombatState {
   playerWeapon: Weapon | null;
   opponentWeapon: Weapon | null;
   currentRange: number;
-  playerStrength: number;
-  playerBaseStrength: number;
-  opponentStrength: number;
-  opponentBaseStrength: number;
+  playerCharacterId: string; // Reference to player Character
+  opponentCharacterId: string; // Reference to opponent Character
+  // No more strength values here
+  // playerStrength: number;
+  // playerBaseStrength: number;
+  // opponentStrength: number;
+  // opponentBaseStrength: number;
   roundLog: LogEntry[];
   lastAction?: 'aim' | 'fire' | 'reload' | 'move' | 'malfunction';
 }
@@ -146,10 +153,6 @@ export interface CombatState {
   rounds: number;
   
   // Additional properties for state restoration and tracking
-  playerStrength?: number;
-  playerBaseStrength?: number;
-  opponentStrength?: number;
-  opponentBaseStrength?: number;
   currentTurn?: 'player' | 'opponent';
   combatLog?: LogEntry[];
   summary?: CombatSummary;
@@ -233,10 +236,8 @@ export function ensureCombatState(state?: Partial<CombatState>): CombatState {
       round: state.brawling.round,
       playerModifier: state.brawling.playerModifier ?? 0,
       opponentModifier: state.brawling.opponentModifier ?? 0,
-      playerStrength: state.brawling.playerStrength ?? 10,
-      playerBaseStrength: state.brawling.playerBaseStrength ?? 10,
-      opponentStrength: state.brawling.opponentStrength ?? 10,
-      opponentBaseStrength: state.brawling.opponentBaseStrength ?? 10,
+      playerCharacterId: state.brawling.playerCharacterId,
+      opponentCharacterId: state.brawling.opponentCharacterId,
       roundLog: state.brawling.roundLog ?? []
     } : undefined,
     weapon: state?.weapon ? {
@@ -244,17 +245,13 @@ export function ensureCombatState(state?: Partial<CombatState>): CombatState {
       playerWeapon: state.weapon.playerWeapon,
       opponentWeapon: state.weapon.opponentWeapon,
       currentRange: state.weapon.currentRange ?? 0,
-      playerStrength: state.weapon.playerStrength ?? 10,
-      playerBaseStrength: state.weapon.playerBaseStrength ?? 10,
-      opponentStrength: state.weapon.opponentStrength ?? 10,
-      opponentBaseStrength: state.weapon.opponentBaseStrength ?? 10,
+      playerCharacterId: state.weapon.playerCharacterId,
+      opponentCharacterId: state.weapon.opponentCharacterId,
       roundLog: state.weapon.roundLog ?? [],
       lastAction: state.weapon.lastAction
     } : undefined,
     participants: state?.participants ?? [],
     rounds: state?.rounds ?? 0,
-    playerStrength: state?.playerStrength,
-    opponentStrength: state?.opponentStrength,
     currentTurn: state?.currentTurn,
     combatLog: state?.combatLog ?? []
   };

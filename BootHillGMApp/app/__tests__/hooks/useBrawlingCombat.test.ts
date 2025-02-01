@@ -80,10 +80,8 @@ describe('useBrawlingCombat', () => {
       round: 1,
       playerModifier: 0,
       opponentModifier: 0,
-      playerStrength: mockPlayer.attributes.strength,
-      playerBaseStrength: mockPlayer.attributes.baseStrength,
-      opponentStrength: mockOpponent.attributes.strength,
-      opponentBaseStrength: mockOpponent.attributes.baseStrength,
+      playerCharacterId: 'player-1',
+      opponentCharacterId: 'opponent-1',
       roundLog: []
     });
     expect(result.current.isProcessing).toBe(false);
@@ -127,13 +125,19 @@ describe('useBrawlingCombat', () => {
     expect(opponentEntry.text).toContain('Opponent');
 
     expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'SET_OPPONENT',
+      type: 'SET_CHARACTER',
       payload: expect.objectContaining({
+        id: 'player-1',
+        attributes: expect.objectContaining({
+          strength: 9, // Original strength (10) - damage (1)
+          baseStrength: 10
+        }),
         wounds: expect.arrayContaining([
           expect.objectContaining({
-            location: 'chest',
+            location: expect.any(String),
             severity: 'light',
-            strengthReduction: 1
+            strengthReduction: 1,
+            turnReceived: expect.any(Number)
           })
         ])
       })
@@ -188,8 +192,8 @@ describe('useBrawlingCombat', () => {
     expect(playerEntry.text).toContain('Player');
     expect(opponentEntry.text).toContain('Opponent');
 
-    // Verify dispatch was called twice (once for player, once for opponent)
-     expect(mockDispatch).toHaveBeenCalledTimes(11);
+    // Verify dispatch was called for both player and opponent wound applications
+    expect(mockDispatch).toHaveBeenCalledTimes(2);
     
     // Clean up
     jest.useRealTimers();

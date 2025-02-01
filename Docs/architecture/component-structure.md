@@ -57,21 +57,22 @@ This document provides a comprehensive breakdown of the application's component 
 ### Combat System Components
 - **CombatSystem**: Core combat interface
   - [x] Uses useCombatEngine hook for logic
-  - [x] Manages turn-based combat flow
-  - [x] Handles damage calculation
+  - [x] Manages turn-based combat flow using Character references
+  - [x] Handles damage calculation based on Character attributes
   - [x] Maintains combat log
 - **BrawlingEngine**: Core combat calculation engine
   - [x] Handles pure combat logic
-  - [x] Manages damage calculations
+  - [x] Manages damage calculations based on Character attributes
   - [x] Processes combat rules
   - [x] Provides testable interface
 - **Combat UI Components:**
   - [x] CombatStatus: Health display for both combatants
   - [x] CombatControls: Turn and action management
   - [x] CombatLog: Scrollable combat history
-- **Current Status:** Implemented with improved architecture
+- **Current Status:** Implemented with improved architecture with Character references
   - Combat logic extracted to dedicated hook
   - UI components focused on presentation
+  - Strength is derived from Character references, not duplicated in state
   - Enhanced maintainability and testability
 
 ### State Management

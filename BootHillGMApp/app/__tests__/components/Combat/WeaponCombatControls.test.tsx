@@ -12,6 +12,25 @@ jest.mock('../../../types/combat', () => ({
 }));
 
 describe('WeaponCombatControls', () => {
+  const mockOpponent = {
+    id: 'opponent-1',
+    name: 'Test Opponent',
+    isNPC: true,
+    isPlayer: false,
+    attributes: {
+      speed: 10,
+      gunAccuracy: 10,
+      throwingAccuracy: 10,
+      strength: 10,
+      baseStrength: 10,
+      bravery: 10,
+      experience: 5
+    },
+    wounds: [],
+    isUnconscious: false,
+    inventory: []
+  };
+
   const mockInitialState: WeaponCombatState = {
     round: 1,
     playerWeapon: {
@@ -26,7 +45,9 @@ describe('WeaponCombatControls', () => {
     },
     currentRange: 15,
     roundLog: [],
-    lastAction: undefined
+    lastAction: undefined,
+    playerCharacterId: 'player-1',
+    opponentCharacterId: 'opponent-1'
   };
 
   const mockOnAction = jest.fn();
@@ -40,6 +61,7 @@ describe('WeaponCombatControls', () => {
         canAim={true}
         canFire={true}
         canReload={true}
+        opponent={mockOpponent}
         {...props}
       />
     );

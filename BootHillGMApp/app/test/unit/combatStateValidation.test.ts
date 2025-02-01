@@ -12,7 +12,15 @@ describe('combatStateValidation', () => {
         winner: null,
         participants: [],
         rounds: 0,
-        combatLog: []
+        combatLog: [],
+        brawling: {
+          round: 1,
+          playerModifier: 0,
+          opponentModifier: 0,
+          playerCharacterId: 'player-1',
+          opponentCharacterId: 'opponent-1',
+          roundLog: []
+        }
       };
 
       const result = validateCombatEndState(validState);
@@ -54,10 +62,8 @@ describe('combatStateValidation', () => {
           round: 1,
           playerModifier: 0,
           opponentModifier: 0,
-          playerStrength: 10,
-          playerBaseStrength: 10,
-          opponentStrength: 10,
-          opponentBaseStrength: 10,
+          playerCharacterId: 'player-1',
+          opponentCharacterId: 'opponent-1',
           roundLog: []
         } // Test cleanup of brawling property
       };
@@ -78,7 +84,7 @@ describe('combatStateValidation', () => {
         code: 'INVALID_VALUE',
         message: 'Invalid value for combatType',
         property: 'combatType',
-        expected: 'brawling',
+        expected: 'brawling | weapon | null',
         actual: undefined
       });
       expect(result.errors).toContainEqual({
@@ -149,10 +155,8 @@ describe('combatStateValidation', () => {
             round: 1,
             playerModifier: 0,
             opponentModifier: 0,
-            playerStrength: 10,
-            playerBaseStrength: 10,
-            opponentStrength: 10,
-            opponentBaseStrength: 10,
+            playerCharacterId: 'player-1',
+            opponentCharacterId: 'opponent-1',
             roundLog: []
           } as BrawlingState
         },
@@ -188,12 +192,10 @@ describe('combatStateValidation', () => {
             round: 1,
             playerModifier: 0,
             opponentModifier: 0,
-            playerStrength: 10,
-            playerBaseStrength: 10,
-            opponentStrength: 10,
-            opponentBaseStrength: 10,
+            playerCharacterId: 'player-1',
+            opponentCharacterId: 'opponent-1',
             roundLog: []
-          } as BrawlingState
+          }
         } as unknown as CombatState,
       };
       state = gameReducer(invalidState, { type: 'END_COMBAT' });

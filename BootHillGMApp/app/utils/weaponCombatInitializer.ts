@@ -38,11 +38,14 @@ export const initializeWeaponCombatState = (
     playerWeapon,
     opponentWeapon,
     currentRange: 15,
-    playerStrength: playerCharacter.attributes.strength,
-    playerBaseStrength: playerCharacter.attributes.strength,
-    opponentStrength: opponent.attributes.strength,
-    opponentBaseStrength: opponent.attributes.strength,
+    playerCharacterId: playerCharacter.id, // Use character references
+    opponentCharacterId: opponent.id,       // Use character references
     roundLog: [],
-    lastAction: undefined
+    lastAction: undefined,
+    // No more strength values here
+    // playerStrength: playerCharacter.attributes.strength,
+    // playerBaseStrength: playerCharacter.attributes.strength,
+    // opponentStrength: opponent.attributes.strength,
+    // opponentBaseStrength: opponent.attributes.strength,
   };
 };

@@ -8,6 +8,7 @@ import {
 } from '../../types/combat';
 import { calculateRangeModifier } from '../../utils/bootHillCombat';
 import { WeaponDisplay } from './WeaponDisplay';
+import { Character } from '../../types/character';
 
 /**
  * Props for WeaponCombatControls component
@@ -26,6 +27,7 @@ interface WeaponCombatControlsProps {
   canAim: boolean;
   canFire: boolean;
   canReload: boolean;
+  opponent: Character; // Add opponent prop
 }
 
 /**
@@ -47,6 +49,7 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
   canAim,
   canFire,
   canReload,
+  opponent,
 }) => {
   const [showMoveOptions, setShowMoveOptions] = useState(false);
   const [targetRange, setTargetRange] = useState(currentState.currentRange);
@@ -127,17 +130,17 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
           </div>
           <div>
             <h4 className="font-medium">Opponent&#39;s Weapon</h4>
-            {currentState.opponentWeapon ? (
+            {currentState.opponentWeapon && opponent ? (
               <WeaponDisplay participant={{
                 id: 'opponent',
                 name: 'Opponent',
                 isNPC: true,
                 isPlayer: false,
                 weapon: currentState.opponentWeapon,
-                strength: currentState.opponentStrength || 10, // Default to 10 if not set
-                initialStrength: currentState.opponentStrength || 10, // Match initial to current
                 wounds: [],
                 isUnconscious: false,
+                strength: opponent.attributes.strength,
+                initialStrength: opponent.attributes.strength
               }} />
             ) : (
               <p className="text-red-600">No weapon equipped</p>

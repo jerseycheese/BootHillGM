@@ -4,7 +4,6 @@ import { createStateProtection } from '../../utils/stateProtection';
 import { CampaignStateProvider } from '../../components/CampaignStateManager';
 import { GameState } from '../../types/gameState';
 import { Character } from '../../types/character';
-import { ensureCombatState } from '../../types/combat';
 import React from 'react';
 import { setupMocks } from '../../test/setup/mockSetup';
 
@@ -20,10 +19,13 @@ jest.mock('../../utils/stateProtection', () => ({
 
 // Helper function to create a properly structured character
 const createCharacter = (partialCharacter: Partial<Character>): Character => ({
+  id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   ...partialCharacter,
   attributes: { ...partialCharacter.attributes },
   wounds: [...(partialCharacter.wounds || [])],
-  isUnconscious: Boolean(partialCharacter.isUnconscious)
+  isUnconscious: Boolean(partialCharacter.isUnconscious),
+  isNPC: Boolean(partialCharacter.isNPC),
+  isPlayer: Boolean(partialCharacter.isPlayer)
 }) as Character;
 
 // Mock initial state with proper GameState typing and deep object copies
@@ -45,7 +47,9 @@ const mockInitialState: GameState = {
       experience: 0
     },
     wounds: [],
-    isUnconscious: false
+    isUnconscious: false,
+    isNPC: false,
+    isPlayer: true
   }),
   narrative: '',
   gameProgress: 0,
@@ -63,20 +67,22 @@ const mockInitialState: GameState = {
       experience: 0
     },
     wounds: [],
-    isUnconscious: false
+    isUnconscious: false,
+    isNPC: true,
+    isPlayer: false
   }),
   savedTimestamp: Date.now(),
   isClient: true,
   suggestedActions: [],
-  combatState: ensureCombatState({
+  combatState: {
     isActive: false,
     combatType: null,
     winner: null,
-    playerStrength: 10,
-    opponentStrength: 10,
     currentTurn: 'player',
-    combatLog: []
-  })
+    combatLog: [],
+    participants: [],
+    rounds: 0
+  }
 };
 
 describe('useCombatManager', () => {
@@ -117,7 +123,20 @@ describe('useCombatManager', () => {
     expect(result.current.opponent?.name).toBe('Unknown Opponent');
     expect(result.current.character).toEqual(mockInitialState.character);
     expect(result.current.opponent).toEqual(mockInitialState.opponent);
-    expect(result.current.combatState).toEqual(mockInitialState.combatState);
+    // Verify combat state exists and has expected properties
+    expect(result.current.combatState).toBeTruthy();
+    const combatState = result.current.combatState;
+    if (combatState) {
+      expect({
+        isActive: combatState.isActive,
+        combatType: combatState.combatType,
+        winner: combatState.winner,
+        currentTurn: combatState.currentTurn,
+        combatLog: combatState.combatLog,
+        participants: combatState.participants,
+        rounds: combatState.rounds
+      }).toEqual(mockInitialState.combatState);
+    }
 
     await act(async () => {
       await result.current.handleCombatEnd('player', 'Test combat results');

@@ -155,15 +155,7 @@ export const handleCombatResult = (
     // Update the opponent character
     updatedOpponent = updateCharacterAfterHit(defender, damage, newStrength, turnReceived, true);
 
-    // Dispatch actions to update opponent and combat state
-    dispatch({
-      type: 'UPDATE_COMBAT_STATE',
-      payload: {
-        ...combatState,
-        opponentStrength: newStrength
-      }
-    });
-
+    // Dispatch action to update opponent
     dispatch({
       type: 'SET_OPPONENT',
       payload: updatedOpponent

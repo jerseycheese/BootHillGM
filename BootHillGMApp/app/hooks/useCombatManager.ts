@@ -64,22 +64,19 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           });
 
           // Calculate final combat statistics by comparing initial and current strength values
-          const initialPlayerStrength = state.character?.attributes?.strength || 0;
-          const currentPlayerStrength = state.combatState?.playerStrength || 0;
-          const initialOpponentStrength = state.opponent?.attributes?.strength || 0;
-          const currentOpponentStrength = state.combatState?.opponentStrength || 0;
+          const initialPlayerStrength = state.character?.attributes?.strength || 0; // Initial strength from character
+          const currentPlayerStrength = state.character?.attributes?.strength || 0; // Current strength from character
+          const initialOpponentStrength = state.opponent?.attributes?.strength || 0; // Initial strength from opponent
+          const currentOpponentStrength = state.opponent?.attributes?.strength || 0; // Current strength from opponent
 
           // Create combat summary with calculated statistics
-          // - Damage dealt is the difference between opponent's initial and current strength
-          // - Damage taken is the difference between player's initial and current strength
-          // - Use Math.max to ensure non-negative values in case of state inconsistencies
           const combatSummary: CombatSummary = {
             winner,
             results: combatResults,
             stats: {
               rounds: state.combatState?.rounds || 0,
-              damageDealt: Math.max(0, initialOpponentStrength - currentOpponentStrength),
-              damageTaken: Math.max(0, initialPlayerStrength - currentPlayerStrength)
+              damageDealt: Math.max(0, initialOpponentStrength - currentOpponentStrength), // Damage dealt to opponent
+              damageTaken: Math.max(0, initialPlayerStrength - currentPlayerStrength)    // Damage taken by player
             }
           };
 
@@ -176,28 +173,30 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         dispatch({ type: 'SET_OPPONENT', payload: newOpponent });
 
         // Initialize or restore combat state
-        const playerStrength = state.character.attributes.strength ?? 0;
         const combatState = ensureCombatState({
           ...existingCombatState,
           isActive: true,
           combatType: null, // Will be selected later
-          playerStrength,
-          opponentStrength: newOpponent.attributes.strength,
           currentTurn: 'player',
           winner: null,
+          brawling: { // Initialize brawling state with character IDs
+            playerCharacterId: state.character.id,
+            opponentCharacterId: newOpponent.id,
+            round: 1,
+            playerModifier: 0,
+            opponentModifier: 0,
+            roundLog: [],
+          },
           weapon: {
             round: 1,
             playerWeapon: equippedWeapon,
             opponentWeapon: DefaultWeapons.coltRevolver,
             currentRange: 10,
-            playerStrength: state.character.attributes.strength,
-            playerBaseStrength: state.character.attributes.strength,
-            opponentStrength: newOpponent.attributes.strength,
-            opponentBaseStrength: newOpponent.attributes.strength,
+            playerCharacterId: state.character.id, // Use character references
+            opponentCharacterId: newOpponent.id,   // Use character references
             roundLog: [],
           }
         });
-
         // Update combat state with proper type conversion
         dispatch({
           type: 'UPDATE_COMBAT_STATE',

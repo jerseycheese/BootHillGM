@@ -112,11 +112,11 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
       payload: {
         isActive: true,
         combatType: null,
-        playerStrength: state.character?.attributes.strength ?? 0,
-        opponentStrength: response.opponent.attributes.strength,
         currentTurn: 'player',
         winner: null,
-        combatLog: []
+        combatLog: [],
+        participants: [],
+        rounds: 0
       }
     });
     

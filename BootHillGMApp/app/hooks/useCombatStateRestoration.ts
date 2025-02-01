@@ -9,8 +9,6 @@ interface CombatInitiator extends GameSessionWithoutState {
   initiateCombat: (
     opponent: Character,
     combatState: {
-      playerStrength: number;
-      opponentStrength: number;
       currentTurn: 'player' | 'opponent';
       combatLog: LogEntry[];
     }
@@ -75,8 +73,6 @@ export function useCombatStateRestoration(
       gameSession.initiateCombat(
         restoredOpponent,
         {
-          playerStrength: Number(ensuredCombatState.playerStrength ?? 0),
-          opponentStrength: Number(ensuredCombatState.opponentStrength ?? 0),
           currentTurn: ensuredCombatState.currentTurn ?? 'player',
           combatLog: ensuredCombatState.combatLog ?? []
         }
@@ -87,8 +83,6 @@ export function useCombatStateRestoration(
     state,
     state?.isCombatActive,
     state?.opponent?.name,
-    state?.combatState?.playerStrength,
-    state?.combatState?.opponentStrength,
     state?.combatState?.currentTurn,
     gameSession?.isCombatActive
   ]);

@@ -422,3 +422,36 @@ New modules created under `BootHillGMApp/app/utils/ai/`:
 - `characterSummary.ts`: Contains the `generateCharacterSummary` function
 
 The `aiService.tsx` file was updated to import and re-export these functions from their respective modules, acting as a facade.
+
+## ADR 12: Combat State Refactor to Use Character References
+
+### Date: 2025-01-27
+### Status: Accepted
+
+### Context and Problem Statement
+The `CombatState`, `BrawlingState`, and `WeaponCombatState` interfaces were duplicating character strength values, leading to potential inconsistencies and increased state complexity.
+
+### Decision
+Refactored the combat state interfaces to use `Character` references instead of duplicating strength values. Updated the `ensureCombatState` function, `useCombatManager`, `CombatSystem`, `WeaponCombatControls`, `GameplayControls`, `useBrawlingCombat`, `weaponCombatInitializer`, and `combatStateValidation` to use these character references.
+
+### Rationale
+- Reduces data duplication and potential inconsistencies in combat state.
+- Simplifies state management by relying on character references for strength values.
+- Improves code maintainability and reduces the risk of errors related to strength value synchronization.
+- Aligns combat state with character-centric data model.
+
+### Consequences
+
+#### Positive
+- More consistent and reliable combat state.
+- Simplified state management and reduced complexity.
+- Improved code maintainability.
+
+#### Negative
+- Requires updating all components and hooks that interact with combat state to use character references.
+- Potential for introducing regressions during refactoring if not carefully implemented.
+
+### Implementation Notes
+- Modified `CombatState`, `BrawlingState`, and `WeaponCombatState` interfaces in `app/types/combat.ts`.
+- Updated relevant functions and components to use `Character` references for strength calculations.
+- Created new unit tests in `app/tests/combat/stateManagement.test.ts` to cover combat state management with character references.

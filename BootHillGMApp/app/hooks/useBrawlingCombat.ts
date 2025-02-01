@@ -29,16 +29,17 @@ function brawlingReducer(state: BrawlingState, action: BrawlingAction): Brawling
   
   switch (action.type) {
     case 'APPLY_DAMAGE': {
-      const newState = {
-        ...state,
-        playerStrength: action.target === 'player'
-          ? calculateUpdatedStrength(state.playerStrength, action.damage)
-          : state.playerStrength,
-        opponentStrength: action.target === 'opponent'
-          ? calculateUpdatedStrength(state.opponentStrength, action.damage)
-          : state.opponentStrength
-      };
-      return newState;
+      return state; // Strength is updated directly in Character objects
+      // const newState = { // Removed strength updates from reducer
+      //   ...state,
+      //   playerStrength: action.target === 'player'
+      //     ? calculateUpdatedStrength(state.playerStrength, action.damage)
+      //     : state.playerStrength,
+      //   opponentStrength: action.target === 'opponent'
+      //     ? calculateUpdatedStrength(state.opponentStrength, action.damage)
+      //     : state.opponentStrength
+      // };
+      // return newState;
     }
     
     case 'ADD_LOG_ENTRY': {
@@ -83,11 +84,12 @@ function brawlingReducer(state: BrawlingState, action: BrawlingAction): Brawling
     }
 
     case 'SYNC_STRENGTH': {
-      return {
-        ...state,
-        playerStrength: action.playerStrength,
-        opponentStrength: action.opponentStrength
-      };
+      return state; // No longer syncing strength directly in combat state
+      // return {
+      //   ...state,
+      //   playerStrength: action.playerStrength,
+      //   opponentStrength: action.opponentStrength
+      // };
     }
     
     default:
@@ -97,8 +99,8 @@ function brawlingReducer(state: BrawlingState, action: BrawlingAction): Brawling
 
 function isValidCombatState(state: BrawlingState): boolean {
   const isValid = (
-    state.playerStrength >= 0 &&
-    state.opponentStrength >= 0 &&
+    // state.playerStrength >= 0 && // No longer validating strength
+    // state.opponentStrength >= 0 && // No longer validating strength
     (state.round === 1 || state.round === 2) &&
     Array.isArray(state.roundLog)
   );
@@ -117,10 +119,8 @@ export const useBrawlingCombat = ({
     round: initialCombatState?.round || 1,
     playerModifier: initialCombatState?.playerModifier || 0,
     opponentModifier: initialCombatState?.opponentModifier || 0,
-    playerStrength: initialCombatState?.playerStrength || playerCharacter.attributes.strength,
-    playerBaseStrength: initialCombatState?.playerBaseStrength || playerCharacter.attributes.baseStrength,
-    opponentStrength: initialCombatState?.opponentStrength || opponent.attributes.strength,
-    opponentBaseStrength: initialCombatState?.opponentBaseStrength || opponent.attributes.baseStrength,
+    playerCharacterId: playerCharacter.id, // Use character references
+    opponentCharacterId: opponent.id,       // Use character references
     roundLog: initialCombatState?.roundLog || []
   });
   const [isProcessing, setIsProcessing] = useState(false);
@@ -144,8 +144,8 @@ export const useBrawlingCombat = ({
           results: summary,
           stats: {
             rounds: brawlingState.round,
-            damageDealt: playerCharacter.attributes.baseStrength - brawlingState.opponentStrength,
-            damageTaken: opponent.attributes.baseStrength - brawlingState.playerStrength
+            damageDealt: playerCharacter.attributes.baseStrength - opponent.attributes.strength, // Use opponent.attributes.strength
+            damageTaken: opponent.attributes.baseStrength - playerCharacter.attributes.strength // Use playerCharacter.attributes.strength
           }
         }
       })
@@ -158,7 +158,7 @@ export const useBrawlingCombat = ({
         ...playerCharacter,
         attributes: {
           ...playerCharacter.attributes,
-          strength: brawlingState.playerStrength,
+          strength: playerCharacter.attributes.strength, // Use playerCharacter.attributes.strength
           baseStrength: playerCharacter.attributes.baseStrength
         }
       }
@@ -170,7 +170,7 @@ export const useBrawlingCombat = ({
         ...opponent,
         attributes: {
           ...opponent.attributes,
-          strength: brawlingState.opponentStrength,
+          strength: opponent.attributes.strength, // Use opponent.attributes.strength
           baseStrength: opponent.attributes.baseStrength
         }
       }
@@ -189,23 +189,23 @@ export const useBrawlingCombat = ({
         ...playerCharacter,
         attributes: {
           ...playerCharacter.attributes,
-          strength: state.playerStrength,
+          strength: playerCharacter.attributes.strength, // Use playerCharacter.attributes.strength
           baseStrength: playerCharacter.attributes.baseStrength
-        }
       }
-    });
+    }
+  });
 
-    dispatch({
-      type: 'SET_OPPONENT',
-      payload: {
-        ...opponent,
-        attributes: {
-          ...opponent.attributes,
-          strength: state.opponentStrength,
-          baseStrength: opponent.attributes.baseStrength
-        }
+  dispatch({
+    type: 'SET_OPPONENT',
+    payload: {
+      ...opponent,
+      attributes: {
+        ...opponent.attributes,
+        strength: opponent.attributes.strength, // Use opponent.attributes.strength
+        baseStrength: opponent.attributes.baseStrength
       }
-    });
+    }
+  });
 
     // Update combat state
     dispatch({
@@ -218,18 +218,19 @@ export const useBrawlingCombat = ({
     });
   }, [dispatch, isCombatEnded, playerCharacter, opponent]);
 
-  const applyWound = useCallback((isPlayer: boolean, location: "head" | "chest" | "abdomen" | "leftArm" | "rightArm" | "leftLeg" | "rightLeg", damage: number) => {
-    
-    const target = !isPlayer ? playerCharacter : opponent;
-    const currentStrength = !isPlayer ? brawlingState.playerStrength : brawlingState.opponentStrength;
-    const newStrength = calculateUpdatedStrength(currentStrength, damage);
-
-    const wound: Wound = {
-      location,
-      severity: 'light',
-      strengthReduction: damage,
-      turnReceived: Date.now()
-    };
+  
+    const applyWound = useCallback((isPlayer: boolean, location: "head" | "chest" | "abdomen" | "leftArm" | "rightArm" | "leftLeg" | "rightLeg", damage: number) => {
+      
+      const target = !isPlayer ? playerCharacter : opponent;
+      const currentStrength = !isPlayer ? playerCharacter.attributes.strength : opponent.attributes.strength; // Use character attributes
+      const newStrength = calculateUpdatedStrength(currentStrength, damage);
+  
+      const wound: Wound = {
+        severity: 'light',
+        strengthReduction: damage,
+        turnReceived: Date.now(),
+        location: 'head'
+      };
 
     // Update character state first
     const updatedTarget = {
@@ -258,7 +259,7 @@ export const useBrawlingCombat = ({
     });
 
     return { newStrength, location };
-  }, [brawlingState, playerCharacter, opponent, dispatch]);
+  }, [playerCharacter, opponent, dispatch]);
 
   const handleCombatAction = useCallback((isPlayer: boolean, isPunching: boolean) => {
 
@@ -301,8 +302,8 @@ export const useBrawlingCombat = ({
         opponent: !isPlayer ? result.nextRoundModifier : undefined
       });
 
-      // Sync with global state
-      syncWithGlobalState(brawlingState);
+      // Remove sync with global state - strength already updated in applyWound
+      // syncWithGlobalState(brawlingState);
       
       // Check for combat end conditions
       if (newStrength <= 0 || isKnockout(newStrength, result.damage)) {
@@ -357,17 +358,15 @@ export const useBrawlingCombat = ({
       }
 
       // If combat continues, update round and sync states
-      if (!isCombatEnded && brawlingState.playerStrength > 0 && brawlingState.opponentStrength > 0) {
-        
+      if (!isCombatEnded) {
         dispatchBrawling({ type: 'END_ROUND' });
-        syncWithGlobalState(brawlingState);
       }
     } catch (error) {
       throw error;
     } finally {
       setIsProcessing(false);
     }
-  }, [brawlingState, handleCombatAction, syncWithGlobalState, isCombatEnded]);
+  }, [brawlingState, handleCombatAction, isCombatEnded]);
 
   return {
     brawlingState,

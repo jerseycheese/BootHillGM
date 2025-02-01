@@ -128,28 +128,25 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
     return participant.hasOwnProperty('attributes');
   };
 
-  // Use combat state strength if available, otherwise fall back to character attributes
+  // Get player strength from character attributes
   const playerStrength = Math.max(
     0,
-    combatState?.playerStrength ??
-      (isPlayerCharacter(playerCharacter)
-        ? playerCharacter.attributes.strength
-        : playerCharacter.strength)
+    isPlayerCharacter(playerCharacter)
+      ? playerCharacter.attributes.strength
+      : playerCharacter.strength
   );
   
   const maxPlayerStrength = isPlayerCharacter(playerCharacter)
     ? playerCharacter.attributes.baseStrength
     : playerCharacter.strength;
 
-  // Use combat state strength if available, otherwise fall back to opponent attributes or NPC strength
+  // Get opponent strength from character attributes or NPC strength
   const opponentStrength = {
     current: Math.max(
       0,
-      combatState?.opponentStrength ??
-        (isPlayerCharacter(opponent)
-          ? opponent.attributes.strength
-          : (opponent as NPC).strength) ??
-        10
+      isPlayerCharacter(opponent)
+        ? opponent.attributes.strength
+        : (opponent as NPC).strength ?? 10
     ),
     max: isPlayerCharacter(opponent)
       ? opponent.attributes.baseStrength ?? 10

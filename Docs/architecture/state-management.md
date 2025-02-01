@@ -92,9 +92,10 @@ const GameContext = React.createContext<{
 
 #### Combat State
 - Turn management
-- Participant tracking
+- Participant tracking (using Character references)
 - Combat logs
 - Active effects
+- Strength derived from Character references, not duplicated in state
 
 #### Inventory State
 - Item management

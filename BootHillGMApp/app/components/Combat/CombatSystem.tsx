@@ -71,8 +71,8 @@ export const CombatSystem: React.FC<{
         results: summary,
         stats: {
           rounds: brawlingState?.round || 0,
-          damageDealt: playerCharacter.attributes.baseStrength - (brawlingState?.opponentStrength || opponent.attributes.strength),
-          damageTaken: opponent.attributes.baseStrength - (brawlingState?.playerStrength || playerCharacter.attributes.strength)
+          damageDealt: playerCharacter.attributes.baseStrength - opponent.attributes.strength,
+          damageTaken: opponent.attributes.baseStrength - playerCharacter.attributes.strength
         }
       });
       onCombatEnd(winner, summary);
@@ -99,8 +99,8 @@ export const CombatSystem: React.FC<{
         results: summary,
         stats: {
           rounds: weaponState?.round || 0,
-          damageDealt: playerCharacter.attributes.baseStrength - (weaponState?.opponentStrength || opponent.attributes.strength),
-          damageTaken: opponent.attributes.baseStrength - (weaponState?.playerStrength || playerCharacter.attributes.strength)
+          damageDealt: playerCharacter.attributes.baseStrength - opponent.attributes.strength,
+          damageTaken: opponent.attributes.baseStrength - playerCharacter.attributes.strength
         }
       });
       onCombatEnd(winner, summary);
@@ -145,18 +145,14 @@ export const CombatSystem: React.FC<{
       payload: ensureCombatState({
         isActive: true,
         combatType: type,
-        playerStrength: playerCharacter.attributes.strength,
-        opponentStrength: opponent.attributes.strength,
         currentTurn: 'player',
         winner: null,
         brawling: type === 'brawling' ? {
           round: 1 as const,
           playerModifier: 0,
           opponentModifier: 0,
-          playerStrength: playerCharacter.attributes.strength,
-          playerBaseStrength: playerCharacter.attributes.strength,
-          opponentStrength: opponent.attributes.strength,
-          opponentBaseStrength: opponent.attributes.strength,
+          playerCharacterId: playerCharacter.id,
+          opponentCharacterId: opponent.id,
           roundLog: []
         } : undefined,
         weapon: type === 'weapon' ? {
@@ -164,10 +160,8 @@ export const CombatSystem: React.FC<{
           playerWeapon: equippedWeapon || null,
           opponentWeapon: getDefaultWeapon(),
           currentRange: 10,
-          playerStrength: playerCharacter.attributes.strength,
-          playerBaseStrength: playerCharacter.attributes.strength,
-          opponentStrength: opponent.attributes.strength,
-          opponentBaseStrength: opponent.attributes.strength,
+          playerCharacterId: playerCharacter.id,
+          opponentCharacterId: opponent.id,
           roundLog: [],
           lastAction: undefined
         } : undefined
@@ -178,20 +172,18 @@ export const CombatSystem: React.FC<{
   // Handle brawling actions with proper state validation
   const handleBrawlingAction = useCallback(async (isPunching: boolean) => {
 
-    if (isBrawlingEnded || brawlingState?.playerStrength <= 0 || brawlingState?.opponentStrength <= 0) {
+    if (isBrawlingEnded || playerCharacter.attributes.strength <= 0 || opponent.attributes.strength <= 0) { // Use character strength
       return;
     }
 
     await processRound(true, isPunching);
-  }, [brawlingState, processRound, isBrawlingEnded]);
+  }, [processRound, isBrawlingEnded, opponent.attributes.strength, playerCharacter.attributes.strength]);
 
   // Get current combat state for status display
   const currentCombatStateForDisplay: CombatState = useMemo(() => ensureCombatState({
     isActive: !isBrawlingEnded,
     combatType,
     winner: combatSummary?.winner || null,
-    playerStrength: brawlingState?.playerStrength || playerCharacter.attributes.strength,
-    opponentStrength: brawlingState?.opponentStrength || (currentOpponent?.attributes?.strength || opponent.attributes.strength),
     brawling: brawlingState,
     weapon: weaponState,
     currentTurn: 'player',
@@ -208,7 +200,6 @@ export const CombatSystem: React.FC<{
     weaponState,
     playerCharacter,
     opponent,
-    currentOpponent,
     isBrawlingEnded,
     combatSummary
   ]);
@@ -244,6 +235,7 @@ export const CombatSystem: React.FC<{
         <WeaponCombatControls
           isProcessing={isWeaponProcessing}
           currentState={weaponState}
+          opponent={opponent} // Pass opponent prop
           onAction={(action: WeaponCombatAction) => processAction(action)}
           canAim={canAim}
           canFire={canFire}

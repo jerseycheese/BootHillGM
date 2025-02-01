@@ -26,16 +26,14 @@ export function GameplayControls({
     ? ensureCombatState({
         ...state.combatState,
         isActive: true,
-        brawling: {
+        brawling: state.combatState.brawling ? { // Check if brawling state exists
           round: 1,
-          playerModifier: state.combatState.playerStrength ?? 0,
-          opponentModifier: state.combatState.opponentStrength ?? 0,
-          playerStrength: state.combatState.playerStrength ?? 10,
-          playerBaseStrength: state.combatState.playerStrength ?? 10,
-          opponentStrength: state.combatState.opponentStrength ?? 10,
-          opponentBaseStrength: state.combatState.opponentStrength ?? 10,
-          roundLog: state.combatState.combatLog ?? []
-        }
+          playerModifier: state.combatState.brawling.playerModifier ?? 0,
+          opponentModifier: state.combatState.brawling.opponentModifier ?? 0,
+          roundLog: state.combatState.brawling.roundLog ?? [],
+          playerCharacterId: state.character.id,
+          opponentCharacterId: opponent?.id ?? ''
+        } : undefined // Conditionally include brawling state
       })
     : undefined;
 

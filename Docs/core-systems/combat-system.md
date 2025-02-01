@@ -54,10 +54,12 @@ For brawling rules, see [[../boot-hill-rules/base-numbers|Base Numbers Calculati
 ### Combat State
 ```typescript
 interface CombatState {
-  playerHealth: number;
-  opponentHealth: number;
   currentTurn: 'player' | 'opponent';
   combatLog: string[];
+  participants: {
+    playerCharacterId: string;
+    opponentCharacterId: string;
+  },
   weapon?: {
     round: number;
     playerWeapon: Weapon | null;
@@ -68,6 +70,7 @@ interface CombatState {
   };
 }
 ```
+The CombatState interface defines the structure for managing real-time combat data. It tracks the current turn, maintains a combat log, and holds weapon-specific state if weapon combat is active. Importantly, it now uses `playerCharacterId` and `opponentCharacterId` to reference `Character` objects for participants, instead of storing duplicated strength values.
 
 ### Wound System
 ```typescript
@@ -80,13 +83,13 @@ interface Wound {
 ```
 
 ### Strength Validation System
-The strength validation system ensures combat participants' strength values remain within valid ranges and properly accounts for wound effects.
+The strength system ensures combat participants' strength is correctly derived from Character attributes and accounts for wound effects. Strength values are no longer directly managed in the combat state.
 
 #### Key Features
-- Validates strength values during combat state updates
-- Handles wound stacking and timing
-- Maintains minimum strength threshold (1)
-- Tracks strength reduction adjustments
+- Derives strength values from Character attributes during combat calculations
+- Handles wound stacking and timing via Character wounds
+- Uses `calculateCurrentStrength` function to determine effective strength
+- Ensures a minimum strength threshold (1)
 
 #### Wound Effects
 ```typescript
@@ -141,7 +144,7 @@ interface WeaponCombatResult {
 ### Turn Structure
 1. Action selection
 2. Action resolution
-3. State updates
+3. State updates, including participant tracking using Character references
 4. Combat log entry creation
 5. Victory/defeat check
 
