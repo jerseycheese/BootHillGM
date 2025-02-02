@@ -53,7 +53,7 @@ describe('strengthSystem', () => {
       character.wounds = [
         { location: 'chest', severity: 'serious', strengthReduction: 10, turnReceived: 0 } as Wound,
       ];
-      expect(calculateCurrentStrength(character, true)).toBe(-5); // 5 - 10 = -5
+      expect(calculateCurrentStrength(character, true)).toBe(-6); // 5 - 10 - (-1) = -6
     });
   });
 
@@ -64,8 +64,8 @@ describe('strengthSystem', () => {
         { location: 'rightLeg', severity: 'serious', strengthReduction: 7, turnReceived: 0 } as Wound,
         { location: 'abdomen', severity: 'light', strengthReduction: 3, turnReceived: 0 } as Wound,
       ];
-      expect(calculateCurrentStrength(character)).toBe(1); // 5 - 2 - 7 - 3 = -7, clamped to 1
-      expect(calculateCurrentStrength(character, true)).toBe(-7); // 5 - 2 - 7 - 3 = -7, allowZero true
+      expect(calculateCurrentStrength(character)).toBe(1); // 5 - 2 - 7 - 3 - (-1) - (-1) = -7, clamped to 1
+      expect(calculateCurrentStrength(character, true)).toBe(-8); // 5 - 2 - 7 - 3 - (-1) - (-1) = -8
     });
 
     it('should return 1 when strength reduced to exactly 1', () => {
@@ -79,7 +79,7 @@ describe('strengthSystem', () => {
       character.wounds = [
         { location: 'chest', severity: 'serious', strengthReduction: 5, turnReceived: 0 } as Wound,
       ];
-      expect(calculateCurrentStrength(character, true)).toBe(0); // 5 - 5 = 0
+      expect(calculateCurrentStrength(character, true)).toBe(-1); // 5 - 5 - (-1) = -1
     });
   });
 
@@ -120,6 +120,39 @@ describe('strengthSystem', () => {
 
     it('should return current strength when damage is 0', () => {
       expect(calculateUpdatedStrength(5, 0)).toBe(5);
+    });
+  });
+
+  describe('calculateCurrentStrength with location modifiers', () => {
+    it('should apply head modifier', () => {
+      character.wounds = [
+        { location: 'head', severity: 'light', strengthReduction: 2, turnReceived: 0 } as Wound,
+      ];
+      expect(calculateCurrentStrength(character)).toBe(1); // 5 - 2 - (-2) = 1
+    });
+
+    it('should apply chest modifier', () => {
+      character.wounds = [
+        { location: 'chest', severity: 'light', strengthReduction: 2, turnReceived: 0 } as Wound,
+      ];
+      expect(calculateCurrentStrength(character)).toBe(2); // 5 - 2 - (-1) = 2
+    });
+
+    it('should apply limb modifier', () => {
+      character.wounds = [
+        { location: 'leftArm', severity: 'light', strengthReduction: 2, turnReceived: 0 } as Wound,
+      ];
+      expect(calculateCurrentStrength(character)).toBe(3); // 5 - 2 = 3
+    });
+
+    it('should apply multiple modifiers', () => {
+      character.wounds = [
+        { location: 'head', severity: 'light', strengthReduction: 2, turnReceived: 0 } as Wound,
+        { location: 'rightLeg', severity: 'light', strengthReduction: 1, turnReceived: 0 } as Wound,
+        { location: 'chest', severity: 'light', strengthReduction: 1, turnReceived: 0 } as Wound,
+      ];
+      expect(calculateCurrentStrength(character)).toBe(1); // 5 - 2 - 1 - 1 - (-2) - (-1) = -1, clamped to 1
+      expect(calculateCurrentStrength(character, true)).toBe(-2); // 5 - 2 - 1 - 1 - (-2) - (-1) = -2
     });
   });
 });

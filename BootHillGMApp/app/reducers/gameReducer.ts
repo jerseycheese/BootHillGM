@@ -113,7 +113,8 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
             ...state.character.attributes,
             ...(action.payload.attributes || {}),
             baseStrength: state.character.attributes.baseStrength
-          }
+          },
+          wounds: [...(action.payload.wounds || state.character.wounds)],
         }
       };
     case 'SET_NARRATIVE':

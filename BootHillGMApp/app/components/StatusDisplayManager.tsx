@@ -37,6 +37,7 @@ const StrengthBar: React.FC<StrengthBarProps> = ({
   isUnconscious = false,
   onReset
 }) => {
+  console.log('StrengthBar rendered', { current, max });
   const strengthPercentage = Math.max(1, (current / max) * 100);
   
   const getBarColor = (percentage: number): string => {
@@ -159,6 +160,7 @@ const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
   character,
   location
 }) => {
+  console.log('StatusDisplayManager rendered', { character });
   const { dispatch } = useCampaignState();
   const currentStrength = calculateCurrentStrength(character);
   const maxStrength = character.attributes.baseStrength;

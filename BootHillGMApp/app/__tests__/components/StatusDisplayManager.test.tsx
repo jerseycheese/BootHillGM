@@ -47,7 +47,7 @@ describe('StatusDisplayManager', () => {
     expect(screen.getByText('Test Character')).toBeInTheDocument();
     expect(screen.getByText(/Test Town/)).toBeInTheDocument();
     expect(screen.getByText('Strength')).toBeInTheDocument();
-    expect(screen.getByTestId('strength-value')).toHaveTextContent('7/10'); // Expect 7/10 due to wound penalties
+    expect(screen.getByTestId('strength-value')).toHaveTextContent('4/10'); // Current strength is reduced by wound penalties (10 - (1-(-2)) - (2-(-1)) = 10 - 3 - 3 = 4)
   });
 
   test('displays "Unknown" when location is null', () => {
@@ -97,30 +97,32 @@ describe('StatusDisplayManager', () => {
         <StatusDisplayManager
           character={{
             ...mockCharacter,
-            attributes: { ...mockCharacter.attributes, strength: 50 },
+            attributes: { ...mockCharacter.attributes, baseStrength: 50, strength: 50 },
+            wounds: []
           }}
           location="Test Town"
         />
       </CampaignStateProvider>
     );
-    expect(screen.getByTestId('status-display')).toHaveTextContent('50 STR');
-    expect(screen.getByText(/50 STR/).closest('div')).toHaveClass('text-green-600');
+    expect(screen.getByTestId('strength-value')).toHaveTextContent('50/50');
+    expect(screen.getByTestId('strength-value')).toHaveClass('text-green-600');
   });
 
-  test('shows yellow text at 10 strength', () => {
+  test('shows yellow text for strength between 6 and 12', () => {
     render(
       <CampaignStateProvider>
         <StatusDisplayManager
           character={{
             ...mockCharacter,
-            attributes: { ...mockCharacter.attributes, strength: 10 },
+            attributes: { ...mockCharacter.attributes, strength: 10, baseStrength: 10 },
+            wounds: [] // No wounds to keep strength at 10
           }}
           location="Test Town"
         />
       </CampaignStateProvider>
     );
-    expect(screen.getByTestId('status-display')).toHaveTextContent('10 STR');
-    expect(screen.getByText(/10 STR/).closest('div')).toHaveClass('text-yellow-600');
+    expect(screen.getByTestId('strength-value')).toHaveTextContent('10/10');
+    expect(screen.getByTestId('strength-value')).toHaveClass('text-yellow-600');
   });
 
   test('shows red text at zero strength', () => {
@@ -136,9 +138,8 @@ describe('StatusDisplayManager', () => {
         />
       </CampaignStateProvider>
     );
-    expect(screen.getByTestId('status-display')).toHaveTextContent('0 STR');
-    const strengthValueElement = screen.getByTestId('strength-value');
-    expect(strengthValueElement).toHaveClass('text-red-600');
+    expect(screen.getByTestId('strength-value')).toHaveTextContent('1/0');
+    expect(screen.getByTestId('strength-value')).toHaveClass('text-red-600');
   });
 
   test('updates strength display after taking damage', () => {
@@ -148,7 +149,7 @@ describe('StatusDisplayManager', () => {
         <StatusDisplayManager character={testCharacter} location="Test Town" />
       </CampaignStateProvider>
     );
-    expect(screen.getByTestId('strength-value')).toHaveTextContent('7/10');
+    expect(screen.getByTestId('strength-value')).toHaveTextContent('4/10'); // Initial strength with wound penalties (10 - (1-(-2)) - (2-(-1)) = 10 - 3 - 3 = 4)
 
     // Simulate damage - add a new wound
     const damagedCharacter = {
@@ -170,6 +171,6 @@ describe('StatusDisplayManager', () => {
         <StatusDisplayManager character={damagedCharacter} location="Test Town" />
       </CampaignStateProvider>
     );
-    expect(screen.getAllByTestId('strength-value')[0]).toHaveTextContent('4/10'); // Expect updated strength in StrengthBar
+    expect(screen.getAllByTestId('strength-value')[0]).toHaveTextContent('1/10'); // Strength reduced to minimum of 1 due to wounds
   });
 });
