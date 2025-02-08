@@ -112,14 +112,17 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
   );
 
   /**
-   * Updates the player's strength during combat.
+   * Updates a character's strength during combat.
    * Dispatches the new strength value to the campaign state.
    *
-   * @param newStrength - The updated strength value for the player
+   * @param characterType - 'player' or 'opponent'
+   * @param newStrength - The updated strength value
    */
-  const handlePlayerHealthChange = useCallback(
-    (newStrength: number) => {
-      if (!isUpdatingRef.current && state.character) {
+  const handleStrengthChange = useCallback(
+    (characterType: 'player' | 'opponent', newStrength: number) => {
+      if (isUpdatingRef.current) return;
+
+      if (characterType === 'player' && state.character) {
         const currentAttributes = state.character.attributes;
         dispatch({
           type: 'UPDATE_CHARACTER',
@@ -127,9 +130,18 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             attributes: { ...currentAttributes, strength: Number(newStrength) },
           },
         });
+      } else if (characterType === 'opponent' && state.opponent) {
+        const currentAttributes = state.opponent.attributes;
+        dispatch({
+          type: 'SET_OPPONENT',
+          payload: {
+            ...state.opponent,
+            attributes: { ...currentAttributes, strength: Number(newStrength) },
+          },
+        });
       }
     },
-    [dispatch, state.character]
+    [dispatch, state.character, state.opponent]
   );
 
   /**
@@ -222,9 +234,31 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
       return;
     }
 
-    const combatResults = await resolveCombat(state.character, state.opponent);
+    // Create deep copies of characters to track strength changes
+    const playerCopy = {
+      ...state.character,
+      attributes: { ...state.character.attributes }
+    };
+    const opponentCopy = {
+      ...state.opponent,
+      attributes: { ...state.opponent.attributes }
+    };
+
+    // Execute combat
+    const combatResults = await resolveCombat(playerCopy, opponentCopy);
+    
+    // Only update strengths if they've changed
+    if (playerCopy.attributes.strength !== state.character.attributes.strength) {
+      handleStrengthChange('player', playerCopy.attributes.strength);
+    }
+    
+    if (opponentCopy.attributes.strength !== state.opponent.attributes.strength) {
+      handleStrengthChange('opponent', opponentCopy.attributes.strength);
+    }
+
+    // Handle combat end
     handleCombatEnd(combatResults.winner, combatResults.results);
-  }, [state.character, state.opponent, handleCombatEnd, onUpdateNarrative]);
+  }, [state.character, state.opponent, handleStrengthChange, handleCombatEnd, onUpdateNarrative]);
 
 
   /**
@@ -237,7 +271,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
   return {
     ...state,
     handleCombatEnd,
-    handlePlayerHealthChange,
+    handleStrengthChange,
     initiateCombat,
     getCurrentOpponent,
     executeCombatRound,

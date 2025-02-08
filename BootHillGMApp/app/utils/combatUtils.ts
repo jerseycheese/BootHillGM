@@ -126,23 +126,32 @@ export const calculateCombatDamage = (weapon?: { modifiers: { damage: string } }
  * @param opponent - The opponent character
  * @returns An object containing the winner and a detailed description of the combat events
  */
-export const resolveCombat = (player: Character, opponent: Character): { winner: 'player' | 'opponent', results: string } => {
-  let playerStrength = player.attributes.strength;
-  let opponentStrength = opponent.attributes.strength;
-  let combatLog = '';
+import { calculateCurrentStrength, isKnockout, calculateUpdatedStrength, isCharacterDefeated } from './strengthSystem';
 
-  // Simulate combat rounds
+export const resolveCombat = (player: Character, opponent: Character): { winner: 'player' | 'opponent', results: string } => {
+  let combatLog = '';
   let round = 1;
-  while (playerStrength > 0 && opponentStrength > 0) {
+
+  // Initialize starting strengths
+  player.attributes.strength = calculateCurrentStrength(player, true);
+  opponent.attributes.strength = calculateCurrentStrength(opponent, true);
+
+  while (!isCharacterDefeated(player) && !isCharacterDefeated(opponent)) {
     combatLog += `Round ${round}:\n`;
 
     // Player attacks opponent
     const playerRoll = Math.floor(Math.random() * 100) + 1;
     const playerHitChance = 50; // Base hit chance
     const playerDamage = calculateCombatDamage(player.weapon);
+    
     if (playerRoll <= playerHitChance) {
-      opponentStrength -= playerDamage;
-      combatLog += formatHitMessage({
+      
+      // Update opponent's attributes directly since they're being hit
+      opponent.attributes.strength = calculateUpdatedStrength(opponent.attributes.strength, playerDamage);
+      const isKnockedOut = isKnockout(opponent.attributes.strength, playerDamage);
+      
+      
+      const hitMessage = formatHitMessage({
         attackerName: player.name,
         defenderName: opponent.name,
         weaponName: getWeaponName(player),
@@ -150,21 +159,37 @@ export const resolveCombat = (player: Character, opponent: Character): { winner:
         roll: playerRoll,
         hitChance: playerHitChance
       });
+      combatLog += hitMessage + '\n';
+      
+      if (isKnockedOut) {
+        combatLog += `${opponent.name} is knocked out!\n`;
+        break;
+      }
+      
+      if (opponent.attributes.strength <= 0) {
+        combatLog += `${opponent.name} is defeated!\n`;
+        break;
+      }
     } else {
       combatLog += formatMissMessage(player.name, opponent.name, playerRoll, playerHitChance);
     }
 
-    if (opponentStrength <= 0) {
-      break;
-    }
+    // Only continue if opponent is still fighting
+    if (opponent.attributes.strength <= 0) break;
 
     // Opponent attacks player
     const opponentRoll = Math.floor(Math.random() * 100) + 1;
     const opponentHitChance = 50; // Base hit chance
     const opponentDamage = calculateCombatDamage(opponent.weapon);
+    
     if (opponentRoll <= opponentHitChance) {
-      playerStrength -= opponentDamage;
-      combatLog += formatHitMessage({
+      
+      // Update player's attributes directly since they're being hit
+      player.attributes.strength = calculateUpdatedStrength(player.attributes.strength, opponentDamage);
+      const isKnockedOut = isKnockout(player.attributes.strength, opponentDamage);
+      
+      
+      const hitMessage = formatHitMessage({
         attackerName: opponent.name,
         defenderName: player.name,
         weaponName: getWeaponName(opponent),
@@ -172,6 +197,17 @@ export const resolveCombat = (player: Character, opponent: Character): { winner:
         roll: opponentRoll,
         hitChance: opponentHitChance
       });
+      combatLog += hitMessage + '\n';
+      
+      if (isKnockedOut) {
+        combatLog += `${player.name} is knocked out!\n`;
+        break;
+      }
+      
+      if (player.attributes.strength <= 0) {
+        combatLog += `${player.name} is defeated!\n`;
+        break;
+      }
     } else {
       combatLog += formatMissMessage(opponent.name, player.name, opponentRoll, opponentHitChance);
     }
@@ -179,13 +215,12 @@ export const resolveCombat = (player: Character, opponent: Character): { winner:
     round++;
   }
 
-  // Determine the winner
-  const winner = playerStrength > 0 ? 'player' : 'opponent';
+  // Determine the winner based on final strength values and knockout status
+  const winner = player.attributes.strength > opponent.attributes.strength ? 'player' : 'opponent';
+  const winCondition = isKnockout(player.attributes.strength, 0) || isKnockout(opponent.attributes.strength, 0) ? 'knockout' : 'defeat';
 
   // Construct the final combat results
-  const results = winner === 'player' 
-    ? `${player.name} emerges victorious after ${round} rounds of combat.\n${combatLog}`
-    : `${opponent.name} emerges victorious after ${round} rounds of combat.\n${combatLog}`;
+  const results = `${winner === 'player' ? player.name : opponent.name} emerges victorious by ${winCondition} after ${round} rounds of combat.\n${combatLog}`;
 
   return { winner, results };
 };

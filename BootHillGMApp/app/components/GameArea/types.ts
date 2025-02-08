@@ -21,9 +21,9 @@ export interface GameSessionProps {
   handleUserInput: (input: string) => void;
   retryLastAction: () => void;
   handleCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
-  handlePlayerHealthChange: (newHealth: number) => void;
+  handlePlayerHealthChange: (characterType: 'player' | 'opponent', newStrength: number) => void;
   handleUseItem: (itemId: string) => void;
-  handleEquipWeapon: (itemId: string) => void; // Updated property name
+  handleEquipWeapon: (itemId: string) => void;
 }
 
 export interface GameplayControlsProps {
@@ -33,6 +33,6 @@ export interface GameplayControlsProps {
   state: GameState;
   onUserInput: (input: string) => void;
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
-  onPlayerHealthChange: (newHealth: number) => void;
+  onPlayerHealthChange: (characterType: 'player' | 'opponent', newStrength: number) => void;
   dispatch: React.Dispatch<GameEngineAction>;
 }

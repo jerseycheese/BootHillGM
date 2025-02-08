@@ -26,7 +26,8 @@ export const WOUND_EFFECTS = {
  * @returns The strength modifier for that location
  */
 const getLocationModifier = (location: Wound['location']): number => {
-  return LOCATION_MODIFIERS[location]?.modifier || 0;
+  const modifier = LOCATION_MODIFIERS[location]?.modifier || 0;
+  return modifier;
 };
 
 /**
@@ -44,17 +45,20 @@ const getLocationModifier = (location: Wound['location']): number => {
  * @returns The character's current strength value
  */
 export const calculateCurrentStrength = (character: Character, allowZero: boolean = false): number => {
+
   const totalStrengthReduction = character.wounds.reduce(
     (total: number, wound: Wound) => {
       const locationModifier = getLocationModifier(wound.location);
-      // Location modifiers are negative numbers that should increase the total reduction
-      return total + wound.strengthReduction - locationModifier; // Subtracting a negative = adding
+      const reduction = total + wound.strengthReduction - locationModifier;
+      return reduction;
     },
     0
   );
+
   const calculatedStrength = character.attributes.baseStrength - totalStrengthReduction;
-  // Minimum strength is 1 unless checking defeat conditions
-  return allowZero ? calculatedStrength : Math.max(1, calculatedStrength);
+  const finalStrength = allowZero ? calculatedStrength : Math.max(1, calculatedStrength);
+
+  return finalStrength;
 };
 
 /**
@@ -70,9 +74,9 @@ export const calculateCurrentStrength = (character: Character, allowZero: boolea
  */
 export const isCharacterDefeated = (character: Character): boolean => {
   const currentStrength = calculateCurrentStrength(character, true);
-  return character.isUnconscious ||
-         character.wounds.some((w: Wound) => w.severity === 'mortal') ||
-         currentStrength <= 0;
+  const hasMortalWound = character.wounds.some((w: Wound) => w.severity === 'mortal');
+  
+  return character.isUnconscious || hasMortalWound || currentStrength <= 0;
 };
 
 /**
@@ -81,13 +85,14 @@ export const isCharacterDefeated = (character: Character): boolean => {
  * According to Boot Hill rules, a knockout occurs when:
  * - The damage would reduce the character's strength to exactly 0
  * - This is checked before applying location modifiers
+ * - Values below 0 are considered defeats, not knockouts
  * 
  * @param currentStrength The character's current strength before damage
  * @param damage The amount of damage being dealt
  * @returns True if the attack will result in a knockout
  */
 export const isKnockout = (currentStrength: number, damage: number): boolean => {
-  const remainingStrength = Math.max(0, currentStrength - damage);
+  const remainingStrength = currentStrength - damage;
   return remainingStrength === 0;
 };
 
@@ -96,13 +101,14 @@ export const isKnockout = (currentStrength: number, damage: number): boolean => 
  * 
  * This function:
  * - Subtracts damage from current strength
- * - Ensures the result never goes below 0
+ * - Allows negative values for defeat validation
  * - Does not apply location modifiers (those are handled in calculateCurrentStrength)
  * 
  * @param currentStrength The character's current strength before damage
  * @param damage The amount of damage being dealt
- * @returns The new strength value after damage
+ * @returns The new strength value after damage, can be negative
  */
 export const calculateUpdatedStrength = (currentStrength: number, damage: number): number => {
-  return Math.max(0, currentStrength - damage);
+  const newStrength = currentStrength - damage;
+  return newStrength;
 };

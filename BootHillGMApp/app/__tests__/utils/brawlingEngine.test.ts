@@ -1,7 +1,10 @@
-import { calculateUpdatedStrength, isKnockout } from 'app/utils/strengthSystem';
 import { BrawlingEngine } from '../../utils/brawlingEngine';
 import { BrawlingResult } from '../../utils/brawlingSystem';
 
+/**
+ * BrawlingEngine tests
+ * Note: Strength calculation tests are handled in strengthSystem.test.ts
+ */
 describe('BrawlingEngine', () => {
   describe('calculateBrawlingResult', () => {
     it('should calculate punching result correctly', () => {
@@ -108,32 +111,4 @@ describe('BrawlingEngine', () => {
     });
   });
 
-  describe('isKnockout', () => {
-    it('should return true when damage reduces strength to 0', () => {
-      expect(isKnockout(2, 2)).toBe(true);
-      expect(isKnockout(2, 3)).toBe(true);
-    });
-
-    it('should return false when damage does not reduce strength to 0', () => {
-      expect(isKnockout(3, 2)).toBe(false);
-      expect(isKnockout(5, 3)).toBe(false);
-    });
-  });
-
-  describe('calculateUpdatedStrength', () => {
-    it('should reduce strength by damage amount', () => {
-      expect(calculateUpdatedStrength(5, 2)).toBe(3);
-      expect(calculateUpdatedStrength(3, 1)).toBe(2);
-    });
-
-    it('should not reduce strength below 0', () => {
-      expect(calculateUpdatedStrength(2, 3)).toBe(0);
-      expect(calculateUpdatedStrength(1, 5)).toBe(0);
-    });
-
-    it('should handle edge cases', () => {
-      expect(calculateUpdatedStrength(0, 1)).toBe(0);
-      expect(calculateUpdatedStrength(5, 0)).toBe(5);
-    });
-  });
 });

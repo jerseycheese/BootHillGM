@@ -220,9 +220,20 @@ export const useBrawlingCombat = ({
 
   
     const applyWound = useCallback((isPlayer: boolean, location: "head" | "chest" | "abdomen" | "leftArm" | "rightArm" | "leftLeg" | "rightLeg", damage: number) => {
+      // isPlayer indicates if the player is attacking
+      // When isPlayer is true, target the opponent
+      // When isPlayer is false (opponent attacking), target the player
+      const target = isPlayer ? opponent : playerCharacter;
+      const currentStrength = isPlayer ? opponent.attributes.strength : playerCharacter.attributes.strength;
       
-      const target = !isPlayer ? playerCharacter : opponent;
-      const currentStrength = !isPlayer ? playerCharacter.attributes.strength : opponent.attributes.strength; // Use character attributes
+      console.log('applyWound:', {
+        isPlayer,
+        targetName: target.name,
+        currentStrength,
+        damage,
+        location
+      });
+      
       const newStrength = calculateUpdatedStrength(currentStrength, damage);
   
       const wound: Wound = {
@@ -244,9 +255,9 @@ export const useBrawlingCombat = ({
       isUnconscious: newStrength <= 0
     };
 
-    // Update global character state
+    // Update global character state - use isPlayer to determine which character to update
     dispatch({
-      type: !isPlayer ? 'SET_CHARACTER' : 'SET_OPPONENT',
+      type: isPlayer ? 'SET_OPPONENT' : 'SET_CHARACTER',
       payload: updatedTarget
     });
 
@@ -293,7 +304,22 @@ export const useBrawlingCombat = ({
 
     // Apply damage if hit landed
     if (result.damage > 0) {
-      const { newStrength } = applyWound(!isPlayer, result.location, result.damage);
+      console.log('Combat hit:', {
+        isPlayerAction: isPlayer,
+        attackerName: attacker.name,
+        damage: result.damage,
+        location: result.location
+      });
+
+      // Pass isPlayer directly to maintain correct targeting
+      const { newStrength } = applyWound(isPlayer, result.location, result.damage);
+
+      console.log('After damage:', {
+        attackerName: attacker.name,
+        targetName: isPlayer ? opponent.name : playerCharacter.name,
+        newStrength,
+        location: result.location
+      });
 
       // Update modifiers atomically
       dispatchBrawling({

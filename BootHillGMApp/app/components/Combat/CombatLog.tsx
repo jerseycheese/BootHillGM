@@ -2,11 +2,6 @@ import { useEffect, useRef, useCallback } from 'react';
 import { cleanCombatLogEntry } from '../../utils/textCleaningUtils';
 import type { CombatSummary, LogEntry } from '../../types/combat';
 
-// Debug logging function
-const debugLog = (message: string, data?: unknown) => {
-  console.log(`[CombatLog] ${message}`, data ? data : '');
-};
-
 /**
  * Props for the CombatLog component
  */
@@ -46,21 +41,9 @@ export const CombatLog = ({
       };
       if (lastEntryRef.current && lastEntryRef.current.scrollIntoView) { // Check if lastEntryRef.current exists and has scrollIntoView
         lastEntryRef.current.scrollIntoView(scrollOptions);
-      } else {
-        debugLog("lastEntryRef.current is null or undefined or scrollIntoView is not a function, cannot scroll");
       }
     }
   }, [entries, isCombatEnded]);
-
-  // Debug log entry updates
-  useEffect(() => {
-    debugLog('Entries updated:', {
-      count: entries.length,
-      latest: entries[entries.length - 1],
-      isCombatEnded,
-      hasSummary: !!summary
-    });
-  }, [entries, isCombatEnded, summary]);
 
   const getEntryClass = useCallback((type: string) => ({
     'hit': 'bg-green-100 text-green-800',
@@ -75,18 +58,8 @@ export const CombatLog = ({
       typeof entry.text === 'string' && 
       typeof entry.timestamp === 'number' &&
       ['hit', 'miss', 'critical', 'info'].includes(entry.type);
-    
-    if (!isValid) {
-      debugLog('Invalid entry detected:', entry);
-    }
+  
     return isValid;
-  });
-
-  debugLog('Rendering log:', {
-    totalEntries: entries.length,
-    validEntries: validEntries.length,
-    isCombatEnded,
-    hasSummary: !!summary
   });
 
   if (isCombatEnded && summary) {

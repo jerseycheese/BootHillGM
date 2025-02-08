@@ -84,22 +84,24 @@ describe('strengthSystem', () => {
   });
 
   describe('isKnockout', () => {
-    it('should return true if remaining strength is 0', () => {
+    it('should return true when damage reduces strength to exactly 0', () => {
       expect(isKnockout(5, 5)).toBe(true);
     });
 
-    it('should return false if remaining strength is above 0', () => {
+    it('should return false when damage reduces strength above 0', () => {
       expect(isKnockout(5, 3)).toBe(false);
     });
-  });
 
-  describe('isKnockout - edge cases', () => {
-    it('should return true when damage equals current strength', () => {
-      expect(isKnockout(5, 5)).toBe(true);
+    it('should return false when damage reduces strength below 0', () => {
+      expect(isKnockout(5, 7)).toBe(false);
     });
 
-    it('should return false when damage is less than current strength', () => {
-      expect(isKnockout(5, 4)).toBe(false);
+    it('should handle zero initial strength', () => {
+      expect(isKnockout(0, 0)).toBe(true);
+    });
+
+    it('should handle negative initial strength', () => {
+      expect(isKnockout(-2, 0)).toBe(false);
     });
   });
 
@@ -108,18 +110,20 @@ describe('strengthSystem', () => {
       expect(calculateUpdatedStrength(5, 2)).toBe(3);
     });
 
-    it('should not reduce strength below 0', () => {
-      expect(calculateUpdatedStrength(5, 10)).toBe(0);
-    });
-  });
-
-  describe('calculateUpdatedStrength - edge cases', () => {
-    it('should return 0 when damage exceeds current strength', () => {
-      expect(calculateUpdatedStrength(5, 7)).toBe(0);
+    it('should allow strength to go below 0', () => {
+      expect(calculateUpdatedStrength(5, 10)).toBe(-5);
     });
 
-    it('should return current strength when damage is 0', () => {
+    it('should handle zero damage', () => {
       expect(calculateUpdatedStrength(5, 0)).toBe(5);
+    });
+
+    it('should handle negative initial strength', () => {
+      expect(calculateUpdatedStrength(-2, 3)).toBe(-5);
+    });
+
+    it('should handle exact zero result', () => {
+      expect(calculateUpdatedStrength(5, 5)).toBe(0);
     });
   });
 

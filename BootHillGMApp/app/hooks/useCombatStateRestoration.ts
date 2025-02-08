@@ -13,7 +13,8 @@ interface CombatInitiator extends GameSessionWithoutState {
       combatLog: LogEntry[];
     }
   ) => void;
-  onEquipWeapon: (itemId: string) => void; // Add this callback
+  onEquipWeapon: (itemId: string) => void;
+  handlePlayerHealthChange: (characterType: 'player' | 'opponent', newStrength: number) => void;
 }
 
 /**

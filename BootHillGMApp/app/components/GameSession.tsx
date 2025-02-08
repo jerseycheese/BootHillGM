@@ -40,6 +40,7 @@ export default function GameSession() {
     handleEquipWeapon,
     handleUseItem,
     handleCombatAction,
+    handlePlayerHealthChange: gameSession.handleStrengthChange
   };
 
   // Create a combat initiator object that includes both prop versions
@@ -49,7 +50,8 @@ export default function GameSession() {
     onEquipWeapon: handleEquipWeapon,
     handleUseItem,
     initiateCombat: gameSession.initiateCombat,
-    handleCombatAction,
+    handleCombatAction: gameSession.executeCombatRound, // Use executeCombatRound directly
+    handlePlayerHealthChange: gameSession.handleStrengthChange
   };
 
   useCombatStateRestoration(state, combatInitiator);
