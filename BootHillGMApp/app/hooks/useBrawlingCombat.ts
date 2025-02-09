@@ -225,15 +225,6 @@ export const useBrawlingCombat = ({
       // When isPlayer is false (opponent attacking), target the player
       const target = isPlayer ? opponent : playerCharacter;
       const currentStrength = isPlayer ? opponent.attributes.strength : playerCharacter.attributes.strength;
-      
-      console.log('applyWound:', {
-        isPlayer,
-        targetName: target.name,
-        currentStrength,
-        damage,
-        location
-      });
-      
       const newStrength = calculateUpdatedStrength(currentStrength, damage);
   
       const wound: Wound = {
@@ -304,22 +295,9 @@ export const useBrawlingCombat = ({
 
     // Apply damage if hit landed
     if (result.damage > 0) {
-      console.log('Combat hit:', {
-        isPlayerAction: isPlayer,
-        attackerName: attacker.name,
-        damage: result.damage,
-        location: result.location
-      });
 
       // Pass isPlayer directly to maintain correct targeting
       const { newStrength } = applyWound(isPlayer, result.location, result.damage);
-
-      console.log('After damage:', {
-        attackerName: attacker.name,
-        targetName: isPlayer ? opponent.name : playerCharacter.name,
-        newStrength,
-        location: result.location
-      });
 
       // Update modifiers atomically
       dispatchBrawling({

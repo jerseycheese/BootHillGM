@@ -19,7 +19,9 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { debounce } from 'lodash';
 import { Character } from '../types/character';
+import { CombatState } from '../types/combat';
 import { calculateHitChance, rollD100, isCritical } from '../utils/combatRules';
+import { getCharacterStrength, validateStrengthValue } from '../utils/strengthSystem';
 import { 
   cleanCharacterName,
   getWeaponName,
@@ -35,6 +37,7 @@ interface UseCombatEngineProps {
   onCombatEnd: (winner: 'player' | 'opponent') => void;
   onPlayerHealthChange: (health: number) => void;
   dispatch: React.Dispatch<GameEngineAction>;
+  combatState: CombatState;
   initialState?: {
     playerHealth: number;
     opponentHealth: number;
@@ -56,10 +59,16 @@ export const useCombatEngine = ({
   onCombatEnd,
   onPlayerHealthChange,
   dispatch,
+  combatState,
   initialState
 }: UseCombatEngineProps) => {
-  const [playerHealth, setPlayerHealth] = useState(initialState?.playerHealth ?? 100);
-  const [opponentHealth, setOpponentHealth] = useState(initialState?.opponentHealth ?? 100);
+  // Initialize health using the centralized strength system
+  const [playerHealth, setPlayerHealth] = useState(
+    initialState?.playerHealth ?? getCharacterStrength(playerCharacter)
+  );
+  const [opponentHealth, setOpponentHealth] = useState(
+    initialState?.opponentHealth ?? getCharacterStrength(opponent)
+  );
   const [currentTurn, setCurrentTurn] = useState<'player' | 'opponent'>(initialState?.currentTurn ?? 'player');
   const [combatLog, setCombatLog] = useState<CombatLogEntry[]>(initialState?.combatLog ?? []);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -104,6 +113,10 @@ export const useCombatEngine = ({
 
       if (isPlayer) {
         const newHealth = Math.max(0, opponentHealth - damage);
+        // Validate the new strength value
+        if (!validateStrengthValue(newHealth, opponent, combatState)) {
+          console.warn('Invalid strength value calculated for opponent');
+        }
         setOpponentHealth(newHealth);
         if (newHealth === 0) {
           combatEndRef.current = true;
@@ -112,6 +125,10 @@ export const useCombatEngine = ({
         }
       } else {
         const newHealth = Math.max(0, playerHealth - damage);
+        // Validate the new strength value
+        if (!validateStrengthValue(newHealth, playerCharacter, combatState)) {
+          console.warn('Invalid strength value calculated for player');
+        }
         setPlayerHealth(newHealth);
         onPlayerHealthChange(newHealth);
         if (newHealth === 0) {
@@ -132,7 +149,18 @@ export const useCombatEngine = ({
       );
     }
     return false;
-  }, [playerHealth, opponentHealth, addToCombatLog, onCombatEnd, onPlayerHealthChange, setPlayerHealth, setOpponentHealth]);
+  }, [
+    opponent,
+    playerCharacter,
+    playerHealth,
+    opponentHealth,
+    addToCombatLog,
+    onCombatEnd,
+    onPlayerHealthChange,
+    setPlayerHealth,
+    setOpponentHealth,
+    combatState
+  ]);
 
   /**
    * Handles player's combat turn.
@@ -147,7 +175,13 @@ export const useCombatEngine = ({
       setCurrentTurn('opponent');
     }
     setIsProcessing(false);
-  }, [isProcessing, currentTurn, performAttack, playerCharacter, opponent]);
+  }, [
+    isProcessing,
+    currentTurn,
+    performAttack,
+    playerCharacter,
+    opponent
+  ]);
 
   /**
    * Handles opponent's combat turn.
@@ -162,7 +196,12 @@ export const useCombatEngine = ({
       setCurrentTurn('player');
     }
     setIsProcessing(false);
-  }, [currentTurn, performAttack, opponent, playerCharacter]);
+  }, [
+    currentTurn,
+    performAttack,
+    opponent,
+    playerCharacter
+  ]);
 
   /**
    * Creates a debounced dispatch function to prevent excessive state updates.
@@ -178,15 +217,15 @@ export const useCombatEngine = ({
    * Ensures combat state persistence and synchronization with the game engine.
    */
   useEffect(() => {
-    const combatState = {
+    const localCombatState = {
       playerStrength: playerHealth,
       opponentStrength: opponentHealth,
       currentTurn,
-      combatLog
+      combatLog,
     };
     debouncedDispatch({
       type: 'UPDATE_COMBAT_STATE',
-      payload: combatState
+      payload: localCombatState,
     });
 
     return () => {

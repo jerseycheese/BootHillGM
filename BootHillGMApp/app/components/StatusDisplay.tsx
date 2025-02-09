@@ -1,14 +1,18 @@
 import React from 'react';
 import { MAX_STRENGTH, MIN_STRENGTH } from '../utils/combat/strengthUtils';
 import { Character } from '../types/character';
-import { calculateCurrentStrength } from '../utils/strengthSystem';
+import { CombatState } from '../types/combat';
+import { getCharacterStrength } from '../utils/strengthSystem';
 
 interface StatusDisplayProps {
   character: Pick<Character, 'attributes'>;
+  combatState?: CombatState;
 }
 
-export function StatusDisplay({ character }: StatusDisplayProps) {
-  const strength = calculateCurrentStrength(character as Character);
+export function StatusDisplay({ character, combatState }: StatusDisplayProps) {
+  const strength = getCharacterStrength(character as Character, combatState);
+  // TODO: Consider refactoring to use a utility function for color thresholds
+  // if MAX_STRENGTH changes, these thresholds may need review
   const strengthColor =
     strength === MIN_STRENGTH
       ? 'text-red-600'

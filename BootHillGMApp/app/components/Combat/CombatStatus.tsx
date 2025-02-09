@@ -19,6 +19,7 @@ import { CombatParticipant, NPC } from '../../types/combat';
 import { Wound } from '../../types/wound';
 import { CombatState } from '../../types/combat';
 import { cleanCharacterName } from '../../utils/combatUtils';
+import { getCharacterStrength } from '../../utils/strengthSystem';
 
 interface StrengthDisplayProps {
   current: number;
@@ -128,26 +129,20 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
     return participant.hasOwnProperty('attributes');
   };
 
-  // Get player strength from character attributes
-  const playerStrength = Math.max(
-    0,
-    isPlayerCharacter(playerCharacter)
-      ? playerCharacter.attributes.strength
-      : playerCharacter.strength
-  );
-  
+  // Get player strength using centralized strength system
+  // Ensure we have a valid character before calculating strength
+  const playerStrength = isPlayerCharacter(playerCharacter) ? 
+    getCharacterStrength(playerCharacter, combatState) : 
+    playerCharacter.strength || 1;
   const maxPlayerStrength = isPlayerCharacter(playerCharacter)
     ? playerCharacter.attributes.baseStrength
     : playerCharacter.strength;
 
-  // Get opponent strength from character attributes or NPC strength
+  // Get opponent strength using centralized strength system
   const opponentStrength = {
-    current: Math.max(
-      0,
-      isPlayerCharacter(opponent)
-        ? opponent.attributes.strength
-        : (opponent as NPC).strength ?? 10
-    ),
+    current: isPlayerCharacter(opponent) ? 
+      getCharacterStrength(opponent as Character, combatState) : 
+      (opponent as NPC).strength || 1,
     max: isPlayerCharacter(opponent)
       ? opponent.attributes.baseStrength ?? 10
       : (opponent as NPC).initialStrength ?? 10,

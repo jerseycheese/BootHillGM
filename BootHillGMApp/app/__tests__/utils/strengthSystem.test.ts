@@ -1,9 +1,11 @@
-import { calculateCurrentStrength, isKnockout, calculateUpdatedStrength } from '../../utils/strengthSystem';
+import { calculateCurrentStrength, isKnockout, calculateUpdatedStrength, getCharacterStrength, validateStrengthValue } from '../../utils/strengthSystem';
 import { Character } from '../../types/character';
 import { Wound } from '../../types/wound';
+import { CombatState } from '../../types/combat';
 
 describe('strengthSystem', () => {
   let character: Character;
+  let combatState: CombatState;
 
   beforeEach(() => {
     character = {
@@ -27,6 +29,23 @@ describe('strengthSystem', () => {
       isNPC: false,
       isPlayer: false,
     } as Character;
+
+    combatState = {
+      isActive: true,
+      combatType: 'weapon',
+      winner: null,
+      participants: [character],
+      rounds: 1,
+      weapon: {
+        playerWeapon: null,
+        opponentWeapon: null,
+        round: 1,
+        currentRange: 10,
+        roundLog: [],
+        playerCharacterId: 'test-char',
+        opponentCharacterId: 'opponent-char'
+      }
+    };
   });
 
   describe('calculateCurrentStrength', () => {
@@ -157,6 +176,60 @@ describe('strengthSystem', () => {
       ];
       expect(calculateCurrentStrength(character)).toBe(1); // 5 - 2 - 1 - 1 - (-2) - (-1) = -1, clamped to 1
       expect(calculateCurrentStrength(character, true)).toBe(-2); // 5 - 2 - 1 - 1 - (-2) - (-1) = -2
+    });
+  });
+
+  describe('getCharacterStrength', () => {
+    it('should return base strength when no combat state is provided', () => {
+      expect(getCharacterStrength(character)).toBe(5);
+    });
+
+    it('should return base strength when combat state has no modifiers', () => {
+      expect(getCharacterStrength(character, combatState)).toBe(5);
+    });
+
+    it('should not go below 1 with combat modifiers', () => {
+      character.wounds = [
+        { location: 'chest', severity: 'serious', strengthReduction: 10, turnReceived: 0 } as Wound,
+      ];
+      expect(getCharacterStrength(character, combatState)).toBe(1);
+    });
+
+    it('should handle wounds and combat state together', () => {
+      character.wounds = [
+        { location: 'leftArm', severity: 'light', strengthReduction: 2, turnReceived: 0 } as Wound,
+      ];
+      expect(getCharacterStrength(character, combatState)).toBe(3);
+    });
+  });
+
+  describe('validateStrengthValue', () => {
+    it('should return true for matching strength values', () => {
+      expect(validateStrengthValue(5, character)).toBe(true);
+    });
+
+    it('should return true for values within floating point tolerance', () => {
+      expect(validateStrengthValue(5.001, character)).toBe(true);
+    });
+
+    it('should return false for mismatched strength values', () => {
+      expect(validateStrengthValue(4, character)).toBe(false);
+    });
+
+    it('should validate combat-modified strength', () => {
+      character.wounds = [
+        { location: 'chest', severity: 'light', strengthReduction: 2, turnReceived: 0 } as Wound,
+      ];
+      expect(validateStrengthValue(2, character, combatState)).toBe(true);
+    });
+
+    it('should handle validation with multiple wounds', () => {
+      character.wounds = [
+        { location: 'head', severity: 'light', strengthReduction: 2, turnReceived: 0 } as Wound,
+        { location: 'chest', severity: 'light', strengthReduction: 1, turnReceived: 0 } as Wound,
+      ];
+      expect(validateStrengthValue(1, character, combatState)).toBe(true);
+      expect(validateStrengthValue(2, character, combatState)).toBe(false);
     });
   });
 });

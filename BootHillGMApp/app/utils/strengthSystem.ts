@@ -8,6 +8,7 @@
 
 import { Character } from '../types/character';
 import { Wound } from '../types/wound';
+import { CombatState } from '../types/combat';
 import { LOCATION_MODIFIERS } from '../constants/woundModifiers';
 
 /**
@@ -46,7 +47,12 @@ const getLocationModifier = (location: Wound['location']): number => {
  */
 export const calculateCurrentStrength = (character: Character, allowZero: boolean = false): number => {
 
-  const totalStrengthReduction = character.wounds.reduce(
+  // Handle case where character or attributes might be undefined
+  if (!character?.attributes?.baseStrength) {
+    return 1; // Return minimum strength if character data is invalid
+  }
+
+  const totalStrengthReduction = (character.wounds || []).reduce(
     (total: number, wound: Wound) => {
       const locationModifier = getLocationModifier(wound.location);
       const reduction = total + wound.strengthReduction - locationModifier;
@@ -74,9 +80,9 @@ export const calculateCurrentStrength = (character: Character, allowZero: boolea
  */
 export const isCharacterDefeated = (character: Character): boolean => {
   const currentStrength = calculateCurrentStrength(character, true);
-  const hasMortalWound = character.wounds.some((w: Wound) => w.severity === 'mortal');
+  const hasMortalWound = (character.wounds || []).some((w: Wound) => w.severity === 'mortal');
   
-  return character.isUnconscious || hasMortalWound || currentStrength <= 0;
+  return Boolean(character?.isUnconscious) || hasMortalWound || currentStrength <= 0;
 };
 
 /**
@@ -111,4 +117,50 @@ export const isKnockout = (currentStrength: number, damage: number): boolean => 
 export const calculateUpdatedStrength = (currentStrength: number, damage: number): number => {
   const newStrength = currentStrength - damage;
   return newStrength;
+};
+
+/**
+ * Gets the combat-specific strength reduction for a character
+ * @param {Character} character The character to check for combat effects
+ * @param {CombatState} combatState The current combat state
+ * @returns {number} The total strength reduction from combat effects
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getCombatStrengthReduction = (character: Character, combatState: CombatState): number => {
+  // TODO: Implement combat-specific modifiers based on character state and combat conditions
+  // For now, return 0 until combat modifiers are defined in the combat system
+  return 0;
+};
+
+/**
+ * Gets a character's current strength value, accounting for both base calculations
+ * and any combat-specific modifiers
+ * @param character The character whose strength to calculate
+ * @param combatState Optional combat state for combat-specific modifiers
+ * @returns The character's current strength value
+ */
+export const getCharacterStrength = (character: Character, combatState?: CombatState): number => {
+  const baseStrength = calculateCurrentStrength(character);
+  if (combatState) {
+    // Apply combat-specific modifiers
+    const combatReduction = getCombatStrengthReduction(character, combatState);
+    return Math.max(1, baseStrength - combatReduction);
+  }
+  return baseStrength;
+};
+
+/**
+ * Validates that a strength value matches what would be calculated
+ * @param strength The strength value to validate
+ * @param character The character to check against
+ * @param combatState Optional combat state for combat-specific modifiers
+ * @returns True if the strength value is valid
+ */
+export const validateStrengthValue = (
+  strength: number,
+  character: Character,
+  combatState?: CombatState
+): boolean => {
+  const calculated = getCharacterStrength(character, combatState);
+  return Math.abs(strength - calculated) <= 0.01; // Allow small floating point differences
 };
