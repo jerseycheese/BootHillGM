@@ -94,6 +94,7 @@ export const createLogEntry = (
  * @returns A wound object.
  */
 export const createWound = (damage: number, turnReceived: number): Wound => ({
+  damage,
   location: 'chest' as const,
   severity: damage >= 7 ? 'mortal' : damage >= 3 ? 'serious' : 'light',
   strengthReduction: damage >= 7 ? WOUND_EFFECTS.MORTAL : damage >= 3 ? WOUND_EFFECTS.SERIOUS : WOUND_EFFECTS.LIGHT,

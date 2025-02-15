@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { Character } from '../types/character';
-import { calculateCurrentStrength } from '../utils/strengthSystem';
+import { getCharacterStrength } from '../utils/strengthSystem';
 import { cleanLocationText } from '../utils/textCleaningUtils';
 import { useCampaignState } from './CampaignStateManager';
 import { StatusDisplay } from './StatusDisplay';
@@ -160,7 +160,7 @@ const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
   location
 }) => {
   const { dispatch } = useCampaignState();
-  const currentStrength = calculateCurrentStrength(character);
+  const currentStrength = getCharacterStrength(character);
   const maxStrength = character.attributes.baseStrength;
 
   const handleResetStrength = () => {

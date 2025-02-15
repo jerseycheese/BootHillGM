@@ -71,14 +71,16 @@ export const CombatSystem: React.FC<{
         results: summary,
         stats: {
           rounds: brawlingState?.round || 0,
-          damageDealt: playerCharacter.attributes.baseStrength - opponent.attributes.strength,
-          damageTaken: opponent.attributes.baseStrength - playerCharacter.attributes.strength
-        }
+          damageDealt:
+            playerCharacter.attributes.strength - opponent.attributes.strength,
+          damageTaken:
+            opponent.attributes.strength - playerCharacter.attributes.strength,
+        },
       });
       onCombatEnd(winner, summary);
     },
     dispatch,
-    initialCombatState: initialCombatState?.brawling
+    initialCombatState: initialCombatState?.brawling,
   });
 
   // Weapon combat logic and state
@@ -99,15 +101,17 @@ export const CombatSystem: React.FC<{
         results: summary,
         stats: {
           rounds: weaponState?.round || 0,
-          damageDealt: playerCharacter.attributes.baseStrength - opponent.attributes.strength,
-          damageTaken: opponent.attributes.baseStrength - playerCharacter.attributes.strength
-        }
+          damageDealt:
+            playerCharacter.attributes.strength - opponent.attributes.strength,
+          damageTaken:
+            opponent.attributes.strength - playerCharacter.attributes.strength,
+        },
       });
       onCombatEnd(winner, summary);
     },
     dispatch,
     initialState: initialCombatState?.weapon,
-    combatState: initialCombatState || ensureCombatState()
+    combatState: initialCombatState || ensureCombatState(),
   });
 
   // Handle returning to narrative UI

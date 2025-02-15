@@ -4,7 +4,7 @@
 
 The Strength System in Boot Hill is a core mechanic that governs a character's physical power and resilience. It is primarily used in combat but can also influence other actions and interactions within the game.
 
-This system is now implemented in the `strengthSystem.ts` module, which provides functions for calculating strength, determining defeat, and handling strength updates.
+This system is implemented in the `strengthSystem.ts` module, which provides functions for calculating strength, determining defeat/knockout, and handling strength updates, including a detailed strength history.
 
 ## Key Concepts
 
@@ -18,19 +18,37 @@ This system is now implemented in the `strengthSystem.ts` module, which provides
 ### Current Strength
 
 *   Represents a character's current physical strength, which can be reduced by wounds.
-*   Calculated by subtracting the total strength reduction from wounds from the base strength, using the `calculateCurrentStrength` function.
+*   Calculated by subtracting the total strength reduction from wounds (accounting for location modifiers) from the character's *current* strength, using the `getCharacterStrength` function.
 *   Cannot go below 1 unless explicitly allowed (e.g., for defeat checks).
 *   Used in combat calculations, such as determining damage dealt in brawls.
 
 ### Wounds
 
 *   Inflicted during combat or other dangerous situations.
-*   Each wound has a location (e.g., "Left Leg", "Right Arm", "Body", "Head") and a severity ("Light", "Serious", "Mortal").
-*   Each wound severity has an associated strength reduction value, defined in `WOUND_EFFECTS`:
+*   Each wound has a:
+    *   `location` (e.g., "Left Leg", "Right Arm", "Body", "Head")
+    *   `severity` ("Light", "Serious", "Mortal")
+    *   `damage` value
+    *   `strengthReduction` value (calculated based on damage and location modifiers)
+*   Each wound severity has an associated *base* strength reduction value, defined in `WOUND_EFFECTS`:
     *   Light: 3
     *   Serious: 7
     *   Mortal: Infinity
+*   Location modifiers can *increase* the strength reduction (negative modifiers in `LOCATION_MODIFIERS`).
 *   Multiple wounds can be sustained, and their effects stack.
+
+### Strength History
+
+*   Tracks changes to a character's strength over time.
+*   Stored in the `strengthHistory` property of the `Character` object.
+*   Includes:
+    *   `baseStrength`: The character's base strength.
+    *   `changes`: An array of `StrengthChange` objects, each representing a change in strength.
+*   `StrengthChange` objects include:
+    *   `previousValue`: The strength value before the change.
+    *   `newValue`: The strength value after the change.
+    *   `reason`: The reason for the change (e.g., "damage", "healing").
+    *   `timestamp`: The time the change occurred.
 
 ### Unconsciousness
 
@@ -41,9 +59,9 @@ This system is now implemented in the `strengthSystem.ts` module, which provides
 
 The `strengthSystem.ts` module provides the following functions:
 
-### `calculateCurrentStrength(character: Character, allowZero: boolean = false): number`
+### `getCharacterStrength(character: Character, allowZero: boolean = false): number`
 
-Calculates a character's current strength, accounting for wound penalties.
+Calculates a character's current strength, accounting for wound penalties and location modifiers.
 
 *   **Parameters:**
     *   `character`: The `Character` object whose strength is being calculated.
@@ -52,7 +70,7 @@ Calculates a character's current strength, accounting for wound penalties.
 
 ### `isCharacterDefeated(character: Character): boolean`
 
-Determines if a character is defeated based on Boot Hill v2 rules. A character is defeated if they are unconscious, has a mortal wound, or their current strength is 0 or less.
+Determines if a character is defeated based on Boot Hill v2 rules. A character is defeated if they are unconscious, have a mortal wound, or their current strength is 0 or less.
 
 *   **Parameters:**
     *   `character`: The `Character` object being checked for defeat.
@@ -67,46 +85,58 @@ Determines if an attack will result in a knockout. A knockout occurs when remain
     *   `damage`: The amount of damage taken.
 *   **Returns:** `true` if the attack results in a knockout, `false` otherwise.
 
-### `calculateUpdatedStrength(currentStrength: number, damage: number): number`
+### `calculateUpdatedStrength(character: Character, damage: number): { newStrength: number, updatedHistory: StrengthHistory }`
 
-Calculates the new strength value after taking damage. Ensures strength never goes below 0.
+Calculates the new strength value after taking damage, and logs the change to the character's strength history.
 
 *   **Parameters:**
-    *   `currentStrength`: The character's current strength.
+    *   `character`: The `Character` object taking damage.
     *   `damage`: The amount of damage taken.
-*   **Returns:** The updated strength value as a number.
+*   **Returns:** An object containing the new strength (`newStrength`) and the updated strength history (`updatedHistory`).
+
+### `validateStrengthChange(currentStrength: number, newStrength: number, baseStrength: number): boolean`
+
+Validates a proposed strength change, ensuring that the new strength does not exceed the base strength or current strength (unless it's a healing scenario, which is not yet implemented).
+
+*    **Parameters:**
+     *   `currentStrength`: The character's current strength.
+     *   `newStrength`: The proposed new strength.
+     *   `baseStrength`: The character's base strength.
+*   **Returns:** `true` if the change is valid, `false` otherwise.
+
+### `validateStrengthValue(strength: number, character: Character): boolean`
+
+Validates that a given strength value matches the calculated strength for a character, allowing for minor floating-point differences.
+
+*   **Parameters:**
+    *   `strength`: The strength value to validate.
+    *   `character`: The `Character` object to check against.
+*   **Returns:** `true` if the strength value is valid, `false` otherwise.
 
 ## Data Flow
 
-1. **Character Creation:**
+1.  **Character Creation:**
     *   `baseStrength` is determined either randomly or through AI generation.
     *   `strength` is initially set equal to `baseStrength`.
+    *   `strengthHistory` is initialized, with the first entry reflecting the initial strength.
 
-2. **Combat:**
+2.  **Combat:**
     *   In brawling combat, damage dealt is calculated based on the attacker's current `strength` and a dice roll.
-    *   In weapon combat, damage is determined by the weapon's damage rating, but a character's `strength` may still be relevant for certain actions or modifiers.
+    *   In weapon combat, damage is determined by the weapon's damage rating.
     *   When a character takes damage, a wound is inflicted.
-    *   The `strengthReduction` of the wound is subtracted from the character's `baseStrength` to calculate their new `strength` using `calculateUpdatedStrength`.
+    *   The `calculateUpdatedStrength` function is called to:
+        *   Calculate the new strength value (accounting for damage and location modifiers).
+        *   Update the character's `strengthHistory` with a new `StrengthChange` entry.
     *   If `strength` reaches 0 or below, the character becomes unconscious, as determined by `isCharacterDefeated`.
 
-3. **Status Display:**
-    *   The `StatusDisplayManager` component calculates the `currentStrength` using the `calculateCurrentStrength` function from `strengthSystem.ts`.
-    *   The `currentStrength` and `baseStrength` are passed to the `StrengthBar` component for visual representation.
-    *   The `WoundDisplay` component displays the character's wounds, including their severity and `strengthReduction`.
+3.  **Status Display:**
+    *   The `StatusDisplayManager` component calculates the `currentStrength` using the `getCharacterStrength` function from `strengthSystem.ts`.
+    *   The `currentStrength` and `baseStrength` are passed to the `StatusDisplay` component for visual representation.
+    *   The `StatusDisplay` component also displays the character's `strengthHistory` in reverse chronological order.
 
-4. **Game State Updates:**
-    *   The `gameReducer` handles actions that modify a character's `strength`, `baseStrength`, and `wounds`.
-    *   The `useBrawlingCombat` and `useWeaponCombat` hooks update the combat state, including `playerStrength` and `opponentStrength`, which are used during combat calculations.
-
-## Redundancies and Potential Improvements
-
-*   **Redundant Strength Values:** The `CombatState` interface includes `playerStrength`, `playerBaseStrength`, `opponentStrength`, and `opponentBaseStrength`. These values duplicate the `strength` and `baseStrength` attributes of the `Character` objects. This redundancy could be eliminated by directly referencing the `Character` objects within `CombatState`.
-*   **Complex Calculations in Components:** The `CombatStatus` component performs calculations related to strength, such as determining the maximum strength for players and opponents. These calculations could be moved to utility functions or hooks to improve code organization and reusability.
-*   **Inconsistent Use of Strength:** The code uses both `character.attributes.strength` and `combatState.playerStrength` in different places. This inconsistency could be resolved by consistently using `combatState` values during combat and updating the `Character` object after combat ends.
-
-## Conclusion
-
-The Strength System is a crucial part of Boot Hill's combat and character management. The implementation has been refactored into a dedicated `strengthSystem.ts` module, improving code organization and maintainability. Further improvements can be made by addressing the redundancies and inconsistencies noted above, and by fully aligning the implementation with the base game rules.
+4.  **Game State Updates:**
+    *   The `gameReducer` handles actions that modify a character's `strength`, `baseStrength`, `wounds`, and `strengthHistory`.
+    *   The `useBrawlingCombat` and `useWeaponCombat` hooks update the combat state, using `calculateUpdatedStrength` to update character strength and history.
 
 ## Base Game Rules for Strength
 
@@ -159,11 +189,11 @@ The Strength System is a crucial part of Boot Hill's combat and character manage
 
 - **Brawling Damage:** The base game rules specify that brawling damage is based on the attacker's Strength Base (STB), which is `strength ÷ 10` (round down). The app's implementation currently uses the character's current `strength` attribute directly for damage calculation, without dividing by 10.
 - **Weapon Combat:** The base game rules specify that strength may modify damage for certain weapons (e.g., melee weapons). The app's implementation does not currently incorporate strength modifiers for weapon damage.
-- **Wound Penalties:** The implementation uses fixed values for wound penalties (Light: 3, Serious: 7, Mortal: Infinity), while the base game rules specify a range based on the wound's location (Light: 2-5, Serious: 5-10, Mortal: 10-25).
+- **Wound Penalties:** The implementation uses `damage` and `strengthReduction` on wounds. The `strengthReduction` is calculated based on damage and location modifiers.
 
 ### Healing
 
-- The base game rules specify that non-brawling wounds heal 1 strength point per week, and brawling damage heals 1 point per hour of rest. The app's implementation currently does not have a time system, so healing is handled differently. The `StatusDisplayManager` component has a button to reset strength, but this is primarily for development and testing purposes.
+- The base game rules specify that non-brawling wounds heal 1 strength point per week, and brawling damage heals 1 point per hour of rest. The app's implementation currently does not have a time system, so healing is handled differently.
 
 ### Other Differences
 
@@ -177,12 +207,10 @@ These differences should be addressed in order to bring the app's strength syste
 
 To further improve the strength system's implementation and bring it closer to the base game rules, the following refactors are suggested:
 
-1. **Centralize Strength Calculations:** **Completed.** All strength-related calculations are now consolidated in `strengthSystem.ts`.
-2. **Refactor Combat State:** Modify the `CombatState` interface to directly reference `Character` objects instead of storing separate strength values. **Pending.**
-3. **Align Brawling Damage with Base Rules:** Update `brawlingEngine.ts` and `useBrawlingCombat.ts` to use Strength Base (STB) for brawling damage. **Pending.**
-4. **Implement Wound Location Modifiers:** Update the `Wound` type and `strengthSystem.ts` to apply wound penalties based on location. **Pending.**
-5. **Implement Campaign Rules:** Implement time system, healing rules, and aging effects on strength. **Pending.**
-6. **Streamline Character Creation:** Enforce the 8-20 range for `baseStrength` during character creation. **Pending.**
-7. **Consider Other Uses of Strength:** Design and implement systems for carrying capacity and physical feat checks. **Pending.**
+1.  **Refactor Combat State:** Modify the `CombatState` interface to directly reference `Character` objects instead of storing separate strength values. **Pending.**
+2.  **Align Brawling Damage with Base Rules:** Update `brawlingEngine.ts` and `useBrawlingCombat.ts` to use Strength Base (STB) for brawling damage. **Pending.**
+3.  **Implement Campaign Rules:** Implement time system, healing rules, and aging effects on strength. **Pending.**
+4.  **Streamline Character Creation:** Enforce the 8-20 range for `baseStrength` during character creation. **Pending.**
+5.  **Consider Other Uses of Strength:** Design and implement systems for carrying capacity and physical feat checks. **Pending.**
 
 These refactors will result in a more robust, maintainable, and accurate implementation of the strength system, aligning it more closely with the original Boot Hill v2 rules while also simplifying the codebase.

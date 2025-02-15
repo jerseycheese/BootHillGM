@@ -1,6 +1,7 @@
 import { InventoryItem } from './inventory';
 import { Weapon } from './inventory';
 import { Wound } from './wound';
+import { StrengthHistory } from '../utils/strengthSystem';
 
 /**
  * Character type definitions following Boot Hill v2 rules
@@ -73,6 +74,9 @@ export interface Character {
 
   /** Equipped weapon */
   equippedWeapon?: InventoryItem;
+
+  /** Strength history */
+  strengthHistory?: StrengthHistory;
 }
 
 export interface CombatLogEntry {

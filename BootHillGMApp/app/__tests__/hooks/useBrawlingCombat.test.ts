@@ -124,24 +124,25 @@ describe('useBrawlingCombat', () => {
     expect(playerEntry.text).toContain('Player punches with Light Hit');
     expect(opponentEntry.text).toContain('Opponent');
 
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'SET_CHARACTER',
-      payload: expect.objectContaining({
-        id: 'player-1',
-        attributes: expect.objectContaining({
-          strength: 9, // Original strength (10) - damage (1)
-          baseStrength: 10
+  expect(mockDispatch).toHaveBeenCalledWith({
+    type: 'SET_OPPONENT',
+    payload: expect.objectContaining({
+      id: 'opponent-1',
+      attributes: expect.objectContaining({
+        baseStrength: 8,
+        strength: 7,
+      }),
+      wounds: expect.arrayContaining([
+        expect.objectContaining({
+          location: 'chest',
+          severity: 'light',
+          damage: 1,
+          strengthReduction: 1,
+          turnReceived: expect.any(Number),
         }),
-        wounds: expect.arrayContaining([
-          expect.objectContaining({
-            location: expect.any(String),
-            severity: 'light',
-            strengthReduction: 1,
-            turnReceived: expect.any(Number)
-          })
-        ])
-      })
-    });
+      ]),
+    }),
+  });
     
     // Clean up
     jest.useRealTimers();
@@ -192,10 +193,10 @@ describe('useBrawlingCombat', () => {
     expect(playerEntry.text).toContain('Player');
     expect(opponentEntry.text).toContain('Opponent');
 
-    // Verify dispatch was called for both player and opponent wound applications
-    expect(mockDispatch).toHaveBeenCalledTimes(2);
-    
-    // Clean up
+     // Check for SET_CHARACTER and SET_OPPONENT actions after player's action
+     expect(mockDispatch.mock.calls.some(call => call[0].type === 'SET_CHARACTER')).toBe(true);
+     expect(mockDispatch.mock.calls.some(call => call[0].type === 'SET_OPPONENT')).toBe(true);
+
     jest.useRealTimers();
   });
 

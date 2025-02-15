@@ -59,7 +59,6 @@ export const useCombatEngine = ({
   onCombatEnd,
   onPlayerHealthChange,
   dispatch,
-  combatState,
   initialState
 }: UseCombatEngineProps) => {
   // Initialize health using the centralized strength system
@@ -114,7 +113,7 @@ export const useCombatEngine = ({
       if (isPlayer) {
         const newHealth = Math.max(0, opponentHealth - damage);
         // Validate the new strength value
-        if (!validateStrengthValue(newHealth, opponent, combatState)) {
+        if (!validateStrengthValue(newHealth, opponent)) {
           console.warn('Invalid strength value calculated for opponent');
         }
         setOpponentHealth(newHealth);
@@ -126,7 +125,7 @@ export const useCombatEngine = ({
       } else {
         const newHealth = Math.max(0, playerHealth - damage);
         // Validate the new strength value
-        if (!validateStrengthValue(newHealth, playerCharacter, combatState)) {
+        if (!validateStrengthValue(newHealth, playerCharacter)) {
           console.warn('Invalid strength value calculated for player');
         }
         setPlayerHealth(newHealth);
@@ -158,8 +157,7 @@ export const useCombatEngine = ({
     onCombatEnd,
     onPlayerHealthChange,
     setPlayerHealth,
-    setOpponentHealth,
-    combatState
+    setOpponentHealth
   ]);
 
   /**

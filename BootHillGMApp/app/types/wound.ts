@@ -7,6 +7,8 @@ export interface Wound {
   strengthReduction: number;
   /** Combat turn when the wound was received */
   turnReceived: number;
+  /** Damage caused by the wound */
+  damage: number;
 }
 
 export type WoundLocation = 'head' | 'chest' | 'abdomen' | 'leftArm' | 'rightArm' | 'leftLeg' | 'rightLeg';

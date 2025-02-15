@@ -132,7 +132,7 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   // Get player strength using centralized strength system
   // Ensure we have a valid character before calculating strength
   const playerStrength = isPlayerCharacter(playerCharacter) ? 
-    getCharacterStrength(playerCharacter, combatState) : 
+    getCharacterStrength(playerCharacter) : 
     playerCharacter.strength || 1;
   const maxPlayerStrength = isPlayerCharacter(playerCharacter)
     ? playerCharacter.attributes.baseStrength
@@ -141,7 +141,7 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   // Get opponent strength using centralized strength system
   const opponentStrength = {
     current: isPlayerCharacter(opponent) ? 
-      getCharacterStrength(opponent as Character, combatState) : 
+      getCharacterStrength(opponent as Character) : 
       (opponent as NPC).strength || 1,
     max: isPlayerCharacter(opponent)
       ? opponent.attributes.baseStrength ?? 10

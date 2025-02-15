@@ -8,7 +8,6 @@
 
 import { Character } from '../types/character';
 import { Wound } from '../types/wound';
-import { CombatState } from '../types/combat';
 import { LOCATION_MODIFIERS } from '../constants/woundModifiers';
 
 /**
@@ -35,33 +34,41 @@ const getLocationModifier = (location: Wound['location']): number => {
  * Calculates a character's current strength, accounting for wound penalties and location modifiers.
  * 
  * The calculation follows these steps:
- * 1. Start with the character's base strength
+ * 1. Start with the character's *current* strength (not base strength)
  * 2. For each wound:
- *    - Apply the wound's strength reduction
+ *    - Calculate the strength reduction based on wound damage and location
  *    - Apply the location-specific modifier (negative modifiers increase reduction)
  * 3. Ensure strength doesn't fall below 1 unless checking defeat conditions
- * 
+ *
  * @param character The character whose strength is being calculated
  * @param allowZero If true, allows strength to go below 1 (used for defeat checks)
  * @returns The character's current strength value
  */
-export const calculateCurrentStrength = (character: Character, allowZero: boolean = false): number => {
-
+export const getCharacterStrength = (
+  character: Character,
+  allowZero: boolean = false
+): number => {
   // Handle case where character or attributes might be undefined
-  if (!character?.attributes?.baseStrength) {
+  if (!character?.attributes?.strength) {
     return 1; // Return minimum strength if character data is invalid
   }
+
+  // Start with the *current* strength, not base strength
+  const currentStrength = character.attributes.strength;
 
   const totalStrengthReduction = (character.wounds || []).reduce(
     (total: number, wound: Wound) => {
       const locationModifier = getLocationModifier(wound.location);
-      const reduction = total + wound.strengthReduction - locationModifier;
-      return reduction;
+      // Calculate reduction for this wound and add to total
+      // Negative modifiers increase damage, so subtract the modifier
+      const woundReduction = wound.strengthReduction - locationModifier;
+      return total + woundReduction;
     },
     0
   );
 
-  const calculatedStrength = character.attributes.baseStrength - totalStrengthReduction;
+  // Calculate final strength by subtracting total reduction from current strength
+  const calculatedStrength = currentStrength - totalStrengthReduction;
   const finalStrength = allowZero ? calculatedStrength : Math.max(1, calculatedStrength);
 
   return finalStrength;
@@ -79,7 +86,7 @@ export const calculateCurrentStrength = (character: Character, allowZero: boolea
  * @returns True if the character is defeated, false otherwise
  */
 export const isCharacterDefeated = (character: Character): boolean => {
-  const currentStrength = calculateCurrentStrength(character, true);
+  const currentStrength = getCharacterStrength(character, true);
   const hasMortalWound = (character.wounds || []).some((w: Wound) => w.severity === 'mortal');
   
   return Boolean(character?.isUnconscious) || hasMortalWound || currentStrength <= 0;
@@ -103,64 +110,121 @@ export const isKnockout = (currentStrength: number, damage: number): boolean => 
 };
 
 /**
- * Calculates the new strength value after taking damage.
+ * Interface for tracking strength changes
+ */
+interface StrengthChange {
+    previousValue: number;
+    newValue: number;
+    reason: string; // e.g., 'damage', 'healing', 'adjustment'
+    timestamp: Date;
+}
+
+/**
+ * Interface for a character's strength history
+ */
+export interface StrengthHistory {
+    changes: StrengthChange[];
+    baseStrength: number;
+}
+
+/**
+ * Validates a proposed strength change.
+ * 
+ * Ensures that:
+ * - New strength never exceeds base strength.
+ * - New strength never exceeds current strength (unless it's a healing scenario, not implemented yet).
+ * - Strength stays within the valid range (0 to baseStrength).
+ * 
+ * @param currentStrength The character's current strength.
+ * @param newStrength The proposed new strength value.
+ * @param baseStrength The character's base strength.
+ * @returns True if the change is valid, false otherwise.
+ */
+function validateStrengthChange(
+    currentStrength: number,
+    newStrength: number,
+    baseStrength: number
+): boolean {
+    // For now, we only allow strength to decrease or stay the same.
+    if (newStrength > currentStrength) {
+        return false;
+    }
+    if (newStrength > baseStrength) {
+        return false;
+    }
+    if (newStrength < 0) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Calculates the new strength value after taking damage, and logs the change.
  * 
  * This function:
  * - Subtracts damage from current strength
- * - Allows negative values for defeat validation
- * - Does not apply location modifiers (those are handled in calculateCurrentStrength)
+ * - Prevents strength from going below 0
+ * - Validates the change to prevent increases
+ * - Logs the change to the character's strength history
  * 
- * @param currentStrength The character's current strength before damage
+ * @param character The character taking damage
  * @param damage The amount of damage being dealt
- * @returns The new strength value after damage, can be negative
+ * @returns An object containing the new strength and updated strength history
  */
-export const calculateUpdatedStrength = (currentStrength: number, damage: number): number => {
-  const newStrength = currentStrength - damage;
-  return newStrength;
-};
+export const calculateUpdatedStrength = (character: Character, damage: number): { newStrength: number, updatedHistory: StrengthHistory } => {
+    const currentStrength = character.attributes.strength;
+    let newStrength = currentStrength - damage;
 
-/**
- * Gets the combat-specific strength reduction for a character
- * @param {Character} character The character to check for combat effects
- * @param {CombatState} combatState The current combat state
- * @returns {number} The total strength reduction from combat effects
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getCombatStrengthReduction = (character: Character, combatState: CombatState): number => {
-  // TODO: Implement combat-specific modifiers based on character state and combat conditions
-  // For now, return 0 until combat modifiers are defined in the combat system
-  return 0;
-};
+    // Ensure strength doesn't go below 0
+    newStrength = Math.max(0, newStrength);
 
-/**
- * Gets a character's current strength value, accounting for both base calculations
- * and any combat-specific modifiers
- * @param character The character whose strength to calculate
- * @param combatState Optional combat state for combat-specific modifiers
- * @returns The character's current strength value
- */
-export const getCharacterStrength = (character: Character, combatState?: CombatState): number => {
-  const baseStrength = calculateCurrentStrength(character);
-  if (combatState) {
-    // Apply combat-specific modifiers
-    const combatReduction = getCombatStrengthReduction(character, combatState);
-    return Math.max(1, baseStrength - combatReduction);
-  }
-  return baseStrength;
+    // Validate the change
+    if (!validateStrengthChange(currentStrength, newStrength, character.attributes.baseStrength)) {
+        // In a real application, we might throw an error or log this differently.
+        console.warn("Invalid strength change prevented. Returning current strength.");
+        return { newStrength: currentStrength, updatedHistory: character.strengthHistory! };
+    }
+
+    let updatedHistory: StrengthHistory;
+
+    // Log the change to strength history
+    if (character.strengthHistory) {
+        const newChange = {
+            previousValue: currentStrength,
+            newValue: newStrength,
+            reason: 'damage', // Could be more specific (e.g., 'brawling damage', 'weapon damage')
+            timestamp: new Date(),
+        };
+        updatedHistory = {
+            ...character.strengthHistory,
+            changes: [...character.strengthHistory.changes, newChange]
+        }
+
+    } else {
+        // Initialize strength history if it doesn't exist
+        updatedHistory = {
+            baseStrength: character.attributes.baseStrength,
+            changes: [{
+                previousValue: character.attributes.baseStrength, // Use baseStrength for initial value
+                newValue: newStrength,
+                reason: 'damage',
+                timestamp: new Date(),
+            }],
+        };
+    }
+    return { newStrength, updatedHistory };
 };
 
 /**
  * Validates that a strength value matches what would be calculated
  * @param strength The strength value to validate
  * @param character The character to check against
- * @param combatState Optional combat state for combat-specific modifiers
  * @returns True if the strength value is valid
  */
 export const validateStrengthValue = (
   strength: number,
   character: Character,
-  combatState?: CombatState
 ): boolean => {
-  const calculated = getCharacterStrength(character, combatState);
+  const calculated = getCharacterStrength(character);
   return Math.abs(strength - calculated) <= 0.01; // Allow small floating point differences
 };

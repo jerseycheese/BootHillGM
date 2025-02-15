@@ -24,12 +24,14 @@ describe('StatusDisplayManager', () => {
       {
         location: 'head',
         severity: 'light',
+        damage: 1,
         strengthReduction: 1,
         turnReceived: 1,
       },
       {
         location: 'chest',
         severity: 'serious',
+        damage: 2,
         strengthReduction: 2,
         turnReceived: 2,
       },
@@ -159,7 +161,8 @@ describe('StatusDisplayManager', () => {
         {
           location: 'leftArm' as const,
           severity: 'light' as const,
-          strengthReduction: 3,
+          damage: 1,
+          strengthReduction: 1,
           turnReceived: 3, // Example turn
         },
       ],
@@ -171,6 +174,6 @@ describe('StatusDisplayManager', () => {
         <StatusDisplayManager character={damagedCharacter} location="Test Town" />
       </CampaignStateProvider>
     );
-    expect(screen.getAllByTestId('strength-value')[0]).toHaveTextContent('1/10'); // Strength reduced to minimum of 1 due to wounds
+    expect(screen.getAllByTestId('strength-value')[0]).toHaveTextContent('3/10'); // Strength reduced to minimum of 1 due to wounds
   });
 });
