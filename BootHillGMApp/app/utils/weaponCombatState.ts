@@ -170,7 +170,12 @@ export const handleCombatResult = (
     // Dispatch action to update player character
     dispatch({
       type: 'UPDATE_CHARACTER',
-      payload: updatedPlayer
+      payload: {
+        id: updatedPlayer.id,
+        attributes: updatedPlayer.attributes,
+        wounds: updatedPlayer.wounds,
+        strengthHistory: updatedPlayer.strengthHistory
+      }
     });
 
     return updatedPlayer;

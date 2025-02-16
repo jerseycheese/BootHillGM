@@ -1,7 +1,7 @@
 import { renderHook, act } from "@testing-library/react";
 import { useBrawlingCombat } from "../../hooks/useBrawlingCombat";
 import { Character } from "../../types/character";
-import { GameEngineAction } from "../../types/gameActions";
+import { GameEngineAction, UpdateCharacterPayload } from "../../types/gameActions";
 import { resolveBrawlingRound } from "../../utils/brawlingSystem";
 
 jest.mock("../../utils/brawlingSystem", () => ({
@@ -100,34 +100,36 @@ describe("Combat Integration Tests", () => {
     // Simulate a player punch that hits
     await act(() => result.current.processRound(true, true));
 
-    // Find the SET_OPPONENT action and get the updated character
+    // Find the UPDATE_CHARACTER action and get the updated character
     const opponentUpdateAction = mockDispatch.mock.calls.find(
-      (call) => call[0].type === "SET_OPPONENT"
+      (call) => call[0].type === "UPDATE_CHARACTER" && call[0].payload.id === "opponent"
     );
     expect(opponentUpdateAction).toBeDefined();
 
     const updatedOpponent = (
-      opponentUpdateAction![0] as { type: "SET_OPPONENT"; payload: Character }
+      opponentUpdateAction![0] as { type: "UPDATE_CHARACTER"; payload: UpdateCharacterPayload }
     ).payload;
 
     // Verify strength reduction
-    expect(updatedOpponent.attributes.strength).toBeLessThan(
+    expect(updatedOpponent.attributes?.strength ?? 0).toBeLessThan(
       initialOpponent.attributes.strength
     );
 
     // Verify strength history tracking
-    expect(updatedOpponent.strengthHistory?.changes.length).toBe(2);
+    expect(updatedOpponent.strengthHistory?.changes.length ?? 0).toBe(2);
     const lastChange = updatedOpponent.strengthHistory!.changes[1];
     expect(lastChange.previousValue).toBe(initialOpponent.attributes.strength);
-    expect(lastChange.newValue).toBe(updatedOpponent.attributes.strength);
+    expect(lastChange.newValue).toBe(updatedOpponent.attributes?.strength ?? 0);
     expect(lastChange.reason).toBe('damage');
     expect(lastChange.timestamp).toBeInstanceOf(Date);
 
     // Verify wound was recorded
-    expect(updatedOpponent.wounds.length).toBe(1);
-    const wound = updatedOpponent.wounds[0];
-    expect(wound.damage).toBe(2); // From mock return value
-    expect(wound.location).toBe('head'); // From mock return value
+    expect(updatedOpponent.wounds?.length ?? 0).toBe(1);
+    const wound = updatedOpponent.wounds?.[0];
+    if (wound) {
+      expect(wound.damage).toBe(2); // From mock return value
+      expect(wound.location).toBe('head'); // From mock return value
+    }
   });
 
   it("should track strength history for knockout", async () => {
@@ -181,18 +183,18 @@ describe("Combat Integration Tests", () => {
 
     await act(() => result.current.processRound(true, true));
 
-    // Find the SET_OPPONENT action to verify strength history
+    // Find the UPDATE_CHARACTER action to verify strength history
     const opponentUpdateAction = mockDispatch.mock.calls.find(
-      (call) => call[0].type === "SET_OPPONENT"
+      (call) => call[0].type === "UPDATE_CHARACTER" && call[0].payload.id === "opponent"
     );
     expect(opponentUpdateAction).toBeDefined();
 
     const updatedOpponent = (
-      opponentUpdateAction![0] as { type: "SET_OPPONENT"; payload: Character }
+      opponentUpdateAction![0] as { type: "UPDATE_CHARACTER"; payload: UpdateCharacterPayload }
     ).payload;
 
     // Verify strength history for knockout
-    expect(updatedOpponent.strengthHistory?.changes.length).toBe(2);
+    expect(updatedOpponent.strengthHistory?.changes.length ?? 0).toBe(2);
     const knockoutChange = updatedOpponent.strengthHistory!.changes[1];
     expect(knockoutChange.previousValue).toBe(12); // Initial strength of opponent
     expect(knockoutChange.newValue).toBeLessThanOrEqual(0); // Knockout
@@ -245,18 +247,18 @@ describe("Combat Integration Tests", () => {
 
     await act(() => result.current.processRound(true, true));
 
-     // Find the SET_OPPONENT action to verify strength history
+     // Find the UPDATE_CHARACTER action to verify strength history
     const opponentUpdateAction = mockDispatch.mock.calls.find(
-      (call) => call[0].type === "SET_OPPONENT"
+      (call) => call[0].type === "UPDATE_CHARACTER" && call[0].payload.id === "opponent"
     );
     expect(opponentUpdateAction).toBeDefined();
 
     const updatedOpponent = (
-      opponentUpdateAction![0] as { type: "SET_OPPONENT"; payload: Character }
+      opponentUpdateAction![0] as { type: "UPDATE_CHARACTER"; payload: UpdateCharacterPayload }
     ).payload;
 
     // Verify strength history for defeat
-    expect(updatedOpponent.strengthHistory?.changes.length).toBe(2);
+    expect(updatedOpponent.strengthHistory?.changes.length ?? 0).toBe(2);
     const defeatChange = updatedOpponent.strengthHistory!.changes[1];
     expect(defeatChange.previousValue).toBe(12); // Initial strength
     expect(defeatChange.newValue).toBe(10); // Defeat

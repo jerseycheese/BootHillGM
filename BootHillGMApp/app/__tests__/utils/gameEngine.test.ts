@@ -50,7 +50,11 @@ describe('gameReducer', () => {
       isUnconscious: false,
       inventory: [],
       weapon: undefined,
-      equippedWeapon: undefined
+      equippedWeapon: undefined,
+      strengthHistory: {
+        baseStrength: 8, // Match the baseStrength in attributes
+        changes: [],
+      },
     };
     const action: GameEngineAction = { type: 'SET_CHARACTER', payload: mockCharacter };
     const newState = gameReducer(initialState, action);

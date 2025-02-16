@@ -9,6 +9,17 @@ describe('StatusDisplayManager', () => {
     isNPC: false,
     isPlayer: true,
     id: 'some-id',
+    strengthHistory: {
+      baseStrength: 10,
+      changes: [
+        {
+          previousValue: 10,
+          newValue: 8,
+          reason: 'Test Wound',
+          timestamp: new Date(),
+        },
+      ],
+    },
     name: 'Test Character',
     inventory: [],
     attributes: {
@@ -175,5 +186,38 @@ describe('StatusDisplayManager', () => {
       </CampaignStateProvider>
     );
     expect(screen.getAllByTestId('strength-value')[0]).toHaveTextContent('3/10'); // Strength reduced to minimum of 1 due to wounds
+  });
+
+  test('does not show strength history when no changes exist', () => {
+    const mockCharacterWithoutHistory: Character = {
+      ...mockCharacter,
+      strengthHistory: { baseStrength: 10, changes: [] },
+    };
+    render(
+      <CampaignStateProvider>
+        <StatusDisplayManager character={mockCharacterWithoutHistory} location="Test Town" />
+      </CampaignStateProvider>
+    );
+    expect(screen.queryByTestId('strength-history')).not.toBeInTheDocument();
+  });
+
+  test('shows strength history when changes exist', () => {
+    const characterWithHistory: Character = {
+      ...mockCharacter,
+    };
+
+    render(
+      <CampaignStateProvider>
+        <StatusDisplayManager character={characterWithHistory} location="Test Town" />
+      </CampaignStateProvider>
+    );
+
+    const historySection = screen.getByTestId('strength-history');
+    expect(historySection).toBeInTheDocument();
+
+    // Check if changes are displayed in reverse chronological order
+    const changes = screen.getAllByTestId(/strength-change-/);
+    expect(changes).toHaveLength(1);
+    expect(changes[0]).toHaveTextContent('10 → 8');
   });
 });

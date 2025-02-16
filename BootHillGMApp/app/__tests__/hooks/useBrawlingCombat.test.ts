@@ -30,7 +30,8 @@ const mockPlayer: Character = {
   },
   wounds: [],
   isUnconscious: false,
-  inventory: []
+  inventory: [],
+  strengthHistory: {baseStrength: 10, changes: []}
 };
 
 const mockOpponent: Character = {
@@ -49,7 +50,8 @@ const mockOpponent: Character = {
   },
   wounds: [],
   isUnconscious: false,
-  inventory: []
+  inventory: [],
+  strengthHistory: {baseStrength: 8, changes: []}
 };
 
 const mockDispatch = jest.fn();
@@ -124,25 +126,21 @@ describe('useBrawlingCombat', () => {
     expect(playerEntry.text).toContain('Player punches with Light Hit');
     expect(opponentEntry.text).toContain('Opponent');
 
-  expect(mockDispatch).toHaveBeenCalledWith({
-    type: 'SET_OPPONENT',
-    payload: expect.objectContaining({
-      id: 'opponent-1',
-      attributes: expect.objectContaining({
-        baseStrength: 8,
-        strength: 7,
-      }),
-      wounds: expect.arrayContaining([
-        expect.objectContaining({
-          location: 'chest',
-          severity: 'light',
-          damage: 1,
-          strengthReduction: 1,
-          turnReceived: expect.any(Number),
-        }),
-      ]),
-    }),
-  });
+    expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({
+      type: 'UPDATE_CHARACTER',
+      payload: expect.objectContaining({
+        id: 'opponent-1',
+        wounds: expect.arrayContaining([
+          expect.objectContaining({
+            damage: 1,
+            location: 'chest',
+            severity: 'light',
+            strengthReduction: 1,
+            turnReceived: expect.any(Number)
+          })
+        ])
+      })
+    }));
     
     // Clean up
     jest.useRealTimers();
@@ -193,9 +191,9 @@ describe('useBrawlingCombat', () => {
     expect(playerEntry.text).toContain('Player');
     expect(opponentEntry.text).toContain('Opponent');
 
-     // Check for SET_CHARACTER and SET_OPPONENT actions after player's action
-     expect(mockDispatch.mock.calls.some(call => call[0].type === 'SET_CHARACTER')).toBe(true);
-     expect(mockDispatch.mock.calls.some(call => call[0].type === 'SET_OPPONENT')).toBe(true);
+     // Check for UPDATE_CHARACTER actions after player's and opponent's actions
+     expect(mockDispatch.mock.calls.some(call => call[0].type === 'UPDATE_CHARACTER' && call[0].payload.id ==='player-1')).toBe(true);
+     expect(mockDispatch.mock.calls.some(call => call[0].type === 'UPDATE_CHARACTER' && call[0].payload.id ==='opponent-1')).toBe(true);
 
     jest.useRealTimers();
   });

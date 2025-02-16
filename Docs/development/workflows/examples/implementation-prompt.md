@@ -68,7 +68,7 @@ MANUAL TESTING STEPS
 - [manual testing step]
 - [manual testing step]
 
-CLEANUP NOTES
+CLEANUP NOTES (console logs to remove, comments to add, etc...)
 - [cleanup task]
 - [cleanup task]
 ```

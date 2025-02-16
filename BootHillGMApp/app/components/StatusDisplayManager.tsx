@@ -13,7 +13,6 @@ import { Character } from '../types/character';
 import { getCharacterStrength } from '../utils/strengthSystem';
 import { cleanLocationText } from '../utils/textCleaningUtils';
 import { useCampaignState } from './CampaignStateManager';
-import { StatusDisplay } from './StatusDisplay';
 
 interface StrengthBarProps {
   current: number;
@@ -196,7 +195,29 @@ const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
         isUnconscious={character.isUnconscious}
         onReset={handleResetStrength}
      />
-     <StatusDisplay character={character} />
+
+      {/* Strength History Section */}
+      {character.strengthHistory && character.strengthHistory.changes.length > 0 && (
+        <div className="strength-history text-sm" data-testid="strength-history">
+          <div className="text-gray-600 font-semibold mb-1">Strength History:</div>
+          <div className="max-h-32 overflow-y-auto">
+            {character.strengthHistory.changes.slice().reverse().map((change, index) => (
+              <div
+                key={index}
+                className="flex justify-between text-xs py-1 border-b border-gray-200 last:border-0"
+                data-testid={`strength-change-${index}`}
+              >
+                <span className="text-gray-700">
+                  {change.previousValue} → {change.newValue}
+                </span>
+                <span className="text-gray-500 text-xs">
+                  {new Date(change.timestamp).toLocaleTimeString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
      <WoundDisplay wounds={character.wounds} />
     </div>

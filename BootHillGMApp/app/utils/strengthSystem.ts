@@ -171,48 +171,49 @@ function validateStrengthChange(
  * @param damage The amount of damage being dealt
  * @returns An object containing the new strength and updated strength history
  */
-export const calculateUpdatedStrength = (character: Character, damage: number): { newStrength: number, updatedHistory: StrengthHistory } => {
-    const currentStrength = character.attributes.strength;
-    let newStrength = currentStrength - damage;
+export const calculateUpdatedStrength = (character: Character, damage: number): { newStrength: number; updatedHistory: StrengthHistory } => {
+  const currentStrength = character.attributes.strength;
+  let newStrength = currentStrength - damage;
 
-    // Ensure strength doesn't go below 0
-    newStrength = Math.max(0, newStrength);
+  // Ensure strength doesn't go below 0
+  newStrength = Math.max(0, newStrength);
 
-    // Validate the change
-    if (!validateStrengthChange(currentStrength, newStrength, character.attributes.baseStrength)) {
-        // In a real application, we might throw an error or log this differently.
-        console.warn("Invalid strength change prevented. Returning current strength.");
-        return { newStrength: currentStrength, updatedHistory: character.strengthHistory! };
-    }
+  // Validate the change
+  if (!validateStrengthChange(currentStrength, newStrength, character.attributes.baseStrength)) {
+    // In a real application, we might throw an error or log this differently.
+    console.warn("Invalid strength change prevented. Returning current strength.");
+    return { newStrength: currentStrength, updatedHistory: character.strengthHistory! };
+  }
 
-    let updatedHistory: StrengthHistory;
+  let updatedHistory: StrengthHistory;
 
-    // Log the change to strength history
-    if (character.strengthHistory) {
-        const newChange = {
-            previousValue: currentStrength,
-            newValue: newStrength,
-            reason: 'damage', // Could be more specific (e.g., 'brawling damage', 'weapon damage')
-            timestamp: new Date(),
-        };
-        updatedHistory = {
-            ...character.strengthHistory,
-            changes: [...character.strengthHistory.changes, newChange]
-        }
-
-    } else {
-        // Initialize strength history if it doesn't exist
-        updatedHistory = {
-            baseStrength: character.attributes.baseStrength,
-            changes: [{
-                previousValue: character.attributes.baseStrength, // Use baseStrength for initial value
-                newValue: newStrength,
-                reason: 'damage',
-                timestamp: new Date(),
-            }],
-        };
-    }
-    return { newStrength, updatedHistory };
+  // Log the change to strength history
+  if (character.strengthHistory) {
+      const newChange: StrengthChange = {
+          previousValue: currentStrength,
+          newValue: newStrength,
+          reason: 'damage', // Could be more specific (e.g., 'brawling damage', 'weapon damage')
+          timestamp: new Date(),
+      };
+    updatedHistory = {
+      ...character.strengthHistory,
+      changes: [...character.strengthHistory.changes, newChange],
+    };
+  } else {
+    // Initialize strength history if it doesn't exist
+    updatedHistory = {
+      baseStrength: character.attributes.baseStrength,
+      changes: [
+        {
+          previousValue: character.attributes.baseStrength, // Use baseStrength for initial value
+          newValue: newStrength,
+          reason: 'damage',
+          timestamp: new Date(),
+        },
+      ],
+    };
+  }
+  return { newStrength, updatedHistory };
 };
 
 /**

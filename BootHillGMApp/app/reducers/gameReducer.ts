@@ -1,15 +1,16 @@
-import { GameState } from '../types/gameState';
-import { GameEngineAction } from '../types/gameActions';
-import { Character } from '../types/character';
-import { Weapon } from '../types/combat';
-import { ensureCombatState } from '../types/combat';
-import { determineIfWeapon } from '../utils/ai/aiUtils';
-import { findClosestWeapon } from '../utils/weaponUtils';
-import { validateCombatEndState } from '../utils/combatStateValidation';
+import { calculateUpdatedStrength } from "../utils/strengthSystem";
+import { GameState } from "../types/gameState";
+import { GameEngineAction, UpdateCharacterPayload } from "../types/gameActions";
+import type { Character } from "../types/character";
+import { Weapon } from "../types/combat";
+import { ensureCombatState } from "../types/combat";
+import { determineIfWeapon } from "../utils/ai/aiUtils";
+import { findClosestWeapon } from "../utils/weaponUtils";
+import { validateCombatEndState } from "../utils/combatStateValidation";
 
 /**
  * Reducer function to handle game state updates based on actions.
- * 
+ *
  * @param state - The current game state.
  * @param action - The action to be processed.
  * @returns The updated game state.
@@ -23,24 +24,24 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'SET_LOCATION':
       return { ...state, location: action.payload };
     case 'ADD_ITEM': {
-      const existingItem = state.inventory.find(item => item.id === action.payload.id);
+      const existingItem = state.inventory.find((item) => item.id === action.payload.id);
       if (existingItem) {
         return {
           ...state,
-          inventory: state.inventory.map(item =>
+          inventory: state.inventory.map((item) =>
             item.id === action.payload.id
               ? { ...item, quantity: item.quantity + action.payload.quantity }
               : item
-          )
+          ),
         };
       } else {
         const newItem = { ...action.payload };
         if (!newItem.category) {
-          newItem.category = 'general';
+          newItem.category = "general";
         }
         const isWeapon = determineIfWeapon(newItem.name);
         if (isWeapon) {
-          newItem.category = 'weapon';
+          newItem.category = "weapon";
           const closestWeapon = findClosestWeapon(newItem.name);
           if (closestWeapon) {
             newItem.weapon = closestWeapon;
@@ -52,19 +53,21 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'REMOVE_ITEM':
       return {
         ...state,
-        inventory: state.inventory.filter(item => item.id !== action.payload)
+        inventory: state.inventory.filter((item) => item.id !== action.payload),
       };
     case 'USE_ITEM': {
-      const updatedInventory = state.inventory.map(item => {
-        if (item.id === action.payload) {
-          return { ...item, quantity: item.quantity - 1 };
-        }
-        return item;
-      }).filter(item => item.quantity > 0);
+      const updatedInventory = state.inventory
+        .map((item) => {
+          if (item.id === action.payload) {
+            return { ...item, quantity: item.quantity - 1 };
+          }
+          return item;
+        })
+        .filter((item) => item.quantity > 0);
 
       return {
         ...state,
-        inventory: updatedInventory
+        inventory: updatedInventory,
       };
     }
     case 'ADD_QUEST':
@@ -73,7 +76,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       if (!action.payload) {
         return state;
       }
-      
+
       const character: Character = {
         isNPC: action.payload.isNPC ?? false,
         isPlayer: action.payload.isPlayer ?? true,
@@ -87,36 +90,66 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           strength: action.payload.attributes?.strength ?? 5,
           baseStrength: action.payload.attributes?.baseStrength ?? 5,
           bravery: action.payload.attributes?.bravery ?? 5,
-          experience: action.payload.attributes?.experience ?? 5
+          experience: action.payload.attributes?.experience ?? 5,
         },
         wounds: action.payload.wounds ?? [],
         isUnconscious: action.payload.isUnconscious ?? false,
         weapon: action.payload.weapon,
-        equippedWeapon: action.payload.equippedWeapon
+        equippedWeapon: action.payload.equippedWeapon,
+        strengthHistory: { baseStrength: action.payload.attributes?.baseStrength ?? 5, changes: [] },
       };
 
       return {
         ...state,
-        character
+        character,
       };
     }
-    case 'UPDATE_CHARACTER':
+    case 'UPDATE_CHARACTER': {
       if (!state.character) {
         return state;
       }
-      return {
-        ...state,
-        character: {
-          ...state.character,
-          ...action.payload,
-          attributes: {
-            ...state.character.attributes,
-            ...(action.payload.attributes || {}),
-            baseStrength: state.character.attributes.baseStrength
-          },
-          wounds: [...(action.payload.wounds || state.character.wounds)],
-        }
+      const payload = action.payload as UpdateCharacterPayload;
+      const targetCharacter = payload.id === state.character.id ? state.character : state.opponent;
+
+      if (!targetCharacter) {
+        console.warn("Target character not found for update.");
+        return state;
+      }
+
+      let updatedAttributes = payload.attributes || {};
+      let updatedHistory = targetCharacter.strengthHistory;
+
+      if (payload.attributes && payload.attributes.strength !== undefined && payload.damageInflicted !== undefined) {
+          const { newStrength, updatedHistory: newHistory } = calculateUpdatedStrength(targetCharacter, payload.damageInflicted);
+          updatedAttributes = {
+              ...targetCharacter.attributes,
+              ...payload.attributes,
+              strength: newStrength
+          };
+          updatedHistory = newHistory;
+      }
+
+      const updatedCharacter = {
+        ...targetCharacter,
+        ...payload, //should contain id and damageInflicted
+        attributes: {
+          ...targetCharacter.attributes,
+          ...updatedAttributes,
+          baseStrength: targetCharacter.attributes.baseStrength
+        },
+        wounds: [...(payload.wounds || targetCharacter.wounds)],
+        strengthHistory: updatedHistory
       };
+
+      const newState = (payload.id === state.character.id) ? {
+        ...state,
+        character: updatedCharacter
+      } : {
+        ...state,
+        opponent: updatedCharacter
+      }
+      return newState;
+    }
     case 'SET_NARRATIVE':
       return { ...state, narrative: action.payload };
     case 'SET_GAME_PROGRESS':
@@ -135,7 +168,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         strength: 5,
         baseStrength: 5,
         bravery: 5,
-        experience: 5
+        experience: 5,
       };
 
       const opponent: Character = {
@@ -149,7 +182,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
         wounds: action.payload.wounds ?? [],
         isUnconscious: action.payload.isUnconscious ?? false,
         isNPC: true,
-        isPlayer: false
+        isPlayer: false,
       };
 
       return { ...state, opponent };

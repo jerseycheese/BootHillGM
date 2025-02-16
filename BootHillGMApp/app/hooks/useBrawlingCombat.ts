@@ -29,16 +29,6 @@ function brawlingReducer(state: BrawlingState, action: BrawlingAction): Brawling
   switch (action.type) {
     case 'APPLY_DAMAGE': {
       return state; // Strength is updated directly in Character objects
-      // const newState = { // Removed strength updates from reducer
-      //   ...state,
-      //   playerStrength: action.target === 'player'
-      //     ? calculateUpdatedStrength(state.playerStrength, action.damage)
-      //     : state.playerStrength,
-      //   opponentStrength: action.target === 'opponent'
-      //     ? calculateUpdatedStrength(state.opponentStrength, action.damage)
-      //     : state.opponentStrength
-      // };
-      // return newState;
     }
     
     case 'ADD_LOG_ENTRY': {
@@ -84,11 +74,6 @@ function brawlingReducer(state: BrawlingState, action: BrawlingAction): Brawling
 
     case 'SYNC_STRENGTH': {
       return state; // No longer syncing strength directly in combat state
-      // return {
-      //   ...state,
-      //   playerStrength: action.playerStrength,
-      //   opponentStrength: action.opponentStrength
-      // };
     }
     
     default:
@@ -98,8 +83,6 @@ function brawlingReducer(state: BrawlingState, action: BrawlingAction): Brawling
 
 function isValidCombatState(state: BrawlingState): boolean {
   const isValid = (
-    // state.playerStrength >= 0 && // No longer validating strength
-    // state.opponentStrength >= 0 && // No longer validating strength
     (state.round === 1 || state.round === 2) &&
     Array.isArray(state.roundLog)
   );
@@ -143,33 +126,27 @@ export const useBrawlingCombat = ({
           results: summary,
           stats: {
             rounds: brawlingState.round,
-            damageDealt: playerCharacter.attributes.baseStrength - opponent.attributes.strength, // Use opponent.attributes.strength
-            damageTaken: opponent.attributes.baseStrength - playerCharacter.attributes.strength // Use playerCharacter.attributes.strength
+            damageDealt: playerCharacter.attributes.baseStrength - opponent.attributes.strength,
+            damageTaken: opponent.attributes.baseStrength - playerCharacter.attributes.strength
           }
         }
       })
     });
 
-    // Update final character states - Removed strength updates from here
+    // Update final character states - Removed strength updates from here and use UPDATE_CHARACTER
     dispatch({
-      type: 'SET_CHARACTER',
+      type: 'UPDATE_CHARACTER',
       payload: {
         ...playerCharacter,
-        attributes: {
-          ...playerCharacter.attributes,
-          strength: playerCharacter.attributes.strength
-        }
+        id: playerCharacter.id
       }
     });
 
     dispatch({
-      type: 'SET_OPPONENT',
+      type: 'UPDATE_CHARACTER',
       payload: {
         ...opponent,
-        attributes: {
-          ...opponent.attributes,
-          strength: opponent.attributes.strength
-        }
+        id: opponent.id
       }
     });
 
@@ -213,7 +190,6 @@ export const useBrawlingCombat = ({
       const { newStrength, updatedHistory } = calculateUpdatedStrength(target, damage);
 
       // Calculate strength reduction for wound tracking
-      // const locationModifier = LOCATION_MODIFIERS[location]?.modifier || 0; // Removed location modifier for brawling
       const strengthReduction = damage;
 
       const wound: Wound = {
@@ -236,12 +212,27 @@ export const useBrawlingCombat = ({
         strengthHistory: updatedHistory,
         isUnconscious: newStrength <= 0,
       };
-
-      // Update global character state - use isPlayer to determine which character to update
-      dispatch({
-        type: isPlayer ? 'SET_OPPONENT' : 'SET_CHARACTER',
-        payload: updatedTarget
-      });
+      
+      // Update global character state - use isPlayer to determine which character to update. Use UPDATE_CHARACTER.
+      if (isPlayer) {
+        dispatch({
+          type: 'UPDATE_CHARACTER',
+          payload: {
+            ...updatedTarget,
+            id: opponent.id, // Update the opponent
+            damageInflicted: damage,
+          }
+        });
+      } else {
+        dispatch({
+          type: 'UPDATE_CHARACTER',
+          payload: {
+            ...updatedTarget,
+            id: playerCharacter.id, // Update the player
+            damageInflicted: damage,
+          }
+        });
+      }
 
       // Update combat state atomically
       dispatchBrawling({
@@ -297,14 +288,13 @@ export const useBrawlingCombat = ({
         opponent: !isPlayer ? result.nextRoundModifier : undefined
       });
 
-      // Check for combat end conditions
-      const targetCharacter = isPlayer ? opponent : playerCharacter;
+      // Check for combat end conditions *AFTER* applying the wound
 
-      if (newStrength <= 0 || isKnockout(targetCharacter.attributes.strength, result.damage)) {
+      if (newStrength <= 0 || isKnockout(newStrength, result.damage)) { // Use newStrength
 
         const loser = isPlayer ? opponent.name : playerCharacter.name;
         // Correct winner determination: if the target is the opponent, the player won
-        const winner = targetCharacter === opponent ? 'player' : 'opponent';
+        const winner = isPlayer ? 'player' : 'opponent'; // Simplified logic
         const summary = `${attacker.name} emerges victorious, defeating ${loser} with a ${isPunching ? 'devastating punch' : 'powerful grapple'} to the ${result.location}!`;
 
         endCombat(winner, summary);
