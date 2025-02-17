@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Character } from '../../types/character';
 import { STEP_DESCRIPTIONS } from '../../hooks/useCharacterCreation';
-import { LoadingScreen } from '../GameArea/LoadingScreen';
 
 interface AttributeField {
   key: keyof Character['attributes'] | 'name';
@@ -14,7 +13,6 @@ interface AttributeField {
 interface CharacterFormProps {
   character: Character;
   isGeneratingField: boolean;
-  isProcessingStep: boolean;
   error?: string;
   onFieldChange: (field: keyof Character['attributes'] | 'name', value: string | number) => void;
   onGenerateField: (field: keyof Character['attributes'] | 'name') => Promise<void>;
@@ -26,7 +24,6 @@ interface CharacterFormProps {
 export const CharacterForm: React.FC<CharacterFormProps> = ({
   character,
   isGeneratingField,
-  isProcessingStep,
   error,
   onFieldChange,
   onGenerateField,
@@ -49,15 +46,11 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
       }))
   ];
 
-  const handleGenerateField = useCallback(async (field: keyof Character['attributes'] | 'name') => {
+    const handleGenerateField = useCallback(async (field: keyof Character['attributes'] | 'name') => {
     setGeneratingField(field);
     await onGenerateField(field);
     setGeneratingField(null);
   }, [onGenerateField]);
-
-  if (isProcessingStep) {
-    return <LoadingScreen type="general" size="small" fullscreen={false} />;
-  }
 
   return (
     <div className="space-y-6">
@@ -75,7 +68,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
           type="button"
           onClick={onSubmit}
           className="wireframe-button"
-          disabled={isProcessingStep}
+          disabled={isGeneratingField}
           data-testid="view-summary-button"
         >
           Review Character Summary
@@ -108,8 +101,8 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
                 type={field.min !== undefined ? 'number' : 'text'}
                 id={field.key}
                 name={field.key}
-                value={field.key === 'name' ? 
-                  character.name : 
+                value={field.key === 'name' ?
+                  character.name :
                   character.attributes[field.key as keyof Character['attributes']] ?? ''
                 }
                 onChange={(e) => onFieldChange(field.key, e.target.value)}
