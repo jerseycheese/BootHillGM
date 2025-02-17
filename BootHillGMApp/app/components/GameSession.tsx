@@ -1,11 +1,12 @@
-import React, { useCallback } from 'react';
-import { useGameInitialization } from '../hooks/useGameInitialization';
-import { useGameSession } from '../hooks/useGameSession';
-import { useCombatStateRestoration } from '../hooks/useCombatStateRestoration';
-import { LoadingScreen } from './GameArea/LoadingScreen';
-import { MainGameArea } from './GameArea/MainGameArea';
-import { SidePanel } from './GameArea/SidePanel';
-import { InventoryManager } from '../utils/inventoryManager';
+import React, { useCallback } from "react";
+import { useGameInitialization } from "../hooks/useGameInitialization";
+import { useGameSession } from "../hooks/useGameSession";
+import { useCombatStateRestoration } from "../hooks/useCombatStateRestoration";
+import { LoadingScreen } from "./GameArea/LoadingScreen";
+import { MainGameArea } from "./GameArea/MainGameArea";
+import { SidePanel } from "./GameArea/SidePanel";
+import { InventoryManager } from "../utils/inventoryManager";
+import DevToolsPanel from "./Debug/DevToolsPanel";
 
 export default function GameSession() {
   const { isInitializing, isClient } = useGameInitialization();
@@ -66,6 +67,7 @@ export default function GameSession() {
         <MainGameArea {...sessionProps} />
         <SidePanel {...sessionProps} />
       </div>
+      <DevToolsPanel gameState={state} dispatch={dispatch} />
     </div>
   );
 }

@@ -4,18 +4,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { generateCharacterSummary, generateCompleteCharacter } from '../services/ai/characterService';
 import { useCampaignState } from '../components/CampaignStateManager';
-import { Character } from '../types/character';
-import { initialGameState } from '../types/campaign';
-import { getStartingInventory } from '../utils/startingInventory';
+import { Character } from "../types/character";
+import { initialGameState } from "../types/campaign";
+import { getStartingInventory } from "../utils/startingInventory";
 
 // Storage key for character creation progress
-const STORAGE_KEY = 'character-creation-progress';
+const STORAGE_KEY = "character-creation-progress";
 
-const initialCharacter: Character = {
+export const initialCharacter: Character = {
   isNPC: false,
   isPlayer: true,
   id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-  name: '',
+  name: "",
   inventory: [],
   attributes: {
     speed: 0,
@@ -27,7 +27,7 @@ const initialCharacter: Character = {
     experience: 0,
   },
   wounds: [],
-  isUnconscious: false
+  isUnconscious: false,
 };
 
 // Add new interface for step descriptions
@@ -41,60 +41,64 @@ interface StepDescription {
 export const STEP_DESCRIPTIONS: Record<string, StepDescription> = {
   name: {
     title: "Character Name",
-    description: "Choose a name for your character that fits the Old West setting."
+    description: "Choose a name for your character that fits the Old West setting.",
   },
   speed: {
     title: "Speed",
-    description: "Determines your character's quickness in combat and reactions. Affects who shoots first.",
+    description:
+      "Determines your character's quickness in combat and reactions. Affects who shoots first.",
     min: 1,
-    max: 20
+    max: 20,
   },
   gunAccuracy: {
     title: "Gun Accuracy",
-    description: "Your character's skill with firearms. Critical for combat and survival.",
+    description:
+      "Your character's skill with firearms. Critical for combat and survival.",
     min: 1,
-    max: 20
+    max: 20,
   },
   throwingAccuracy: {
     title: "Throwing Accuracy",
     description: "Skill with thrown weapons and general coordination.",
     min: 1,
-    max: 20
+    max: 20,
   },
   strength: {
     title: "Strength",
     description: "Physical power affecting melee damage and carrying capacity.",
     min: 8,
-    max: 20
+    max: 20,
   },
   baseStrength: {
     title: "Base Strength",
-    description: "Maximum physical power. This value represents your character's peak condition.",
+    description:
+      "Maximum physical power. This value represents your character's peak condition.",
     min: 8,
-    max: 20
+    max: 20,
   },
   bravery: {
     title: "Bravery",
     description: "Courage under fire. Affects combat bonuses and reactions.",
     min: 1,
-    max: 20
+    max: 20,
   },
   experience: {
     title: "Experience",
-    description: "Previous combat encounters and gunfights. Provides combat bonuses.",
+    description:
+      "Previous combat encounters and gunfights. Provides combat bonuses.",
     min: 0,
-    max: 11
+    max: 11,
   },
   summary: {
     title: "Character Summary",
-    description: "Review your character before finalizing."
-  }
+    description: "Review your character before finalizing.",
+  },
 };
 
-export type StepType = 'string' | 'number' | 'review';
+export type StepType = "string" | "number" | "review";
 
 export interface Step {
-  key: keyof Character['attributes'] | 'name' | 'summary';
+  key: keyof Character["attributes"] | "name" | "summary";
   type: StepType;
 }
 
@@ -109,16 +113,32 @@ export interface Step {
  */
 export function useCharacterCreation() {
   const router = useRouter();
-  const { saveGame, cleanupState } = useCampaignState();
+  const { state: campaignState, saveGame, cleanupState } = useCampaignState();
 
+  // Initialize character from campaign state or fallback to initialCharacter
   const [character, setCharacter] = useState<Character>(() => {
     if (typeof window === 'undefined') return initialCharacter;
-
     const saved = localStorage.getItem(STORAGE_KEY);
+
+    // Prioritize character from campaign state if available and valid
+    if (campaignState?.character) {
+      // Ensure attributes exist, providing defaults if necessary
+      const attributes = campaignState.character.attributes || initialCharacter.attributes;
+      return {
+        ...campaignState.character,
+        attributes,
+      };
+    }
+
     if (saved) {
       try {
         const data = JSON.parse(saved);
-        return data.character || initialCharacter;
+        // Ensure attributes exist, providing defaults if necessary
+        const attributes = data.character?.attributes || initialCharacter.attributes;
+        return {
+          ...(data.character || initialCharacter),
+          attributes,
+        };
       } catch {
         return initialCharacter;
       }
@@ -128,140 +148,168 @@ export function useCharacterCreation() {
 
   const [showSummary, setShowSummary] = useState(false);
   const [isGeneratingField, setIsGeneratingField] = useState(false);
-  const [error, setError] = useState('');
-  const [characterSummary, setCharacterSummary] = useState('');
+  const [error, setError] = useState("");
+  const [characterSummary, setCharacterSummary] = useState("");
 
-  const validateField = useCallback((field: string, value: string | number) => {
-    if (field === 'name') return value.toString().trim() !== '';
-    
-    const numValue = Number(value);
-    const fieldInfo = STEP_DESCRIPTIONS[field];
-    if (!fieldInfo?.min || !fieldInfo?.max) return true;
-    
-    return !isNaN(numValue) && numValue >= fieldInfo.min && numValue <= fieldInfo.max;
-  }, []);
+  const validateField = useCallback(
+    (field: string, value: string | number) => {
+      if (field === "name") return value.toString().trim() !== "";
 
-  const handleFieldChange = useCallback((field: keyof Character['attributes'] | 'name', value: string | number) => {
-    setError('');
-    
-    if (!validateField(field, value)) {
-      setError(`Invalid value for ${field}. Please enter a value within the allowed range.`);
-      return;
-    }
+      const numValue = Number(value);
+      const fieldInfo = STEP_DESCRIPTIONS[field];
+      if (!fieldInfo?.min || !fieldInfo?.max) return true;
 
-    setCharacter(prev => {
-      if (field === 'name') {
-        return { ...prev, name: value.toString() };
+      return (
+        !isNaN(numValue) &&
+        numValue >= fieldInfo.min &&
+        numValue <= fieldInfo.max
+      );
+    },
+    []
+  );
+
+  const handleFieldChange = useCallback(
+    (
+      field: keyof Character["attributes"] | "name",
+      value: string | number
+    ) => {
+      setError("");
+
+      if (!validateField(field, value)) {
+        setError(
+          `Invalid value for ${field}. Please enter a value within the allowed range.`
+        );
+        return;
       }
-      
-      if (field in prev.attributes) {
+
+      setCharacter((prev) => {
+        if (field === "name") {
+          return { ...prev, name: value.toString() };
+        }
+
+        if (field in prev.attributes) {
+          return {
+            ...prev,
+            attributes: {
+              ...prev.attributes,
+              [field]: Number(value),
+              ...(field === "strength" && { baseStrength: Number(value) }),
+            },
+          };
+        }
+
         return {
           ...prev,
-          attributes: {
-            ...prev.attributes,
-            [field]: Number(value),
-            ...(field === 'strength' && { baseStrength: Number(value) })
-          }
         };
+      });
+    },
+    [validateField]
+  );
+
+  const generateFieldValue = useCallback(
+    async (field: keyof Character["attributes"] | "name") => {
+      setIsGeneratingField(true);
+      setError("");
+
+      try {
+        const value =
+          field === "name"
+            ? "Generated Name" // Placeholder for name generation
+            : generateRandomValue(field);
+        handleFieldChange(field, value);
+
+        // Ensure baseStrength is set when strength is generated
+        if (field === "strength") {
+          handleFieldChange("baseStrength", value);
+        }
+      } catch (error) {
+        console.error(`Failed to generate value for ${field}:`, error);
+        setError(`Failed to generate value for ${field}`);
+      } finally {
+        setIsGeneratingField(false);
       }
-
-      return {
-        ...prev
-      };
-    });
-  }, [validateField]);
-
-  const generateFieldValue = useCallback(async (field: keyof Character['attributes'] | 'name') => {
-    setIsGeneratingField(true);
-    setError('');
-    
-    try {
-      const value = field === 'name'
-        ? 'Generated Name' // Placeholder for name generation
-        : generateRandomValue(field);
-      handleFieldChange(field, value);
-
-      // Ensure baseStrength is set when strength is generated
-      if (field === 'strength') {
-        handleFieldChange('baseStrength', value);
-      }
-    } catch (error) {
-      console.error(`Failed to generate value for ${field}:`, error);
-      setError(`Failed to generate value for ${field}`);
-    } finally {
-      setIsGeneratingField(false);
-    }
-  }, [handleFieldChange]);
+    },
+    [handleFieldChange]
+  );
 
   const generateFullCharacter = useCallback(async () => {
     setIsGeneratingField(true);
-    setError('');
-    
+    setError("");
+
     try {
       const generatedCharacter = await generateCompleteCharacter();
 
       // Ensure baseStrength matches strength
-      generatedCharacter.attributes.baseStrength = generatedCharacter.attributes.strength;
+      generatedCharacter.attributes.baseStrength =
+        generatedCharacter.attributes.strength;
 
       setCharacter(generatedCharacter);
     } catch (error) {
-      console.error('Failed to generate character:', error);
-      setError('Failed to generate character');
+      console.error("Failed to generate character:", error);
+      setError("Failed to generate character");
     } finally {
       setIsGeneratingField(false);
     }
   }, []);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError("");
 
-    try {
-      if (!showSummary) {
-        // Validate all fields before showing summary
-        const invalidField = Object.entries(STEP_DESCRIPTIONS)
-          .find(([key]) => {
-            if (key === 'summary') return false;
-            const value = key === 'name' ? character.name : 
-            character.attributes[key as keyof Character['attributes']];
-            return !validateField(key, value);
-          });
+      try {
+        if (!showSummary) {
+          // Validate all fields before showing summary
+          const invalidField = Object.entries(STEP_DESCRIPTIONS).find(
+            ([key]) => {
+              if (key === "summary") return false;
+              const value =
+                key === "name"
+                  ? character.name
+                  : character.attributes[
+                      key as keyof Character["attributes"]
+                    ];
+              return !validateField(key, value);
+            }
+          );
 
-        if (invalidField) {
-          setError(`Invalid value for ${invalidField[0]}`);
-          return;
+          if (invalidField) {
+            setError(`Invalid value for ${invalidField[0]}`);
+            return;
+          }
+
+          setIsGeneratingField(true);
+
+          const summary = await generateCharacterSummary(character);
+          setCharacterSummary(summary);
+          setShowSummary(true);
+        } else {
+          // Complete character creation
+          cleanupState();
+          const startingInventory = getStartingInventory();
+          const gameState = {
+            ...initialGameState,
+            character,
+            inventory: startingInventory,
+            isClient: true,
+          };
+          saveGame(gameState);
+          router.push("/game-session");
         }
-
-        setIsGeneratingField(true);
-
-        const summary = await generateCharacterSummary(character);
-        setCharacterSummary(summary);
-        setShowSummary(true);
-      } else {
-        // Complete character creation
-        cleanupState();
-        const startingInventory = getStartingInventory();
-        const gameState = {
-          ...initialGameState,
-          character,
-          inventory: startingInventory,
-          isClient: true,
-        };
-        saveGame(gameState);
-        router.push('/game-session');
+      } catch {
+        setError("Failed to process character data");
+      } finally {
+        setIsGeneratingField(false); // Reset loading state
       }
-    } catch {
-      setError('Failed to process character data');
-    } finally {
-      setIsGeneratingField(false); // Reset loading state
-    }
-  }, [character, showSummary, cleanupState, saveGame, router, validateField]);
+    },
+    [character, showSummary, cleanupState, saveGame, router, validateField]
+  );
 
   useEffect(() => {
     if (character.name) {
       const dataToSave = {
         character,
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     }
@@ -281,13 +329,14 @@ export function useCharacterCreation() {
   };
 }
 
-export type ValidField = keyof Character['attributes'];
+export type ValidField = keyof Character["attributes"];
 
 export function generateRandomValue(field: ValidField): number {
   // Get field constraints from step descriptions
   const fieldInfo = STEP_DESCRIPTIONS[field];
   if (!fieldInfo?.min || !fieldInfo?.max) return 0;
-  
+
   // Generate random value within defined range
-  return Math.floor(Math.random() * (fieldInfo.max - fieldInfo.min + 1)) + fieldInfo.min;
+  return Math.floor(Math.random() * (fieldInfo.max - fieldInfo.min + 1)) +
+    fieldInfo.min;
 }

@@ -204,11 +204,11 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [dispatch]);
 
   const cleanupState = useCallback(() => {
-    // Set initialization flag before state cleanup
-    sessionStorage.setItem('initializing_new_character', 'true');
-    localStorage.removeItem('campaignState');
-    const cleanState = { ...initialGameState, isClient: true };
-    dispatch({ type: 'SET_STATE', payload: cleanState });
+      // Set initialization flag before state cleanup
+      sessionStorage.setItem('initializing_new_character', 'true');
+      localStorage.removeItem('campaignState');
+      const cleanState = { ...initialGameState, isClient: true };
+      dispatch({ type: 'SET_STATE', payload: cleanState });
   }, [dispatch]);
 
   return (
