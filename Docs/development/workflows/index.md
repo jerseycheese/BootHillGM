@@ -3,7 +3,7 @@ title: Development Workflows
 aliases: [Workflows, Development Process]
 tags: [development, workflow, process]
 created: 2025-01-01
-updated: 2025-01-01
+updated: 2025-02-23
 ---
 
 # Development Workflows
@@ -15,6 +15,7 @@ updated: 2025-01-01
 - 🔄 [[feature-workflow|Feature Development]]
 - 🧪 [[testing-workflow|Testing]]
 - 📝 [[documentation-workflow|Documentation]]
+- 🔧 [[refactor-prompt|Refactoring Guide]]
 
 ## AI-Assisted Development
 - 🤖 [[claude-workflow|Claude Workflow]] - Primary development workflow
@@ -36,6 +37,7 @@ graph TD
     D --> K[Verify]
     D --> L[Update]
     D --> M[Commit]
+    D --> N[Refactor]
 ```
 
 ## Further Reading
