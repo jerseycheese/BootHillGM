@@ -215,6 +215,66 @@ The location state management system handles the current location and history of
 4. **`useLocation` Synchronization:** The `useEffect` hook in `useLocation` detects the change in `state.location` and updates the local state and history.
 5. **Persistence:** The `useEffect` hook in `useLocation` updates the location history in `localStorage`.
 
+### Brawling Combat State Management
+
+#### Overview
+Brawling combat state is managed through a combination of custom hooks and a dedicated reducer. This modular design promotes separation of concerns and improves code maintainability.
+
+#### Components
+
+- **`useBrawlingCombat` Hook:**
+  - The primary hook for interacting with brawling combat.
+  - Orchestrates the other hooks (`useBrawlingState`, `useBrawlingActions`, `useBrawlingSync`).
+  - Provides a simplified interface for components.
+
+- **`useBrawlingState` Hook:**
+  - Manages the core brawling combat state using `useReducer`.
+  - Defines the initial state and utilizes the `brawlingReducer`.
+  - Exposes the current `brawlingState`, a `dispatchBrawling` function, and flags for `isProcessing` and `isCombatEnded`.
+
+- **`useBrawlingActions` Hook:**
+  - Encapsulates the logic for handling combat actions (e.g., `applyWound`, `handleCombatAction`, `processRound`).
+  - Interacts with `brawlingSystem` and `BrawlingEngine` for combat resolution.
+  - Dispatches actions to update the brawling state via `dispatchBrawling`.
+
+- **`useBrawlingSync` Hook:**
+  - Responsible for synchronizing the local brawling combat state with the global game state.
+  - Provides functions for `endCombat` and `syncWithGlobalState`.
+  - Dispatches actions to update the global state (`UPDATE_COMBAT_STATE`, `UPDATE_CHARACTER`).
+
+- **`brawlingReducer`:**
+  - A pure reducer function that handles state updates based on dispatched actions.
+  - Processes actions such as `APPLY_DAMAGE`, `ADD_LOG_ENTRY`, `UPDATE_MODIFIERS`, `END_ROUND`, and `END_COMBAT`.
+
+- **`BrawlingAction` Type:**
+  - Defines the structure of all possible actions that can modify the brawling state.
+
+- **`BrawlingState` Type:**
+    - Defines the structure of brawling state data:
+    ```typescript
+      round: 1 | 2;
+      playerModifier: number;
+      opponentModifier: number;
+      playerCharacterId: string;
+      opponentCharacterId: string;
+      roundLog: LogEntry[];
+    ```
+#### Data Flow
+1.  **Action Trigger:** A component calls a function from `useBrawlingCombat` (e.g., `processRound`).
+2.  **Action Handling:** `useBrawlingActions` handles the action, potentially calling functions from `brawlingSystem` and `BrawlingEngine`.
+3.  **Dispatch:** `dispatchBrawling` (from `useBrawlingState`) sends a `BrawlingAction` to the `brawlingReducer`.
+4.  **State Update:** `brawlingReducer` updates the `brawlingState` based on the action.
+5.  **Synchronization:** `useBrawlingSync` dispatches actions to update the global game state.
+6.  **UI Update:** Components using `useBrawlingCombat` re-render based on the updated state.
+
+#### File Structure
+-   `app/hooks/useBrawlingCombat.ts`: Main hook for brawling combat.
+-   `app/hooks/combat/useBrawlingState.ts`: Manages brawling state.
+-   `app/hooks/combat/useBrawlingActions.ts`: Handles combat actions.
+-   `app/hooks/combat/useBrawlingSync.ts`: Synchronizes with global state.
+-   `app/utils/combat/brawlingReducer.ts`: Reducer function.
+-   `app/types/brawling.types.ts`: Type definitions for brawling combat.
+
 ## Related Documentation
 - [[../index|Main Documentation]]
 - [[../architecture/_index|Architecture Overview]]
@@ -228,3 +288,4 @@ The location state management system handles the current location and history of
 ## Changelog
 - 2024-01-04: Reformatted to follow documentation template
 - 2025-02-23: Added Location State documentation
+- 2025-02-23: Added Brawling Combat State Management documentation
