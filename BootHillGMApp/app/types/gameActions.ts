@@ -4,6 +4,7 @@ import { JournalEntry } from "./journal";
 import { SuggestedAction } from "./campaign";
 import { CombatState, CombatType, Wound } from "./combat";
 import { GameState } from "./gameState";
+import { LocationType } from "../services/locationService";
 
 // Define a specific type for the UPDATE_CHARACTER payload
 export interface UpdateCharacterPayload {
@@ -25,7 +26,7 @@ export interface UpdateCharacterPayload {
 export type GameEngineAction =
   | { type: "SET_PLAYER"; payload: string }
   | { type: "ADD_NPC"; payload: string }
-  | { type: "SET_LOCATION"; payload: string }
+  | { type: "SET_LOCATION"; payload: LocationType }
   | { type: "ADD_ITEM"; payload: InventoryItem }
   | { type: "REMOVE_ITEM"; payload: string }
   | { type: "USE_ITEM"; payload: string }

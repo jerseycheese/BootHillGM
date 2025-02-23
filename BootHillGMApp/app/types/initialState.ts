@@ -3,7 +3,7 @@ import { GameState } from './gameState';
 export const initialState: GameState = {
   currentPlayer: '',
   npcs: [],
-  location: '',
+  location: null,
   inventory: [],
   quests: [],
   character: null,

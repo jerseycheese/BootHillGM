@@ -1,59 +1,59 @@
 import { renderHook } from '@testing-library/react';
 import { useCampaignStateRestoration } from '../../hooks/useCampaignStateRestoration';
-import { GameState } from '../../types/campaign';
+import { GameState } from '../../types/gameState';
 import { Character } from '../../types/character';
-
-interface CombatState {
-  playerStrength: number;
-  opponentStrength: number;
-  currentTurn: 'player';
-  combatLog: Array<{ text: string; type: string; timestamp: number }>;
-}
+import { LocationType } from '../../services/locationService';
 
 interface TestGameState extends GameState {
-  combatState?: CombatState;
+  location: LocationType | null; // Updated to match GameState
 }
 
 describe('useCampaignStateRestoration', () => {
-  const mockCharacter: Character = {
-    name: 'Test Character',
-    attributes: {
-      speed: 10,
-      gunAccuracy: 10,
-      throwingAccuracy: 10,
-      strength: 10,
-      baseStrength: 10,
-      bravery: 10,
-      experience: 5
-    },
-    wounds: [],
-    isUnconscious: false,
-    inventory: []
-  };
+    const mockCharacter: Character = {
+        isNPC: false,
+        isPlayer: true,
+        id: 'test-character',
+        name: 'Test Character',
+        attributes: {
+            speed: 10,
+            gunAccuracy: 10,
+            throwingAccuracy: 10,
+            strength: 10,
+            baseStrength: 10,
+            bravery: 10,
+            experience: 5,
+        },
+        wounds: [],
+        isUnconscious: false,
+        inventory: [],
+    };
 
-  const mockState: TestGameState = {
-    currentPlayer: 'Player1',
-    npcs: [],
-    location: 'Saloon',
-    inventory: [],
-    quests: [],
-    character: mockCharacter,
-    narrative: '',
-    gameProgress: 0,
-    journal: [],
-    isCombatActive: true,
-    opponent: {
-      ...mockCharacter,
-      name: 'Test Opponent'
-    },
-    suggestedActions: [],
-    combatState: {
-      playerStrength: 100,
-      opponentStrength: 100,
-      currentTurn: 'player' as const,
-      combatLog: [{ text: 'Combat started', type: 'info', timestamp: Date.now() }]
-    }
-  };
+    const mockState: TestGameState = {
+        currentPlayer: 'Player1',
+        npcs: [],
+        location: { type: 'town', name: 'Testville' }, // Use a LocationType object
+        inventory: [],
+        quests: [],
+        character: mockCharacter,
+        narrative: '',
+        gameProgress: 0,
+        journal: [],
+        isCombatActive: true,
+        opponent: {
+            ...mockCharacter,
+            name: 'Test Opponent',
+        },
+        suggestedActions: [],
+        combatState: {
+            currentTurn: 'player',
+            combatLog: [{ text: 'Combat started', type: 'info', timestamp: Date.now() }],
+            isActive: true,
+            combatType: 'brawling',
+            winner: null,
+            participants: [],
+            rounds: 0
+        }
+    };
 
   test('returns initial state when initializing new game', () => {
     const { result } = renderHook(() => 
@@ -125,7 +125,6 @@ describe('useCampaignStateRestoration', () => {
 
     const state = result.current as TestGameState;
     expect(state.combatState).toBeTruthy();
-    expect(typeof state.combatState?.playerStrength).toBe('number');
     expect(state.combatState?.combatLog).toBeInstanceOf(Array);
     expect(state.combatState?.currentTurn).toBe('player');
   });

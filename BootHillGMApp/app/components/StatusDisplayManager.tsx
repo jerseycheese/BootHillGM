@@ -8,18 +8,19 @@
 
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Character } from '../types/character';
 import { getCharacterStrength } from '../utils/strengthSystem';
-import { cleanLocationText } from '../utils/textCleaningUtils';
+import { useLocation } from '../hooks/useLocation';
 import { useCampaignState } from './CampaignStateManager';
+import { LocationType } from '../services/locationService';
 
 interface StrengthBarProps {
-  current: number;
-  max: number;
-  showValue?: boolean;
-  isUnconscious?: boolean;
-  onReset?: () => void;  // Add reset handler
+    current: number;
+    max: number;
+    showValue?: boolean;
+    isUnconscious?: boolean;
+    onReset?: () => void;
 }
 
 /**
@@ -63,7 +64,6 @@ const StrengthBar: React.FC<StrengthBarProps> = ({
                 <span className="text-red-600 ml-2 text-xs">(Unconscious)</span>
               )}
             </span>
-            {/* Add dev mode reset button */}
             {process.env.NODE_ENV !== 'production' && (
               <button
                 onClick={onReset}
@@ -147,81 +147,122 @@ const WoundDisplay: React.FC<WoundDisplayProps> = ({ wounds }) => {
 
 interface StatusDisplayManagerProps {
   character: Character;
-  location: string | null;
+  location: LocationType | null;
 }
 
-/**
- * Main StatusDisplayManager component that combines character information,
- * strength bar, and wound display into a cohesive status panel.
- */
-const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({
-  character,
-  location
-}) => {
-  const { dispatch } = useCampaignState();
-  const currentStrength = getCharacterStrength(character);
-  const maxStrength = character.attributes.baseStrength;
+function StatusDisplayManager({ character, location }: StatusDisplayManagerProps) {
+    const { dispatch } = useCampaignState();
+    const { locationState } = useLocation();
+    const currentStrength = getCharacterStrength(character);
+    const maxStrength = character.attributes.baseStrength;
+    const displayLocation = location;
 
-  const handleResetStrength = () => {
-    dispatch({
-      type: 'UPDATE_CHARACTER',
-      payload: {
-        ...character,
-        wounds: [], // Clear all wounds
-        attributes: {
-          ...character.attributes,
-          baseStrength: character.attributes.baseStrength, // Keep original base strength
-          strength: character.attributes.baseStrength // Reset strength to base
-        },
-        isUnconscious: false // Reset unconscious state
-      }
-    });
-  };
+    const getLocationDisplay = (location: LocationType): string => {
+        switch (location.type) {
+            case 'town':
+                return location.name;
+            case 'wilderness':
+                return location.description;
+            case 'landmark':
+                return `${location.name}${location.description ? ` (${location.description})` : ''}`;
+            default:
+                return 'Unknown Location';
+        }
+    };
 
-  return (
-    <div className="wireframe-section space-y-4">
-      <div className="border-b pb-2">
-        <h2 className="font-medium text-lg" data-testid="character-name">
-          {character.name}
-        </h2>
-        <p className="text-sm text-gray-600" data-testid="character-location">
-          Location: {cleanLocationText(location) || 'Unknown'}
-        </p>
-      </div>
+    const handleResetStrength = () => {
+        dispatch({
+            type: 'UPDATE_CHARACTER',
+            payload: {
+                ...character,
+                wounds: [],
+                attributes: {
+                    ...character.attributes,
+                    baseStrength: character.attributes.baseStrength,
+                    strength: character.attributes.baseStrength
+                },
+                isUnconscious: false
+            }
+        });
+    };
 
-      <StrengthBar
-        current={currentStrength}
-        max={maxStrength}
-        isUnconscious={character.isUnconscious}
-        onReset={handleResetStrength}
-     />
+    return (
+        <div className="wireframe-section space-y-4">
+            <div className="border-b pb-2">
+                <h2 className="font-medium text-lg" data-testid="character-name">
+                    {character.name}
+                </h2>
+                <p className="text-sm text-gray-600" data-testid="character-location">
+                    Location: {displayLocation ? getLocationDisplay(displayLocation) : 'Unknown'}
+                </p>
+            </div>
 
-      {/* Strength History Section */}
-      {character.strengthHistory && character.strengthHistory.changes.length > 0 && (
-        <div className="strength-history text-sm" data-testid="strength-history">
-          <div className="text-gray-600 font-semibold mb-1">Strength History:</div>
-          <div className="max-h-32 overflow-y-auto">
-            {character.strengthHistory.changes.slice().reverse().map((change, index) => (
-              <div
-                key={index}
-                className="flex justify-between text-xs py-1 border-b border-gray-200 last:border-0"
-                data-testid={`strength-change-${index}`}
-              >
-                <span className="text-gray-700">
-                  {change.previousValue} → {change.newValue}
-                </span>
-                <span className="text-gray-500 text-xs">
-                  {new Date(change.timestamp).toLocaleTimeString()}
-                </span>
+            <StrengthBar
+              current={currentStrength}
+              max={maxStrength}
+              isUnconscious={character.isUnconscious}
+              onReset={handleResetStrength}
+            />
+
+            {/* Location History */}
+            {locationState.history.length > 0 && (
+              <div className="location-history text-sm" data-testid="location-history">
+                <div className="text-gray-600 font-semibold mb-1">
+                  Location History:
+                </div>
+                <div className="max-h-32 overflow-y-auto">
+                  {locationState.history
+                    .slice()
+                    .reverse()
+                    .map((loc, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between text-xs py-1 border-b border-gray-200 last:border-0"
+                        data-testid={`location-history-${index}`}
+                      >
+                        <span className="text-gray-700">
+                          {loc.type === 'town'
+                            ? loc.name
+                            : loc.type === 'wilderness'
+                            ? loc.description
+                            : loc.type === 'landmark'
+                            ? `${loc.name}${
+                                loc.description ? ` (${loc.description})` : ''
+                              }`
+                            : 'Unknown'}
+                        </span>
+                      </div>
+                    ))}
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            )}
 
-     <WoundDisplay wounds={character.wounds} />
-    </div>
-  );
+            {/* Strength History Section */}
+            {character.strengthHistory && character.strengthHistory.changes.length > 0 && (
+                <div className="strength-history text-sm" data-testid="strength-history">
+                    <div className="text-gray-600 font-semibold mb-1">Strength History:</div>
+                    <div className="max-h-32 overflow-y-auto">
+                        {character.strengthHistory.changes.slice().reverse().map((change, index) => (
+                            <div
+                                key={index}
+                                className="flex justify-between text-xs py-1 border-b border-gray-200 last:border-0"
+                                data-testid={`strength-change-${index}`}
+                            >
+                                <span className="text-gray-700">
+                                    {change.previousValue} → {change.newValue}
+                                </span>
+                                <span className="text-gray-500 text-xs">
+                                    {new Date(change.timestamp).toLocaleTimeString()}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            <WoundDisplay wounds={character.wounds} />
+        </div>
+    );
 };
 
-export default StatusDisplayManager;
+export default memo(StatusDisplayManager);

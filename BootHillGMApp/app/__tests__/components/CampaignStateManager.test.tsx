@@ -53,7 +53,7 @@ describe('CampaignStateManager', () => {
 
     expect(result.current.state.currentPlayer).toBe('');
     expect(result.current.state.character).toBeNull();
-    expect(result.current.state.location).toBe('');
+    expect(result.current.state.location).toBeNull();
     expect(result.current.state.narrative).toBe('');
     expect(result.current.state.inventory).toEqual([]);
     expect(result.current.state.npcs).toEqual([]);
@@ -125,10 +125,10 @@ describe('CampaignStateManager', () => {
         isNPC: false,
         isPlayer: true
       },
-      location: 'Test Town',
+      location: { type: 'town', name: 'Test Town' },
       narrative: 'Test narrative',
-      inventory: [{ 
-        id: '1', 
+      inventory: [{
+        id: '1',
         name: 'Test Item', 
         quantity: 1, 
         description: 'A test item',
@@ -234,7 +234,7 @@ describe('CampaignStateManager', () => {
         isNPC: false,
         isPlayer: true
       },
-      location: 'Test Town',
+      location: { type: 'town', name: 'Test Town' },
       narrative: 'Test narrative',
       inventory: [{
         id: '1',

@@ -33,7 +33,6 @@ export default function CharacterCreation() {
         <CharacterForm
           character={character}
           isGeneratingField={isGeneratingField}
-          isProcessingStep={isGeneratingField}
           error={error}
           onFieldChange={handleFieldChange}
           onGenerateField={generateFieldValue}

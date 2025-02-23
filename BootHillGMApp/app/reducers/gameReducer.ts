@@ -22,7 +22,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     case 'ADD_NPC':
       return { ...state, npcs: [...state.npcs, action.payload] };
     case 'SET_LOCATION':
-      return { ...state, location: action.payload };
+      return { ...state, location: action.payload }; // Store the entire location object
     case 'ADD_ITEM': {
       const existingItem = state.inventory.find((item) => item.id === action.payload.id);
       if (existingItem) {

@@ -3,7 +3,7 @@ title: State Management System
 aliases: []
 tags: [documentation]
 created: 2024-01-04
-updated: 2024-01-04
+updated: 2024-02-23
 ---
 
 # State Management System
@@ -45,6 +45,7 @@ interface GameState {
   - Inventory State
   - Journal State
   - Settings State
+  - Location State
 
 #### 2. State Updates
 - Action Creators
@@ -165,14 +166,56 @@ For implementation details, see [[../core-systems/combat-system|Combat System]] 
 - Recovery tests
 - Performance tests
 
+### Location State
+
+#### Overview
+The location state management system handles the current location and history of the player's character within the game world. It uses a combination of a custom hook (`useLocation`), a service (`LocationService`), and integration with the main game reducer.
+
+#### Components
+
+- **`useLocation` Hook:**
+  - Manages location state and history.
+  - Provides an `updateLocation` function for updating the current location.
+  - Stores location history in `localStorage`.
+  - Synchronizes with the global game state.
+
+- **`LocationService`:**
+  - Provides utility functions for location management.
+  - Parses location strings into structured `LocationType` objects.
+  - Validates `LocationType` objects.
+  - Manages location history, enforcing a maximum history length.
+
+- **`LocationType`:**
+  - Defines the structure of location data:
+    ```typescript
+    export type LocationType =
+      | { type: 'town'; name: string }
+      | { type: 'wilderness'; description: string }
+      | { type: 'landmark'; name: string; description?: string }
+      | { type: 'unknown' };
+    ```
+
+- **Integration with `gameReducer`:**
+  - The `SET_LOCATION` action updates the `location` property in the game state with a `LocationType` object.
+
+#### Data Flow
+
+1. **Location Update Request:** The `updateLocation` function from `useLocation` is called.
+2. **Dispatch Action:** The `SET_LOCATION` action is dispatched to the `gameReducer`.
+3. **State Update:** The `gameReducer` updates the `location` in the global state.
+4. **`useLocation` Synchronization:** The `useEffect` hook in `useLocation` detects the change in `state.location` and updates the local state and history.
+5. **Persistence:** The `useEffect` hook in `useLocation` updates the location history in `localStorage`.
+
 ## Related Documentation
 - [[../index|Main Documentation]]
 - [[../architecture/_index|Architecture Overview]]
 - [[../core-systems/state-management|State Management Guide]]
 - [[../technical-guides/testing|Testing Guide]]
+- [[../services/locationService|Location Service]]
 
 ## Tags
 #documentation #architecture #state-management
 
 ## Changelog
 - 2024-01-04: Reformatted to follow documentation template
+- 2025-02-23: Added Location State documentation

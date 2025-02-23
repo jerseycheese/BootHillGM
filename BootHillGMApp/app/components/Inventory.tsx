@@ -37,14 +37,16 @@ export const Inventory: React.FC<InventoryProps> = ({
     }
 
     // Type assertion to ensure currentPlayer is a string
+    // Create campaign state with required properties and type guards
     const campaignState = {
       ...state,
-      currentPlayer: state.currentPlayer as string
+      currentPlayer: state.currentPlayer as string,
+      location: typeof state.location === 'string' ? state.location : (state.location && 'name' in state.location ? state.location.name : ''),
+      isCombatActive: Boolean(state.isCombatActive)
     };
 
-    // Type guard to ensure state is of the correct type
-    if (!('location' in campaignState) || typeof campaignState.isCombatActive !== 'boolean') {
-      setError('Invalid game state');
+    if (!campaignState.location) {
+      setError('Invalid location');
       return;
     }
 

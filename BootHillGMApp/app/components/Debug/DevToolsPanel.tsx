@@ -30,8 +30,9 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({
     setError(null);
     try {
       await cleanupState();
-    } catch (err: any) {
-      setError(`Failed to reset game: ${err.message}`);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Unknown error occurred');
+      setError(`Failed to reset game: ${error.message}`);
     } finally {
       setLoading(null);
     }
@@ -42,8 +43,9 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({
     setError(null);
     try {
       dispatch(initializeTestCombat());
-    } catch (err: any) {
-      setError(`Failed to initialize test combat: ${err.message}`);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Unknown error occurred');
+      setError(`Failed to initialize test combat: ${error.message}`);
     } finally {
       setLoading(null);
     }
@@ -85,7 +87,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 

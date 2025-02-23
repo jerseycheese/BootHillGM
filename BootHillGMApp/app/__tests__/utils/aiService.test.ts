@@ -31,7 +31,15 @@ describe('getAIResponse', () => {
   it('generates AI response with correct parameters', async () => {
     mockGenerateContent.mockResolvedValue({
       response: {
-        text: () => 'AI generated response\nACQUIRED_ITEMS: []\nREMOVED_ITEMS: []',
+        text: () => JSON.stringify({
+          narrative: 'AI generated response',
+          location: { type: 'town', name: 'Test Town' },
+          combatInitiated: false,
+          opponent: null,
+          acquiredItems: [],
+          removedItems: [],
+          suggestedActions: []
+        })
       },
     });
 
@@ -53,7 +61,15 @@ describe('getAIResponse', () => {
   it('parses acquired and removed items correctly', async () => {
     mockGenerateContent.mockResolvedValue({
       response: {
-        text: () => 'AI response\nACQUIRED_ITEMS: [Item1, Item2]\nREMOVED_ITEMS: [Item3]',
+        text: () => JSON.stringify({
+          narrative: 'AI response',
+          location: { type: 'town', name: 'Test Town' },
+          combatInitiated: false,
+          opponent: null,
+          acquiredItems: ['Item1', 'Item2'],
+          removedItems: ['Item3'],
+          suggestedActions: []
+        })
       },
     });
 
@@ -68,6 +84,9 @@ describe('generateCharacterSummary', () => {
   it('generates a character summary', async () => {
     const mockCharacter: Character = {
       name: 'Test Character',
+      id: 'test-id',
+      isNPC: false,
+      isPlayer: true,
       attributes: {
         speed: 10,
         gunAccuracy: 10,

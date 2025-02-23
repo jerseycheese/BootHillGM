@@ -37,7 +37,7 @@ function useCharacterCreationHandler() {
             inventory: [],
             currentPlayer: '',
             npcs: [],
-            location: '',
+            location: null,
             quests: [],
             narrative: '',
             gameProgress: 0,
@@ -47,8 +47,6 @@ function useCharacterCreationHandler() {
             suggestedActions: [],
           };
           saveGame(gameState);
-          
-          
         }
       } catch {
       }

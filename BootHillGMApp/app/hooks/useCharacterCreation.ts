@@ -293,6 +293,9 @@ export function useCharacterCreation() {
             character,
             inventory: startingInventory,
             isClient: true,
+            currentPlayer: character.id,
+            npcs: [],
+            location: null, // No initial location
           };
           saveGame(gameState);
           router.push("/game-session");

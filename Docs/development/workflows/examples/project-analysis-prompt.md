@@ -11,7 +11,7 @@ updated: 2025-01-13
 ```markdown
 Help me select and analyze the next task to implement from my GitHub issues.
 
-Please review:
+Please review (with MCP):
 1. Open issues at https://github.com/jerseycheese/BootHillGM/issues
 2. Project documentation in /Docs, such as:
     - /Docs/planning/roadmap.md

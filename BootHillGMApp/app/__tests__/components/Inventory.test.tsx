@@ -4,6 +4,13 @@ import { Inventory } from '../../components/Inventory';
 import { CampaignStateContext } from '../../components/CampaignStateManager';
 import { CampaignState } from '../../types/campaign';
 import { InventoryItem, ItemCategory } from '../../types/inventory';
+import { InventoryManager } from '../../utils/inventoryManager';
+
+jest.mock('../../utils/inventoryManager', () => ({
+  InventoryManager: {
+    validateItemUse: jest.fn(() => ({ valid: true })),
+  },
+}));
 
 describe('Inventory', () => {
   // Mock campaign state with test data
@@ -23,9 +30,13 @@ describe('Inventory', () => {
       },
       wounds: [],
       isUnconscious: false,
-      inventory: []
+      inventory: [],
+      strengthHistory: { changes: [], baseStrength: 10 },
+      isNPC: false,
+      isPlayer: true,
+      id: 'test-character-id'
     },
-    location: '',
+    location: { type: 'town', name: 'Test Town' },
     savedTimestamp: undefined,
     gameProgress: 0,
     journal: [],
@@ -38,12 +49,13 @@ describe('Inventory', () => {
     isCombatActive: false,
     opponent: null,
     isClient: false,
-    suggestedActions: []
+    suggestedActions: [],
   };
 
   const mockDispatch = jest.fn();
   const mockSaveGame = jest.fn();
   const mockLoadGame = jest.fn();
+  const mockOnUseItem = jest.fn();
 
   // Helper function to render Inventory with context
   const renderWithContext = (ui: React.ReactElement, state = mockState) => {
@@ -148,7 +160,6 @@ describe('Inventory', () => {
   });
 
   test('calls onUseItem with item ID when Use button is clicked', async () => {
-    const mockOnUseItem = jest.fn();
     renderWithContext(
       <Inventory onUseItem={mockOnUseItem} />, 
       {
@@ -182,7 +193,6 @@ describe('Inventory', () => {
   });
 
   test('handles using an item with quantity greater than 1', () => {
-    const mockOnUseItem = jest.fn();
     const stateWithMultipleItems: CampaignState = {
       ...mockState,
       inventory: [
@@ -200,11 +210,12 @@ describe('Inventory', () => {
     expect(mockOnUseItem).toHaveBeenCalledWith('1');
     
     // The item should still be visible since quantity was > 1
-    expect(screen.getByText(/Health Potion \(x3\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Health Potion \(x3\)/)).toBeInTheDocument(); // Should still be 3, as use hasn't been processed
   });
 
   // New tests
   test('displays error message when item validation fails', () => {
+    (InventoryManager.validateItemUse as jest.Mock).mockReturnValueOnce({ valid: false, reason: 'Requires 20 strength' });
     const invalidItem = {
       id: 'heavy-item',
       name: 'Heavy Item',
@@ -230,6 +241,7 @@ describe('Inventory', () => {
   });
 
   test('clears error message after timeout', async () => {
+    (InventoryManager.validateItemUse as jest.Mock).mockReturnValueOnce({ valid: false, reason: 'Invalid location' });
     const invalidItem = {
       id: 'combat-item',
       name: 'Combat Item',
@@ -287,7 +299,6 @@ describe('Inventory', () => {
       inventory: [validItem]
     };
 
-    const mockOnUseItem = jest.fn();
     renderWithContext(<Inventory onUseItem={mockOnUseItem} />, stateWithValidItem);
     
     const useButton = screen.getByLabelText('Use Valid Item');

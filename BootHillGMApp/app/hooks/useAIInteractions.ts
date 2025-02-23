@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { cleanCharacterName } from '../utils/combatUtils';
 import { AIService } from '../services/ai';
 import { GameState, SuggestedAction } from '../types/campaign';
+import { LocationType } from '../services/locationService';
 import { GameEngineAction } from '../types/gameActions';
 import { JournalEntry } from '../types/journal';
 import { Character } from '../types/character';
@@ -12,7 +13,7 @@ const aiService = new AIService();
 
 type AIResponse = {
   narrative: string;
-  location?: string;
+  location?: LocationType;
   combatInitiated?: boolean;
   opponent?: Character;
   acquiredItems: string[];
@@ -178,11 +179,16 @@ export const useAIInteractions = (
 
     try {
       const journalContext = getJournalContext(state.journal || []);
-      const response = await aiService.getAIResponse(
+      const aiResponse = await aiService.getAIResponse(
         input,
         journalContext,
         state.inventory || []
       );
+
+      const response: AIResponse = {
+        ...aiResponse,
+        location: aiResponse.location as unknown as LocationType
+      };
 
       const { acquiredItems, removedItems } = await processAIResponse({
         input,

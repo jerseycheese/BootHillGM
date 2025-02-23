@@ -57,7 +57,7 @@ export const useGameInitialization = () => {
             currentPlayer: characterData?.name || "", // Set currentPlayer to character's name
             character: characterData,
             narrative: response.narrative,
-            location: response.location || "Unknown Location",
+            location: response.location || { type: 'unknown' }, // Use a default LocationType object
             inventory: startingInventory,
             savedTimestamp: Date.now(),
             isClient: true,
@@ -103,7 +103,7 @@ export const useGameInitialization = () => {
         return {
           ...state,
           narrative: response.narrative,
-          location: response.location || "Unknown Location",
+          location: response.location || { type: 'unknown' }, // Use a default LocationType object
           inventory: INITIAL_INVENTORY,
           savedTimestamp: Date.now(),
           isClient: true,
@@ -131,33 +131,38 @@ export const useGameInitialization = () => {
     [state, dispatch]
   );
 
-  // Manage game initialization lifecycle
-  useEffect(() => {
-    let lastSavedTimestamp = state?.savedTimestamp;
-    const initGame = async () => {
-      if (!isClient || !state || !dispatch) {
-        return;
-      }
+    // Manage game initialization lifecycle
+    useEffect(() => {
+        let lastSavedTimestamp = state?.savedTimestamp;
 
-      // Only initialize if there's no character yet or the timestamp has changed
-      if (!state.character || state.savedTimestamp !== lastSavedTimestamp) {
-        const initializedState = await initializeGameSession();
-        if (initializedState) {
-          dispatch({ type: "SET_STATE", payload: initializedState });
-          saveGame(initializedState);
-        }
-        lastSavedTimestamp = initializedState?.savedTimestamp;
-      }
-    };
+        const initGame = async () => {
+            if (!isClient || !state || !dispatch) {
+                return;
+            }
 
-    initGame();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isClient, dispatch, saveGame, state, initializeGameSession]);
-  // The above dependencies are carefully considered.  `initializeGameSession` is included
-  // because it's a useCallback that depends on `state` and `dispatch`. `state` is included
-  // to trigger the effect when the state changes, but the check for `state.character`
-  // prevents unnecessary re-initialization. `isClient`, `dispatch`, and `saveGame` are
-  // stable and won't cause unnecessary re-renders.
+            // Prevent re-entrant calls
+            if (isInitializing) {
+                return;
+            }
 
-  return { isInitializing, isClient };
+            // Only initialize if there's no character yet or the timestamp has changed
+            if (!state.character || state.savedTimestamp !== lastSavedTimestamp) {
+                const initializedState = await initializeGameSession();
+                if (initializedState) {
+                    // Update the timestamp *before* dispatching the state update
+                    lastSavedTimestamp = initializedState.savedTimestamp;
+                    dispatch({ type: 'SET_STATE', payload: initializedState });
+                    saveGame(initializedState);
+                }
+            }
+        };
+
+        initGame();
+    }, [isClient, isInitializing, state, dispatch, saveGame, initializeGameSession, ]);
+    // The above dependencies are carefully considered.  `initializeGameSession` is included
+    // because it's a useCallback that depends on `state` and `dispatch`. `state` is *not*
+    // included directly to prevent unnecessary re-renders. `isClient`, `dispatch`, and
+    // `saveGame` are stable and won't cause unnecessary re-renders.
+
+    return { isInitializing, isClient };
 };

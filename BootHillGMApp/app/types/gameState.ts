@@ -3,11 +3,12 @@ import { InventoryItem } from './inventory';
 import { JournalEntry } from './journal';
 import { SuggestedAction } from './campaign';
 import { CombatState } from './combat';
+import { LocationType } from '../services/locationService';
 
 export interface GameState {
   currentPlayer: string;
   npcs: string[];
-  location: string;
+  location: LocationType | null;
   inventory: InventoryItem[];
   quests: string[];
   character: Character | null;
@@ -25,7 +26,7 @@ export interface GameState {
 export const initialGameState: GameState = {
   currentPlayer: '',
   npcs: [],
-  location: '',
+  location: null,
   inventory: [],
   quests: [],
   character: null,
