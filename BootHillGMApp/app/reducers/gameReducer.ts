@@ -2,20 +2,34 @@ import { calculateUpdatedStrength } from "../utils/strengthSystem";
 import { GameState } from "../types/gameState";
 import { GameEngineAction, UpdateCharacterPayload } from "../types/gameActions";
 import type { Character } from "../types/character";
-import { Weapon } from "../types/combat";
 import { ensureCombatState } from "../types/combat";
-import { determineIfWeapon } from "../utils/ai/aiUtils";
-import { findClosestWeapon } from "../utils/weaponUtils";
 import { validateCombatEndState } from "../utils/combatStateValidation";
+import { inventoryReducer } from "./inventory/inventoryReducer";
 
 /**
- * Reducer function to handle game state updates based on actions.
- *
+ * Reducer function to handle game state updates related to the game general,
+ * delegating to sub-reducers as necessary for specific domains.
  * @param state - The current game state.
  * @param action - The action to be processed.
  * @returns The updated game state.
  */
 export function gameReducer(state: GameState, action: GameEngineAction): GameState {
+    // Delegate inventory-related actions to the inventoryReducer
+  if (
+    action.type === 'ADD_ITEM' ||
+    action.type === 'REMOVE_ITEM' ||
+    action.type === 'USE_ITEM' ||
+    action.type === 'UPDATE_ITEM_QUANTITY' ||
+    action.type === 'CLEAN_INVENTORY' ||
+    action.type === 'SET_INVENTORY' ||
+    action.type === 'EQUIP_WEAPON' ||
+    action.type === 'UNEQUIP_WEAPON'
+  ) {
+    return {
+      ...state,
+      ...inventoryReducer(state, action),
+    };
+  }
   switch (action.type) {
     case 'SET_PLAYER':
       return { ...state, currentPlayer: action.payload };
@@ -23,53 +37,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       return { ...state, npcs: [...state.npcs, action.payload] };
     case 'SET_LOCATION':
       return { ...state, location: action.payload }; // Store the entire location object
-    case 'ADD_ITEM': {
-      const existingItem = state.inventory.find((item) => item.id === action.payload.id);
-      if (existingItem) {
-        return {
-          ...state,
-          inventory: state.inventory.map((item) =>
-            item.id === action.payload.id
-              ? { ...item, quantity: item.quantity + action.payload.quantity }
-              : item
-          ),
-        };
-      } else {
-        const newItem = { ...action.payload };
-        if (!newItem.category) {
-          newItem.category = "general";
-        }
-        const isWeapon = determineIfWeapon(newItem.name);
-        if (isWeapon) {
-          newItem.category = "weapon";
-          const closestWeapon = findClosestWeapon(newItem.name);
-          if (closestWeapon) {
-            newItem.weapon = closestWeapon;
-          }
-        }
-        return { ...state, inventory: [...state.inventory, newItem] };
-      }
-    }
-    case 'REMOVE_ITEM':
-      return {
-        ...state,
-        inventory: state.inventory.filter((item) => item.id !== action.payload),
-      };
-    case 'USE_ITEM': {
-      const updatedInventory = state.inventory
-        .map((item) => {
-          if (item.id === action.payload) {
-            return { ...item, quantity: item.quantity - 1 };
-          }
-          return item;
-        })
-        .filter((item) => item.quantity > 0);
-
-      return {
-        ...state,
-        inventory: updatedInventory,
-      };
-    }
     case 'ADD_QUEST':
       return { ...state, quests: [...state.quests, action.payload] };
     case 'SET_CHARACTER': {
@@ -112,7 +79,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       const targetCharacter = payload.id === state.character.id ? state.character : state.opponent;
 
       if (!targetCharacter) {
-        console.warn("Target character not found for update.");
         return state;
       }
 
@@ -191,9 +157,10 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       if (!action.payload) { // Only proceed if setting to false
         const validationResult = state.combatState ? validateCombatEndState(state.combatState) : { isValid: true, errors: [] };
         if (!validationResult.isValid) {
-          return state; // Keep the state unchanged if validation fails
+          // TODO: Handle invalid combat end state (e.g., dispatch an error action)
         }
       }
+      // Forcibly end combat even if validation fails.
       return {
         ...state,
         isCombatActive: action.payload,
@@ -223,25 +190,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
           isActive: true
         })
       };
-    case 'UPDATE_ITEM_QUANTITY':
-      return {
-        ...state,
-        inventory: state.inventory.map(item =>
-          item.id === action.payload.id ? { ...item, quantity: action.payload.quantity } : item
-        ).filter(item => item.quantity > 0)
-      };
-    case 'CLEAN_INVENTORY':
-      return {
-        ...state,
-        inventory: state.inventory.filter(item => 
-          item.id &&
-          item.name && 
-          item.quantity > 0 && 
-          !item.name.startsWith('REMOVED_ITEMS:')
-        ),
-      };
-    case 'SET_INVENTORY':
-      return { ...state, inventory: action.payload };
     case 'SET_SAVED_TIMESTAMP':
       return { ...state, savedTimestamp: action.payload };
     case 'SET_STATE':
@@ -262,58 +210,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       };
     case 'SET_SUGGESTED_ACTIONS':
       return { ...state, suggestedActions: action.payload };
-    case 'EQUIP_WEAPON': {
-      const weaponItem = state.inventory.find(item => item.id === action.payload);
-      if (!weaponItem || weaponItem.category !== 'weapon') {
-        // Handle invalid item to equip
-        return state;
-      }
-
-      const updatedInventory = state.inventory.map(item => ({
-        ...item,
-        isEquipped: item.id === action.payload ? true : false
-      }));
-
-      const weapon: Weapon = {
-        id: weaponItem.id,
-        name: weaponItem.name,
-        modifiers: weaponItem.weapon?.modifiers ?? {
-          accuracy: 0,
-          range: 0,
-          reliability: 0,
-          damage: '0',
-          speed: 0,
-          ammunition: 0,
-          maxAmmunition: 0
-        },
-        ammunition: weaponItem.weapon?.ammunition ?? 0,
-        maxAmmunition: weaponItem.weapon?.maxAmmunition ?? 0
-      };
-
-      return {
-        ...state,
-        inventory: updatedInventory,
-        character: state.character ? {
-          ...state.character,
-          weapon: weapon
-        } : null
-      };
-    }
-    case 'UNEQUIP_WEAPON': {
-      const updatedInventory = state.inventory.map(item => ({
-        ...item,
-        isEquipped: false
-      }));
-
-      return {
-        ...state,
-        inventory: updatedInventory,
-        character: state.character ? {
-          ...state.character,
-          weapon: undefined
-        } : null
-      };
-    }
     case 'END_COMBAT': {
       if (!state.combatState) {
         return state;
@@ -322,7 +218,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       const validationResult = validateCombatEndState(state.combatState);
 
       if (!validationResult.isValid) {
-        // TODO: Handle invalid combat end state (e.g., dispatch an error action)
+        // Invalid combat end state. Dispatch an error action.
       }
       // Forcibly end combat even if validation fails
       return {

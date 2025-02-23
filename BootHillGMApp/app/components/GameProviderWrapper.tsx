@@ -26,7 +26,7 @@ function GameStateSync({ children }: { children: React.ReactNode }) {
     campaignState,
     campaignState.savedTimestamp,
     gameState.savedTimestamp,
-    dispatch
+    dispatch,
   ]);
 
   return <>{children}</>;
@@ -35,9 +35,7 @@ function GameStateSync({ children }: { children: React.ReactNode }) {
 export function GameProviderWrapper({ children }: { children: React.ReactNode }) {
   return (
     <GameProvider>
-      <GameStateSync>
-        {children}
-      </GameStateSync>
+      <GameStateSync>{children}</GameStateSync>
     </GameProvider>
   );
 }

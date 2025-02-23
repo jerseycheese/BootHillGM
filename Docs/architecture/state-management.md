@@ -29,9 +29,10 @@ interface GameState {
   campaign: CampaignState;
   character: CharacterState;
   combat: CombatState;
-  inventory: InventoryState;
+  inventory: InventoryState; // Managed by inventoryReducer
   journal: JournalState;
   settings: SettingsState;
+  game: GameState; // Top level gameReducer state.
 }
 ```
 
@@ -52,6 +53,14 @@ interface GameState {
 - Reducers
 - Middleware
 - State Selectors
+
+### Reducer Structure
+The `gameReducer` has been split into multiple reducers to improve code organization and maintainability. Each reducer is responsible for a specific domain of the game state.
+
+- `gameReducer`: Handles overall game state and delegates to sub-reducers.
+- `inventoryReducer`: Manages the inventory state.
+
+The reducers are combined using a custom `combineReducers` function located in `app/reducers/index.ts`. This function takes an object of reducers and returns a single reducer function that can be used with `useReducer`.
 
 ### Context Structure
 ```typescript
