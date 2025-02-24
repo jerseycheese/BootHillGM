@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Character } from '../types/character';
-import { WeaponCombatState } from '../types/combat';
+import { WeaponCombatState } from '../types/combat/types';
 import { initializeWeaponCombatState } from '../utils/weaponCombatInitializer';
 
 /**

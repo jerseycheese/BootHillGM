@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { WeaponCombatAction, WeaponCombatState } from '../types/combat';
+import { WeaponCombatAction, WeaponCombatState } from '../types/combat/types';
 import { Character } from '../types/character';
 import { GameEngineAction } from '../types/gameActions';
 import { CombatState } from '../types/combat';
