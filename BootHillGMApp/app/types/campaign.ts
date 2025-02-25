@@ -1,6 +1,8 @@
 import { Character } from './character';
 import { JournalEntry } from './journal';
-import { InventoryItem } from './inventory';
+import { InventoryItem } from './item.types';
+import { CombatState } from './combat';
+import { LocationType } from '../services/locationService';
 
 /**
  * Defines the structure of a suggested action in the campaign.
@@ -38,7 +40,7 @@ export interface CampaignState {
   currentPlayer: string;
   npcs: string[];
   character: Character | null;
-  location: string;
+  location: LocationType | null;
   savedTimestamp?: number;
   gameProgress: number;
   journal: JournalEntry[];
@@ -49,6 +51,7 @@ export interface CampaignState {
   opponent: Character | null;
   isClient?: boolean;
   suggestedActions: SuggestedAction[];
+  combatState?: CombatState;
 }
 
 /**
@@ -58,7 +61,7 @@ export const initialGameState: CampaignState = {
   currentPlayer: '',
   npcs: [],
   character: null,
-  location: '',
+  location: null,
   gameProgress: 0,
   journal: [],
   narrative: '',
@@ -67,7 +70,8 @@ export const initialGameState: CampaignState = {
   isCombatActive: false,
   opponent: null,
   isClient: false,
-  suggestedActions: []
+  suggestedActions: [],
+  combatState: undefined
 };
 
 // Union type of all possible actions

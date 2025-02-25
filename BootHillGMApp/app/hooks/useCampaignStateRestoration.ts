@@ -1,5 +1,5 @@
 import { GameState } from '../types/gameState';
-import { InventoryItem } from '../types/inventory';
+import { InventoryItem } from '../types/item.types';
 import { Character } from '../types/character';
 import { initialState as initialGameState } from '../types/initialState';
 import { LocationType } from '../services/locationService';

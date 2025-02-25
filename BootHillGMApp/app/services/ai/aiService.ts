@@ -1,5 +1,5 @@
 import { Character } from '../../types/character';
-import { InventoryItem } from '../../types/inventory';
+import { InventoryItem } from '../../types/item.types';
 import { SuggestedAction } from '../../types/campaign';
 import { retryWithExponentialBackoff } from '../../utils/retry';
 import { GenerateContentResult } from '@google/generative-ai';

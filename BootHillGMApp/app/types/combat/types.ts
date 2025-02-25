@@ -1,5 +1,5 @@
 import { Character } from '../character';
-import { InventoryItem } from '../inventory';
+import { InventoryItem } from '../item.types';
 
 /**
  * Defines the possible types of actions in weapon combat.

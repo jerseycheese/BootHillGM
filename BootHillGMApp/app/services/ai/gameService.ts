@@ -1,5 +1,5 @@
 import { Character } from '../../types/character';
-import { InventoryItem } from '../../types/inventory';
+import { InventoryItem } from '../../types/item.types';
 import { LocationType } from '../locationService';
 import { SuggestedAction } from '../../types/campaign';
 import { getAIModel } from '../../utils/ai/aiConfig';

@@ -1,5 +1,5 @@
-import type { Weapon } from './inventory';
-export type { Weapon } from './inventory';
+import type { Weapon } from './weapon.types';
+export type { Weapon } from './weapon.types';
 import type { Wound } from './wound';
 export type { Wound } from './wound';
  

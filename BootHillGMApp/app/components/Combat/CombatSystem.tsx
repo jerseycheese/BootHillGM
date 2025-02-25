@@ -23,7 +23,7 @@ import {
   ensureCombatState,
   CombatSummary 
 } from '../../types/combat';
-import { Weapon } from '../../types/inventory';
+import { Weapon } from '../../types/weapon.types';
 import { getDefaultWeapon } from '../../utils/weaponUtils';
 import { CombatLog } from './CombatLog';
 

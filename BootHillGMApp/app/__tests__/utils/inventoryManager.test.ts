@@ -1,7 +1,7 @@
 import { InventoryManager } from '../../utils/inventoryManager';
 import { Character } from '../../types/character';
 import { GameState } from '../../types/campaign';
-import { InventoryItem } from '../../types/inventory';
+import { InventoryItem } from '../../types/item.types';
 import { WEAPONS } from '../../utils/weaponDefinitions';
 
 const localStorageMock = (() => {
@@ -15,9 +15,14 @@ const localStorageMock = (() => {
 })();
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
+import { LocationType } from '../../services/locationService';
+
 describe('InventoryManager', () => {
   const mockCharacter: Character = {
+    id: 'test-character',
     name: 'Test Character',
+    isNPC: false,
+    isPlayer: true,
     inventory: [],
     attributes: {
       speed: 5,
@@ -30,14 +35,15 @@ describe('InventoryManager', () => {
     },
     wounds: [],
     isUnconscious: false,
-    equippedWeapon: undefined
+    equippedWeapon: undefined,
+    strengthHistory: {baseStrength: 10, changes: []}
   };
 
   const mockGameState: GameState = {
     currentPlayer: 'Test Player',
     npcs: [],
     character: mockCharacter,
-    location: 'Test Location',
+    location: { type: 'town', name: 'Test Location' } as LocationType,
     savedTimestamp: undefined,
     gameProgress: 0,
     journal: [],
@@ -47,7 +53,8 @@ describe('InventoryManager', () => {
     isCombatActive: false,
     opponent: null,
     isClient: false,
-    suggestedActions: []
+    suggestedActions: [],
+    combatState: undefined
   };
 
   beforeEach(() => {

@@ -1,28 +1,64 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { InventoryManager } from '../utils/inventoryManager';
 import { useCampaignState } from './CampaignStateManager';
+import { ErrorDisplay } from './ErrorDisplay';
+import { InventoryList } from './InventoryList';
+import { LocationType } from '../services/locationService';
+import ErrorBoundary from './ErrorBoundary';
 
 /**
- * Displays and manages the player's inventory with:
- * - Item usage validation based on character stats and game state
- * - Visual feedback for usage restrictions
- * - Hover descriptions for items
- * - Automatic error message clearing
+ * Props for the Inventory component.
+ * @template T - A string type representing item IDs.
  */
-interface InventoryProps {
-  onUseItem?: (itemId: string) => void;
-  handleEquipWeapon?: (itemId: string) => void;
-  handleUnequipWeapon?: (itemId: string) => void;
+interface InventoryProps<T extends string> {
+  /**
+   * Callback function triggered when an item is used.
+   * @param itemId The ID of the item being used.
+   * @param action The action performed on the item (e.g., 'use').
+   */
+  onUseItem?: (itemId: T, action: string) => void;
+  /**
+   * Callback function triggered when a weapon is equipped.
+   * @param itemId The ID of the weapon being equipped.
+   */
+  handleEquipWeapon?: (itemId: T) => void;
+  /**
+   * Callback function triggered when a weapon is unequipped.
+   * @param itemId The ID of the weapon being unequipped.
+   */
+  handleUnequipWeapon?: (itemId: T) => void;
 }
 
-export const Inventory: React.FC<InventoryProps> = ({ 
+const ERROR_TIMEOUT = 3000; // milliseconds
+
+/**
+ * Inventory component to display and manage the character's inventory.
+ *
+ * @param props The component props.
+ */
+export const Inventory: React.FC<InventoryProps<string>> = ({
   onUseItem,
   handleEquipWeapon,
   handleUnequipWeapon: onUnequipWeapon
 }) => {
   const { state } = useCampaignState();
   const [error, setError] = useState<string | null>(null);
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+
+  /**
+   * Standardized error messages for consistent error handling.
+   * @type {{ noCharacter: string; unableToUse: string; cannotUse: string }}
+   */
+  const ERROR_MESSAGES = {
+    noCharacter: 'No character available',
+    unableToUse: 'Unable to use item',
+    cannotUse: 'Cannot use item',
+  };
+
+  useEffect(() => {
+    if (!state.character) {
+      setError(ERROR_MESSAGES.noCharacter);
+    }
+  }, [state.character, ERROR_MESSAGES.noCharacter]);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -30,25 +66,32 @@ export const Inventory: React.FC<InventoryProps> = ({
 
   const handleUseItem = useCallback((itemId: string) => {
     const item = state.inventory.find(i => i.id === itemId);
-    
+
+    // Use standardized error message
     if (!item || !state.character || state.currentPlayer === null) {
-      setError('Unable to use item');
+      setError(ERROR_MESSAGES.unableToUse);
       return;
     }
 
-    // Type assertion to ensure currentPlayer is a string
-    // Create campaign state with required properties and type guards
-    const campaignState = {
-      ...state,
-      currentPlayer: state.currentPlayer as string,
-      location: typeof state.location === 'string' ? state.location : (state.location && 'name' in state.location ? state.location.name : ''),
-      isCombatActive: Boolean(state.isCombatActive)
-    };
+    // Memoize campaignState to avoid unnecessary recalculations.
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const campaignState = useMemo(() => {
+      // Improved type safety and readability for location
+      // If state.location is an object with 'type' and 'name', use it as LocationType.
+      // Otherwise, default to { type: 'unknown' }.
+      const location: LocationType | { type: 'unknown' } =
+        typeof state.location === 'object' && state.location !== null && 'type' in state.location && 'name' in state.location
+          ? state.location as LocationType
+          : { type: 'unknown' };
 
-    if (!campaignState.location) {
-      setError('Invalid location');
-      return;
-    }
+      return {
+        ...state,
+        currentPlayer: state.currentPlayer as string, // Type assertion is safe here as we check for null above
+        location: location,
+        isCombatActive: Boolean(state.isCombatActive)
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [state.location, state.currentPlayer, state.isCombatActive]);
 
     const validation = InventoryManager.validateItemUse(
       item,
@@ -57,99 +100,52 @@ export const Inventory: React.FC<InventoryProps> = ({
     );
 
     if (!validation.valid) {
-      setError(validation.reason || 'Cannot use item');
-      setTimeout(clearError, 3000);
+      // Use standardized error message or validation reason
+      setError(validation.reason || ERROR_MESSAGES.cannotUse);
+      setTimeout(clearError, ERROR_TIMEOUT);
       return;
     }
 
     if (onUseItem) {
-      onUseItem(itemId);
+      onUseItem(itemId, 'use');
     }
     clearError();
-  }, [state, onUseItem, clearError]);
+  }, [state, onUseItem, clearError, ERROR_MESSAGES.unableToUse, ERROR_MESSAGES.cannotUse]);
 
   const handleEquipWeaponClick = useCallback((itemId: string) => {
     if (!state.character) {
-      setError('No character available');
+      setError(ERROR_MESSAGES.noCharacter);
       return;
     }
-    handleEquipWeapon?.(itemId);
-  }, [state.character, handleEquipWeapon]);
+    handleEquipWeapon?.(itemId)
+  }, [state.character, handleEquipWeapon, ERROR_MESSAGES.noCharacter]);
+
+  const handleItemAction = useCallback((itemId: string, action: 'use' | 'equip' | 'unequip') => {
+    switch (action) {
+      case 'use':
+        handleUseItem(itemId);
+        break;
+      case 'equip':
+        handleEquipWeaponClick(itemId);
+        break;
+      case 'unequip':
+        onUnequipWeapon?.(itemId);
+        break;
+    }
+  }, [handleUseItem, handleEquipWeaponClick, onUnequipWeapon]);
+
+    // Memoize the filtered inventory items
+    const filteredInventory = useMemo(() => {
+      return state.inventory?.filter(item => item.id && item.name && typeof item.quantity === 'number') || [];
+    }, [state.inventory]);
 
   return (
-    <div className="wireframe-section">
-      <h2 className="wireframe-subtitle">Inventory</h2>
-      {error && (
-        <div 
-          className="text-red-600 mb-2" 
-          role="alert" 
-          data-testid="inventory-error"
-        >
-          {error}
-        </div>
-      )}
-      <ul className="wireframe-list">
-        {state.inventory?.map((item) => (
-          item && item.id && item.name && item.quantity > 0 ? (
-            <li 
-              key={item.id} 
-              className={`wireframe-text relative flex justify-between items-center p-2 ${
-                item.isEquipped ? 'bg-blue-50' : ''
-              }`}
-              onMouseEnter={() => setHoveredItem(item.id)}
-              onMouseLeave={() => setHoveredItem(null)}
-            >
-              <div className="flex-grow">
-                <span>
-                  {item.name} (x{item.quantity})
-                  {item.isEquipped && (
-                    <span className="ml-2 text-xs text-blue-600">(Equipped)</span>
-                  )}
-                  <span className="ml-2 text-xs px-2 py-0.5 bg-gray-200 rounded-full">
-                    {item.category}
-                  </span>
-                </span>
-                {hoveredItem === item.id && item.description && (
-                  <div className="absolute z-10 bg-black text-white p-2 rounded shadow-lg mt-1 text-sm">
-                    {item.description}
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-2">
-                {item.category === 'weapon' && (
-                  item.isEquipped ? (
-                    <button
-                      onClick={() => onUnequipWeapon?.(item.id)}
-                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
-                      aria-label={`Unequip ${item.name}`}
-                    >
-                      Unequip
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleEquipWeaponClick(item.id)}
-                      className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                      aria-label={`Equip ${item.name}`}
-                    >
-                      Equip
-                    </button>
-                  )
-                )}
-                <button
-                  onClick={() => handleUseItem(item.id)}
-                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                  aria-label={`Use ${item.name}`}
-                >
-                  Use
-                </button>
-              </div>
-            </li>
-          ) : null
-        ))}
-      </ul>
-      {(!state.inventory || state.inventory.length === 0) && (
-        <p className="wireframe-text">Your inventory is empty.</p>
-      )}
-    </div>
+    <ErrorBoundary>
+      <div className="wireframe-section">
+        <h2 className="wireframe-subtitle">Inventory</h2>
+        <ErrorDisplay error={error} onClear={clearError} />
+        <InventoryList items={filteredInventory} onItemAction={handleItemAction} />
+      </div>
+    </ErrorBoundary>
   );
 };

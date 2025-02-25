@@ -4,7 +4,7 @@ import { useLocation } from './useLocation';
 import { getAIResponse } from '../services/ai/gameService';
 import { getJournalContext, addJournalEntry } from '../utils/JournalManager';
 import { useCombatManager } from './useCombatManager';
-import { InventoryItem, ItemCategory } from '../types/inventory';
+import { InventoryItem, ItemCategory } from '../types/item.types';
 
 // Parameters for updating the narrative display
 type UpdateNarrativeParams = {

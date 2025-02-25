@@ -1,4 +1,4 @@
-import { InventoryItem } from '../../types/inventory';
+import { InventoryItem } from '../../types/item.types';
 
 const WESTERN_THEMES = {
   SURVIVAL: ['resource scarcity', 'environmental challenges', 'physical hardship', 'self-reliance'],

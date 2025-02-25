@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { GameProviderWrapper } from './components/GameProviderWrapper';
 import { CampaignStateProvider } from './components/CampaignStateManager';
 import Navigation from './components/Navigation';
+import { Suspense } from 'react';
 import "./globals.css";
 import "./styles/wireframe.css";
 
@@ -29,7 +30,9 @@ export default function RootLayout({
       <body>
         <CampaignStateProvider>
           <GameProviderWrapper>
-            <Navigation />
+            <Suspense fallback={<p>Loading...</p>}>
+              <Navigation />
+            </Suspense>
             <main className="p-4">
               {children}
             </main>

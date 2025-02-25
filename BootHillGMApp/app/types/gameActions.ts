@@ -1,5 +1,5 @@
 import { Character } from "./character";
-import { InventoryItem } from "./inventory";
+import { InventoryItem } from "./item.types";
 import { JournalEntry } from "./journal";
 import { SuggestedAction } from "./campaign";
 import { CombatState, CombatType, Wound } from "./combat";

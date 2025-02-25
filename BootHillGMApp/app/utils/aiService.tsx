@@ -1,7 +1,6 @@
 // BootHillGMApp/app/utils/aiService.tsx
 
 import {} from '../types/character';
-import {} from '../types/inventory';
 import {} from './retry';
 import { getAIResponse } from '../services/ai/gameService';
 import { getAIModel } from './ai/aiConfig';

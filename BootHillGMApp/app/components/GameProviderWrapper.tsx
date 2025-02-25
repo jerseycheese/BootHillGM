@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
-import { GameProvider, useGame } from '../utils/gameEngine';
+import React, { useEffect, useRef, useState } from 'react';
+import { GameProvider, useGame } from '../hooks/useGame';
 import { useCampaignState } from './CampaignStateManager';
 
 function GameStateSync({ children }: { children: React.ReactNode }) {
@@ -33,9 +33,21 @@ function GameStateSync({ children }: { children: React.ReactNode }) {
 }
 
 export function GameProviderWrapper({ children }: { children: React.ReactNode }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
-    <GameProvider>
-      <GameStateSync>{children}</GameStateSync>
-    </GameProvider>
+    <>
+      {isClient ? (
+        <GameProvider>
+          <GameStateSync>{children}</GameStateSync>
+        </GameProvider>
+      ) : (
+        <>{children}</>
+      )}
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import { InventoryItem } from '../../types/inventory';
+import { InventoryItem } from '../../types/item.types';
 import { Character } from '../../types/character';
 import { SuggestedAction } from '../../types/campaign';
 

@@ -1,5 +1,5 @@
 import { Character } from '../../types/character';
-import { InventoryItem } from '../../types/inventory';
+import { InventoryItem } from '../../types/item.types';
 import { getAIResponse } from '../../services/ai/gameService';
 import { generateFieldValue } from './fieldValueGeneration';
 import {} from './aiConfig';

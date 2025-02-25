@@ -1,6 +1,8 @@
-import { InventoryItem, ItemValidationResult, createInventoryItem, ItemCategory } from '../types/inventory';
+import { InventoryItem, ItemCategory, createInventoryItem } from '../types/item.types';
+import { ItemValidationResult } from '../types/validation.types';
 import { Character } from '../types/character';
 import { CampaignState } from '../types/campaign';
+import { LocationType } from '../services/locationService';
 
 /**
  * Manages inventory-related operations including item validation and usage prompts.
@@ -8,11 +10,16 @@ import { CampaignState } from '../types/campaign';
  * and combat state restrictions.
  */
 
-/**
- * Manages inventory-related operations including item validation and usage prompts.
- * Handles validation of item requirements based on character stats, location,
- * and combat state restrictions.
- */
+// Type guard to check if an object is a LocationType
+function isLocationType(location: unknown): location is LocationType {
+  return typeof location === 'object' && location !== null && 'type' in location && 'name' in location;
+}
+
+// Type guard for CampaignState
+function isCampaignState(state: unknown): state is CampaignState {
+  return typeof state === 'object' && state !== null && typeof (state as CampaignState).currentPlayer === 'string' && isLocationType((state as CampaignState).location);
+}
+
 export class InventoryManager {
   /**
    * Determines the category of an item based on its properties.
@@ -46,9 +53,14 @@ export class InventoryManager {
    */
   static validateItemUse(
     item: InventoryItem,
-    character: Character,
+    character: Character | undefined,
     gameState: CampaignState & { isCombatActive: boolean }
   ): ItemValidationResult {
+    // Check if gameState is valid using the type guard
+    if (!isCampaignState(gameState)) {
+        return { valid: false, reason: 'Invalid game state' };
+    }
+
     if (!item) {
       return { valid: false, reason: 'Item not found' };
     }
@@ -57,19 +69,22 @@ export class InventoryManager {
       return { valid: false, reason: 'Item not available' };
     }
 
-    if (item.requirements) {
+    // Check if character is defined before accessing its properties
+    if (character && item.requirements) {
       const { requirements } = item;
 
-      if (requirements.minStrength && 
-          character.attributes.strength < requirements.minStrength) {
+      if (requirements.minStrength &&
+        character.attributes.strength < requirements.minStrength) {
         return {
           valid: false,
-          reason: `Requires ${requirements.minStrength} strength`
+          reason: `Requires ${requirements.minStrength} strength`,
         };
       }
 
-      if (requirements.location && 
-          !requirements.location.includes(gameState.location)) {
+      // Use the type guard for location
+      if (requirements.location && isLocationType(gameState.location)
+        && gameState.location.type === 'town'
+        && !requirements.location.includes(gameState.location.name)) {
         return {
           valid: false,
           reason: 'Cannot use this item here'
@@ -110,7 +125,7 @@ export class InventoryManager {
   static addItem(item: InventoryItem): void {
     const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
     const existingItem = inventory.find((i: InventoryItem) => i.id === item.id);
- 
+
     if (existingItem) {
       const newCategory = InventoryManager.determineItemCategory(item);
       existingItem.category = newCategory;

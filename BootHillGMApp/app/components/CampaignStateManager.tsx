@@ -6,7 +6,7 @@ import { gameReducer } from '../reducers/gameReducer';
 import { GameState } from '../types/gameState';
 import { initialState as initialGameState } from '../types/initialState';
 import { useCampaignStateRestoration } from '../hooks/useCampaignStateRestoration';
-import { InventoryItem } from '../types/inventory';
+import { InventoryItem } from '../types/item.types';
 import { ensureCombatState } from '../types/combat';
 
 export const CampaignStateContext = createContext<{

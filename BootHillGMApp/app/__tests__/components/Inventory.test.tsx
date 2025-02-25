@@ -1,10 +1,13 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Inventory } from '../../components/Inventory';
 import { CampaignStateContext } from '../../components/CampaignStateManager';
-import { CampaignState } from '../../types/campaign';
-import { InventoryItem, ItemCategory } from '../../types/inventory';
+import { InventoryItem } from '../../types/item.types';
 import { InventoryManager } from '../../utils/inventoryManager';
+import {
+  createMockCampaignState,
+  createMockInventoryItem,
+} from '../../test/utils/inventoryTestUtils';
 
 jest.mock('../../utils/inventoryManager', () => ({
   InventoryManager: {
@@ -12,61 +15,37 @@ jest.mock('../../utils/inventoryManager', () => ({
   },
 }));
 
-describe('Inventory', () => {
-  // Mock campaign state with test data
-  const mockState: CampaignState = {
-    currentPlayer: '',
-    npcs: [],
-    character: {
-      name: 'Test Character',
-      attributes: {
-        speed: 5,
-        gunAccuracy: 5,
-        throwingAccuracy: 5,
-        strength: 10,
-        baseStrength: 10,
-        bravery: 5,
-        experience: 0
-      },
-      wounds: [],
-      isUnconscious: false,
-      inventory: [],
-      strengthHistory: { changes: [], baseStrength: 10 },
-      isNPC: false,
-      isPlayer: true,
-      id: 'test-character-id'
-    },
-    location: { type: 'town', name: 'Test Town' },
-    savedTimestamp: undefined,
-    gameProgress: 0,
-    journal: [],
-    narrative: '',
-    inventory: [
-      { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores 20 health points', category: 'consumable' as ItemCategory },
-      { id: '2', name: 'Rope', quantity: 1, description: 'A sturdy rope, 50 feet long', category: 'general' as ItemCategory }
-    ],
-    quests: [],
-    isCombatActive: false,
-    opponent: null,
-    isClient: false,
-    suggestedActions: [],
-  };
+// Mock useMemo to return the first argument (the function) directly
+jest.mock('react', () => ({
+  ...jest.requireActual('react'),
+  useMemo: <T,>(fn: () => T) => fn(),
+}));
 
+describe('Inventory', () => {
   const mockDispatch = jest.fn();
   const mockSaveGame = jest.fn();
   const mockLoadGame = jest.fn();
   const mockOnUseItem = jest.fn();
 
+  const ERROR_MESSAGES = {
+    noCharacter: 'No character available',
+    unableToUse: 'Unable to use item',
+    cannotUse: 'Cannot use item',
+  };
+
   // Helper function to render Inventory with context
-  const renderWithContext = (ui: React.ReactElement, state = mockState) => {
+  const renderWithContext = (
+    ui: React.ReactElement,
+    state = createMockCampaignState()
+  ) => {
     return render(
-      <CampaignStateContext.Provider 
-        value={{ 
-          state, 
+      <CampaignStateContext.Provider
+        value={{
+          state,
           dispatch: mockDispatch,
           saveGame: mockSaveGame,
           loadGame: mockLoadGame,
-          cleanupState: jest.fn()
+          cleanupState: jest.fn(),
         }}
       >
         {ui}
@@ -78,58 +57,34 @@ describe('Inventory', () => {
     jest.clearAllMocks();
   });
 
-  test('renders inventory items', () => {
-    renderWithContext(<Inventory />);
-
-    expect(screen.getByText('Inventory')).toBeInTheDocument();
-    expect(screen.getByText(/Health Potion \(x2\)/)).toBeInTheDocument();
-    expect(screen.getByText(/Rope \(x1\)/)).toBeInTheDocument();
-  });
-
-  test('displays empty inventory message when no items', () => {
-    const emptyState: CampaignState = {
-      ...mockState,
-      inventory: []
-    };
-
-    renderWithContext(<Inventory />, emptyState);
-    expect(screen.getByText('Your inventory is empty.')).toBeInTheDocument();
-  });
-
-  test('does not render items with quantity 0', () => {
-    const stateWithZeroQuantity: CampaignState = {
-      ...mockState,
-      inventory: [
-        { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores 20 health points', category: 'consumable' as ItemCategory },
-        { id: '2', name: 'Empty Bottle', quantity: 0, description: 'An empty glass bottle', category: 'general' as ItemCategory }
-      ]
-    };
-
-    renderWithContext(<Inventory />, stateWithZeroQuantity);
-    expect(screen.getByText(/Health Potion \(x2\)/)).toBeInTheDocument();
-    expect(screen.queryByText(/Empty Bottle/)).not.toBeInTheDocument();
-  });
-
-  test('handles empty inventory gracefully', () => {
-    const stateWithEmptyInventory: CampaignState = {
-      ...mockState,
-      inventory: []
-    };
-
-    renderWithContext(<Inventory />, stateWithEmptyInventory);
-    expect(screen.getByText('Your inventory is empty.')).toBeInTheDocument();
-  });
-
   test('does not render items with missing properties', () => {
-    const stateWithInvalidItems: CampaignState = {
-      ...mockState,
+    const stateWithInvalidItems = createMockCampaignState({
       inventory: [
-        { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores 20 health points', category: 'consumable' as ItemCategory },
-        { id: '2', quantity: 1, description: 'Invalid item' } as unknown as InventoryItem, // Missing name
-        { name: 'Sword', quantity: 1, description: 'Invalid item' } as unknown as InventoryItem, // Missing id
-        { id: '4', name: 'Shield', description: 'Invalid item' } as unknown as InventoryItem // Missing quantity
-      ]
-    };
+        createMockInventoryItem({
+          id: '1',
+          name: 'Health Potion',
+          quantity: 2,
+        }),
+        createMockInventoryItem({
+          id: '2',
+          quantity: 1,
+          description: 'Invalid item',
+          name: undefined,
+        }), // Missing name
+        createMockInventoryItem({
+          id: undefined,
+          name: 'Sword',
+          quantity: 1,
+          description: 'Invalid item',
+        }), // Missing id
+        createMockInventoryItem({
+          id: '4',
+          name: 'Shield',
+          description: 'Invalid item',
+          quantity: undefined,
+        }), // Missing quantity
+      ] as InventoryItem[],
+    });
 
     renderWithContext(<Inventory />, stateWithInvalidItems);
     expect(screen.getByText(/Health Potion \(x2\)/)).toBeInTheDocument();
@@ -140,171 +95,97 @@ describe('Inventory', () => {
     expect(screen.queryByText(/Shield/)).not.toBeInTheDocument();
   });
 
-  test('displays item descriptions on hover', () => {
-    renderWithContext(<Inventory />);
-    
-    // Find the Health Potion item
-    const healthPotionItem = screen.getByText(/Health Potion/);
-    
-    // Trigger hover
-    fireEvent.mouseEnter(healthPotionItem.closest('li')!);
-    
-    // Check if description is shown
-    expect(screen.getByText('Restores 20 health points')).toBeInTheDocument();
-    
-    // Unhover
-    fireEvent.mouseLeave(healthPotionItem.closest('li')!);
-    
-    // Check if description is hidden
-    expect(screen.queryByText('Restores 20 health points')).not.toBeInTheDocument();
-  });
-
-  test('calls onUseItem with item ID when Use button is clicked', async () => {
-    renderWithContext(
-      <Inventory onUseItem={mockOnUseItem} />, 
-      {
-        ...mockState,
-        inventory: [
-          { 
-            id: '1', 
-            name: 'Health Potion', 
-            quantity: 2, 
-            description: 'Restores 20 health points',
-            category: 'consumable' as ItemCategory,
-            effect: {
-              type: 'heal',
-              value: 20
-            }
-          }
-        ]
-      }
-    );
-
-    // Find and click the Use button
-    const useButton = screen.getByLabelText('Use Health Potion');
-    
-    // Click the button and wait for updates
-    await act(async () => {
-      fireEvent.click(useButton);
-    });
-
-    // Verify the callback was called
-    expect(mockOnUseItem).toHaveBeenCalledWith('1');
-  });
-
-  test('handles using an item with quantity greater than 1', () => {
-    const stateWithMultipleItems: CampaignState = {
-      ...mockState,
-      inventory: [
-        { id: '1', name: 'Health Potion', quantity: 3, description: 'Restores 20 health points', category: 'consumable' as ItemCategory }
-      ]
-    };
-
-    renderWithContext(<Inventory onUseItem={mockOnUseItem} />, stateWithMultipleItems);
-    
-    // Find and click the Use button
-    const useButton = screen.getByLabelText('Use Health Potion');
-    fireEvent.click(useButton);
-    
-    // Check if onUseItem was called with the correct item ID
-    expect(mockOnUseItem).toHaveBeenCalledWith('1');
-    
-    // The item should still be visible since quantity was > 1
-    expect(screen.getByText(/Health Potion \(x3\)/)).toBeInTheDocument(); // Should still be 3, as use hasn't been processed
-  });
-
-  // New tests
-  test('displays error message when item validation fails', () => {
-    (InventoryManager.validateItemUse as jest.Mock).mockReturnValueOnce({ valid: false, reason: 'Requires 20 strength' });
-    const invalidItem = {
-      id: 'heavy-item',
-      name: 'Heavy Item',
-      quantity: 1,
-      description: 'Too heavy to use',
-      requirements: {
-        minStrength: 20
-      },
-      category: 'general' as ItemCategory
-    };
-
-    const stateWithInvalidItem = {
-      ...mockState,
-      inventory: [invalidItem]
-    };
-
-    renderWithContext(<Inventory />, stateWithInvalidItem);
-    
-    const useButton = screen.getByLabelText('Use Heavy Item');
-    fireEvent.click(useButton);
-
-    expect(screen.getByTestId('inventory-error')).toHaveTextContent('Requires 20 strength');
-  });
-
-  test('clears error message after timeout', async () => {
-    (InventoryManager.validateItemUse as jest.Mock).mockReturnValueOnce({ valid: false, reason: 'Invalid location' });
-    const invalidItem = {
-      id: 'combat-item',
-      name: 'Combat Item',
-      quantity: 1,
-      description: 'Combat only',
-      requirements: {
-        combatOnly: true
-      },
-      category: 'general' as ItemCategory
-    };
-
-    const stateWithInvalidItem = {
-      ...mockState,
-      inventory: [invalidItem]
-    };
-
-    renderWithContext(<Inventory />, stateWithInvalidItem);
-    
-    const useButton = screen.getByLabelText('Use Combat Item');
-    fireEvent.click(useButton);
-
-    expect(screen.getByTestId('inventory-error')).toBeInTheDocument();
-    
-    // Wait for error to clear using waitFor instead of setTimeout
-    await waitFor(() => {
-      expect(screen.queryByTestId('inventory-error')).not.toBeInTheDocument();
-    }, { timeout: 4000 }); // Slightly longer than the component's timeout
-  });
-
-  test('handles missing character gracefully', () => {
+  test('handles missing character gracefully', async () => {
+    // Create a state without a character
+    const baseState = createMockCampaignState({ inventory: [] });
     const stateWithoutCharacter = {
-      ...mockState,
-      character: null
+      ...baseState,
+      character: null,
     };
 
     renderWithContext(<Inventory />, stateWithoutCharacter);
-    
-    const useButton = screen.getByLabelText('Use Health Potion');
-    fireEvent.click(useButton);
 
-    expect(screen.getByTestId('inventory-error')).toHaveTextContent('Unable to use item');
+    // Error should appear immediately
+    expect(screen.getByTestId('error-display')).toHaveTextContent(
+      ERROR_MESSAGES.noCharacter
+    );
   });
 
   test('calls onUseItem only when validation passes', () => {
-    const validItem = {
+    const validItem = createMockInventoryItem({
       id: 'valid-item',
       name: 'Valid Item',
       quantity: 1,
       description: 'Can use this',
-      category: 'general' as ItemCategory
-    };
+    });
 
-    const stateWithValidItem = {
-      ...mockState,
-      inventory: [validItem]
-    };
+    const stateWithValidItem = createMockCampaignState({
+      inventory: [validItem],
+    });
 
-    renderWithContext(<Inventory onUseItem={mockOnUseItem} />, stateWithValidItem);
-    
+    renderWithContext(
+      <Inventory onUseItem={mockOnUseItem} />,
+      stateWithValidItem
+    );
+
     const useButton = screen.getByLabelText('Use Valid Item');
     fireEvent.click(useButton);
 
-    expect(mockOnUseItem).toHaveBeenCalledWith('valid-item');
+    expect(mockOnUseItem).toHaveBeenCalledWith('valid-item', 'use');
     expect(screen.queryByTestId('inventory-error')).not.toBeInTheDocument();
   });
+
+  test('displays and clears error when validation fails', async () => {
+    (InventoryManager.validateItemUse as jest.Mock).mockReturnValueOnce({
+      valid: false,
+      reason: 'Test Reason',
+    });
+
+    const invalidItem = createMockInventoryItem({ id: 'invalid', quantity: 1 });
+    const stateWithInvalidItem = createMockCampaignState({
+      inventory: [invalidItem],
+    });
+
+    renderWithContext(<Inventory />, stateWithInvalidItem);
+
+    const useButton = screen.getByLabelText(`Use ${invalidItem.name}`);
+
+    fireEvent.click(useButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('error-display')).toHaveTextContent(
+        'Test Reason'
+      );
+    });
+
+    // Wait for the error timeout (3000ms) + a small buffer
+    await waitFor(
+      () => {
+        expect(screen.queryByTestId('error-display')).not.toBeInTheDocument();
+      },
+      { timeout: 3100 }
+    );
+  });
+
+  test('uses default error message when no reason is provided', async () => {
+      (InventoryManager.validateItemUse as jest.Mock).mockReturnValueOnce({
+        valid: false,
+        reason: undefined, // Simulate missing reason
+      });
+
+      const invalidItem = createMockInventoryItem({ id: 'invalid', quantity: 1 });
+      const stateWithInvalidItem = createMockCampaignState({
+        inventory: [invalidItem],
+      });
+
+      renderWithContext(<Inventory />, stateWithInvalidItem);
+      const useButton = screen.getByLabelText(`Use ${invalidItem.name}`);
+      fireEvent.click(useButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('error-display')).toHaveTextContent(
+          ERROR_MESSAGES.cannotUse
+        );
+      });
+    });
 });

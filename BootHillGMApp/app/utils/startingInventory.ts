@@ -1,4 +1,4 @@
-import { InventoryItem } from '../types/inventory';
+import { InventoryItem } from '../types/item.types';
 
 /**
  * Provides a curated set of period-appropriate starting items for new characters.

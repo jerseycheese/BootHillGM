@@ -1,6 +1,6 @@
 import { Character } from '../types/character';
 import { WeaponCombatState, WEAPON_STATS } from '../types/combat';
-import { InventoryItem } from '../types/inventory';
+import { InventoryItem } from '../types/item.types';
 import { getOpponentWeapon } from './weaponUtils';
 
 export const initializeWeaponCombatState = (

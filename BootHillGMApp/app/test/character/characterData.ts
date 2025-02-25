@@ -17,15 +17,21 @@ export const initialCharacter: Character = {
   isUnconscious: false,
   inventory: [],
   isNPC: false,
-  isPlayer: true
+  isPlayer: true,
 };
 
 // Dynamically generate mock character with AI-generated name
-export async function createMockCharacter(): Promise<Character> {
-  const names = ['Billy the Kid', 'Wyatt Earp', 'Annie Oakley', 'Doc Holliday', 'Jesse James'];
+export function createMockCharacter(overrides: Partial<Character> = {}): Character {
+  const names = [
+    'Billy the Kid',
+    'Wyatt Earp',
+    'Annie Oakley',
+    'Doc Holliday',
+    'Jesse James',
+  ];
   const randomName = names[Math.floor(Math.random() * names.length)];
-  
-  return {
+
+  const defaultCharacter: Character = {
     id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     name: randomName,
     attributes: {
@@ -35,18 +41,17 @@ export async function createMockCharacter(): Promise<Character> {
       strength: 10,
       baseStrength: 10,
       bravery: 10,
-      experience: 5
+      experience: 5,
     },
     wounds: [],
     isUnconscious: false,
     inventory: [],
     isNPC: false,
-    isPlayer: true
+    isPlayer: true,
+  };
+
+  return {
+    ...defaultCharacter,
+    ...overrides,
   };
 }
-
-export const getMockInitialState = () => ({
-  character: initialCharacter,
-  currentStep: 0,
-  lastUpdated: Date.now()
-});

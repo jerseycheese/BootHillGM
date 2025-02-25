@@ -1,5 +1,5 @@
-import { InventoryItem } from './inventory';
-import { Weapon } from './inventory';
+import { InventoryItem } from './item.types';
+import { Weapon } from './weapon.types';
 import { Wound } from './wound';
 import { StrengthHistory } from '../utils/strengthSystem';
 
