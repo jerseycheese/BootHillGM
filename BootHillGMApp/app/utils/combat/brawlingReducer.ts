@@ -16,11 +16,20 @@ export function brawlingReducer(state: BrawlingState, action: BrawlingAction): B
     }
     
     case 'ADD_LOG_ENTRY': {
-      // Only check timestamp for duplicates
+      // Only check timestamp and text for duplicates to avoid false positives
       const isDuplicate = state.roundLog.some(
-        entry => entry.timestamp === action.entry.timestamp
+        entry => entry.timestamp === action.entry.timestamp && entry.text === action.entry.text
       );
-      return isDuplicate ? state : {
+      
+      // Log the entry and duplicate status for debugging
+      console.log('Adding log entry:', action.entry, 'isDuplicate:', isDuplicate);
+      
+      if (isDuplicate) {
+        console.log('Duplicate entry detected, skipping');
+        return state;
+      }
+      
+      return {
         ...state,
         roundLog: [...state.roundLog, action.entry]
       };
@@ -35,11 +44,16 @@ export function brawlingReducer(state: BrawlingState, action: BrawlingAction): B
     }
     
     case 'END_ROUND': {
-      const newRound = (state.round === 1 ? 2 : 1) as 1 | 2;
-      return {
-        ...state,
-        round: newRound
-      };
+      // Only advance from round 1 to 2, never back to 1
+      if (state.round === 1) {
+        console.log(`Round advancing from ${state.round} to 2`);
+        return {
+          ...state,
+          round: 2
+        };
+      }
+      // If already in round 2, maintain current state
+      return state;
     }
 
     case 'END_COMBAT': {

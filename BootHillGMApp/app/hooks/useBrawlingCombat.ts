@@ -43,7 +43,7 @@ export const useBrawlingCombat = ({
     dispatchBrawling
   });
 
-  const { processRound } = useBrawlingActions({
+  const { processRound, handleCombatAction } = useBrawlingActions({
     playerCharacter,
     opponent,
     dispatch,
@@ -61,5 +61,6 @@ export const useBrawlingCombat = ({
     isProcessing,
     isCombatEnded,
     processRound,
+    handleCombatAction, // Expose handleCombatAction for testing
   };
 };

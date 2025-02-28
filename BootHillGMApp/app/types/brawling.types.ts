@@ -3,6 +3,16 @@ import { GameEngineAction } from "./gameActions";
 import { Character } from "./character";
 
 /**
+ * Test scenario type for brawling combat tests
+ */
+export interface BrawlingTestScenario {
+  initialState: Partial<BrawlingState>;
+  actions: BrawlingAction[];
+  expectedState: Partial<BrawlingState>;
+  description: string;
+}
+
+/**
  * Properties for the useBrawlingCombat hook.
  */
 export interface UseBrawlingCombatProps {

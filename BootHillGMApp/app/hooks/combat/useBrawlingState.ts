@@ -14,13 +14,20 @@ interface UseBrawlingStateProps {
  *
  * @param {BrawlingState} state - The current brawling state.
  * @returns {boolean} True if the state is valid, false otherwise.
+ * @throws {Error} If the state is invalid.
  */
-function isValidCombatState(state: BrawlingState): boolean {
-    const isValid = (
-      (state.round === 1 || state.round === 2) &&
-      Array.isArray(state.roundLog)
-    );
-    return isValid;
+export function isValidCombatState(state: BrawlingState): boolean {
+    // Check if round is valid (must be 1 or 2)
+    if (state.round !== 1 && state.round !== 2) {
+      throw new Error('Invalid combat state');
+    }
+    
+    // Check if roundLog is valid (must be an array)
+    if (!state.roundLog || !Array.isArray(state.roundLog)) {
+      throw new Error('Invalid combat state');
+    }
+    
+    return true;
   }
 
 /**

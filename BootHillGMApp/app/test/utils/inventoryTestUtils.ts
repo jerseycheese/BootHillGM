@@ -24,6 +24,7 @@ export const createMockInventoryItem = (overrides: MockInventoryItemOverrides = 
 });
 
 interface MockCharacterOverrides {
+  name?: Character['name'];
   attributes?: Partial<Character['attributes']>;
   wounds?: Character['wounds'];
   isUnconscious?: Character['isUnconscious'];
