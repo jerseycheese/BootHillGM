@@ -21,11 +21,7 @@ export function brawlingReducer(state: BrawlingState, action: BrawlingAction): B
         entry => entry.timestamp === action.entry.timestamp && entry.text === action.entry.text
       );
       
-      // Log the entry and duplicate status for debugging
-      console.log('Adding log entry:', action.entry, 'isDuplicate:', isDuplicate);
-      
       if (isDuplicate) {
-        console.log('Duplicate entry detected, skipping');
         return state;
       }
       
@@ -46,7 +42,6 @@ export function brawlingReducer(state: BrawlingState, action: BrawlingAction): B
     case 'END_ROUND': {
       // Only advance from round 1 to 2, never back to 1
       if (state.round === 1) {
-        console.log(`Round advancing from ${state.round} to 2`);
         return {
           ...state,
           round: 2

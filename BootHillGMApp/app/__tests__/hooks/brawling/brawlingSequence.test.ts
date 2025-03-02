@@ -88,13 +88,6 @@ describe('useBrawlingCombat - Multi-Round', () => {
       await Promise.resolve();
     });
 
-    // Log the current state for debugging
-    console.log('Current brawlingState:', {
-      round: hookResult.current.brawlingState.round,
-      roundLog: hookResult.current.brawlingState.roundLog,
-      roundLogLength: hookResult.current.brawlingState.roundLog.length
-    });
-
     // We're testing that the round has advanced to 2
     expect(hookResult.current.brawlingState.round).toBe(2);
 
@@ -103,11 +96,9 @@ describe('useBrawlingCombat - Multi-Round', () => {
     
     // Find player entries
     const playerEntries = logEntries.filter(entry => entry.text.includes('Player'));
-    console.log('Player entries:', playerEntries.map(entry => entry.text));
     
     // Find opponent entries
     const opponentEntries = logEntries.filter(entry => entry.text.includes('Opponent'));
-    console.log('Opponent entries:', opponentEntries.map(entry => entry.text));
     
     // We should have at least one player entry and one opponent entry
     expect(playerEntries.length).toBeGreaterThanOrEqual(1);

@@ -5,6 +5,7 @@ import type { Character } from "../types/character";
 import { ensureCombatState } from "../types/combat";
 import { validateCombatEndState } from "../utils/combatStateValidation";
 import { inventoryReducer } from "./inventory/inventoryReducer";
+import { journalReducer } from "./journal/journalReducer";
 
 /**
  * Reducer function to handle game state updates related to the game general,
@@ -28,6 +29,14 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
     return {
       ...state,
       ...inventoryReducer(state, action),
+    };
+  }
+
+  // Delegate journal-related actions to the journalReducer
+  if (action.type === 'UPDATE_JOURNAL') {
+    return {
+      ...state,
+      ...journalReducer(state, action)
     };
   }
   switch (action.type) {
@@ -120,8 +129,6 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       return { ...state, narrative: action.payload };
     case 'SET_GAME_PROGRESS':
       return { ...state, gameProgress: action.payload };
-    case 'UPDATE_JOURNAL':
-      return { ...state, journal: Array.isArray(action.payload) ? action.payload : [...state.journal, action.payload] };
     case 'SET_OPPONENT': {
       if (!action.payload) {
         return { ...state, opponent: null };

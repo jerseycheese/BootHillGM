@@ -113,10 +113,6 @@ export const useGameSession = () => {
           acquiredItems: response.acquiredItems,
           removedItems: response.removedItems
         });
-        console.log(
-          "useGameSession handleUserInput: Calling updateLocation with:",
-          response.location
-        );
         updateLocation(response.location);
       }
 

@@ -89,19 +89,14 @@ export async function getAIResponse(
       model.generateContent(fullPrompt)
     );
     let text = await result.response.text();
-    console.log('Raw text from AI (before cleaning):', text);
-    const originalTextLength = text.length;
     text = text.trim();
 
     // Remove any markdown code block delimiters (```json, ```) more robustly
     text = text.replace(/^\s*```(?:json)?\s*\n?([\s\S]*?)\n?\s*```\s*$/gim, '$1');
-    console.log('Text after removing code blocks:', text);
-    console.log('Characters removed:', originalTextLength - text.length);
     text = text.trim(); // Remove any extra whitespace
 
     try {
         // Attempt to parse the entire response as JSON
-        console.log('Attempting to parse:', text); // Log the exact string being parsed
         const jsonResponse = JSON.parse(text);
 
         // Convert combatInitiated to boolean if it's a string
