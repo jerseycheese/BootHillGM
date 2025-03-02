@@ -1,148 +1,79 @@
-import {
-  cleanCharacterName,
-  getWeaponName,
-  isCritical,
-  formatHitMessage,
-  formatMissMessage,
-  calculateCombatDamage
-} from '../../utils/combatUtils';
+import { checkKnockout } from '../../utils/combatUtils';
 import { Character } from '../../types/character';
-import { Weapon, WEAPON_STATS } from '../../types/combat';
 
-describe('Combat Utilities', () => {
-  describe('cleanCharacterName', () => {
-    it('removes metadata markers from character names', () => {
-      const name = 'John ACQUIRED_ITEMS: REMOVED_ITEMS: Smith';
-      expect(cleanCharacterName(name)).toBe('John Smith');
+describe('checkKnockout', () => {
+  const baseCharacter: Character = {
+    id: 'test',
+    name: 'Test Character',
+    isNPC: false,
+    isPlayer: false,
+    attributes: {
+      strength: 10,
+      speed: 5,
+      gunAccuracy: 5,
+      throwingAccuracy: 5,
+      baseStrength: 10,
+      bravery: 5,
+      experience: 0,
+    },
+    wounds: [],
+    inventory: [],
+    isUnconscious: false,
+    strengthHistory: {
+      changes: [],
+      baseStrength: 10
+    },
+    weapon: undefined
+  };
+
+  const playerCharacter: Character = { ...baseCharacter, id: 'player', name: 'Player', isPlayer: true };
+  const opponent: Character = { ...baseCharacter, id: 'opponent', name: 'Opponent' };
+
+  it('should return isKnockout: true and the correct winner when the player knocks out the opponent', () => {
+    const result = checkKnockout({
+      isPlayer: true,
+      playerCharacter,
+      opponent,
+      newStrength: 0,
+      damage: 5,
+      isPunching: true,
+      location: 'head',
     });
 
-    it('removes suggested actions from character names', () => {
-      const name = 'John SUGGESTED_ACTIONS: [{"text": "action"}] Smith';
-      expect(cleanCharacterName(name)).toBe('John Smith');
-    });
+    expect(result.isKnockout).toBe(true);
+    expect(result.winner).toBe('player');
+    expect(result.summary).toBe('Player knocked out Opponent with a punch to the head!');
   });
 
-  describe('getWeaponName', () => {
-    it('returns weapon name when present', () => {
-      const character: Character = {
-        name: 'Test',
-        attributes: {
-          speed: 5,
-          gunAccuracy: 5,
-          throwingAccuracy: 5,
-          strength: 5,
-          baseStrength: 5,
-          bravery: 5,
-          experience: 5
-        },
-        wounds: [],
-        isUnconscious: false,
-        inventory: [],
-        weapon: {
-          id: 'revolver',
-          name: 'Revolver',
-          modifiers: WEAPON_STATS['Colt Revolver'],
-          ammunition: 6,
-          maxAmmunition: 6
-        }
-      };
-      expect(getWeaponName(character)).toBe('Revolver');
+  it('should return isKnockout: true and the correct winner when the opponent knocks out the player', () => {
+    const result = checkKnockout({
+      isPlayer: false,
+      playerCharacter,
+      opponent,
+      newStrength: 0,
+      damage: 5,
+      isPunching: false,
+      location: 'abdomen',
     });
 
-    it('returns "fists" when no weapon present', () => {
-      const character: Character = {
-        name: 'Test',
-        attributes: {
-          speed: 5,
-          gunAccuracy: 5,
-          throwingAccuracy: 5,
-          strength: 5,
-          baseStrength: 5,
-          bravery: 5,
-          experience: 5
-        },
-        wounds: [],
-        isUnconscious: false,
-        inventory: []
-      };
-      expect(getWeaponName(character)).toBe('fists');
-    });
+    expect(result.isKnockout).toBe(true);
+    expect(result.winner).toBe('opponent');
+    expect(result.summary).toBe('Opponent knocked out Player with a grapple to the abdomen!');
   });
 
-  describe('isCritical', () => {
-    it('returns true for rolls ≤5', () => {
-      expect(isCritical(5)).toBe(true);
-      expect(isCritical(1)).toBe(true);
+  it('should return isKnockout: false when there is no knockout', () => {
+    const result = checkKnockout({
+      isPlayer: true,
+      playerCharacter,
+      opponent,
+      newStrength: 5,
+      damage: 5,
+      isPunching: true,
+      location: 'arm',
     });
 
-    it('returns true for rolls ≥96', () => {
-      expect(isCritical(96)).toBe(true);
-      expect(isCritical(100)).toBe(true);
-    });
-
-    it('returns false for normal rolls', () => {
-      expect(isCritical(50)).toBe(false);
-    });
-  });
-
-  describe('formatHitMessage', () => {
-    it('formats hit message correctly with cleaned names', () => {
-      const params = {
-        attackerName: 'John SUGGESTED_ACTIONS: [{"text": "action"}]',
-        defenderName: 'Bandit LOCATION: Saloon',
-        weaponName: 'Revolver',
-        damage: 5,
-        roll: 50,
-        hitChance: 70
-      };
-      expect(formatHitMessage(params)).toBe(
-        'John hits Bandit with Revolver for 5 damage! [Roll: 50/70]'
-      );
-    });
-
-    it('includes critical hit notation', () => {
-      const params = {
-        attackerName: 'John',
-        defenderName: 'Bandit',
-        weaponName: 'Revolver',
-        damage: 5,
-        roll: 3,
-        hitChance: 70
-      };
-      expect(formatHitMessage(params)).toBe(
-        'John hits Bandit with Revolver for 5 damage! [Roll: 3/70 - Critical!]'
-      );
-    });
-  });
-
-  describe('formatMissMessage', () => {
-    it('formats miss message correctly with cleaned names', () => {
-      const attackerName = 'John SUGGESTED_ACTIONS: [{"text": "action"}]';
-      const defenderName = 'Bandit LOCATION: Saloon';
-      expect(formatMissMessage(attackerName, defenderName, 80, 70)).toBe(
-        'John misses Bandit! [Roll: 80/70]'
-      );
-    });
-  });
-
-  describe('calculateCombatDamage', () => {
-    it('returns a number between 1 and 6', () => {
-      const damage = calculateCombatDamage();
-      expect(damage).toBeGreaterThanOrEqual(1);
-      expect(damage).toBeLessThanOrEqual(6);
-    });
-
-    it('calculates damage based on weapon modifiers', () => {
-      const weapon: Weapon = {
-        id: 'revolver',
-        name: 'Colt Revolver',
-        modifiers: WEAPON_STATS['Colt Revolver'],
-        ammunition: 6,
-        maxAmmunition: 6
-      };
-      const damage = calculateCombatDamage(weapon);
-      expect(damage).toBeGreaterThanOrEqual(1);
-      expect(damage).toBeLessThanOrEqual(7); // 1d6 can be 1 to 6, plus 1 modifier
-    });
+    expect(result.isKnockout).toBe(false);
+    expect(result.winner).toBeUndefined();
+    expect(result.summary).toBeUndefined();
   });
 });

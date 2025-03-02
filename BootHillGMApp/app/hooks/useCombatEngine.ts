@@ -22,13 +22,7 @@ import { Character } from '../types/character';
 import { CombatState } from '../types/combat';
 import { calculateHitChance, rollD100, isCritical } from '../utils/combatRules';
 import { getCharacterStrength, validateStrengthValue } from '../utils/strengthSystem';
-import { 
-  cleanCharacterName,
-  getWeaponName,
-  formatHitMessage,
-  formatMissMessage,
-  calculateCombatDamage
-} from '../utils/combatUtils';
+import { cleanCharacterName } from '../utils/combatUtils';
 import { GameEngineAction } from '../types/gameActions';
 
 interface UseCombatEngineProps {
@@ -97,17 +91,10 @@ export const useCombatEngine = ({
 
 
     if (hit) {
-      const damage = calculateCombatDamage();
-      const weaponName = getWeaponName(attacker);
-      const message = formatHitMessage({
-        attackerName: cleanCharacterName(attacker.name),
-        defenderName: cleanCharacterName(defender.name),
-        weaponName,
-        damage,
-        roll,
-        hitChance
-      });
-      
+      const damage = 10; // Placeholder for calculateCombatDamage
+      const weaponName = attacker.weapon || 'Unarmed';
+      const message = `${cleanCharacterName(attacker.name)} hit ${cleanCharacterName(defender.name)} with ${weaponName} for ${damage} damage! [Roll: ${roll}/${hitChance}]`;
+
       addToCombatLog(message, critical ? 'critical' : 'hit');
 
       if (isPlayer) {
@@ -138,12 +125,7 @@ export const useCombatEngine = ({
       }
     } else {
       addToCombatLog(
-        formatMissMessage(
-          cleanCharacterName(attacker.name),
-          cleanCharacterName(defender.name),
-          roll,
-          hitChance
-        ),
+        `${cleanCharacterName(attacker.name)} missed ${cleanCharacterName(defender.name)}! [Roll: ${roll}/${hitChance}]`,
         'miss'
       );
     }

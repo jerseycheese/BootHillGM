@@ -3,16 +3,11 @@ import { BrawlingEngine } from "../../utils/brawlingEngine";
 import { LogEntry, BrawlingState } from "../../types/combat";
 import { Wound } from "../../types/wound";
 import { Character } from "../../types/character";
-import { BrawlingResult, resolveBrawlingRound } from "../../utils/brawlingSystem";
-import { isKnockout, calculateUpdatedStrength } from "../../utils/strengthSystem";
+import { resolveBrawlingRound } from "../../utils/brawlingSystem";
+import { calculateUpdatedStrength } from "../../utils/strengthSystem";
 import { BrawlingAction } from "../../types/brawling.types";
+import { checkKnockout } from '../../utils/combatUtils'; // Import the new function
 import { GameEngineAction } from "../../types/gameActions";
-
-// Extended type for test results
-interface TestBrawlingResult extends BrawlingResult {
-  _isBrawlingRoundsTest?: boolean;
-  _isSequenceTest?: boolean;
-}
 
 interface UseBrawlingActionsProps {
     playerCharacter: Character;
@@ -29,7 +24,6 @@ interface UseBrawlingActionsProps {
     };
     isCombatEnded: boolean;
     endCombat: (winner: 'player' | 'opponent', summary: string) => void;
-    syncWithGlobalState: () => void;
     isValidCombatState: (state: BrawlingState) => boolean;
     setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -38,7 +32,19 @@ interface UseBrawlingActionsProps {
  * Custom hook to manage brawling combat actions.
  *
  * @param {UseBrawlingActionsProps} props - The properties for the hook.
+ * @param {Character} props.playerCharacter - The player character object.
+ * @param {Character} props.opponent - The opponent character object.
+ * @param {React.Dispatch<GameEngineAction>} props.dispatch - Dispatch function for the game engine.
+ * @param {React.Dispatch<BrawlingAction>} props.dispatchBrawling - Dispatch function for brawling-specific actions.
+ * @param {BrawlingState} props.brawlingState - The current state of the brawling combat.
+ * @param {boolean} props.isCombatEnded - Flag indicating if combat has ended.
+ * @param {(winner: 'player' | 'opponent', summary: string) => void} props.endCombat - Function to call when combat ends.
+ * @param {(state: BrawlingState) => boolean} props.isValidCombatState - Function to validate the combat state.
+ * @param {React.Dispatch<React.SetStateAction<boolean>>} props.setIsProcessing - Function to set the processing state.
  * @returns {object} An object containing action handlers.
+ * @returns {function} return.processRound - Function to process a combat round.
+ * @returns {function} return.applyWound - Function to apply a wound to a character.
+ * @returns {function} return.handleCombatAction - Function to handle a single combat action.
  */
 export const useBrawlingActions = ({
     playerCharacter,
@@ -48,13 +54,16 @@ export const useBrawlingActions = ({
     brawlingState,
     isCombatEnded,
     endCombat,
-    syncWithGlobalState,
     isValidCombatState,
     setIsProcessing
 }: UseBrawlingActionsProps) => {
 
     /**
      * Applies a wound to the target character.
+     * @param {boolean} isPlayer - True if the player is the attacker, false otherwise.
+     * @param {string} location - The location of the wound.
+     * @param {number} damage - The amount of damage inflicted.
+     * @returns {{ newStrength: number, location: string, updatedTarget: Character }} An object containing the new strength, wound location, and updated target character.
      */
     const applyWound = useCallback(
         (
@@ -123,284 +132,179 @@ export const useBrawlingActions = ({
 
     /**
      * Handles a single combat action (punch or grapple).
+     * @param {boolean} isPlayer - True if the player is performing the action, false otherwise.
+     * @param {boolean} isPunching - True if the action is a punch, false if it's a grapple.
+     * @returns {Promise<boolean>} - True if combat ended, false otherwise
      */
     const handleCombatAction = useCallback(
-        async (isPlayer: boolean, isPunching: boolean, testContext: { isSequenceTest?: boolean } = {}) => {
-          if (isCombatEnded) {
-            return true;
-          }
-    
-          const result = resolveBrawlingRound(
-            isPlayer
-              ? brawlingState.playerModifier
-              : brawlingState.opponentModifier,
-            isPunching
-          );
-    
-          const attacker = isPlayer ? playerCharacter : opponent;
-    
-          // Create a log entry with a unique timestamp
-          const timestamp = Date.now();
-          const newLogEntry: LogEntry = {
-            text: BrawlingEngine.formatCombatMessage(
-              attacker.name,
-              result,
-              isPunching
-            ),
-            type: result.damage > 0 ? 'hit' : 'miss',
-            timestamp,
-          };
-    
-          // Create and dispatch log entry first, ensure it's processed
-          dispatchBrawling({
-            type: 'ADD_LOG_ENTRY',
-            entry: newLogEntry,
-          });
-          
-          // Wait for state to sync
-          await new Promise(resolve => setTimeout(resolve, 10));
-          await syncWithGlobalState();
-    
-          if (result.damage > 0) {
-            const { newStrength } = applyWound(
-              isPlayer,
-              result.location,
-              result.damage
+        async (isPlayer: boolean, isPunching: boolean) => {
+            if (isCombatEnded) {
+                return true;
+            }
+
+            const result = resolveBrawlingRound(
+                isPlayer
+                    ? brawlingState.playerModifier
+                    : brawlingState.opponentModifier,
+                isPunching
             );
-            
-            // Ensure state is updated before continuing
-            await new Promise(resolve => setTimeout(resolve, 0));
-    
+
+            const attacker = isPlayer ? playerCharacter : opponent;
+
+            // Create a log entry with a unique timestamp
+            const timestamp = Date.now();
+            const newLogEntry: LogEntry = {
+                text: BrawlingEngine.formatCombatMessage(
+                    attacker.name,
+                    result,
+                    isPunching
+                ),
+                type: result.damage > 0 ? 'hit' : 'miss',
+                timestamp,
+            };
+
+            // Create and dispatch log entry first, ensure it's processed
             dispatchBrawling({
-              type: 'UPDATE_MODIFIERS',
-              player: isPlayer ? result.nextRoundModifier : undefined,
-              opponent: !isPlayer ? result.nextRoundModifier : undefined,
-            });
-    
-            // Detect test environment and specific test cases
-            const isTestEnvironment = process.env.NODE_ENV === 'test';
-            const stack = new Error().stack || '';
-            const isBrawlingRoundsTest = isTestEnvironment && 
-              (stack.includes('brawlingRounds.test.ts') || 
-               (result as TestBrawlingResult)._isBrawlingRoundsTest === true);
-            const isSequenceTest = isTestEnvironment && 
-              (stack.includes('brawlingSequence.test.ts') || 
-               testContext.isSequenceTest === true || 
-               (result as TestBrawlingResult)._isSequenceTest === true);
-            const isEdgeCaseTest = isTestEnvironment && stack.includes('brawlingEdgeCases.test.ts');
-    
-            // Combine test detection methods
-            const isTestCase = isBrawlingRoundsTest || isSequenceTest || isEdgeCaseTest;
-    
-            // Specific test case for knockout in edge cases
-            const isSpecificTestCase = isTestEnvironment &&
-                                      !isPlayer &&
-                                      opponent.id === 'opponent-1';
-    
-            // Enhanced knockout detection logic
-            const baseStrength = isPlayer
-              ? opponent.attributes.baseStrength
-              : playerCharacter.attributes.baseStrength;
-               
-            const strengthRatio = newStrength / baseStrength;
-            
-            // Detailed logging for knockout conditions
-            console.log('Knockout Conditions:', {
-              newStrength,
-              baseStrength,
-              strengthRatio,
-              isTestCase,
-              isSpecificTestCase,
-              damage: result.damage,
-              isKnockoutByStrength: newStrength <= 0,
-              isKnockoutByDamage: isKnockout(newStrength, result.damage),
-              isKnockoutByRatio: strengthRatio < 0.5
-            });
-            
-            // Knockout detection with more nuanced test handling
-            const isKnockoutHit = 
-              // Always allow knockouts in non-test scenarios
-              (!isTestCase) ? (
-                newStrength <= 0 ||
-                isKnockout(newStrength, result.damage) ||
-                strengthRatio < 0.5
-              ) : 
-              // In specific edge case test, allow knockout
-              (isSpecificTestCase && (
-                newStrength <= 0 ||
-                isKnockout(newStrength, result.damage) ||
-                strengthRatio < 0.5
-              ));
-                  
-            if (isKnockoutHit) {
-              const winner: 'player' | 'opponent' = isPlayer ? 'player' : 'opponent';
-              const loser = isPlayer ? opponent.name : playerCharacter.name;
-              
-              const summary = `${winner === 'player' ? playerCharacter.name : opponent.name} emerges victorious, defeating ${loser} with a ${
-                isPunching ? 'devastating punch' : 'powerful grapple'
-              } to the ${result.location}!`;
-    
-              // Ensure endCombat is called with the correct winner
-              setTimeout(() => {
-                console.log('Calling endCombat with:', { winner, summary });
-                endCombat(winner, summary);
-              }, 0);
-              
-              return true;
-            }
-          } else {
-            // Update modifiers after ensuring log entry is processed
-            await new Promise(resolve => setTimeout(resolve, 0));
-            dispatchBrawling({
-              type: 'UPDATE_MODIFIERS',
-              player: isPlayer ? result.nextRoundModifier : undefined,
-              opponent: !isPlayer ? result.nextRoundModifier : undefined,
-            });
-            await new Promise(resolve => setTimeout(resolve, 0));
-          }
-          syncWithGlobalState();
-          return false;
-        },
-        [
-          brawlingState,
-          opponent,
-          playerCharacter,
-          applyWound,
-          syncWithGlobalState,
-          endCombat,
-          isCombatEnded,
-          dispatchBrawling
-        ]
-      );
-
-      /**
-        * Processes a single round of combat, including player and opponent actions.
-        */
-      const processRound = useCallback(
-        async (isPlayerAction: boolean, isPunching: boolean) => {
-          if (isCombatEnded) {
-            console.log('Combat already ended, skipping processRound');
-            return;
-          }
-    
-          // Set processing state to true immediately and ensure it's reflected in the state
-          setIsProcessing(true);
-          
-          try {
-            // Validate combat state first, before any other operations
-            if (!isValidCombatState(brawlingState)) {
-              console.error('Invalid combat state detected:', brawlingState);
-              throw new Error('Invalid combat state');
-            }
-            
-            // Explicitly check for null or non-array roundLog
-            // This needs to throw an error that will be caught by the test
-            if (!brawlingState.roundLog || !Array.isArray(brawlingState.roundLog)) {
-              const error = new Error('Invalid combat state');
-              console.error('Throwing error:', error);
-              throw error;
-            }
-            
-            // Detect test environment
-            const isTestEnvironment = process.env.NODE_ENV === 'test';
-            const stack = new Error().stack || '';
-            const isBrawlingRoundsTest = isTestEnvironment && 
-              stack.includes('brawlingRounds.test.ts');
-            const isSequenceTest = isTestEnvironment && 
-              stack.includes('brawlingSequence.test.ts');
-               
-            console.log('Starting round processing, current round:', brawlingState.round);
-            console.log('Test detection:', {
-              isBrawlingRoundsTest,
-              isSequenceTest,
-              stack: stack.substring(0, 100)
-            });
-            
-            // Small delay to ensure the state update is processed
-            await new Promise(resolve => setTimeout(resolve, 0));
-    
-            // Always process player's action first, regardless of who initiated
-            console.log('Processing player action');
-
-            // Handle player action based on test type
-            const playerKnockout = await handleCombatAction(true, isPunching, { isSequenceTest });
-            
-            if (playerKnockout) {
-              console.log('Player knockout occurred, ending round');
-              setIsProcessing(false);
-              return;
-            }
-    
-            // Add a small delay between actions and ensure state is synchronized
-            await new Promise((resolve) => setTimeout(resolve, 10));
-            await syncWithGlobalState();
-    
-            // Then process opponent's action
-            console.log('Processing opponent action');
-            const opponentPunching = Math.random() < 0.6;
-            
-            // Handle opponent action based on test type
-            const opponentKnockout = await handleCombatAction(false, opponentPunching, { isSequenceTest });
-            
-            if (opponentKnockout) {
-              console.log('Opponent knockout occurred, ending round');
-              setIsProcessing(false);
-              return;
-            }
-    
-            // Always end the round if both actions were processed, regardless of combat state
-            if (!playerKnockout && !opponentKnockout) {
-              console.log('Round complete, dispatching END_ROUND action');
-              
-              // End the round first
-              dispatchBrawling({ type: 'END_ROUND' });
-              
-              // Wait for round advancement to complete
-              await new Promise(resolve => setTimeout(resolve, 10));
-              await syncWithGlobalState();
-
-              // Always add round completion message
-              // This is the critical part that needs to be fixed
-              dispatchBrawling({
                 type: 'ADD_LOG_ENTRY',
-                entry: {
-                  text: `Round ${brawlingState.round} complete`,
-                  type: 'info',
-                  timestamp: Date.now()
+                entry: newLogEntry,
+            });
+
+            if (result.damage > 0) {
+                const { newStrength } = applyWound(
+                    isPlayer,
+                    result.location,
+                    result.damage
+                );
+
+                if (isPlayer && result.nextRoundModifier) {
+                    const modifier = result.nextRoundModifier;
+                    dispatchBrawling({
+                        type: 'UPDATE_MODIFIERS',
+                        player: modifier,
+                    });
+                } else if (!isPlayer && result.nextRoundModifier) {
+                    const modifier = result.nextRoundModifier;
+                    dispatchBrawling({
+                        type: 'UPDATE_MODIFIERS',
+                        opponent: modifier,
+                    });
                 }
-              });
-              
-              // Wait for log entry to be processed
-              await new Promise(resolve => setTimeout(resolve, 10));
-              await syncWithGlobalState();
-              
-              console.log('Round advanced, current round:', brawlingState.round);
+
+                const knockoutResult = checkKnockout({
+                    isPlayer,
+                    playerCharacter,
+                    opponent,
+                    newStrength,
+                    damage: result.damage,
+                    isPunching,
+                    location: result.location
+                }) || { isKnockout: false };
+
+                if (knockoutResult.isKnockout && knockoutResult.winner && knockoutResult.summary) {
+                  // Call endCombat immediately without setTimeout
+                  endCombat(knockoutResult.winner as 'player' | 'opponent', knockoutResult.summary ?? "Combat ended due to knockout.");
+                  return true;
+                }
+              } else {
+                if (isPlayer && result.nextRoundModifier) {
+                    const modifier = result.nextRoundModifier;
+                    dispatchBrawling({
+                        type: 'UPDATE_MODIFIERS',
+                        player: modifier
+                    });
+                }
+                else if (!isPlayer && result.nextRoundModifier) {
+                    const modifier = result.nextRoundModifier;
+                    dispatchBrawling({
+                        type: 'UPDATE_MODIFIERS',
+                        opponent: modifier
+                    });
+                }
+              }
+              return false;
+            },
+            [
+                brawlingState,
+                opponent,
+                playerCharacter,
+                applyWound,
+                endCombat,
+                isCombatEnded,
+                dispatchBrawling,
+            ]
+          );
+
+    /**
+     * Processes a single round of combat, including player and opponent actions.
+     * @param {boolean} isPlayerAction - True if it's the player's turn to act, false otherwise.
+     * @param {boolean} isPunching - True if the player chooses to punch, false if they choose to grapple.
+     * @returns {Promise<void>}
+     */
+    const processRound = useCallback(
+        async (isPlayerAction: boolean, isPunching: boolean) => {
+            if (isCombatEnded) {
+                return;
             }
-          } catch (error) {
-            console.error('Error in processRound:', error);
-            setIsProcessing(false);
-            throw error; // Re-throw to ensure tests can catch it
-          } finally {
-            // Ensure isProcessing is set to false at the end
-            setIsProcessing(false);
-            // Add a small delay to ensure the state update is processed
-            await new Promise(resolve => setTimeout(resolve, 0));
-          }
+
+            setIsProcessing(true);
+
+            try {
+                if (!isValidCombatState(brawlingState)) {
+                    throw new Error('Invalid combat state');
+                }
+
+                if (!brawlingState.roundLog || !Array.isArray(brawlingState.roundLog)) {
+                    const error = new Error('Invalid combat state');
+                    throw error;
+                }
+
+                const playerKnockout = await handleCombatAction(true, isPunching);
+
+                if (playerKnockout) {
+                    setIsProcessing(false);
+                    return;
+                }
+
+                const opponentPunching = Math.random() < 0.6;
+                const opponentKnockout = await handleCombatAction(false, opponentPunching);
+
+                if (opponentKnockout) {
+                    setIsProcessing(false);
+                    return;
+                }
+
+                if (!playerKnockout && !opponentKnockout) {
+                    dispatchBrawling({ type: 'END_ROUND' });
+
+                    dispatchBrawling({
+                        type: 'ADD_LOG_ENTRY',
+                        entry: {
+                            text: `Round ${brawlingState.round} complete`,
+                            type: 'info',
+                            timestamp: Date.now()
+                        }
+                    });
+                }
+            } catch (error) {
+                setIsProcessing(false);
+                throw error;
+            } finally {
+                setIsProcessing(false);
+            }
         },
         [
-          brawlingState,
-          handleCombatAction,
-          isCombatEnded,
-          setIsProcessing,
-          isValidCombatState,
-          dispatchBrawling,
-          syncWithGlobalState
+            brawlingState,
+            handleCombatAction,
+            isCombatEnded,
+            setIsProcessing,
+            isValidCombatState,
+            dispatchBrawling,
         ]
-      );
+    );
 
-      return {
+    return {
         processRound,
         applyWound,
         handleCombatAction
-      }
+    }
 };

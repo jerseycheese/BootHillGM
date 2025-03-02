@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:stability": "node scripts/test-stability.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.20.0",

@@ -1,14 +1,15 @@
 import { useCallback } from 'react';
 import { useCampaignState } from '../../components/CampaignStateManager';
-import { resolveCombat } from '../../utils/combatUtils';
+import { resolveCombatRound } from '../../utils/combat/combatResolver';
+import { CombatSituation } from '../../utils/combat/hitModifiers';
 
 /**
  * Custom hook for managing combat actions.
- * 
+ *
  * This hook handles:
  * - Updating character strength during combat.
  * - Executing a single round of combat.
- * 
+ *
  * @returns An object containing the combat action functions.
  */
 export const useCombatActions = () => {
@@ -63,17 +64,29 @@ export const useCombatActions = () => {
       attributes: { ...state.opponent.attributes }
     };
 
-    const combatResults = await resolveCombat(playerCopy, opponentCopy);
-    
+    const defaultSituation: CombatSituation = {
+      isMoving: false,
+      targetMoving: false,
+      range: 'short',
+    };
+
+    const combatResults = await resolveCombatRound(playerCopy, opponentCopy, defaultSituation);
+
     if (playerCopy.attributes.strength !== state.character.attributes.strength) {
       handleStrengthChange('player', playerCopy.attributes.strength);
     }
-    
+
     if (opponentCopy.attributes.strength !== state.opponent.attributes.strength) {
       handleStrengthChange('opponent', opponentCopy.attributes.strength);
     }
 
-    handleCombatEnd(combatResults.winner, combatResults.results);
+    const woundResult = combatResults.wound
+      ? `, Wound: ${combatResults.wound.location} - ${combatResults.wound.severity}`
+      : '';
+    if (combatResults.hit) {
+      handleCombatEnd(playerCopy.attributes.strength > 0 ? 'player' : 'opponent',
+        `Hit: ${combatResults.hit}, Roll: ${combatResults.roll}, Target: ${combatResults.targetNumber}${woundResult}`);
+    }
   }, [state.character, state.opponent, handleStrengthChange]);
 
   return { handleStrengthChange, executeCombatRound };

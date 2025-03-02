@@ -32,7 +32,7 @@ export const useBrawlingCombat = ({
     isValidCombatState
   } = useBrawlingState({ initialCombatState, playerCharacter, opponent });
 
-  const { endCombat, syncWithGlobalState } = useBrawlingSync({
+  const { endCombat } = useBrawlingSync({
     brawlingState,
     isCombatEnded,
     dispatch,
@@ -51,7 +51,6 @@ export const useBrawlingCombat = ({
     brawlingState,
     isCombatEnded,
     endCombat,
-    syncWithGlobalState,
     isValidCombatState,
     setIsProcessing
   });

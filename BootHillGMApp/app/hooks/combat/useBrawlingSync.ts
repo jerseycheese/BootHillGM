@@ -3,6 +3,7 @@ import { ensureCombatState, BrawlingState } from "../../types/combat";
 import { GameEngineAction } from "../../types/gameActions";
 import { Character } from "../../types/character";
 import { BrawlingAction } from "../../types/brawling.types";
+import { waitForStateUpdate } from "../../test/utils/testSyncUtils";
 
 interface UseBrawlingSyncProps {
   brawlingState: BrawlingState;
@@ -117,8 +118,16 @@ export const useBrawlingSync = ({
     [dispatch, isCombatEnded, brawlingState]
   );
 
+  /**
+   * Waits for a specific condition to be met in the brawling state.
+   */
+  const waitForBrawlingStateUpdate = useCallback(async (expectedCondition: (state: BrawlingState) => boolean, timeout = 1000) => {
+      return waitForStateUpdate(() => expectedCondition(brawlingState), timeout);
+  }, [brawlingState]);
+
   return {
     endCombat,
     syncWithGlobalState,
+    waitForBrawlingStateUpdate
   };
 };

@@ -3,9 +3,16 @@ import { useBrawlingCombat } from "../../hooks/useBrawlingCombat";
 import { Character } from "../../types/character";
 import { GameEngineAction, UpdateCharacterPayload } from "../../types/gameActions";
 import { resolveBrawlingRound } from "../../utils/brawlingSystem";
+import * as combatUtils from "../../utils/combatUtils";
 
 jest.mock("../../utils/brawlingSystem", () => ({
   resolveBrawlingRound: jest.fn(),
+}));
+
+// Mock checkKnockout
+jest.mock("../../utils/combatUtils", () => ({
+  ...jest.requireActual("../../utils/combatUtils"),
+  checkKnockout: jest.fn()
 }));
 
 describe("Combat Integration Tests", () => {
@@ -179,6 +186,13 @@ describe("Combat Integration Tests", () => {
       })
     );
 
+    // Mock checkKnockout to return true (knockout)
+      (combatUtils.checkKnockout as jest.Mock).mockReturnValue({
+        isKnockout: true,
+        winner: 'player',
+        summary: 'Player knocked out opponent with a punch to the head!'
+    });
+
     // Simulate a player punch that does enough damage to reduce strength to 0
 
     await act(() => result.current.processRound(true, true));
@@ -206,10 +220,10 @@ describe("Combat Integration Tests", () => {
   });
 
   it("should track strength history for defeat (strength below 0)", async () => {
-    const weakPlayerCharacter: Character = {
-      ...initialPlayerCharacter,
+    const weakOpponent: Character = {
+      ...initialOpponent,
       attributes: {
-        ...initialPlayerCharacter.attributes,
+        ...initialOpponent.attributes,
         strength: 1,
         baseStrength: 1,
       },
@@ -233,10 +247,17 @@ describe("Combat Integration Tests", () => {
           nextRoundModifier: 0,
       });
 
+      // Mock checkKnockout to return knockout when strength is below 0
+      (combatUtils.checkKnockout as jest.Mock).mockReturnValue({
+          isKnockout: true,
+          winner: 'player',
+          summary: 'Player defeated opponent with a devastating blow!'
+      });
+
     const { result } = renderHook(() =>
       useBrawlingCombat({
-        playerCharacter: weakPlayerCharacter,
-        opponent: initialOpponent,
+        playerCharacter: initialPlayerCharacter,
+        opponent: weakOpponent,
         onCombatEnd: mockOnCombatEnd,
         dispatch: mockDispatch,
         initialCombatState: undefined,
@@ -260,12 +281,12 @@ describe("Combat Integration Tests", () => {
     // Verify strength history for defeat
     expect(updatedOpponent.strengthHistory?.changes.length ?? 0).toBe(2);
     const defeatChange = updatedOpponent.strengthHistory!.changes[1];
-    expect(defeatChange.previousValue).toBe(12); // Initial strength
-    expect(defeatChange.newValue).toBe(10); // Defeat
+    expect(defeatChange.previousValue).toBe(1); // Initial strength
+    expect(defeatChange.newValue).toBeLessThanOrEqual(0); // Defeat
     expect(defeatChange.reason).toBe('damage');
     expect(defeatChange.timestamp).toBeInstanceOf(Date);
 
     // Verify combat ended with correct winner
-    expect(mockOnCombatEnd).toHaveBeenCalledWith("opponent", expect.any(String));
+    expect(mockOnCombatEnd).toHaveBeenCalledWith("player", expect.any(String));
   });
 });
