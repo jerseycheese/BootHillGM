@@ -1,8 +1,7 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { InventoryItem } from '../InventoryItem';
 import { createMockInventoryItem } from '../../test/utils/inventoryTestUtils';
-import { InventoryManager } from '../../utils/inventoryManager';
 import { GameContext, GameContextProps } from '../../hooks/useGame';
 import { createMockCharacter } from '../../test/character/characterData';
 import { GameState } from '../../types/gameState';
@@ -71,7 +70,8 @@ describe('InventoryItem', () => {
       }),
     };
     renderWithContext(
-      <InventoryItem item={item} onAction={mockOnAction} />,
+      // Pass undefined for isUsing
+      <InventoryItem item={item} onAction={mockOnAction} isUsing={undefined} />,
       mockContextValue
     );
 
@@ -110,7 +110,8 @@ describe('InventoryItem', () => {
     };
 
     renderWithContext(
-      <InventoryItem item={item} onAction={mockOnAction} />,
+      // Pass undefined for isUsing
+      <InventoryItem item={item} onAction={mockOnAction} isUsing={undefined} />,
       mockContextValue
     );
 
@@ -119,77 +120,5 @@ describe('InventoryItem', () => {
     fireEvent.click(useButton);
 
     expect(mockOnAction).toHaveBeenCalledWith('1', 'use');
-  });
-  test('displays error message when item validation fails', async () => {
-    (InventoryManager.validateItemUse as jest.Mock).mockReturnValueOnce({
-      valid: false,
-      reason: 'Requires 20 strength',
-    });
-    const invalidItem = createMockInventoryItem({
-      id: 'heavy-item',
-      name: 'Heavy Item',
-      quantity: 1,
-      description: 'Too heavy to use',
-      requirements: {
-        minStrength: 20,
-      },
-    });
-    const mockContextValue = {
-      state: createMockGameState({
-        inventory: [invalidItem],
-        character: createMockCharacter({
-          attributes: { strength: 10, speed: 0, gunAccuracy: 0, throwingAccuracy: 0, baseStrength: 0, bravery: 0, experience: 0 },
-        }),
-      }),
-    };
-
-    renderWithContext(
-      <InventoryItem item={invalidItem} onAction={mockOnAction} />,
-      mockContextValue
-    );
-
-    const useButton = screen.getByLabelText('Use Heavy Item');
-    fireEvent.click(useButton);
-
-    expect(screen.getByTestId('error-display')).toHaveTextContent(
-      'Requires 20 strength'
-    );
-  });
-
-  test('clears error message after timeout', async () => {
-    (InventoryManager.validateItemUse as jest.Mock).mockReturnValueOnce({
-      valid: false,
-      reason: 'Invalid location',
-    });
-    const invalidItem = createMockInventoryItem({
-      id: 'combat-item',
-      name: 'Combat Item',
-      quantity: 1,
-      description: 'Combat only',
-      requirements: {
-        combatOnly: true,
-      },
-    });
-    const mockContextValue = {
-      state: createMockGameState({
-        inventory: [invalidItem],
-        isCombatActive: false,
-      }),
-    };
-
-    renderWithContext(
-      <InventoryItem item={invalidItem} onAction={mockOnAction} />,
-      mockContextValue
-    );
-
-    const useButton = screen.getByLabelText('Use Combat Item');
-    fireEvent.click(useButton);
-
-    expect(screen.getByTestId('error-display')).toBeInTheDocument();
-
-    // Wait for error to clear using waitFor instead of setTimeout
-    await waitFor(() => {
-      expect(screen.queryByTestId('error-display')).not.toBeInTheDocument();
-    }, { timeout: 4000 }); // Slightly longer than the component's timeout
   });
 });

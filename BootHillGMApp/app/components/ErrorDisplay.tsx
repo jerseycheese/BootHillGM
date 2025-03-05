@@ -1,44 +1,33 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 interface ErrorDisplayProps {
-  error: string | null;
-  onClear: () => void;
+  error: string | { reason: string } | null;
+  onClear?: () => void;
+  onRetry?: () => void;
 }
 
 /**
  * A reusable component to display error messages.
- * 
+ *
  * Features:
  * - Displays the error message if present.
- * - Automatically clears the error after a timeout.
  * - Uses ARIA attributes for accessibility.
+ * - Optionally displays a "Retry" button.
  */
-export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error, onClear }) => {
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    if (error) {
-      timeoutId = setTimeout(onClear, 3000); // Clear error after 3 seconds
-    }
-
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [error, onClear]);
-
-  if (!error) {
-    return null;
-  }
-
-  return (
-    <div 
-      className="text-red-600 mb-2" 
-      role="alert" 
-      data-testid="error-display"
-    >
-      {error}
-    </div>
-  );
+export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error, onRetry }) => {
+    const errorMessage = typeof error === 'string' ? error : error?.reason;
+    return (
+        <div className="text-red-600 mb-2 flex items-center" role="alert" data-testid="error-display">
+            <span>{errorMessage}</span>
+            {onRetry && (
+                <button
+                    onClick={onRetry}
+                    className="ml-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                    aria-label="Retry"
+                >
+                    Retry
+                </button>
+            )}
+        </div>
+    );
 };

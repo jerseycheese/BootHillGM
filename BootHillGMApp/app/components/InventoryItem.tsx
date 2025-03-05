@@ -1,67 +1,46 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { InventoryItem as InventoryItemType } from '../types/item.types';
 import { ItemActions } from './ItemActions';
-import { ErrorDisplay } from './ErrorDisplay';
-import { InventoryManager } from '../utils/inventoryManager';
-import { GameContext, GameContextProps } from '../hooks/useGame';
-import { ItemValidationResult } from '../types/validation.types';
-import { useEffect } from 'react';
 
 interface InventoryItemProps<T extends string> {
   item: InventoryItemType;
+  isUsing?: boolean;
   onAction: (itemId: T, action: 'use' | 'equip' | 'unequip') => void;
 }
 
-export const InventoryItem: React.FC<InventoryItemProps<string>> = ({ item, onAction }) => {
+export const InventoryItem: React.FC<InventoryItemProps<string>> = ({ item, onAction, isUsing }) => {
   const [isHovered, setIsHovered] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const context: GameContextProps | undefined = useContext(GameContext);
+  const [quantity, setQuantity] = React.useState(item.quantity);
+  const [isQuantityUpdated, setIsQuantityUpdated] = React.useState(false);
+
+  React.useEffect(() => {
+    if (item.quantity !== quantity) {
+      setQuantity(item.quantity);
+      setIsQuantityUpdated(true);
+      setTimeout(() => setIsQuantityUpdated(false), 500); // Reset after 500ms
+    }
+  }, [item.quantity, quantity]);
 
   if (!item || !item.id || !item.name || item.quantity <= 0) {
     return null;
   }
 
   const handleAction = (itemId: string, action: 'use' | 'equip' | 'unequip') => {
-    if (action === 'use') {
-      let validationResult: ItemValidationResult = { valid: true };
-      if (context?.state?.character) {
-        validationResult = InventoryManager.validateItemUse(
-          item,
-          context.state.character,
-          context.state
-        );
-      }
-      if (!validationResult.valid) {
-        setError(validationResult.reason || 'Cannot use item.');
-        return;
-      }
-    }
     onAction(itemId, action);
   };
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    let timer: NodeJS.Timeout | undefined;
-    if (error) {
-      timer = setTimeout(() => {
-        setError(null);
-      }, 3000);
-    }
-    return () => clearTimeout(timer);
-  }, [error]);
 
   return (
     <li
       key={item.id}
       className={`wireframe-text relative flex justify-between items-center p-2 ${
         item.isEquipped ? 'bg-blue-50' : ''
-      }`}
+      } ${isUsing ? 'bg-gray-200' : ''}`} // Add a gray background when isUsing is true
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="flex-grow">
         <span>
-          {item.name} (x{item.quantity})
+          {item.name} (x<span className={`transition-colors duration-500 ${isQuantityUpdated ? 'bg-yellow-200' : ''}`}>{quantity}</span>)
           {item.isEquipped && (
             <span className="ml-2 text-xs text-blue-600">(Equipped)</span>
           )}
@@ -75,8 +54,7 @@ export const InventoryItem: React.FC<InventoryItemProps<string>> = ({ item, onAc
           </div>
         )}
       </div>
-      <ErrorDisplay error={error} onClear={() => setError(null)} data-testid="error-display" />
-      <ItemActions item={item} onAction={handleAction} />
+      <ItemActions item={item} onAction={handleAction} isUsing={isUsing} />
     </li>
   );
 };

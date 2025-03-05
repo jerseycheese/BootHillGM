@@ -21,6 +21,7 @@ export interface GameState {
   isClient?: boolean;
   suggestedActions: SuggestedAction[];
   combatState?: CombatState;
+  error?: string | null;
 }
 
 export const initialGameState: GameState = {
