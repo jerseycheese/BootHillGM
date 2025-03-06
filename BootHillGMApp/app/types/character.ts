@@ -20,18 +20,6 @@ export const STORAGE_KEYS = {
   COMPLETED_CHARACTER: 'completed-character'
 } as const;
 
-/** Steps in the character creation process */
-export const CHARACTER_CREATION_STEPS = [
-  { key: 'name', type: 'string' },
-  { key: 'speed', type: 'number' },
-  { key: 'gunAccuracy', type: 'number' },
-  { key: 'throwingAccuracy', type: 'number' },
-  { key: 'strength', type: 'number' },
-  { key: 'bravery', type: 'number' },
-  { key: 'experience', type: 'number' },
-  { key: 'summary', type: 'review' }
-] as const;
-
 export interface Character {
   /** Whether the character is an NPC or not */
   isNPC: boolean;
@@ -63,7 +51,27 @@ export interface Character {
     experience: number;
   };
 
-  /** Track active wounds and their effects */
+   minAttributes: {
+     speed: number;
+     gunAccuracy: number;
+     throwingAccuracy: number;
+     strength: number;
+     baseStrength: number;
+     bravery: number;
+     experience: number;
+   };
+ 
+   maxAttributes: {
+     speed: number;
+     gunAccuracy: number;
+     throwingAccuracy: number;
+     strength: number;
+     baseStrength: number;
+     bravery: number;
+     experience: number;
+   };
+
+ /** Track active wounds and their effects */
   wounds: Wound[];
 
   /** Unconscious state from strength loss */

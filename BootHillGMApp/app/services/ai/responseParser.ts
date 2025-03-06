@@ -25,6 +25,24 @@ export function parseAIResponse(text: string): AIResponse | Character {
           bravery: characterData.attributes.bravery,
           experience: characterData.attributes.experience
         },
+        minAttributes: {
+          speed: 0,
+          gunAccuracy: 0,
+          throwingAccuracy: 0,
+          strength: 0,
+          baseStrength: 0,
+          bravery: 0,
+          experience: 0
+        },
+        maxAttributes: {
+          speed: 20,
+          gunAccuracy: 20,
+          throwingAccuracy: 20,
+          strength: 20,
+          baseStrength: 20,
+          bravery: 20,
+          experience: 20
+        },
         wounds: [],
         isUnconscious: false,
         inventory: [],
@@ -112,6 +130,24 @@ export function parseAIResponse(text: string): AIResponse | Character {
           baseStrength: 10,
           bravery: 10,
           experience: 5
+        },
+        minAttributes: {
+          speed: 0,
+          gunAccuracy: 0,
+          throwingAccuracy: 0,
+          strength: 0,
+          baseStrength: 0,
+          bravery: 0,
+          experience: 0
+        },
+        maxAttributes: {
+          speed: 20,
+          gunAccuracy: 20,
+          throwingAccuracy: 20,
+          strength: 20,
+          baseStrength: 20,
+          bravery: 20,
+          experience: 20
         },
         wounds: [],
         isUnconscious: false,

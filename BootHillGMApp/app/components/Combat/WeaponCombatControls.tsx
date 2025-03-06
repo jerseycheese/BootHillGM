@@ -120,6 +120,24 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
                   bravery: 0,
                   experience: 0
                 },
+                minAttributes: {
+                  strength: 0,
+                  speed: 0,
+                  gunAccuracy: 0,
+                  throwingAccuracy: 0,
+                  baseStrength: 0,
+                  bravery: 0,
+                  experience: 0
+                },
+                maxAttributes: {
+                  strength: 0,
+                  speed: 0,
+                  gunAccuracy: 0,
+                  throwingAccuracy: 0,
+                  baseStrength: 0,
+                  bravery: 0,
+                  experience: 0
+                },
                 wounds: [],
                 isUnconscious: false,
                 inventory: []

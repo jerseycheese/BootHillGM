@@ -3,7 +3,6 @@
 import React from 'react';
 import { LoadingScreen } from '../GameArea/LoadingScreen';
 import { Character } from '../../types/character';
-import { STEP_DESCRIPTIONS } from '../../hooks/useCharacterCreation';
 
 interface CharacterSummaryProps {
   character: Character;
@@ -76,13 +75,39 @@ export function CharacterSummary({
             
             <div>
               <h3 className="text-lg font-bold">Attributes</h3>
-              {Object.entries(character.attributes).map(([attr, value]) => (
-                <p key={attr}>
-                  <strong>{STEP_DESCRIPTIONS[attr]?.title || attr}:</strong> {Array.isArray(value) ? value.join(', ') : value}
-                </p>
-              ))}
+                {Object.entries(character.attributes).map(([attr, value]) => {
+                    const typedKey = attr as keyof Character['attributes'];
+                    let title = '';
+                    switch (typedKey) {
+                      case 'speed':
+                        title = 'Speed';
+                        break;
+                      case 'gunAccuracy':
+                        title = 'Gun Accuracy';
+                        break;
+                      case 'throwingAccuracy':
+                        title = 'Throwing Accuracy';
+                        break;
+                      case 'strength':
+                        title = 'Strength';
+                        break;
+                      case 'baseStrength':
+                        title = 'Base Strength';
+                        break;
+                      case 'bravery':
+                        title = 'Bravery';
+                        break;
+                      case 'experience':
+                        title = 'Experience';
+                        break;
+                    }
+                    return (
+                      <p key={attr}>
+                        <strong>{title}:</strong> {Array.isArray(value) ? value.join(', ') : value}
+                      </p>
+                    );
+                })}
             </div>
-            
           </div>
         </div>
       </div>

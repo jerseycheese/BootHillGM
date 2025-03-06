@@ -19,97 +19,41 @@ export const initialCharacter: Character = {
   name: "",
   inventory: [],
   attributes: {
-    speed: 0,
-    gunAccuracy: 0,
-    throwingAccuracy: 0,
-    strength: 0,
-    baseStrength: 0,
-    bravery: 0,
+    speed: 1,
+    gunAccuracy: 1,
+    throwingAccuracy: 1,
+    strength: 8,
+    baseStrength: 8,
+    bravery: 1,
     experience: 0,
+  },
+  minAttributes: {
+    speed: 1,
+    gunAccuracy: 1,
+    throwingAccuracy: 1,
+    strength: 8,
+    baseStrength: 8,
+    bravery: 1,
+    experience: 0,
+  },
+  maxAttributes: {
+    speed: 20,
+    gunAccuracy: 20,
+    throwingAccuracy: 20,
+    strength: 20,
+    baseStrength: 20,
+    bravery: 20,
+    experience: 11,
   },
   wounds: [],
   isUnconscious: false,
 };
 
-// Add new interface for step descriptions
-interface StepDescription {
-  title: string;
-  description: string;
-  min?: number;
-  max?: number;
-}
-
-export const STEP_DESCRIPTIONS: Record<string, StepDescription> = {
-  name: {
-    title: "Character Name",
-    description: "Choose a name for your character that fits the Old West setting.",
-  },
-  speed: {
-    title: "Speed",
-    description:
-      "Determines your character's quickness in combat and reactions. Affects who shoots first.",
-    min: 1,
-    max: 20,
-  },
-  gunAccuracy: {
-    title: "Gun Accuracy",
-    description:
-      "Your character's skill with firearms. Critical for combat and survival.",
-    min: 1,
-    max: 20,
-  },
-  throwingAccuracy: {
-    title: "Throwing Accuracy",
-    description: "Skill with thrown weapons and general coordination.",
-    min: 1,
-    max: 20,
-  },
-  strength: {
-    title: "Strength",
-    description: "Physical power affecting melee damage and carrying capacity.",
-    min: 8,
-    max: 20,
-  },
-  baseStrength: {
-    title: "Base Strength",
-    description:
-      "Maximum physical power. This value represents your character's peak condition.",
-    min: 8,
-    max: 20,
-  },
-  bravery: {
-    title: "Bravery",
-    description: "Courage under fire. Affects combat bonuses and reactions.",
-    min: 1,
-    max: 20,
-  },
-  experience: {
-    title: "Experience",
-    description:
-      "Previous combat encounters and gunfights. Provides combat bonuses.",
-    min: 0,
-    max: 11,
-  },
-  summary: {
-    title: "Character Summary",
-    description: "Review your character before finalizing.",
-  },
-};
-
-export type StepType = "string" | "number" | "review";
-
-export interface Step {
-  key: keyof Character["attributes"] | "name" | "summary";
-  type: StepType;
-}
-
 /**
  * Custom hook managing the Boot Hill character creation process.
  * Handles:
- * - Step-by-step character attribute input
  * - AI-assisted value generation
  * - Progress saving and restoration
- * - Character validation
  * - Final character summary
  */
 export function useCharacterCreation() {
@@ -123,89 +67,75 @@ export function useCharacterCreation() {
 
     // Prioritize character from campaign state if available and valid
     if (campaignState?.character) {
-      // Ensure attributes exist, providing defaults if necessary
-      const attributes = campaignState.character.attributes || initialCharacter.attributes;
       return {
+        ...initialCharacter,
         ...campaignState.character,
-        attributes,
       };
     }
 
     if (saved) {
       try {
         const data = JSON.parse(saved);
-        // Ensure attributes exist, providing defaults if necessary
-        const attributes = data.character?.attributes || initialCharacter.attributes;
         return {
-          ...(data.character || initialCharacter),
-          attributes,
+          ...initialCharacter,
+          ...data.character,
         };
       } catch {
         return initialCharacter;
       }
     }
     return initialCharacter;
-  });
+});
 
   const [showSummary, setShowSummary] = useState(false);
   const [isGeneratingField, setIsGeneratingField] = useState(false);
   const [error, setError] = useState("");
   const [characterSummary, setCharacterSummary] = useState("");
 
-  const validateField = useCallback(
-    (field: string, value: string | number) => {
-      if (field === "name") return value.toString().trim() !== "";
-
-      const numValue = Number(value);
-      const fieldInfo = STEP_DESCRIPTIONS[field];
-      if (!fieldInfo?.min || !fieldInfo?.max) return true;
-
-      return (
-        !isNaN(numValue) &&
-        numValue >= fieldInfo.min &&
-        numValue <= fieldInfo.max
-      );
-    },
-    []
-  );
-
   const handleFieldChange = useCallback(
-    (
-      field: keyof Character["attributes"] | "name",
-      value: string | number
-    ) => {
-      setError("");
-
-      if (!validateField(field, value)) {
-        setError(
-          `Invalid value for ${field}. Please enter a value within the allowed range.`
-        );
-        return;
+  (
+    field: keyof Character["attributes"] | "name",
+    value: string | number
+  ) => {
+    setCharacter((prev) => {
+      if (field === "name") {
+        return { ...prev, name: value.toString() };
       }
 
-      setCharacter((prev) => {
-        if (field === "name") {
-          return { ...prev, name: value.toString() };
+      // Perform validation for attribute fields
+      if (field in prev.attributes) {
+        const numValue = Number(value);
+        if (
+          isNaN(numValue) ||
+          numValue < prev.minAttributes[field] ||
+          numValue > prev.maxAttributes[field]
+        ) {
+          // If value is invalid, do not update the state
+          console.warn(`Invalid value for ${field}: ${value}`);
+          return prev;
         }
 
-        if (field in prev.attributes) {
-          return {
-            ...prev,
-            attributes: {
-              ...prev.attributes,
-              [field]: Number(value),
-              ...(field === "strength" && { baseStrength: Number(value) }),
-            },
-          };
+        const updatedAttributes = {
+          ...prev.attributes,
+          [field]: numValue,
+        };
+
+        // Special handling for strength to also update baseStrength
+        if (field === "strength") {
+          updatedAttributes.baseStrength = numValue;
         }
 
         return {
           ...prev,
+          attributes: updatedAttributes,
         };
-      });
-    },
-    [validateField]
-  );
+      }
+
+      return prev;
+    });
+  },
+  [setCharacter]
+);
 
   const generateFieldValue = useCallback(
     async (field: keyof Character["attributes"] | "name") => {
@@ -216,13 +146,8 @@ export function useCharacterCreation() {
         const value =
           field === "name"
             ? await generateName()
-            : generateRandomValue(field);
+            : generateRandomValue(field as keyof Character["attributes"]);
         handleFieldChange(field, value);
-
-        // Ensure baseStrength is set when strength is generated
-        if (field === "strength") {
-          handleFieldChange("baseStrength", value);
-        }
       } catch (error) {
         console.error(`Failed to generate value for ${field}:`, error);
         setError(`Failed to generate value for ${field}`);
@@ -240,10 +165,6 @@ export function useCharacterCreation() {
     try {
       const generatedCharacter = await generateCompleteCharacter();
 
-      // Ensure baseStrength matches strength
-      generatedCharacter.attributes.baseStrength =
-        generatedCharacter.attributes.strength;
-
       setCharacter(generatedCharacter);
     } catch (error) {
       console.error("Failed to generate character:", error);
@@ -260,27 +181,7 @@ export function useCharacterCreation() {
 
       try {
         if (!showSummary) {
-          // Validate all fields before showing summary
-          const invalidField = Object.entries(STEP_DESCRIPTIONS).find(
-            ([key]) => {
-              if (key === "summary") return false;
-              const value =
-                key === "name"
-                  ? character.name
-                  : character.attributes[
-                      key as keyof Character["attributes"]
-                    ];
-              return !validateField(key, value);
-            }
-          );
-
-          if (invalidField) {
-            setError(`Invalid value for ${invalidField[0]}`);
-            return;
-          }
-
           setIsGeneratingField(true);
-
           const summary = await generateCharacterSummary(character);
           setCharacterSummary(summary);
           setShowSummary(true);
@@ -306,7 +207,7 @@ export function useCharacterCreation() {
         setIsGeneratingField(false); // Reset loading state
       }
     },
-    [character, showSummary, cleanupState, saveGame, router, validateField]
+    [character, showSummary, cleanupState, saveGame, router]
   );
 
   useEffect(() => {
@@ -333,14 +234,22 @@ export function useCharacterCreation() {
   };
 }
 
-export type ValidField = keyof Character["attributes"];
-
-export function generateRandomValue(field: ValidField): number {
-  // Get field constraints from step descriptions
-  const fieldInfo = STEP_DESCRIPTIONS[field];
-  if (!fieldInfo?.min || !fieldInfo?.max) return 0;
-
-  // Generate random value within defined range
-  return Math.floor(Math.random() * (fieldInfo.max - fieldInfo.min + 1)) +
-    fieldInfo.min;
+export function generateRandomValue(field: keyof Character["attributes"]): number {
+    switch (field) {
+        case "speed":
+            return 1;
+        case "gunAccuracy":
+            return 1;
+        case "throwingAccuracy":
+            return 1;
+        case "strength":
+        case "baseStrength":
+            return 8;
+        case "bravery":
+            return 1;
+        case "experience":
+            return 0;
+        default:
+            return 0;
+    }
 }

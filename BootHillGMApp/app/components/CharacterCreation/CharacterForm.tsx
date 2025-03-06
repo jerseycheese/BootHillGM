@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { Character } from '../../types/character';
-import { STEP_DESCRIPTIONS } from '../../hooks/useCharacterCreation';
 
 interface AttributeField {
   key: keyof Character['attributes'] | 'name';
@@ -33,24 +32,65 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
 }) => {
   const [generatingField, setGeneratingField] = useState<keyof Character['attributes'] | 'name' | null>(null);
 
+  const attributeFields: AttributeField[] = Object.keys(character.attributes).map(key => {
+    const typedKey = key as keyof Character['attributes'];
+    let title = '';
+    let description = '';
+    switch (typedKey) {
+      case 'speed':
+        title = 'Speed';
+        description = 'Your character\'s movement and reaction capability';
+        break;
+      case 'gunAccuracy':
+        title = 'Gun Accuracy';
+        description = 'Your character\'s accuracy with firearms';
+        break;
+      case 'throwingAccuracy':
+        title = 'Throwing Accuracy';
+        description = 'Your character\'s accuracy with thrown weapons';
+        break;
+      case 'strength':
+        title = 'Strength';
+        description = 'Your character\'s current strength (affected by wounds)';
+        break;
+      case 'baseStrength':
+        title = 'Base Strength';
+        description = 'Your character\'s maximum strength';
+        break;
+      case 'bravery':
+        title = 'Bravery';
+        description = 'Your character\'s courage under fire';
+        break;
+      case 'experience':
+        title = 'Experience';
+        description = 'Your character\'s combat experience';
+        break;
+    }
+    return {
+      key: typedKey,
+      title,
+      description,
+      min: character.minAttributes[typedKey],
+      max: character.maxAttributes[typedKey],
+    };
+  });
+
   const fields: AttributeField[] = [
     { key: 'name', title: 'Name', description: 'Your character\'s full name' },
-    ...Object.entries(STEP_DESCRIPTIONS)
-      .filter(([key]) => key !== 'name' && key !== 'summary')
-      .map(([key, value]) => ({
-        key: key as keyof Character['attributes'],
-        title: value.title,
-        description: value.description,
-        min: value.min,
-        max: value.max
-      }))
+    ...attributeFields
   ];
 
-    const handleGenerateField = useCallback(async (field: keyof Character['attributes'] | 'name') => {
+
+  const handleGenerateField = useCallback(async (field: keyof Character['attributes'] | 'name') => {
     setGeneratingField(field);
     await onGenerateField(field);
     setGeneratingField(null);
   }, [onGenerateField]);
+
+  // Create a wrapper function for the Review Summary button
+  const handleReviewSummary = useCallback(() => {
+    onSubmit({ preventDefault: () => {} } as React.FormEvent);
+  }, [onSubmit]);
 
   return (
     <div className="space-y-6">
@@ -66,7 +106,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
         </button>
         <button
           type="button"
-          onClick={onSubmit}
+          onClick={handleReviewSummary}
           className="wireframe-button"
           disabled={isGeneratingField}
           data-testid="view-summary-button"
@@ -74,7 +114,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
           Review Character Summary
         </button>
       </div>
-      <form onSubmit={onSubmit} className="space-y-6" data-testid="character-form">
+      <form onSubmit={onSubmit} className="space-y-6" data-testid="character-form" id="character-form">
         <div className="grid grid-cols-1 gap-6">
           {fields.map((field) => (
             <div key={field.key} className="space-y-2">

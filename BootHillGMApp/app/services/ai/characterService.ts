@@ -108,6 +108,24 @@ function createCharacterFromData(data: Character): Character {
       bravery: Number(data.attributes.bravery) || 10,
       experience: Number(data.attributes.experience) || 5
     },
+    minAttributes: {
+      speed: 1,
+      gunAccuracy: 1,
+      throwingAccuracy: 1,
+      strength: 8,
+      baseStrength: 8,
+      bravery: 1,
+      experience: 0
+    },
+    maxAttributes: {
+      speed: 20,
+      gunAccuracy: 20,
+      throwingAccuracy: 20,
+      strength: 20,
+      baseStrength: 20,
+      bravery: 20,
+      experience: 11
+    },
     wounds: [],
     isUnconscious: false,
     inventory: [],
@@ -141,6 +159,24 @@ async function createRandomCharacter(): Promise<Character> {
     id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     name: await generateName(),
     attributes: generateRandomAttributes(),
+    minAttributes: {
+      speed: 1,
+      gunAccuracy: 1,
+      throwingAccuracy: 1,
+      strength: 8,
+      baseStrength: 8,
+      bravery: 1,
+      experience: 0
+    },
+    maxAttributes: {
+      speed: 20,
+      gunAccuracy: 20,
+      throwingAccuracy: 20,
+      strength: 20,
+      baseStrength: 20,
+      bravery: 20,
+      experience: 11
+    },
     wounds: [],
     isUnconscious: false,
     inventory: [],

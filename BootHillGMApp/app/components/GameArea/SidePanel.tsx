@@ -10,7 +10,6 @@ import type { GameSessionProps } from './types';
 
 export function SidePanel({
   state,
-  handleUseItem,
   handleEquipWeapon,
 }: GameSessionProps) {
   if (!state.character) {

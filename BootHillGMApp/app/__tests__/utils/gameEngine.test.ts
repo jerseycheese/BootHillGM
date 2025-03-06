@@ -2,7 +2,7 @@ import { gameReducer } from '../../reducers/gameReducer';
 import { GameState } from '../../types/gameState';
 import { GameEngineAction } from '../../types/gameActions';
 import { Character } from '../../types/character';
-import { InventoryItem, ItemCategory } from '../../types/inventory';
+import { InventoryItem, ItemCategory } from '../../types/item.types';
 import { NarrativeJournalEntry } from '../../types/journal';
 
 describe('gameReducer', () => {
@@ -12,7 +12,7 @@ describe('gameReducer', () => {
     initialState = {
       currentPlayer: '',
       npcs: [],
-      location: '',
+      location: null,
       inventory: [],
       quests: [],
       character: null,
@@ -46,6 +46,24 @@ describe('gameReducer', () => {
         bravery: 7,
         experience: 3
       },
+      minAttributes: {
+        speed: 1,
+        gunAccuracy: 1,
+        throwingAccuracy: 1,
+        strength: 8,
+        baseStrength: 8,
+        bravery: 1,
+        experience: 0,
+      },
+      maxAttributes: {
+        speed: 20,
+        gunAccuracy: 20,
+        throwingAccuracy: 20,
+        strength: 20,
+        baseStrength: 20,
+        bravery: 20,
+        experience: 11,
+      },
       wounds: [],
       isUnconscious: false,
       inventory: [],
@@ -62,9 +80,9 @@ describe('gameReducer', () => {
   });
 
   it('should set location', () => {
-    const action: GameEngineAction = { type: 'SET_LOCATION', payload: 'Saloon' };
+    const action: GameEngineAction = { type: 'SET_LOCATION', payload: { type: 'town', name: 'Saloon' } };
     const newState = gameReducer(initialState, action);
-    expect(newState.location).toBe('Saloon');
+    expect(newState.location).toEqual({ type: 'town', name: 'Saloon' });
   });
 
   it('should set narrative', () => {
@@ -112,23 +130,35 @@ describe('gameReducer', () => {
         bravery: 6,
         experience: 4
       },
+      minAttributes: {
+        speed: 1,
+        gunAccuracy: 1,
+        throwingAccuracy: 1,
+        strength: 8,
+        baseStrength: 8,
+        bravery: 1,
+        experience: 0,
+      },
+      maxAttributes: {
+        speed: 20,
+        gunAccuracy: 20,
+        throwingAccuracy: 20,
+        strength: 20,
+        baseStrength: 20,
+        bravery: 20,
+        experience: 11,
+      },
       wounds: [],
       isUnconscious: false,
       inventory: [],
-      weapon: undefined,
-      equippedWeapon: undefined
+      weapon: undefined, // Remove these, as they are optional and not set by default
+      equippedWeapon: undefined // Remove these
     };
     const action: GameEngineAction = { type: 'SET_OPPONENT', payload: mockOpponent };
     const newState = gameReducer(initialState, action);
-    expect(newState.opponent).toMatchObject({
-      name: mockOpponent.name,
-      attributes: mockOpponent.attributes,
-      wounds: mockOpponent.wounds,
-      isUnconscious: mockOpponent.isUnconscious,
-      inventory: mockOpponent.inventory,
-      isNPC: mockOpponent.isNPC,
-      isPlayer: mockOpponent.isPlayer,
-      id: expect.stringMatching(/^character_\d+_[a-z0-9]{9}$/)
+    expect(newState.opponent).toEqual({
+      ...mockOpponent,
+      id: expect.any(String), // The ID is dynamically generated
     });
   });
 
