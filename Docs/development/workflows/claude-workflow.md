@@ -3,7 +3,7 @@ title: Claude Development Workflow
 aliases: [Claude Process, Three-Phase Development]
 tags: [development, workflow, claude, process]
 created: 2025-01-13
-updated: 2025-01-27
+updated: 2025-02-25
 ---
 
 # Three-Phase Claude Development Workflow
@@ -175,4 +175,5 @@ FUTURE TASKS
 - [[examples/analysis-planning-prompt|Analysis & Planning]]
 - [[examples/implementation-prompt|Implementation]]
 - [[examples/cleanup-docs-prompt|Cleanup & Documentation]]
+- [[examples/refactor-prompt|Refactoring Guide]]
 - GitHub: https://github.com/jerseycheese/BootHillGM

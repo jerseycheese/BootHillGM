@@ -34,7 +34,6 @@ CODE CHANGES
 ```[language]
 [Actual code changes]
 ```
-
 VERIFICATION
 - [ ] Unit tests
 - [ ] Integration tests

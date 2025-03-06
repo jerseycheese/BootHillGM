@@ -13,11 +13,14 @@ Help me review, clean up, and document this implementation:
 
 [PASTE IMPLEMENTATION SUMMARY]
 
+-------------------
+
+See git diff --cached for changes made as a result of this implementation.
+
 Please provide in this format:
 
 CLEANUP & DOCS
-GitHub Issue: #[number] [title]
-Branch: [branch-name]
+GitHub Issue: #[number] [title] & [URL]
 
 CODE REVIEW
 Quality:

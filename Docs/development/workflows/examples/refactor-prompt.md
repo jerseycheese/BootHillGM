@@ -9,7 +9,7 @@ tags:
   - code-quality
   - claude
 created: 2025-02-23
-updated: 2025-02-23
+updated: 2025-02-25
 ---
 
 ## Target File
@@ -71,3 +71,46 @@ Priority order (highest impact, lowest risk first):
 - Original feature documentation
 - Related Boot Hill rules
 - Component dependencies
+
+## Refactoring Handoff
+When completing this phase, provide a summary in this format:
+
+```markdown
+REFACTORING COMPLETE
+Target File: [original file path]
+Issue: #[number]
+
+CHANGES MADE
+Files Modified:
+- [file]: [changes]
+- [file]: [changes]
+
+Files Created:
+- [file]: [purpose]
+- [file]: [purpose]
+
+Files Removed:
+- [file]: [reason]
+
+TEST STATUS
+- Unit Tests: [status]
+- Integration: [status]
+- Coverage: [percentage]
+
+CODE METRICS
+- Original Size: [lines]
+- New Size: [total lines across all new files]
+- Largest File: [file name - lines]
+- Type Safety: [improved/same]
+
+VERIFICATION
+- [ ] No breaking changes
+- [ ] All tests passing
+- [ ] Behavior preserved
+- [ ] Code standards maintained
+- [ ] Documentation updated
+
+NEXT STEPS
+- [suggested follow-up tasks]
+- [areas for future improvement]
+```

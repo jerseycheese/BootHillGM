@@ -3,7 +3,7 @@ title: Prompt Writing Guide
 aliases: [Prompt Guide, Claude Prompts]
 tags: [ai, prompts, claude]
 created: 2025-01-01
-updated: 2025-02-23
+updated: 2025-02-25
 ---
 
 # Prompt Writing Guide
@@ -44,6 +44,9 @@ Target Size: < 300 lines
 1. [ ] Extract standalone components
 2. [ ] Split by feature/responsibility
 3. [ ] Move types to separate files
+
+## Handoff
+[When complete, provide summary with metrics]
 
 [See full template in examples]
 ```
@@ -88,6 +91,7 @@ Add weapon selection to combat system
 4. Link to Boot Hill rules
 5. Prioritize low-risk changes
 6. Focus on MVP requirements
+7. Always include handoff information at completion
 
 ## Related
 - [[feature-workflow|Feature Workflow]]
