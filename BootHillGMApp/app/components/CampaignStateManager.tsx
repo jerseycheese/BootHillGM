@@ -8,6 +8,7 @@ import { initialState as initialGameState } from '../types/initialState';
 import { useCampaignStateRestoration } from '../hooks/useCampaignStateRestoration';
 import { InventoryItem } from '../types/item.types';
 import { ensureCombatState } from '../types/combat';
+import { getAIResponse } from '../services/ai/gameService';
 
 export const CampaignStateContext = createContext<{
   state: GameState;
@@ -203,13 +204,59 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [dispatch]);
 
-  const cleanupState = useCallback(() => {
-      // Set initialization flag before state cleanup
-      sessionStorage.setItem('initializing_new_character', 'true');
-      localStorage.removeItem('campaignState');
-      const cleanState = { ...initialGameState, isClient: true };
-      dispatch({ type: 'SET_STATE', payload: cleanState });
-  }, [dispatch]);
+  const cleanupState = useCallback(async () => {
+    // Set a flag in sessionStorage to indicate that a new character is being initialized.
+    // This prevents the auto-save functionality from triggering during the reset process.
+    sessionStorage.setItem('initializing_new_character', 'true');
+
+    // Remove any existing saved game state from localStorage.
+    localStorage.removeItem('campaignState');
+
+    // Create a new game state object, starting with the initial game state.
+    const cleanState: GameState = {
+      ...initialGameState,
+      isClient: true, // Ensure this flag is set
+    };
+
+    // If a character already exists (i.e., this is not the very first game load),
+    // preserve the character's identity (ID, name, etc.) but reset their health-related attributes.
+    if (state.character) {
+      cleanState.character = {
+        ...state.character, // Keep ID, name, etc.
+
+        // Reset attributes that are affected by gameplay:
+        attributes: {
+          ...state.character.attributes, // Keep other attributes
+          strength: state.character.attributes.baseStrength, // Reset strength to its base value
+        },
+        wounds: [], // Clear all wounds
+        isUnconscious: false, // Reset unconscious status
+        strengthHistory: {
+          baseStrength: state.character.attributes.baseStrength, // Keep the base strength
+          changes: [], // Clear the history of strength changes
+        },
+      };
+    }
+
+    // After resetting the character and game state, fetch an initial narrative from the AI.
+    // This provides a starting point for the new game session.
+    if (state.character) {
+      try {
+        const response = await getAIResponse(
+          `Initialize a new game session for ${state.character.name}. Describe their current situation and location in detail. Include suggestions for what they might do next.`,
+          "", // No journal context for the initial narrative
+          state.inventory || [] // Pass the character's inventory (if any)
+        );
+        cleanState.narrative = response.narrative;
+      } catch (error) {
+        console.error("Error fetching initial narrative:", error);
+        // TODO: Handle the error appropriately.  Perhaps set a default narrative or show an error message to the user.
+      }
+    }
+
+    // Dispatch an action to update the game state with the cleaned state.
+    dispatch({ type: 'SET_STATE', payload: cleanState });
+  }, [dispatch, state.character, state.inventory]);
 
   return (
     <div

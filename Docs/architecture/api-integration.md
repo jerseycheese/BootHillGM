@@ -44,6 +44,7 @@ Location: `app/services/ai/`
 Location: `app/hooks/`
 - `useAIInteractions.ts`: Main hook for AI interactions
 - Provides abstraction layer for components
+  - `CampaignStateManager.tsx`: Uses `getAIResponse` to fetch the initial narrative on game reset.
 
 #### 3. Utilities
 Location: `app/utils/`

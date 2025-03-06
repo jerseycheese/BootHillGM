@@ -44,6 +44,7 @@ The documentation aims to:
 - ✅ **Completed Features**
   - [[features/_completed/character-creation|Character Creation]]
   - [[features/_completed/combat-base|Combat Base]]
+  - [[features/_completed/reset-game|Reset Game]]
   - [[features/_completed/storytelling|Storytelling]]
 
 ### AI Integration
