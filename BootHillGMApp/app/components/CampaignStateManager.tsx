@@ -212,14 +212,24 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [dispatch]);
 
   return (
-    <CampaignStateContext.Provider value={{ 
-      state, 
-      dispatch, 
-      saveGame, 
-      loadGame,
-      cleanupState 
-    }}>
-      {children}
-    </CampaignStateContext.Provider>
+    <div
+      id="bhgmCampaignStateManager"
+      data-testid="campaign-state-manager"
+      className="bhgm-campaign-state-manager"
+    >
+      <CampaignStateContext.Provider
+        value={{
+          state,
+          dispatch,
+          saveGame,
+          loadGame,
+          cleanupState,
+        }}
+      >
+        {children}
+      </CampaignStateContext.Provider>
+    </div>
   );
 };
+
+CampaignStateProvider.displayName = 'CampaignStateProvider';

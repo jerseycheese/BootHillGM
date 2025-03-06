@@ -17,7 +17,7 @@ interface ErrorDisplayProps {
 export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ error, onRetry }) => {
     const errorMessage = typeof error === 'string' ? error : error?.reason;
     return (
-        <div className="text-red-600 mb-2 flex items-center" role="alert" data-testid="error-display">
+        <div id="bhgmErrorDisplay" className="text-red-600 mb-2 flex items-center bhgm-error-display" role="alert" data-testid="error-display">
             <span>{errorMessage}</span>
             {onRetry && (
                 <button

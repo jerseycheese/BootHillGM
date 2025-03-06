@@ -64,12 +64,12 @@ export default function GameSessionContent() {
   }
 
   return (
-    <div className="wireframe-container">
+    <div id="bhgmGameSessionContent" data-testid="game-session-content" className="wireframe-container">
       <div className="grid grid-cols-[1fr_300px] gap-4">
-        <MainGameArea {...sessionProps} />
-        <SidePanel {...sessionProps} />
+        <MainGameArea id="bhgmMainGameArea" data-testid="main-game-area" {...sessionProps} />
+        <SidePanel id="bhgmSidePanel" data-testid="side-panel" {...sessionProps} />
       </div>
-      <DevToolsPanel gameState={state} dispatch={dispatch} />
+      <DevToolsPanel id="bhgmDevToolsPanel" data-testid="dev-tools-panel" gameState={state} dispatch={dispatch} />
     </div>
   );
 }

@@ -40,7 +40,7 @@ export default function InputManager({
   };
 
   return (
-    <div className="wireframe-section space-y-4">
+    <div id="bhgmInputManager" data-testid="input-manager" className="wireframe-section space-y-4 bhgm-input-manager">
       {suggestedActions.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {suggestedActions.map((action, index) => {

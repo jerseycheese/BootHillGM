@@ -20,7 +20,7 @@ export default function CharacterCreationContent() {
   } = useCharacterCreation();
 
   return (
-    <div className="wireframe-container">
+    <div id="bhgmCharacterCreationContent" data-testid="character-creation-content" className="wireframe-container bhgm-character-creation-content">
       {showSummary ? (
         <CharacterSummary
           character={character}

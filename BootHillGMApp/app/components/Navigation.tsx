@@ -16,7 +16,7 @@ export default function Navigation() {
   }, []);
 
   return (
-    <nav className="bg-gray-800 p-4">
+    <nav id="bhgmNavigation" data-testid="navigation" className="bg-gray-800 p-4 bhgm-navigation">
       <ul className="flex space-x-4">
         <li>
           <Link

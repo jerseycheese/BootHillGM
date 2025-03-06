@@ -7,6 +7,8 @@ interface InventoryListProps {
   onItemAction: (itemId: string, action: 'use' | 'equip' | 'unequip') => void;
   isUsingItem: (itemId: string) => boolean;
   isLoading: boolean;
+  id?: string;
+  "data-testid"?: string;
 }
 
 export const InventoryList: React.FC<InventoryListProps> = ({ items, onItemAction, isUsingItem }) => {

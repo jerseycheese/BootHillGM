@@ -71,7 +71,7 @@ const formatDate = (timestamp: number): string => {
   }
 
   return (
-    <div className="wireframe-section">
+    <div id="bhgmJournalViewer" data-testid="journal-viewer" className="wireframe-section bhgm-journal-viewer">
       <h2 className="wireframe-subtitle mb-2">Journal</h2>
       <ul className="overflow-y-auto">
         {sortedEntries.map((entry) => (

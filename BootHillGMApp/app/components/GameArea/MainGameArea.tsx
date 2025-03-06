@@ -20,14 +20,18 @@ export function MainGameArea({
   handlePlayerHealthChange,
 }: GameSessionProps) {
   return (
-    <div className="h-full flex flex-col overflow-auto">
+    <div id="bhgmMainGameAreaContainer" data-testid="main-game-area-container" className="h-full flex flex-col overflow-auto bhgm-main-game-area">
       <div className="wireframe-section flex-1 flex flex-col overflow-auto">
         <NarrativeDisplay
+          id="bhgmNarrativeDisplay"
+          data-testid="narrative-display"
           narrative={state.narrative}
           error={error}
           onRetry={retryLastAction}
         />
         <GameplayControls
+          id="bhgmGameplayControls"
+          data-testid="gameplay-controls"
           isLoading={isLoading}
           isCombatActive={isCombatActive}
           opponent={opponent}

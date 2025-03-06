@@ -32,7 +32,9 @@ export const InventoryItem: React.FC<InventoryItemProps<string>> = ({ item, onAc
   return (
     <li
       key={item.id}
-      className={`wireframe-text relative flex justify-between items-center p-2 ${
+      id="bhgmInventoryItem"
+      data-testid="inventory-item"
+      className={`wireframe-text relative flex justify-between items-center p-2 bhgm-inventory-item ${
         item.isEquipped ? 'bg-blue-50' : ''
       } ${isUsing ? 'bg-gray-200' : ''}`} // Add a gray background when isUsing is true
       onMouseEnter={() => setIsHovered(true)}

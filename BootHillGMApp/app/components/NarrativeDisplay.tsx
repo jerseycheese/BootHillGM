@@ -16,6 +16,8 @@ export interface NarrativeDisplayProps {
   narrative: string;
   error?: string | null;
   onRetry?: () => void;
+  id?: string;
+  "data-testid"?: string;
 }
 
 export interface NarrativeItem {
@@ -169,32 +171,42 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
     <div 
       ref={containerRef}
       onScroll={handleScroll}
-      className="narrative-container overflow-y-auto flex-1 max-h-[60vh] px-4"
+      className="narrative-container overflow-y-auto flex-1 max-h-[60vh] px-4 bhgm-narrative-display"
       data-testid="narrative-display"
+      id="bhgmNarrativeDisplayContainer"
     >
       <div className="narrative-content py-4 2">
         {narrativeItems.map((item, index) => {
+          let testId = `narrative-item-${item.type}`;
+
+          
+          if (item.type === 'item-update' && item.metadata?.updateType) {
+            testId += `-${item.metadata.updateType}`;
+          }
           const element = (
-            <NarrativeContent 
+            <NarrativeContent
               key={`${item.type}-${index}`}
-              item={item} 
+              item={item}
               processedUpdates={processedUpdatesRef.current}
+              data-testid={testId}
             />
           );
           return element;
         })}
       </div>
-      
+
       {error && (
-        <div 
+        <div
           className="wireframe-section text-red-500 flex items-center gap-2 mt-4 p-2"
           role="alert"
+          data-testid="narrative-error"
         >
           <span>{error}</span>
           {onRetry && (
             <button
               onClick={onRetry}
               className="wireframe-button px-3 py-1"
+              data-testid="narrative-retry-button"
             >
               Retry
             </button>

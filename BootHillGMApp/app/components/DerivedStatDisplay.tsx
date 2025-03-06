@@ -16,7 +16,7 @@ export default function DerivedStatDisplay({
   description,
 }: DerivedStatDisplayProps) {
   return (
-    <div className="stat-container flex flex-col gap-2">
+    <div id="bhgmDerivedStatDisplay" data-testid="derived-stat-display" className="stat-container flex flex-col gap-2 bhgm-derived-stat-display">
       <div className="stat-label text-sm font-bold">{label}</div>
       <div className="stat-value text-lg">{value}</div>
       {description && (

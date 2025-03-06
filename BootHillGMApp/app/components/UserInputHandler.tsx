@@ -19,7 +19,7 @@ const UserInputHandler: React.FC<UserInputHandlerProps> = ({ onSubmit, isLoading
   };
 
   return (
-    <form onSubmit={handleSubmit} className="wireframe-section">
+    <form id="bhgmUserInputHandler" data-testid="user-input-handler" onSubmit={handleSubmit} className="wireframe-section bhgm-user-input-handler">
       <input type="text" value={userInput} onChange={(e) => setUserInput(e.target.value)}
         className="wireframe-input" placeholder="What would you like to do?" disabled={isLoading} />
       <button type="submit" className="wireframe-button" disabled={isLoading}>

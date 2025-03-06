@@ -187,7 +187,7 @@ function StatusDisplayManager({ character, location }: StatusDisplayManagerProps
     };
 
     return (
-        <div className="wireframe-section space-y-4">
+      <div id="bhgmStatusDisplayManager" data-testid="status-display-manager" className="wireframe-section space-y-4 bhgm-status-display-manager">
             <div className="border-b pb-2">
                 <h2 className="font-medium text-lg" data-testid="character-name">
                     {character.name}

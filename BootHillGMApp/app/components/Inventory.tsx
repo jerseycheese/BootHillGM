@@ -56,10 +56,10 @@ export const Inventory: React.FC<InventoryProps<string>> = ({
 
   return (
     <ErrorBoundary>
-      <div className="wireframe-section">
+      <div id="bhgmInventory" data-testid="inventory" className="wireframe-section bhgm-inventory">
         <h2 className="wireframe-subtitle">Inventory</h2>
         <ErrorDisplay error={error ? { reason: error } : null} onRetry={retryLastAction} />
-        <InventoryList items={filteredInventory} onItemAction={handleItemAction} isUsingItem={isUsingItem} isLoading={isLoading} />
+        <InventoryList id="bhgmInventoryList" data-testid="inventory-list" items={filteredInventory} onItemAction={handleItemAction} isUsingItem={isUsingItem} isLoading={isLoading} />
       </div>
     </ErrorBoundary>
   );

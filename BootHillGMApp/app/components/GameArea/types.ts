@@ -24,6 +24,8 @@ export interface GameSessionProps {
   handlePlayerHealthChange: (characterType: 'player' | 'opponent', newStrength: number) => void;
   handleUseItem: (itemId: string) => void;
   handleEquipWeapon: (itemId: string) => void;
+  id?: string;
+  "data-testid"?: string;
 }
 
 export interface GameplayControlsProps {
@@ -35,4 +37,6 @@ export interface GameplayControlsProps {
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
   onPlayerHealthChange: (characterType: 'player' | 'opponent', newStrength: number) => void;
   dispatch: React.Dispatch<GameEngineAction>;
+  id?: string;
+  "data-testid"?: string;
 }

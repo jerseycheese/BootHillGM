@@ -13,7 +13,7 @@ interface StatDisplayProps {
 
 export default function StatDisplay({ label, value, max, description }: StatDisplayProps) {
   return (
-    <div className="stat-container flex flex-col gap-2">
+    <div id="bhgmStatDisplay" data-testid="stat-display" className="stat-container flex flex-col gap-2 bhgm-stat-display">
       <div className="stat-label text-sm font-bold">{label}</div>
       <div className="stat-value text-lg">
         {value}

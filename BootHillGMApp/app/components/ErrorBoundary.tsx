@@ -28,7 +28,7 @@ class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       // You can render any custom fallback UI
       return (
-        <div className="error-boundary">
+        <div id="bhgmErrorBoundary" data-testid="error-boundary" className="error-boundary bhgm-error-boundary">
           <h2>Something went wrong.</h2>
           <p>An error occurred in this component.</p>
         </div>

@@ -9,7 +9,7 @@ interface ItemActionsProps<T extends string> {
 
 export const ItemActions: React.FC<ItemActionsProps<string>> = ({ item, onAction, isUsing }) => {
   return (
-    <div className="flex gap-2">
+    <div id="bhgmItemActions" data-testid="item-actions" className="flex gap-2 bhgm-item-actions">
       {isUsing ? (
         <span className="px-3 py-1 text-sm">Using...</span>
       ) : (

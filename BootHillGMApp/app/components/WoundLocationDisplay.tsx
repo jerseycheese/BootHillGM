@@ -33,8 +33,9 @@ const WoundLocationDisplay: React.FC<WoundLocationDisplayProps> = ({ location, s
   }[severity.toLowerCase()] || 'bg-gray-50 text-gray-700';
 
   return (
-    <div 
-      className={`rounded-sm p-2 flex justify-between items-center ${severityStyles}`}
+    <div
+      id="bhgmWoundLocationDisplay"
+      className={`rounded-sm p-2 flex justify-between items-center ${severityStyles} bhgm-wound-location-display`}
       data-testid={`wound-${location}-${severity}`}
     >
       <span className="capitalize">{location}</span>

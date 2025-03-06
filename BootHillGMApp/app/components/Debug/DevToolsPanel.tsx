@@ -15,6 +15,8 @@ import { GameState } from "../../types/gameState";
 interface DevToolsPanelProps {
   gameState: GameState;
   dispatch: React.Dispatch<GameEngineAction>;
+  id?: string;
+  "data-testid"?: string;
 }
 
 const DevToolsPanel: React.FC<DevToolsPanelProps> = ({

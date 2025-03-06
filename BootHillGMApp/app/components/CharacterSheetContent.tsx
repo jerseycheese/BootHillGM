@@ -69,7 +69,7 @@ export default function CharacterSheetContent() {
   );
 
   return (
-    <div className="wireframe-container">
+    <div id="bhgmCharacterSheetContent" data-testid="character-sheet-content" className="wireframe-container bhgm-character-sheet-content">
       <div className="wireframe-section">
         <h2 className="wireframe-subtitle">Name: {character.name}</h2>
       </div>
