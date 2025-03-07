@@ -3,7 +3,7 @@ title: BootHillGM Development Roadmap (MVP Focus)
 aliases: [Development Timeline, Project Roadmap]
 tags: [documentation, planning, roadmap]
 created: 2024-12-28
-updated: 2025-01-17
+updated: 2025-03-06
 ---
 
 # BootHillGM Development Roadmap (MVP Focus)
@@ -68,12 +68,14 @@ The roadmap is organized into development phases, with each phase containing spe
 - [x] Implement BrawlingEngine for combat system
 - [x] Add state protection pattern
 - [x] Enhance campaign state restoration
+
 3.2 State Management Improvements
 - [ ] Implement progressive state saving
 - [x] Add state persistence across navigation
 - [x] Implement weapon equipment state management
 - [x] Add inventory-weapon integration
 - [ ] Create error recovery system
+
 3.3 Combat System Enhancements
 - [x] Implement simplified Boot Hill combat rules
 - [x] Create basic combat UI
@@ -88,6 +90,7 @@ The roadmap is organized into development phases, with each phase containing spe
 - [x] Implement core dice rolling system (diceUtils.ts)
 - [x] Add strength validation system with wound effects and stacking
 - [x] Implement combat summary with detailed stats tracking (#67)
+
 3.4 Inventory System Refinements
 - [x] Implement basic inventory data structure
 - [x] Create Inventory component for displaying items
@@ -96,6 +99,7 @@ The roadmap is organized into development phases, with each phase containing spe
   - Prevent usage of items not in inventory
   - Provide feedback for attempted use of unavailable items
 - [x] Integrate inventory with other game systems
+
 3.5 Journal Integration
 - [x] Implement automatic journal entry creation
 - [x] Update CombatSystem to trigger journal updates
@@ -106,11 +110,23 @@ The roadmap is organized into development phases, with each phase containing spe
   - [x] Enhanced entry formatting
   - [x] Comprehensive test coverage
   - [x] Update combat log entries in combat system for detailed combat results and summaries
+
 3.6 Character Sheet Enhancements
 - [ ] Implement stat-based skill checks
 - [ ] Add character portrait/image upload
 - [ ] Create character inventory section
 - [ ] Add character background/notes section
+
+3.7 Linear Narrative Structure
+- [ ] Implement narrative state management foundation (#164)
+- [ ] Create main storyline progression system (#165)
+- [ ] Develop decision impact system (#166)
+- [ ] Implement narrative context optimization (#167)
+- [ ] Create lore management system (#168)
+- [ ] Integrate narrative with journal system (#169)
+- [ ] Enhance AI prompts for narrative depth (#170)
+- [ ] Implement narrative variables system (#171)
+- [ ] Add narrative display enhancements (#172)
 
 ## Phase 4: Polish and Testing
 4.1 UI/UX Improvements
@@ -118,21 +134,26 @@ The roadmap is organized into development phases, with each phase containing spe
 - [ ] Improve combat feedback and animations
 - [ ] Enhance narrative text formatting
 - [ ] Add tooltips and help text
+
 4.2 Performance Optimization
 - [ ] Optimize state updates
 - [ ] Improve AI response handling
 - [ ] Enhance combat system performance
 - [ ] Optimize journal context selection
+- [ ] Improve narrative context generation efficiency
+
 4.3 Error Handling
 - [ ] Implement comprehensive error boundaries
 - [ ] Add recovery mechanisms for failed AI calls
 - [ ] Improve error messaging
 - [ ] Add state recovery options
+
 4.4 Testing Implementation
 - [ ] Complete unit test coverage for core components
 - [ ] Add integration tests for main game flows
 - [ ] Implement combat system testing
 - [ ] Add journal system tests
+- [ ] Test narrative system with long gameplay sessions
 
 ## Ongoing Tasks
 - Bug fixes and issue resolution
@@ -144,10 +165,12 @@ The roadmap is organized into development phases, with each phase containing spe
 ## Critical Path Items
 1. Complete combat system enhancements (Core dice rolling system implemented)
 2. Finish inventory system logical checks
-3. Implement journal narrative summaries
-4. Add loading indicators and feedback
-5. Complete testing implementation
-6. Implement character sheet enhancements
+3. Implement narrative state management foundation (#164)
+4. Create narrative context optimization system (#167)
+5. Implement lore management system (#168)
+6. Add loading indicators and feedback
+7. Complete testing implementation
+8. Implement character sheet enhancements
 
 ## Success Criteria (MVP)
 - [x] Functional character creation with AI guidance
@@ -156,10 +179,13 @@ The roadmap is organized into development phases, with each phase containing spe
 - [x] Persistent game state
 - [x] Automated journal system
 - [x] Basic character sheet display
+- [ ] Linear narrative structure with player agency
+- [ ] Lore management for narrative consistency
 - [ ] Complete error handling
 - [ ] Comprehensive test coverage
 
 ## Recent Updates
+- 2025-03-06: Added linear narrative structure implementation plan (#164-#172)
 - 2025-01-17: Completed character generation enhancements (#114)
 - 2024-12-28: Updated documentation links to reflect migration to GitHub Issues
 - 2024-12-28: Initial version
