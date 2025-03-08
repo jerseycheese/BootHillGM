@@ -7,10 +7,7 @@ export const setupMocks = () => {
   const mockCleanupState = jest.fn();
 
   const mockLocalStorage = createMockLocalStorage();
-  Object.defineProperty(window, 'localStorage', {
-    value: mockLocalStorage,
-    writable: true
-  });
+  jest.spyOn(global, 'localStorage', 'get').mockImplementation(() => mockLocalStorage);
 
   return { mockPush: mockRouterPush, mockCleanupState, mockLocalStorage };
 };

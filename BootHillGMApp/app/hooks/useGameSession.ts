@@ -155,6 +155,7 @@ export const useGameSession = () => {
     } catch (error) {
       console.error('Error in handleUserInput:', error);
       setError('An unexpected error occurred');
+      // TODO: Implement more robust error handling, e.g., displaying a user-friendly message or providing a retry option.
     } finally {
       setIsLoading(false);
     }

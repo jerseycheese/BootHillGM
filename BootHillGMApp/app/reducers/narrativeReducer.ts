@@ -326,6 +326,15 @@ export function narrativeReducer(
         narrative: initialNarrativeState,
       };
     }
+    case 'UPDATE_NARRATIVE': {
+      return {
+       ...state,
+        narrative: {
+          ...narrative,
+          ...action.payload,
+        },
+      };
+    }
 
     default:
       return state;

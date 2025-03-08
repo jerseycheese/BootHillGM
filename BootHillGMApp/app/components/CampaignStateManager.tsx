@@ -10,6 +10,7 @@ import { InventoryItem } from '../types/item.types';
 import { ensureCombatState } from '../types/combat';
 import { getAIResponse } from '../services/ai/gameService';
 import { initialNarrativeState } from '../types/narrative.types';
+import { migrateGameState } from '../utils/stateMigration';
 
 export const CampaignStateContext = createContext<{
   state: GameState;
@@ -86,12 +87,14 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
           ? ensureCombatState(stateToSave.combatState)
           : undefined,
         savedTimestamp: timestamp,
-        isClient: true // Ensure isClient is set to true
+        isClient: true, // Ensure isClient is set to true
+        narrative: stateToSave.narrative,
       };
 
       localStorage.setItem('campaignState', JSON.stringify(cleanState));
       lastSavedRef.current = timestamp;
-    } catch {
+    } catch (error) {
+      console.error('Error saving game state:', error);
     }
   }, [isInitializing]);
 
@@ -173,17 +176,23 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
       let loadedState;
       try {
         loadedState = JSON.parse(serializedState);
-      } catch {
+      } catch (error) {
+        console.error('Error parsing saved game state:', error);
         return null;
+        // TODO: Implement more robust error handling, e.g., displaying a user-friendly message.
       }
-      
+
       if (!loadedState || !loadedState.savedTimestamp) {
         return null;
       }
 
-      const restoredState = {
-        ...initialGameState,
-        ...loadedState,
+      // Migrate the loaded state to handle potential missing narrative data and schema changes
+      loadedState = migrateGameState(loadedState);
+      // TODO: Consider separating migration logic into a separate function/module.
+
+      const restoredState: GameState = {
+        ...initialGameState, // Start with a fresh base state
+        ...loadedState, // Overwrite with loaded values
         isClient: true, // Ensure isClient is set to true
         isCombatActive: Boolean(loadedState.isCombatActive),
         opponent: loadedState.opponent ? {
@@ -192,19 +201,24 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
           wounds: [...(loadedState.opponent.wounds || [])],
           isUnconscious: Boolean(loadedState.opponent.isUnconscious)
         } : null,
-        combatState: loadedState.combatState 
+        combatState: loadedState.combatState
           ? ensureCombatState(loadedState.combatState)
           : undefined,
         inventory: loadedState.inventory?.map((item: InventoryItem) => ({ ...item })) || [],
-        journal: loadedState.journal || []
+        journal: loadedState.journal || [],
+        narrative: {
+          ...initialNarrativeState, // Ensure all properties are initialized
+          ...(loadedState.narrative || {}), // Overwrite with loaded narrative state
+        },
       };
-      
+
       dispatch({ type: 'SET_STATE', payload: restoredState });
       return restoredState;
-    } catch {
+    } catch (error) {
+      console.error('Error loading game state:', error);
       return null;
     }
-  }, [dispatch]);
+   }, [dispatch]);
 
   const cleanupState = useCallback(async () => {
     // Set a flag in sessionStorage to indicate that a new character is being initialized.
@@ -218,6 +232,7 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
     const cleanState: GameState = {
       ...initialGameState,
       isClient: true, // Ensure this flag is set
+      narrative: initialNarrativeState,
     };
 
     // If a character already exists (i.e., this is not the very first game load),

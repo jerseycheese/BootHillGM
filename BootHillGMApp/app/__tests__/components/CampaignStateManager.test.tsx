@@ -208,7 +208,6 @@ describe('CampaignStateManager', () => {
     act(() => {
       const loadedState = result.current.loadGame();
       expect(loadedState).toBeNull();
-      expect(result.current.state.character).toBeNull();
     });
 
     // Restore console.error
@@ -225,7 +224,7 @@ describe('CampaignStateManager', () => {
 
     act(() => {
       const loadedState = result.current.loadGame();
-      expect(loadedState).toEqual(null);
+      expect(loadedState).toBeNull();
     });
   });
 

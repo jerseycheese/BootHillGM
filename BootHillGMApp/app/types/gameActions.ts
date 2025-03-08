@@ -5,7 +5,7 @@ import { SuggestedAction } from "./campaign";
 import { CombatState, CombatType, Wound } from "./combat";
 import { GameState } from "./gameState";
 import { LocationType } from "../services/locationService";
-import { NarrativeAction } from "./narrative.types";
+import { NarrativeAction, NarrativeState } from './narrative.types';
 
 // Define a specific type for the UPDATE_CHARACTER payload
 export interface UpdateCharacterPayload {
@@ -51,4 +51,5 @@ export type GameEngineAction =
   | { type: "EQUIP_WEAPON"; payload: string }
   | { type: "UNEQUIP_WEAPON"; payload: string }
   | { type: "END_COMBAT" }
+  | { type: "UPDATE_NARRATIVE"; payload: Partial<NarrativeState> }
   | NarrativeAction;

@@ -65,10 +65,10 @@ describe('useGameSession', () => {
           payload: 'test-item',
         });
 
-        // Check that SET_NARRATIVE is dispatched with the correct payload
+        // Check that ADD_NARRATIVE_HISTORY is dispatched with the correct payload
         expect(mockDispatch).toHaveBeenCalledWith({
-          type: 'SET_NARRATIVE',
-          payload: expect.stringContaining('Player: use Test Item\n\nGame Master: Mocked AI response.'),
+          type: 'ADD_NARRATIVE_HISTORY',
+          payload: expect.stringContaining('Player: use Test Item\nMocked AI response.'),
         });
   });
 

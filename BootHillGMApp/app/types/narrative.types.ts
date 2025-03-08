@@ -207,6 +207,7 @@ export type NarrativeAction =
   | { type: 'COMPLETE_NARRATIVE_ARC'; payload: string }
   | { type: 'ACTIVATE_BRANCH'; payload: string }
   | { type: 'COMPLETE_BRANCH'; payload: string }
+  | { type: 'UPDATE_NARRATIVE'; payload: Partial<NarrativeState> }
   | { type: 'UPDATE_NARRATIVE_CONTEXT'; payload: Partial<NarrativeContext> }
   | { type: 'RESET_NARRATIVE' };
 
