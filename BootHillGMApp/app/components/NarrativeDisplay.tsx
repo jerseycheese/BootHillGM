@@ -40,22 +40,27 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   const isAutoScrollEnabled = useRef<boolean>(true);
   const processedUpdatesRef = useRef<Set<string>>(new Set());
 
-
+  // Use useMemo unconditionally at the top level, and handle the conditional logic inside
   const narrativeItems = useMemo(() => {
-    processedUpdatesRef.current.clear();
+    // If no narrative, return empty array
+    if (!narrative) {
+      return [] as NarrativeItem[];
+    }
     
-    return narrative.split('\n').reduce<NarrativeItem[]>((items, line) => {
-      const trimmedLine = line.trim();
-      
-      if (!trimmedLine) return items;
+    processedUpdatesRef.current.clear();
 
-      // First check for explicit markers
-      if (trimmedLine.startsWith('Player Action: ')) {
-        const cleanedAction = cleanText(trimmedLine.substring('Player Action: '.length));
-        if (cleanedAction) {
+    const items = narrative.split('\n').reduce<NarrativeItem[]>((items, line) => {
+      const trimmedLine = line.trim();
+
+      if (!trimmedLine) return items;
+  
+      // Check for player actions
+      if (trimmedLine.startsWith('Player Action:') || trimmedLine.startsWith('Player:') || trimmedLine.startsWith('You:')) {
+        const content = trimmedLine.substring(trimmedLine.indexOf(':') + 1).trim(); // Extract content after the colon and trim
+        if (content) {
           items.push({
             type: 'player-action',
-            content: cleanedAction,
+            content: content,
             metadata: {
               timestamp: Date.now()
             }
@@ -63,7 +68,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
         }
         return items;
       }
-
+    
       if (trimmedLine.startsWith('GM Response: ')) {
         const cleanedResponse = cleanText(trimmedLine.substring('GM Response: '.length));
         if (cleanedResponse) {
@@ -77,23 +82,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
         }
         return items;
       }
-
-      // Fallback to checking for less explicit markers
-      if (trimmedLine.startsWith('Player:') || trimmedLine.startsWith('You:')) {
-        const content = trimmedLine.substring(trimmedLine.indexOf(':') + 1);
-        const cleanedAction = cleanText(content);
-        if (cleanedAction) {
-          items.push({
-            type: 'player-action',
-            content: cleanedAction,
-            metadata: {
-              timestamp: Date.now()
-            }
-          });
-        }
-        return items;
-      }
-
+    
       if (trimmedLine.startsWith('GM:') || trimmedLine.startsWith('Game Master:')) {
         const content = trimmedLine.substring(trimmedLine.indexOf(':') + 1);
         const cleanedResponse = cleanText(content);
@@ -108,41 +97,41 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
         }
         return items;
       }
-
+    
       // Process item updates
-      if (trimmedLine.startsWith('ACQUIRED_ITEMS:') || 
+      if (trimmedLine.startsWith('ACQUIRED_ITEMS:') ||
           trimmedLine.startsWith('REMOVED_ITEMS:')) {
         const updateType = trimmedLine.startsWith('ACQUIRED_ITEMS:') ? 'acquired' : 'used';
         const itemsMatch = trimmedLine.match(/:\s*(?:\[(.*?)\]|(.*))/);
-        const itemsList = itemsMatch && (itemsMatch[1] || itemsMatch[2]) ? 
+        const itemsList = itemsMatch && (itemsMatch[1] || itemsMatch[2]) ?
           (itemsMatch[1] || itemsMatch[2])
             .split(',')
             .map(item => item.trim())
-            .filter(Boolean) : 
+            .filter(Boolean) :
           [];
-
+    
         if (itemsList.length) {
           items.push({
             type: 'item-update',
             content: '',
-            metadata: { 
-              updateType, 
+            metadata: {
+              updateType,
               items: itemsList,
               timestamp: Date.now()
             }
           });
+          return items;
         }
-        return items;
       }
 
       // Handle regular narrative
       if (!trimmedLine.startsWith('SUGGESTED_ACTIONS:')) {
         const cleanedContent = cleanText(trimmedLine);
         if (cleanedContent) {
-          items.push({ 
+          items.push({
             type: 'narrative',
             content: cleanedContent,
-            metadata: { 
+            metadata: {
               timestamp: Date.now()
             }
           });
@@ -151,9 +140,11 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       
       return items;
     }, []);
+    
+    return items; // Return the processed items array
   }, [narrative]);
 
-  // Update auto-scroll state based on user interaction
+// Update auto-scroll state based on user interaction
   const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;

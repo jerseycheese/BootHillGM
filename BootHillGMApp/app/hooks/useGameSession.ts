@@ -6,6 +6,7 @@ import { getJournalContext, addJournalEntry } from '../utils/JournalManager';
 import { useCombatManager } from './useCombatManager';
 import { InventoryItem, ItemCategory } from '../types/item.types';
 import { InventoryManager } from '../utils/inventoryManager';
+import { addNarrativeHistory } from '../reducers/narrativeReducer';
 
 // Mock getAIResponse in test environment
 if (process.env.NODE_ENV === 'test') {
@@ -54,46 +55,25 @@ export const useGameSession = () => {
       return !!usingItems[itemId];
   }, [usingItems]);
 
-  // Updates the game narrative with new text and any item changes
+  // Updates the game narrative using the narrativeReducer
   const updateNarrative = useCallback(
     (textOrParams: string | UpdateNarrativeParams) => {
       let text: string;
       let playerInput: string | undefined;
-      let acquiredItems: string[] | undefined;
-      let removedItems: string[] | undefined;
 
       if (typeof textOrParams === 'string') {
         text = textOrParams;
       } else {
         text = textOrParams.text;
         playerInput = textOrParams.playerInput;
-        acquiredItems = textOrParams.acquiredItems;
-        removedItems = textOrParams.removedItems;
       }
 
-      let updatedNarrative = '';
-      if (state.narrative) {
-        updatedNarrative = `${state.narrative}\n\nPlayer: ${playerInput}\n\nGame Master: ${text}\n`;
-        if (acquiredItems && acquiredItems.length > 0) {
-          updatedNarrative += `\nACQUIRED_ITEMS: ${acquiredItems.join(', ')}`;
-        }
-        if (removedItems && removedItems.length > 0) {
-          updatedNarrative += `\nREMOVED_ITEMS: ${removedItems.join(', ')}`;
-        }
-      } else {
-        updatedNarrative = `Player: ${playerInput}\n\nGame Master: ${text}\n`;
-        if (acquiredItems && acquiredItems.length > 0) {
-          updatedNarrative += `\nACQUIRED_ITEMS: ${acquiredItems.join(', ')}`;
-        }
-        if (removedItems && removedItems.length > 0) {
-          updatedNarrative += `\nREMOVED_ITEMS: ${removedItems.join(', ')}`;
-        }
-      }
+      // Dispatch ADD_NARRATIVE_HISTORY action
+      // Prefix player input with "Player:" to ensure it's identified as a player action
+      const combinedText = playerInput ? `Player: ${playerInput}\n${text}` : text;
+      dispatch(addNarrativeHistory(combinedText));
 
-      dispatch({ type: 'SET_NARRATIVE', payload: updatedNarrative });
-    },
-    [dispatch, state.narrative]
-  );
+    }, [dispatch]);
 
     const combatManager = useCombatManager({
         onUpdateNarrative: updateNarrative
@@ -194,7 +174,7 @@ export const useGameSession = () => {
         }
     }, [lastAction, handleUserInput]);
 
-  // Handles using an item from the inventory
+    // Handles using an item from the inventory
     // Updates both the inventory state and narrative display
     const handleUseItem = useCallback(async (itemId: string) => {
       const item = state.inventory?.find((i: InventoryItem) => i.id === itemId);
@@ -204,7 +184,11 @@ export const useGameSession = () => {
       }
 
       // Validate item use *before* calling getAIResponse
-      const validationResult = InventoryManager.validateItemUse(item, state.character || undefined, { ...state, isCombatActive: !!state.combatState });
+      const validationResult = InventoryManager.validateItemUse(item, state.character || undefined, { 
+        ...state, 
+        narrative: state.narrative?.toString() || '',
+        isCombatActive: !!state.combatState 
+      });
       if (!validationResult.valid) {
         setError(validationResult.reason || `Cannot use ${item.name}`);
         return;
@@ -233,6 +217,7 @@ export const useGameSession = () => {
         });
 
         // Explicitly update the narrative with the item usage
+        // Note: playerInput is already prefixed with "Player:" in updateNarrative
         updateNarrative({
           text: response.narrative || `You use the ${item.name}.`,
           playerInput: actionText,

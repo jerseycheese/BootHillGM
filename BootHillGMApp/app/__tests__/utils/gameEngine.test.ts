@@ -4,6 +4,7 @@ import { GameEngineAction } from '../../types/gameActions';
 import { Character } from '../../types/character';
 import { InventoryItem, ItemCategory } from '../../types/item.types';
 import { NarrativeJournalEntry } from '../../types/journal';
+import { initialNarrativeState } from '../../types/narrative.types';
 
 describe('gameReducer', () => {
   let initialState: GameState;
@@ -16,7 +17,7 @@ describe('gameReducer', () => {
       inventory: [],
       quests: [],
       character: null,
-      narrative: '',
+      narrative: initialNarrativeState,
       gameProgress: 0,
       journal: [],
       isCombatActive: false,
@@ -88,7 +89,7 @@ describe('gameReducer', () => {
   it('should set narrative', () => {
     const action: GameEngineAction = { type: 'SET_NARRATIVE', payload: 'You enter the saloon.' };
     const newState = gameReducer(initialState, action);
-    expect(newState.narrative).toBe('You enter the saloon.');
+    expect(newState.narrative.narrativeHistory).toContain('You enter the saloon.');
   });
 
   it('should set game progress', () => {

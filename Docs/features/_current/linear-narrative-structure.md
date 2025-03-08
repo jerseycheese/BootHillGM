@@ -31,12 +31,12 @@ The implementation of the linear narrative structure is divided into several Git
 
 #### 2. Main Storyline Progression System (#165)
 - Story points tracking for AI-generated main storyline
-- Mechanism to extract key story points from AI responses
+- Mechanism to extract key story points from AI responses (currently, story points are predefined)
 - System to determine current point in the main storyline
 - Story progression summarization for AI context
 
 #### 3. Decision Impact System (#166)
-- Track significant player decisions
+- Track significant player decisions (currently, `selectedChoice` is tracked)
 - Record player choices with context and impact metadata
 - Flexible impact system that avoids rigid branching
 - Mechanism for AI to incorporate past player choices
@@ -49,9 +49,14 @@ The implementation of the linear narrative structure is divided into several Git
 
 #### 5. Lore Management System (#168)
 - Dedicated store for tracking world facts and lore
-- Extract and update lore from AI responses
+- Extract and update lore from AI responses (currently, no dedicated lore system)
 - Ensure AI responses maintain consistency with established lore
 - Categorization system for different types of lore
+
+#### 6. Narrative Reducer and Action Creators (#174)
+- Implemented the `narrativeReducer` to handle narrative state updates.
+- Created action creators for navigating story points, selecting choices, managing narrative history, setting display mode, and handling narrative arcs and branches.
+- Ensured immutable state updates and proper error handling.
 
 ### Enhancement Components (Medium/Low Priority)
 
@@ -83,48 +88,58 @@ The implementation of the linear narrative structure is divided into several Git
 
 ### State Management
 ```typescript
-interface NarrativeState {
-  narrativeText: string;
-  progression: NarrativeProgression;
-  isTracking: boolean;
-  narrativeVariables: Record<string, string | number | boolean>;
-  lastUpdatedTimestamp: number;
+export interface NarrativeState {
+  currentStoryPoint: StoryPoint | null;
+  visitedPoints: string[];
+  availableChoices: NarrativeChoice[];
+  narrativeHistory: string[];
+  displayMode: NarrativeDisplayMode;
+  narrativeContext?: NarrativeContext;
+  selectedChoice?: string;
 }
 
-interface NarrativeProgression {
-  currentMainStoryPoint: string;
-  completedMainStoryPoints: StoryPoint[];
-  completedSideStoryPoints: StoryPoint[];
-  decisionPoints: DecisionPoint[];
-  activeQuestIds: string[];
-  narrativeTags: Array<{tag: string, timestamp: number}>;
+export interface NarrativeContext {
+  tone?: 'serious' | 'lighthearted' | 'tense' | 'mysterious';
+  characterFocus: string[];
+  themes: string[];
+  worldContext: string;
+  importantEvents: string[];
+  playerChoices: Array<{
+    choice: string;
+    consequence: string;
+    timestamp: number;
+  }>;
+  storyPoints: Record<string, StoryPoint>;
+  narrativeArcs: Record<string, NarrativeArc>;
+  narrativeBranches: Record<string, NarrativeBranch>;
+  currentArcId?: string;
+  currentBranchId?: string;
 }
-```
 
-### Context Optimization
-```typescript
-function generateOptimizedNarrativeContext(
-  narrativeState: NarrativeState,
-  currentInput: string
-): string {
-  // Select most relevant story points
-  // Select most relevant decisions
-  // Select most relevant lore elements
-  // Combine into optimized context string
-}
-```
-
-### Lore Management
-```typescript
-interface LoreItem {
+export interface NarrativeArc {
   id: string;
-  category: 'character' | 'location' | 'history' | 'item' | 'concept';
-  content: string;
-  importance: number; // 1-10 scale
-  confidence: number; // 1-10 scale
-  sourceTimestamp: number;
-  lastReferencedTimestamp: number;
-  relatedLoreIds: string[];
+  title: string;
+  description: string;
+  branches: NarrativeBranch[];
+  startingBranch: string;
+  isCompleted: boolean;
+}
+
+export interface NarrativeBranch {
+  id: string;
+  title: string;
+  startPoint: string;
+  endPoints: string[];
+  requirements?: {
+    items?: string[];
+    attributes?: Array<{
+      attribute: keyof Character['attributes'];
+      minValue: number;
+    }>;
+    visitedPoints?: string[];
+  };
+  isActive: boolean;
+  isCompleted?: boolean;
 }
 ```
 

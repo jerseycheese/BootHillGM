@@ -275,6 +275,69 @@ Brawling combat state is managed through a combination of custom hooks and a ded
 -   `app/utils/combat/brawlingReducer.ts`: Reducer function.
 -   `app/types/brawling.types.ts`: Type definitions for brawling combat.
 
+### Narrative State
+
+#### Overview
+The narrative state manages the progression of the story, including the current story point, player choices, narrative history, and display mode. It utilizes the `narrativeReducer` and the `NarrativeState` and `NarrativeContext` interfaces defined in `app/types/narrative.types.ts`.
+
+#### Components
+
+- **`narrativeReducer`:**
+  - Handles all narrative-related actions.
+  - Ensures immutable state updates.
+  - Validates story points and choices.
+  - Manages narrative arcs and branches.
+
+- **`NarrativeState` Interface:**
+  - Defines the structure of the narrative state:
+    ```typescript
+    export interface NarrativeState {
+      currentStoryPoint: StoryPoint | null;
+      visitedPoints: string[];
+      availableChoices: NarrativeChoice[];
+      narrativeHistory: string[];
+      displayMode: NarrativeDisplayMode;
+      narrativeContext?: NarrativeContext;
+      selectedChoice?: string;
+    }
+    ```
+
+- **`NarrativeContext` Interface:**
+  -  Provides additional context for the narrative, including:
+    ```typescript
+      export interface NarrativeContext {
+        tone?: 'serious' | 'lighthearted' | 'tense' | 'mysterious';
+        characterFocus: string[];
+        themes: string[];
+        worldContext: string;
+        importantEvents: string[];
+        playerChoices: Array<{
+          choice: string;
+          consequence: string;
+          timestamp: number;
+        }>;
+        storyPoints: Record<string, StoryPoint>;
+        narrativeArcs: Record<string, NarrativeArc>;
+        narrativeBranches: Record<string, NarrativeBranch>;
+        currentArcId?: string;
+        currentBranchId?: string;
+      }
+    ```
+- **Actions:**
+  - `NAVIGATE_TO_POINT`: Navigates to a specific story point.
+  - `SELECT_CHOICE`: Records the player's choice.
+  - `ADD_NARRATIVE_HISTORY`: Adds an entry to the narrative history.
+  - `SET_DISPLAY_MODE`: Sets the narrative display mode.
+  - `START_NARRATIVE_ARC`: Starts a new narrative arc.
+  - `COMPLETE_NARRATIVE_ARC`: Marks a narrative arc as completed.
+  - `ACTIVATE_BRANCH`: Activates a narrative branch.
+  - `COMPLETE_BRANCH`: Marks a narrative branch as completed.
+  - `UPDATE_NARRATIVE_CONTEXT`: Updates the narrative context.
+  - `RESET_NARRATIVE`: Resets the narrative state to its initial values.
+
+#### Integration with `gameReducer`
+The `narrativeReducer` is integrated into the main `combinedReducer` in `app/reducers/index.ts`.  It handles all actions with types defined in `NarrativeActionType`.
+
 ## Related Documentation
 - [[../index|Main Documentation]]
 - [[../architecture/_index|Architecture Overview]]
@@ -288,4 +351,6 @@ Brawling combat state is managed through a combination of custom hooks and a ded
 ## Changelog
 - 2024-01-04: Reformatted to follow documentation template
 - 2025-02-23: Added Location State documentation
+- 2025-02-23: Added Location State documentation
 - 2025-02-23: Added Brawling Combat State Management documentation
+- 2025-03-07: Added Narrative State documentation

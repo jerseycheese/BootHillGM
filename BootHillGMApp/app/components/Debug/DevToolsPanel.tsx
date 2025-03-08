@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { GameEngineAction } from "../../types/gameActions";
-import { initializeTestCombat } from "../../utils/debugActions";
+import { initializeTestCombat, resetGame } from "../../utils/debugActions";
 import { useCampaignState } from "../CampaignStateManager";
 import { GameState } from "../../types/gameState";
 
@@ -25,13 +25,13 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({
 }) => {
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { cleanupState } = useCampaignState();
+  const {  } = useCampaignState();
 
-  const handleResetGame = async () => {
+  const handleResetGame = () => {
     setLoading("reset");
     setError(null);
     try {
-      await cleanupState();
+      dispatch(resetGame());
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error occurred');
       setError(`Failed to reset game: ${error.message}`);

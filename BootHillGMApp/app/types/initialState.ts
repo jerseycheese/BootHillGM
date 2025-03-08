@@ -1,4 +1,5 @@
 import { GameState } from './gameState';
+import { initialNarrativeState } from './narrative.types';
 
 export const initialState: GameState = {
   currentPlayer: '',
@@ -7,7 +8,7 @@ export const initialState: GameState = {
   inventory: [],
   quests: [],
   character: null,
-  narrative: '',
+  narrative: initialNarrativeState,
   gameProgress: 0,
   journal: [],
   opponent: null,

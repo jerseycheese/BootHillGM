@@ -6,9 +6,10 @@ import { ensureCombatState } from "../types/combat";
 import { validateCombatEndState } from "../utils/combatStateValidation";
 import { inventoryReducer } from "./inventory/inventoryReducer";
 import { journalReducer } from "./journal/journalReducer";
+import { narrativeReducer } from "./narrativeReducer";
 
 /**
- * Reducer function to handle game state updates related to the game general,
+ * Reducer function to handle game state updates related to the game in general,
  * delegating to sub-reducers as necessary for specific domains.
  * @param state - The current game state.
  * @param action - The action to be processed.
@@ -39,6 +40,26 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       ...journalReducer(state, action)
     };
   }
+
+  // Delegate narrative-related actions to the narrativeReducer
+  if (
+    action.type === 'NAVIGATE_TO_POINT' ||
+    action.type === 'SELECT_CHOICE' ||
+    action.type === 'ADD_NARRATIVE_HISTORY' ||
+    action.type === 'SET_DISPLAY_MODE' ||
+    action.type === 'START_NARRATIVE_ARC' ||
+    action.type === 'COMPLETE_NARRATIVE_ARC' ||
+    action.type === 'ACTIVATE_BRANCH' ||
+    action.type === 'COMPLETE_BRANCH' ||
+    action.type === 'UPDATE_NARRATIVE_CONTEXT' ||
+    action.type === 'RESET_NARRATIVE'
+  ) {
+    return {
+      ...state,
+      ...narrativeReducer(state, action),
+    };
+  }
+
   switch (action.type) {
     case 'SET_PLAYER':
       return { ...state, currentPlayer: action.payload };
@@ -152,7 +173,13 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       return newState;
     }
     case 'SET_NARRATIVE':
-      return { ...state, narrative: action.payload };
+      return {
+        ...state,
+        narrative: {
+          ...state.narrative,
+          narrativeHistory: [...(state.narrative?.narrativeHistory || []), action.payload]
+        }
+      };
     case 'SET_GAME_PROGRESS':
       return { ...state, gameProgress: action.payload };
     case 'SET_OPPONENT': {

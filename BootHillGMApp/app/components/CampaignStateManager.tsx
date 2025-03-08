@@ -9,6 +9,7 @@ import { useCampaignStateRestoration } from '../hooks/useCampaignStateRestoratio
 import { InventoryItem } from '../types/item.types';
 import { ensureCombatState } from '../types/combat';
 import { getAIResponse } from '../services/ai/gameService';
+import { initialNarrativeState } from '../types/narrative.types';
 
 export const CampaignStateContext = createContext<{
   state: GameState;
@@ -96,11 +97,12 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Auto-save effect for narrative changes
   useEffect(() => {
-    if (!isInitializedRef.current || !state.narrative || state.narrative === previousNarrativeRef.current) {
+    const currentNarrative = state.narrative?.narrativeHistory?.join('') || '';
+    if (!isInitializedRef.current || !state.narrative || currentNarrative === previousNarrativeRef.current) {
       return;
     }
 
-    previousNarrativeRef.current = state.narrative;
+    previousNarrativeRef.current = currentNarrative;
 
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
@@ -245,12 +247,19 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
         const response = await getAIResponse(
           `Initialize a new game session for ${state.character.name}. Describe their current situation and location in detail. Include suggestions for what they might do next.`,
           "", // No journal context for the initial narrative
-          state.inventory || [] // Pass the character's inventory (if any)
+          state.inventory || []
         );
-        cleanState.narrative = response.narrative;
+        cleanState.narrative = {
+          ...initialNarrativeState,
+          narrativeHistory: [response.narrative],
+        };
+
       } catch (error) {
-        console.error("Error fetching initial narrative:", error);
-        // TODO: Handle the error appropriately.  Perhaps set a default narrative or show an error message to the user.
+        console.error('Error fetching initial narrative:', error);
+        cleanState.narrative = {
+          ...initialNarrativeState,
+          narrativeHistory: ['Error initializing narrative. Please try again.'],
+        };
       }
     }
 

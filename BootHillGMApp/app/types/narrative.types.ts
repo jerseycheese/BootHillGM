@@ -100,6 +100,7 @@ export interface NarrativeState {
   narrativeHistory: string[];
   displayMode: NarrativeDisplayMode;
   narrativeContext?: NarrativeContext;
+  selectedChoice?: string;
 }
 
 /**
@@ -139,15 +140,16 @@ export interface NarrativeBranch {
     visitedPoints?: string[];
   };
   isActive: boolean;
+  isCompleted?: boolean;
 }
 
 /**
- * Defines a complete narrative arc made up of multiple branches
+ * Defines a complete narrative arc made up of multiple branches, potentially spanning multiple locations
  * 
  * @property id - Unique identifier for this arc
  * @property title - Title of the narrative arc
  * @property description - Short description
- * @property branches - Array of branches in this arc
+ * @property branches - Array of branches in this arc or references to branch IDs
  * @property startingBranch - ID of the first branch
  * @property isCompleted - Whether this arc has been completed
  */
@@ -160,11 +162,8 @@ export interface NarrativeArc {
   isCompleted: boolean;
 }
 
-/**
- * Defines context for AI-driven narrative generation
- */
 export interface NarrativeContext {
-  tone: 'serious' | 'lighthearted' | 'tense' | 'mysterious';
+  tone?: 'serious' | 'lighthearted' | 'tense' | 'mysterious';
   characterFocus: string[];
   themes: string[];
   worldContext: string;
@@ -174,6 +173,11 @@ export interface NarrativeContext {
     consequence: string;
     timestamp: number;
   }>;
+  storyPoints: Record<string, StoryPoint>;
+  narrativeArcs: Record<string, NarrativeArc>;
+  narrativeBranches: Record<string, NarrativeBranch>;
+  currentArcId?: string;
+  currentBranchId?: string;
 }
 
 /**

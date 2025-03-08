@@ -17,6 +17,13 @@ This document outlines the current and planned features related to narrative for
 - Support for basic text styling (bold, italic)
 - Combat action highlighting
 - Character name emphasis
+- Support for different display modes via the `setDisplayMode` action:
+  - `standard`: Normal narrative display
+  - `flashback`: Presented as a memory or past event
+  - `dream`: Presented as a dream sequence
+  - `letter`: Presented as written correspondence
+  - `journal`: Presented as a journal entry
+  - `dialogue`: Focus on character dialogue
 
 ## Planned Enhancements
 - Enhanced dialogue formatting

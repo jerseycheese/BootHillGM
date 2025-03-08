@@ -36,43 +36,33 @@ Focus on player agency and consequences.
 ```
 
 ### Story State Context
+The narrative system uses the `NarrativeContext` interface (defined in `narrative.types.ts`) to provide context to the AI. This includes information about the current story point, player choices, narrative history, and other relevant details.
+
 ```typescript
-interface StoryContext {
-  playerCharacter: {
-    background: string;
-    motivation: string;
-    relationships: Relationship[];
-    reputation: number;
-  };
-  worldState: {
-    location: string;
-    time: TimeOfDay;
-    activeQuests: Quest[];
-    knownNPCs: NPC[];
-  };
-  themeContext: {
-    currentThemes: string[];
-    toneSettings: string[];
-    genreElements: string[];
-  };
+// See narrative.types.ts for the full NarrativeContext definition
+interface NarrativeContext {
+  // ... (Refer to narrative.types.ts for the complete interface)
 }
 ```
 
 ## Prompt Templates
 
+**Note:** These are example prompts and may need further refinement. The AI primarily interacts with the system through actions like `NAVIGATE_TO_POINT` and `SELECT_CHOICE`, and the narrative is driven by predefined story points.
+
 ### Scene Setting
 ```typescript
 const sceneSetup = `
 ${systemContext}
-Location: ${location}
-Time: ${timeOfDay}
-Atmosphere: ${atmosphere}
+Current Story Point: ${storyPoint.title}
+${storyPoint.content}
 
-Generate an immersive scene description that:
-1. Establishes the setting
-2. Introduces key elements
-3. Suggests potential interactions
-4. Maintains Western authenticity
+// Additional context from NarrativeContext
+Tone: ${narrativeContext.tone}
+Themes: ${narrativeContext.themes.join(', ')}
+World Context: ${narrativeContext.worldContext}
+// ... other relevant context
+
+Generate an immersive scene description that builds upon the current story point and context.
 `;
 ```
 
@@ -80,15 +70,14 @@ Generate an immersive scene description that:
 ```typescript
 const npcDialog = `
 ${systemContext}
+Current Story Point: ${storyPoint.title}
+${storyPoint.content}
+
 NPC: ${npcDetails}
 Relationship: ${relationshipStatus}
-Current Situation: ${situation}
+// ... other relevant context
 
-Generate dialog that:
-1. Reflects NPC personality
-2. Acknowledges relationship history
-3. Provides meaningful choices
-4. Advances current objectives
+Generate dialog that reflects the NPC's personality, the current situation, and the overall narrative context.
 `;
 ```
 
@@ -143,35 +132,19 @@ const westernThemes = {
 ```typescript
 const tonePrompt = `
 ${systemContext}
-Current Tone: ${tone}
-Situation: ${situation}
+Current Story Point: ${storyPoint.title}
+${storyPoint.content}
 
-Generate narrative that:
-1. Maintains consistent tone
-2. Balances drama and action
-3. Respects genre conventions
-4. Enables player agency
+Current Tone: ${narrativeContext.tone}
+// ... other relevant context
+
+Generate narrative that maintains a consistent tone and respects the genre conventions.
 `;
 ```
 
 ## Response Formatting
 
-### Narrative Structure
-```typescript
-interface StoryResponse {
-  description: string;    // Scene narrative
-  options: {             // Player choices
-    action: string;
-    consequence: string;
-    difficulty?: number;
-  }[];
-  stateUpdates: {        // World state changes
-    location?: string;
-    time?: TimeOfDay;
-    relationships?: RelationshipUpdate[];
-  };
-}
-```
+The narrative system primarily uses actions to update the game state. The AI doesn't directly return a structured `StoryResponse` object. Instead, the system processes AI-generated text and dispatches actions like `NAVIGATE_TO_POINT` (based on player choices or story progression) and `ADD_NARRATIVE_HISTORY` (to update the narrative log).
 
 ## Special Scenarios
 
@@ -179,15 +152,15 @@ interface StoryResponse {
 ```typescript
 const questPrompt = `
 ${systemContext}
+Current Story Point: ${storyPoint.title}
+${storyPoint.content}
+
 Location: ${location}
 Available NPCs: ${npcs}
 Current Themes: ${themes}
+// ... other relevant context
 
-Generate quest that:
-1. Fits current themes
-2. Provides clear motivation
-3. Offers meaningful choices
-4. Suggests potential consequences
+Generate a quest that fits the current themes, provides clear motivation, and potentially offers choices.
 `;
 ```
 
@@ -195,35 +168,27 @@ Generate quest that:
 ```typescript
 const characterMoment = `
 ${systemContext}
+Current Story Point: ${storyPoint.title}
+${storyPoint.content}
+
 Character: ${character}
 Recent Events: ${events}
-Current Arc: ${arc}
+// ... other relevant context
 
-Generate character moment that:
-1. Reflects personal growth
-2. Acknowledges past choices
-3. Presents new challenges
-4. Deepens character development
+Generate a character moment that reflects personal growth, acknowledges past choices, and potentially presents new challenges.
 `;
 ```
 
 ## Token Optimization
 
 ### Context Management
-- Prioritize recent events
-- Summarize background information
-- Focus on relevant relationships
-- Track key decision points
+- Prioritize recent events (from `narrativeHistory` and `narrativeContext.playerChoices`)
+- Summarize background information (from `narrativeContext.worldContext`, `narrativeContext.importantEvents`)
+- Focus on relevant relationships (character information can be included in prompts as needed)
+- Track key decision points (using `narrativeContext.playerChoices`)
 
 ### Memory Structure
-```typescript
-interface NarrativeMemory {
-  keyEvents: string[];
-  activeThreads: string[];
-  characterDevelopment: string[];
-  worldChanges: string[];
-}
-```
+The narrative system primarily uses `NarrativeState` (including `narrativeHistory` and `narrativeContext`) to manage the narrative memory.  There is no separate `NarrativeMemory` interface.
 
 ## Error Recovery
 
@@ -231,14 +196,9 @@ interface NarrativeMemory {
 ```typescript
 const continuityPrompt = `
 ${systemContext}
-Last Valid State: ${lastState}
-Continuity Break: ${breakPoint}
+// ... relevant context, including recent narrative history
 
-Generate recovery that:
-1. Maintains story coherence
-2. Explains any gaps
-3. Provides path forward
-4. Preserves player agency
+There seems to be a discontinuity in the narrative. Generate text that bridges the gap and maintains story coherence while preserving player agency.
 `;
 ```
 

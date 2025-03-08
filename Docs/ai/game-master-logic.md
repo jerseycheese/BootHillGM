@@ -16,12 +16,15 @@ For implementation details, see [[gemini-integration|Gemini Integration]].
 ## Core Functions (MVP)
 
 ### Narrative Generation
-- [ ] Create a linear main storyline with minimal branching
+- [x] Create a linear main storyline with player choices influencing story details.
 - [x] Generate basic descriptive text for locations, characters, and events
 - [x] Adapt narrative based on limited player choices
 - [x] Theme analysis system for contextual storytelling
 - [x] Automatic theme detection from player actions
 - [x] Enhanced prompts incorporating relevant Western themes
+- [x] Utilize `narrativeReducer` to manage narrative state, including story points, choices, arcs, and branches.
+- [x] Use action creators (e.g., `navigateToPoint`, `selectChoice`) to update the narrative state.
+- [ ] Story points are currently predefined, driving the narrative progression.
 
 For prompt details, see [[prompt-engineering/storytelling|Storytelling Prompts]].
 
@@ -48,6 +51,7 @@ For rules implementation, see [[../boot-hill-rules/combat-rules|Boot Hill Combat
 - [x] Ensure summaries are concise (1-2 sentences)
 - [x] Include relevant context (e.g., "last health potion" if it's the last one)
 - [x] Use character name and appropriate pronouns
+- [x] Journal entries can be optionally added at specific story points via the `journalEntry` property in the `StoryPoint` interface.
 
 For journal system details, see [[../core-systems/journal-system|Journal System]].
 

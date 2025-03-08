@@ -1,5 +1,6 @@
 import { GameEngineAction } from "../types/gameActions";
 import { Character } from "../types/character";
+import { initialNarrativeState } from "../types/narrative.types";
 
 /**
  * Initializes a test combat scenario with a default opponent.
@@ -66,6 +67,79 @@ export const initializeTestCombat = (): GameEngineAction => {
         },
       },
       isClient: true,
+    },
+  };
+};
+
+/**
+ * Creates a base character object for testing.
+ *
+ * @param {string} id - The character's ID.
+ * @param {string} name - The character's name.
+ * @returns {Character} - A base character object.
+ */
+export const createBaseCharacter = (id: string, name: string): Character => {
+  const minAttributes = {
+      speed: 1,
+      gunAccuracy: 1,
+      throwingAccuracy: 1,
+      strength: 1,
+      baseStrength: 1,
+      bravery: 1,
+      experience: 0
+    };
+
+  return {
+    isNPC: false,
+    isPlayer: true,
+    id,
+    name,
+    inventory: [],
+    attributes: {
+      speed: minAttributes.speed,
+      gunAccuracy: minAttributes.gunAccuracy,
+      throwingAccuracy: minAttributes.throwingAccuracy,
+      strength: minAttributes.strength,
+      baseStrength: 10, // Default base strength
+      bravery: minAttributes.bravery,
+      experience: minAttributes.experience,
+    },
+    minAttributes: minAttributes,
+    maxAttributes: {
+      speed: 20,
+      gunAccuracy: 20,
+      throwingAccuracy: 20,
+      strength: 20,
+      baseStrength: 20,
+      bravery: 20,
+      experience: 10
+    },
+    wounds: [],
+    isUnconscious: false,
+  };
+};
+
+/**
+ * Resets the game state to its initial values.
+ * Clears character data, inventory, journal, and narrative state.
+ *
+ * @returns {GameEngineAction} - The action to reset the game state.
+ */
+export const resetGame = (): GameEngineAction => {
+  return {
+    type: "SET_STATE",
+    payload: {
+      character: createBaseCharacter('test_character', 'Test Character'),
+      inventory: [],
+      journal: [],
+      narrative: initialNarrativeState,
+      location: null,
+      isCombatActive: false,
+      combatState: undefined,
+      opponent: null,
+      gameProgress: 0,
+      npcs: [],
+      quests: [],
     },
   };
 };

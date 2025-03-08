@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useCampaignState } from "../components/CampaignStateManager";
-import { initialGameState } from "../types/campaign";
+import { initialGameState } from "../types/gameState";
 import { getAIResponse } from "../services/ai/gameService";
 import { INITIAL_INVENTORY } from "../utils/constants";
+import { StoryPointType, NarrativeDisplayMode, NarrativeState } from "../types/narrative.types";
 
 // Hook to handle game session initialization and state management
 export const useGameInitialization = () => {
@@ -56,7 +57,19 @@ export const useGameInitialization = () => {
             ...initialGameState,
             currentPlayer: characterData?.name || "", // Set currentPlayer to character's name
             character: characterData,
-            narrative: response.narrative,
+            narrative: {
+              currentStoryPoint: {
+                id: 'intro', // A unique ID for the initial story point
+                type: 'exposition' as StoryPointType, // Use the StoryPointType
+                title: 'Introduction', // A title
+                content: response.narrative, // The narrative text from the AI
+                choices: [], // No choices initially
+              },
+              availableChoices: [],
+              visitedPoints: ['intro'],
+              narrativeHistory: [response.narrative],
+              displayMode: 'standard' as NarrativeDisplayMode, // Assuming a default display mode, with type assertion
+            },
             location: response.location || { type: 'unknown' }, // Use a default LocationType object
             inventory: startingInventory,
             savedTimestamp: Date.now(),
@@ -68,14 +81,14 @@ export const useGameInitialization = () => {
         }
 
         // Use existing state if available
-        if (state.narrative && state.narrative.length > 0) {
+        if (state.narrative && state.narrative.currentStoryPoint !== null) {
           if (!state.suggestedActions?.length) {
             // If we need to generate new suggestions for existing state
             const response = await getAIResponse(
               `Based on the current situation, what are some actions ${
                 state.character?.name || "the player"
               } might take?`,
-              state.narrative,
+              state.narrative.currentStoryPoint?.content || "",
               state.inventory || []
             );
 
@@ -99,10 +112,23 @@ export const useGameInitialization = () => {
           "",
           state.inventory || []
         );
+        const existingCharacterNarrative: NarrativeState = {
+          currentStoryPoint: {
+            id: 'resume', // A unique ID for the resume story point
+            type: 'exposition' as StoryPointType,
+            title: 'Resuming Game',
+            content: response.narrative,
+            choices: [],
+          },
+          availableChoices: [],
+          visitedPoints: [], // We don't know the visited points here
+          narrativeHistory: [response.narrative], // Add to history
+          displayMode: 'standard' as NarrativeDisplayMode,
+        }
 
         return {
           ...state,
-          narrative: response.narrative,
+          narrative: existingCharacterNarrative,
           location: response.location || { type: 'unknown' }, // Use a default LocationType object
           inventory: INITIAL_INVENTORY,
           savedTimestamp: Date.now(),
@@ -114,7 +140,7 @@ export const useGameInitialization = () => {
         try {
           const fallbackResponse = await getAIResponse(
             "What are some basic actions the player could take right now?",
-            state.narrative || "",
+            state.narrative.currentStoryPoint?.content || "",
             state.inventory || []
           );
           return {

@@ -6,7 +6,8 @@ import { generateCharacterSummary, generateCompleteCharacter } from '../services
 import { generateName } from '../services/ai/nameGenerator';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from "../types/character";
-import { initialGameState } from "../types/campaign";
+import { initialGameState } from '../types/gameState';
+import { initialNarrativeState } from '../types/narrative.types';
 import { getStartingInventory } from "../utils/startingInventory";
 
 // Storage key for character creation progress
@@ -196,15 +197,20 @@ export function useCharacterCreation() {
             isClient: true,
             currentPlayer: character.id,
             npcs: [],
-            location: null, // No initial location
+            location: null,
+            narrative: initialNarrativeState,
           };
           saveGame(gameState);
           router.push("/game-session");
         }
-      } catch {
-        setError("Failed to process character data");
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          setError(`Failed to process character data: ${error.message}`);
+        } else {
+          setError(`Failed to process character data: An unknown error occurred`);
+        }
       } finally {
-        setIsGeneratingField(false); // Reset loading state
+        setIsGeneratingField(false);
       }
     },
     [character, showSummary, cleanupState, saveGame, router]

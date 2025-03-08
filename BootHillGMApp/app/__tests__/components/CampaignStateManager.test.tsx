@@ -1,5 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { CampaignStateProvider, useCampaignState } from '../../components/CampaignStateManager';
+import { initialNarrativeState } from '../../types/narrative.types';
 
 jest.mock('../../hooks/useAIInteractions', () => ({
   useAIInteractions: jest.fn().mockReturnValue({
@@ -54,7 +55,7 @@ describe('CampaignStateManager', () => {
     expect(result.current.state.currentPlayer).toBe('');
     expect(result.current.state.character).toBeNull();
     expect(result.current.state.location).toBeNull();
-    expect(result.current.state.narrative).toBe('');
+    expect(result.current.state.narrative).toEqual(initialNarrativeState);
     expect(result.current.state.inventory).toEqual([]);
     expect(result.current.state.npcs).toEqual([]);
     expect(result.current.state.quests).toEqual([]);
@@ -119,6 +120,24 @@ describe('CampaignStateManager', () => {
           bravery: 10,
           experience: 5
         },
+        minAttributes: {
+          speed: 5,
+          gunAccuracy: 5,
+          throwingAccuracy: 5,
+          strength: 5,
+          baseStrength: 5,
+          bravery: 5,
+          experience: 5
+        },
+        maxAttributes: {
+          speed: 15,
+          gunAccuracy: 15,
+          throwingAccuracy: 15,
+          strength: 15,
+          baseStrength: 15,
+          bravery: 15,
+          experience: 15,
+        },
         wounds: [],
         isUnconscious: false,
         inventory: [],
@@ -126,11 +145,11 @@ describe('CampaignStateManager', () => {
         isPlayer: true
       },
       location: { type: 'town', name: 'Test Town' },
-      narrative: 'Test narrative',
+      narrative: initialNarrativeState,
       inventory: [{
         id: '1',
-        name: 'Test Item', 
-        quantity: 1, 
+        name: 'Test Item',
+        quantity: 1,
         description: 'A test item',
         category: 'general'
       }],
@@ -228,6 +247,24 @@ describe('CampaignStateManager', () => {
           bravery: 10,
           experience: 5
         },
+        minAttributes: {
+          speed: 5,
+          gunAccuracy: 5,
+          throwingAccuracy: 5,
+          strength: 5,
+          baseStrength: 5,
+          bravery: 5,
+          experience: 5
+        },
+        maxAttributes: {
+          speed: 15,
+          gunAccuracy: 15,
+          throwingAccuracy: 15,
+          strength: 15,
+          baseStrength: 15,
+          bravery: 15,
+          experience: 15,
+        },
         wounds: [],
         isUnconscious: false,
         inventory: [],
@@ -235,7 +272,7 @@ describe('CampaignStateManager', () => {
         isPlayer: true
       },
       location: { type: 'town', name: 'Test Town' },
-      narrative: 'Test narrative',
+      narrative: initialNarrativeState,
       inventory: [{
         id: '1',
         name: 'Test Item',

@@ -2,6 +2,7 @@ import React from 'react';
 import { useCampaignState } from '../../components/CampaignStateManager';
 import { Character } from '../../types/character';
 import { createMockCharacter, initialCharacter } from './characterData';
+import { initialNarrativeState } from '../../types/narrative.types';
 
 type CharacterFieldKey = keyof Character['attributes'] | 'name';
 
@@ -39,7 +40,7 @@ function useCharacterCreationHandler() {
             npcs: [],
             location: null,
             quests: [],
-            narrative: '',
+            narrative: initialNarrativeState,
             gameProgress: 0,
             journal: [],
             isCombatActive: false,

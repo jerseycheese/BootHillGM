@@ -4,6 +4,7 @@ import { JournalEntry } from './journal';
 import { SuggestedAction } from './campaign';
 import { CombatState } from './combat';
 import { LocationType } from '../services/locationService';
+import { NarrativeState, initialNarrativeState } from './narrative.types';
 
 export interface GameState {
   currentPlayer: string;
@@ -12,7 +13,7 @@ export interface GameState {
   inventory: InventoryItem[];
   quests: string[];
   character: Character | null;
-  narrative: string;
+  narrative: NarrativeState;
   gameProgress: number;
   journal: JournalEntry[];
   isCombatActive: boolean;
@@ -31,7 +32,7 @@ export const initialGameState: GameState = {
   inventory: [],
   quests: [],
   character: null,
-  narrative: '',
+  narrative: initialNarrativeState,
   gameProgress: 0,
   journal: [],
   isCombatActive: false,
@@ -39,5 +40,5 @@ export const initialGameState: GameState = {
   savedTimestamp: undefined,
   isClient: false,
   suggestedActions: [],
-  combatState: undefined
+  combatState: undefined,
 };

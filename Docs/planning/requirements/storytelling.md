@@ -3,7 +3,7 @@ title: Storytelling System Requirements
 aliases: [Storytelling Requirements, Narrative System Specs]
 tags: [requirements, storytelling, narrative, specifications, planning]
 created: 2024-12-28
-updated: 2024-12-28
+updated: 2025-03-07
 ---
 
 # Storytelling System Requirements
@@ -35,24 +35,32 @@ This document outlines the technical requirements and specifications for the Boo
 
 ### Story State
 ```typescript
-interface StoryState {
-  currentScene: Scene;
-  activeCharacters: Character[];
-  worldState: WorldState;
-  storyFlags: Map<string, boolean>;
-  relationshipGraph: CharacterRelationship[];
-  eventHistory: StoryEvent[];
+export interface NarrativeState {
+  currentStoryPoint: StoryPoint | null;
+  visitedPoints: string[];
+  availableChoices: NarrativeChoice[];
+  narrativeHistory: string[];
+  displayMode: NarrativeDisplayMode;
+  narrativeContext?: NarrativeContext;
+  selectedChoice?: string;
 }
-```
 
-### Narrative Components
-```typescript
-interface NarrativeElement {
-  type: ElementType;
-  content: string;
-  context: StoryContext;
-  metadata: NarrativeMetadata;
-  triggers?: StoryTrigger[];
+export interface NarrativeContext {
+  tone?: 'serious' | 'lighthearted' | 'tense' | 'mysterious';
+  characterFocus: string[];
+  themes: string[];
+  worldContext: string;
+  importantEvents: string[];
+  playerChoices: Array<{
+    choice: string;
+    consequence: string;
+    timestamp: number;
+  }>;
+  storyPoints: Record<string, StoryPoint>;
+  narrativeArcs: Record<string, NarrativeArc>;
+  narrativeBranches: Record<string, NarrativeBranch>;
+  currentArcId?: string;
+  currentBranchId?: string;
 }
 ```
 

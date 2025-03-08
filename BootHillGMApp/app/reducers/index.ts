@@ -1,38 +1,48 @@
-import { GameState } from '../types/gameState';
+import { GameState, initialGameState } from '../types/gameState';
 import { GameEngineAction } from '../types/gameActions';
 import { inventoryReducer } from './inventory/inventoryReducer';
+import { narrativeReducer } from './narrativeReducer';
 import { gameReducer as baseGameReducer } from './gameReducer';
+import { NarrativeAction } from '../types/narrative.types';
 
-// Placeholder imports for other reducers
-// import { characterReducer } from './character/characterReducer';
-// import { combatReducer } from './combat/combatReducer';
-// import { journalReducer } from './journal/journalReducer';
+function combinedReducer(state: GameState = initialGameState, action: GameEngineAction): GameState {
+  let nextState = baseGameReducer(state, action);
 
-type Reducer = (state: GameState, action: GameEngineAction) => GameState;
-type PartialReducer = (state: Partial<GameState>, action: GameEngineAction) => Partial<GameState>;
+  if (
+    action.type === 'ADD_ITEM' ||
+    action.type === 'REMOVE_ITEM' ||
+    action.type === 'USE_ITEM' ||
+    action.type === 'UPDATE_ITEM_QUANTITY' ||
+    action.type === 'CLEAN_INVENTORY' ||
+    action.type === 'SET_INVENTORY' ||
+    action.type === 'EQUIP_WEAPON' ||
+    action.type === 'UNEQUIP_WEAPON'
+  ) {
+    nextState = {
+      ...nextState,
+      ...inventoryReducer(nextState, action),
+    };
+  }
 
-function combineReducers(reducers: Record<string, Reducer | PartialReducer>) {
-  return function(state: GameState, action: GameEngineAction): GameState {
-    let nextState: GameState = state;
+  if (
+    action.type === 'NAVIGATE_TO_POINT' ||
+    action.type === 'SELECT_CHOICE' ||
+    action.type === 'ADD_NARRATIVE_HISTORY' ||
+    action.type === 'SET_DISPLAY_MODE' ||
+    action.type === 'START_NARRATIVE_ARC' ||
+    action.type === 'COMPLETE_NARRATIVE_ARC' ||
+    action.type === 'ACTIVATE_BRANCH' ||
+    action.type === 'COMPLETE_BRANCH' ||
+    action.type === 'UPDATE_NARRATIVE_CONTEXT' ||
+    action.type === 'RESET_NARRATIVE'
+  ) {
+    nextState = {
+      ...nextState,
+      ...narrativeReducer(nextState, action as NarrativeAction),
+    };
+  }
 
-    for (const key in reducers) {
-      if (Object.hasOwn(reducers, key)) {
-        const reducer = reducers[key];
-        // Provide each reducer with the relevant slice of the state
-        const previousStateForKey = state;
-        const nextStateForKey = reducer(previousStateForKey, action);
-        nextState = { ...nextState, ...nextStateForKey };
-      }
-    }
-
-    return nextState;
-  };
+  return nextState;
 }
 
-const rootReducer = combineReducers({
-  // TODO: Add other reducers here
-  inventory: inventoryReducer,
-  game: baseGameReducer,
-});
-
-export default rootReducer;
+export default combinedReducer;

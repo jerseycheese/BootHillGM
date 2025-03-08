@@ -25,7 +25,7 @@ export function MainGameArea({
         <NarrativeDisplay
           id="bhgmNarrativeDisplay"
           data-testid="narrative-display"
-          narrative={state.narrative}
+          narrative={state.narrative.narrativeHistory.join('\n')}
           error={error}
           onRetry={retryLastAction}
         />
