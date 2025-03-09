@@ -1,0 +1,130 @@
+/* 
+ * Story Point Styling
+ * Styling for story points in the narrative display
+ */
+
+.story-point {
+  position: relative;
+  padding: 0.75rem;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-left: 4px solid transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+.story-point:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.story-point-title {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+}
+
+.story-point-title::before {
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  background-color: var(--story-point-color, #4A90E2);
+}
+
+.story-point-description {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.story-point-meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  opacity: 0.7;
+}
+
+.story-point-characters {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.story-point-timestamp {
+  font-style: italic;
+}
+
+/* Significance coloring */
+.story-point.major {
+  border-left-color: #E25A4A;
+  --story-point-color: #E25A4A;
+}
+
+.story-point.minor {
+  border-left-color: #4A90E2;
+  --story-point-color: #4A90E2;
+}
+
+.story-point.background {
+  border-left-color: #45B36B;
+  --story-point-color: #45B36B;
+}
+
+.story-point.character {
+  border-left-color: #A64AE2;
+  --story-point-color: #A64AE2;
+}
+
+.story-point.milestone {
+  border-left-color: #E2CF4A;
+  --story-point-color: #E2CF4A;
+  background-color: rgba(226, 207, 74, 0.1);
+}
+
+/* Milestone animation */
+.story-point.milestone::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: radial-gradient(circle, rgba(226, 207, 74, 0.1) 0%, rgba(226, 207, 74, 0) 70%);
+  border-radius: 0.5rem;
+  opacity: 0;
+  animation: milestone-pulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes milestone-pulse {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Badge styling */
+.story-point-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  background-color: var(--story-point-color, #4A90E2);
+  color: white;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .story-point {
+    padding: 0.5rem;
+  }
+  
+  .story-point-meta {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}

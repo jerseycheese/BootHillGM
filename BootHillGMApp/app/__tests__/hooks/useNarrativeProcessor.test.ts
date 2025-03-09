@@ -1,18 +1,58 @@
 import React from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { NarrativeDisplay } from '../../components/NarrativeDisplay';
+import { CampaignStateContext } from '../../components/CampaignStateManager';
+import { initialNarrativeState } from '../../types/narrative.types';
+import { initialGameState } from '../../types/gameState';
 
 describe('Narrative Processing', () => {
+  // Create a test wrapper function that provides the CampaignStateContext
+  const renderWithContext = (ui: React.ReactElement) => {
+    const mockState = {
+      ...initialGameState,
+      narrative: {
+        ...initialNarrativeState,
+        storyProgression: {
+          currentPoint: null,
+          progressionPoints: {},
+          mainStorylinePoints: [],
+          branchingPoints: {},
+          lastUpdated: Date.now()
+        }
+      }
+    };
+
+    const mockContextValue = {
+      state: mockState,
+      dispatch: jest.fn(),
+      saveGame: jest.fn(),
+      loadGame: jest.fn(),
+      cleanupState: jest.fn()
+    };
+
+    return render(
+      React.createElement(
+        CampaignStateContext.Provider,
+        { value: mockContextValue },
+        ui
+      )
+    );
+  };
+
   it('processes player actions correctly', () => {
-    render(React.createElement(NarrativeDisplay, { narrative: "Player: swings the sword" }));
-    const playerActionContainer = screen.getByTestId('player-action');
+    renderWithContext(
+      React.createElement(NarrativeDisplay, { narrative: "Player: swings the sword" })
+    );
+    const playerActionContainer = screen.getByTestId('narrative-item-player-action');
     const playerAction = within(playerActionContainer).getByText(/swings the sword/);
     expect(playerAction).toHaveClass('narrative-player-action');
   });
 
   it('processes GM responses correctly', () => {
-    render(React.createElement(NarrativeDisplay, { narrative: "GM: The sword hits its target" }));
-    const gmResponseContainer = screen.getByTestId('gm-response');
+    renderWithContext(
+      React.createElement(NarrativeDisplay, { narrative: "GM: The sword hits its target" })
+    );
+    const gmResponseContainer = screen.getByTestId('narrative-item-gm-response');
     const gmResponse = within(gmResponseContainer).getByText(/The sword hits its target/);
     expect(gmResponse).toHaveClass('narrative-gm-response');
   });
@@ -23,7 +63,9 @@ describe('Narrative Processing', () => {
       GM: You find some items
       ACQUIRED_ITEMS: gold pouch, silver dagger
     `;
-    render(React.createElement(NarrativeDisplay, { narrative }));
+    renderWithContext(
+      React.createElement(NarrativeDisplay, { narrative })
+    );
     const itemUpdates = screen.getAllByTestId('item-update-acquired');
     expect(itemUpdates).toHaveLength(1);
     expect(itemUpdates[0]).toHaveTextContent('Acquired Items: gold pouch, silver dagger');
@@ -34,7 +76,9 @@ describe('Narrative Processing', () => {
       Player: uses the healing potion
       REMOVED_ITEMS: healing potion
     `;
-    render(React.createElement(NarrativeDisplay, { narrative }));
+    renderWithContext(
+      React.createElement(NarrativeDisplay, { narrative })
+    );
     const itemUpdate = screen.getByTestId('item-update-used');
     expect(itemUpdate).toHaveTextContent('Used/Removed Items: healing potion');
   });
@@ -51,11 +95,13 @@ describe('Narrative Processing', () => {
       GM: You notice a hidden switch
     `;
 
-    render(React.createElement(NarrativeDisplay, { narrative }));
+    renderWithContext(
+      React.createElement(NarrativeDisplay, { narrative })
+    );
 
-    const playerActions = screen.getAllByTestId('player-action');
-    const gmResponses = screen.getAllByTestId('gm-response');
-    const narratives = screen.getAllByTestId('narrative-line');
+    const playerActions = screen.getAllByTestId('narrative-item-player-action');
+    const gmResponses = screen.getAllByTestId('narrative-item-gm-response');
+    const narratives = screen.getAllByTestId('narrative-item-narrative');
 
     expect(playerActions).toHaveLength(3);
     expect(gmResponses).toHaveLength(3);
@@ -73,7 +119,9 @@ describe('Narrative Processing', () => {
       SUGGESTED_ACTIONS: examine items, move forward
       The room is dimly lit
     `;
-    render(React.createElement(NarrativeDisplay, { narrative }));
+    renderWithContext(
+      React.createElement(NarrativeDisplay, { narrative })
+    );
 
     expect(screen.getByTestId('narrative-display')).not.toHaveTextContent('SUGGESTED_ACTIONS');
     expect(screen.getByText(/looks around/)).toHaveClass('narrative-player-action');
@@ -88,7 +136,9 @@ describe('Narrative Processing', () => {
       Player: attacks the goblin
       GM: Your attack hits true
     `;
-    render(React.createElement(NarrativeDisplay, { narrative }));
+    renderWithContext(
+      React.createElement(NarrativeDisplay, { narrative })
+    );
 
     const playerActions = screen.getAllByText(/draws sword|attacks the goblin/);
     const gmResponses = screen.getAllByText(/You ready your weapon|Your attack hits true/);
@@ -107,7 +157,9 @@ describe('Narrative Processing', () => {
       Player: drinks the potion
       REMOVED_ITEMS: healing potion
     `;
-    render(React.createElement(NarrativeDisplay, { narrative }));
+    renderWithContext(
+      React.createElement(NarrativeDisplay, { narrative })
+    );
 
     const itemUpdates = screen.getAllByTestId('item-update-acquired');
     const removedUpdate = screen.getByTestId('item-update-used');

@@ -10,6 +10,7 @@
 import { useRef, useEffect, useMemo, useCallback } from 'react';
 import { NarrativeContent } from './NarrativeContent';
 import { cleanText } from '../utils/textCleaningUtils';
+import { useStoryProgression } from '../hooks/useStoryProgression';
 import '../styles/narrative.css';
 
 export interface NarrativeDisplayProps {
@@ -30,7 +31,6 @@ export interface NarrativeItem {
     isEmpty?: boolean;
   };
 }
-
 export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   narrative,
   error,
@@ -39,6 +39,20 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabled = useRef<boolean>(true);
   const processedUpdatesRef = useRef<Set<string>>(new Set());
+  // Add story progression hook
+    const { mainStoryline, storyProgression } = useStoryProgression();
+
+    // Determine if a narrative item is a key story point
+    const isKeyStoryPoint = useCallback((content: string) => {
+      console.log("mainStorylinePoints:", mainStoryline);
+      if (!mainStoryline.length) return false;
+
+      // Check if the content matches any story point description or title
+      return mainStoryline.some((pointId: string) => {
+        const point = storyProgression.progressionPoints[pointId];
+        return point && (content.includes(point.description) || content.includes(point.title));
+    });
+}, [mainStoryline, storyProgression.progressionPoints]);
 
   // Use useMemo unconditionally at the top level, and handle the conditional logic inside
   const narrativeItems = useMemo(() => {
@@ -174,11 +188,15 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
           if (item.type === 'item-update' && item.metadata?.updateType) {
             testId += `-${item.metadata.updateType}`;
           }
+          // Check if this is a key story point
+          const isStoryPoint = item.type === 'narrative' && isKeyStoryPoint(item.content);
+
           const element = (
             <NarrativeContent
               key={`${item.type}-${index}`}
               item={item}
               processedUpdates={processedUpdatesRef.current}
+              isKeyStoryPoint={isStoryPoint}
               data-testid={testId}
             />
           );

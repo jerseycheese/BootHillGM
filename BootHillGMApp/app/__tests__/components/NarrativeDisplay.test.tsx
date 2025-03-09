@@ -3,6 +3,40 @@ import { render, screen } from '@testing-library/react';
 import { NarrativeDisplay } from '../../components/NarrativeDisplay';
 import { NarrativeContent } from '../../components/NarrativeContent';
 import { NarrativeItem } from '../../components/NarrativeDisplay';
+import { CampaignStateContext } from '../../components/CampaignStateManager';
+import { initialNarrativeState } from '../../types/narrative.types';
+import { initialGameState } from '../../types/gameState';
+
+// Create a test wrapper that provides the CampaignStateContext
+const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const mockState = {
+    ...initialGameState,
+    narrative: {
+      ...initialNarrativeState,
+      storyProgression: {
+        currentPoint: null,
+        progressionPoints: {},
+        mainStorylinePoints: [],
+        branchingPoints: {},
+        lastUpdated: Date.now()
+      }
+    }
+  };
+
+  const mockContextValue = {
+    state: mockState,
+    dispatch: jest.fn(),
+    saveGame: jest.fn(),
+    loadGame: jest.fn(),
+    cleanupState: jest.fn()
+  };
+
+  return (
+    <CampaignStateContext.Provider value={mockContextValue}>
+      {children}
+    </CampaignStateContext.Provider>
+  );
+};
 
 describe('Narrative System', () => {
   describe('NarrativeDisplay Integration', () => {
@@ -15,16 +49,20 @@ describe('Narrative System', () => {
         SUGGESTED_ACTIONS: [{"text": "Fire weapon", "type": "combat"}]
       `;
       
-      render(<NarrativeDisplay narrative={narrative} />);
+      render(
+        <TestWrapper>
+          <NarrativeDisplay narrative={narrative} />
+        </TestWrapper>
+      );
       
       // Check player actions
-      const playerActions = screen.getAllByTestId('player-action');
+      const playerActions = screen.getAllByTestId('narrative-item-player-action');
       expect(playerActions).toHaveLength(2);
       expect(playerActions[0]).toHaveTextContent('draws weapon');
       expect(playerActions[1]).toHaveTextContent('aims carefully');
       
       // Check GM response
-      expect(screen.getByTestId('gm-response')).toHaveTextContent('You ready your weapon');
+      expect(screen.getByTestId('narrative-item-gm-response')).toHaveTextContent('You ready your weapon');
       
       // Check item updates
       const itemUpdate = screen.getByTestId('item-update-acquired');
@@ -36,11 +74,13 @@ describe('Narrative System', () => {
       const mockRetry = jest.fn();
       
       render(
-        <NarrativeDisplay 
-          narrative="Test narrative"
-          error={mockError}
-          onRetry={mockRetry}
-        />
+        <TestWrapper>
+          <NarrativeDisplay
+            narrative="Test narrative"
+            error={mockError}
+            onRetry={mockRetry}
+          />
+        </TestWrapper>
       );
       
       const errorElement = screen.getByRole('alert');
@@ -89,10 +129,10 @@ describe('Narrative System', () => {
 
         switch(item.type) {
           case 'player-action':
-            expect(screen.getByTestId('player-action')).toHaveTextContent('draws weapon');
+            expect(screen.getByTestId('narrative-item-player-action')).toHaveTextContent('draws weapon');
             break;
           case 'gm-response':
-            expect(screen.getByTestId('gm-response')).toHaveTextContent('You ready your weapon');
+            expect(screen.getByTestId('narrative-item-gm-response')).toHaveTextContent('You ready your weapon');
             break;
           case 'item-update':
             expect(screen.getByTestId('item-update-acquired')).toHaveTextContent(/gun, bullets|bullets, gun/);

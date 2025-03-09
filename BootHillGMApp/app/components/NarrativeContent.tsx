@@ -21,15 +21,15 @@ interface StyleConfig {
 const STYLE_CONFIGS: Record<NarrativeItem['type'], StyleConfig> = {
   'player-action': {
     className: 'narrative-player-action border-l-4 pl-4 bg-opacity-5',
-    testId: 'player-action'
+    testId: 'narrative-item-player-action'
   },
   'gm-response': {
     className: 'narrative-gm-response',
-    testId: 'gm-response'
+    testId: 'narrative-item-gm-response'
   },
   'narrative': {
     className: 'narrative-text font-western-text leading-relaxed',
-    testId: 'narrative-line'
+    testId: 'narrative-item-narrative'
   },
   'item-update': {
     className: 'narrative-item-update',
@@ -74,7 +74,9 @@ const ItemUpdate: React.FC<{
 export const NarrativeContent: React.FC<{
   item: NarrativeItem;
   processedUpdates: Set<string>;
-}> = ({ item, processedUpdates }) => {
+  isKeyStoryPoint?: boolean;
+  "data-testid"?: string;
+}> = ({ item, processedUpdates, isKeyStoryPoint, "data-testid": testId }) => {
   if (item.type === 'item-update' && item.metadata) {
     return <ItemUpdate metadata={item.metadata} processedUpdates={processedUpdates} />;
   }
@@ -85,14 +87,17 @@ export const NarrativeContent: React.FC<{
     return null;
   }
 
-  const className = `my-2 ${config.className}`.trim();
+  const className = `my-2 ${config.className} ${isKeyStoryPoint ? 'story-point-highlight' : ''}`.trim();
 
   return (
-    <div 
+    <div
       className={className}
-      data-testid={config.testId}
+      data-testid={testId || config.testId}
       role={item.type === 'player-action' ? 'log' : undefined}
     >
+      {isKeyStoryPoint && (
+        <div className="story-point-marker">📌 Key Story Point</div>
+      )}
       {cleanText(item.content)}
     </div>
   );
