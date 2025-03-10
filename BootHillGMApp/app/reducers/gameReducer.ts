@@ -56,7 +56,7 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
   ) {
     return {
       ...state,
-      ...narrativeReducer(state, action),
+      narrative: narrativeReducer(state.narrative, action),
     };
   }
 

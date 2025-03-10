@@ -5,7 +5,6 @@ export const createMockLocalStorage = () => {
   return {
     getItem: jest.fn((key: string) => store[key] || null),
     setItem: jest.fn((key: string, value: string) => {
-      console.log('setItem called with key:', key, 'value:', value);
       store[key] = value.toString();
     }),
     removeItem: jest.fn((key: string) => {

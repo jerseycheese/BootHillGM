@@ -12,15 +12,27 @@ import {
   NarrativeChoice,
   NarrativeDisplayMode,
   initialNarrativeState,
+  NarrativeState,
 } from '../types/narrative.types';
 import { GameState } from '../types/gameState';
 
 /**
- * Initial state for the narrative reducer.
+ * Generates a default NarrativeContext object.
+ * @returns {NarrativeContext} A default NarrativeContext object.
  */
-const initialState: Pick<GameState, 'narrative'> = {
-  narrative: initialNarrativeState,
-};
+const defaultNarrativeContext = (): NarrativeContext => ({
+    tone: undefined,
+    characterFocus: [],
+    themes: [],
+    worldContext: '',
+    importantEvents: [],
+    playerChoices: [],
+    storyPoints: {},
+    narrativeArcs: {},
+    narrativeBranches: {},
+    currentArcId: undefined,
+    currentBranchId: undefined
+});
 
 /**
  * Validates that a story point exists in the current narrative.
@@ -37,9 +49,9 @@ const validateStoryPoint = (
 
 /**
  * Validates that a choice is available and valid for the current story point.
- * @param {string} choiceId - ID of the choice to validate.
- * @param {NarrativeChoice[]} availableChoices - Current available choices.
- * @returns {boolean} True if the choice is valid, false otherwise.
+ * @param choiceId - ID of the choice to validate.
+ * @param availableChoices - Current available choices.
+ * @returns True if the choice is valid, false otherwise.
  */
 const validateChoice = (
   choiceId: string,
@@ -50,8 +62,8 @@ const validateChoice = (
 
 /**
  * Updates the available choices based on the current story point.
- * @param {StoryPoint | null} storyPoint - Current story point.
- * @returns {NarrativeChoice[]} Array of available narrative choices.
+ * @param storyPoint - Current story point.
+ * @returns Array of available narrative choices.
  */
 const updateAvailableChoices = (
   storyPoint: StoryPoint | null
@@ -64,25 +76,21 @@ const updateAvailableChoices = (
 
 /**
  * Reducer function to handle narrative-related state updates.
- * @param {Partial<GameState>} state - The current game state.
+ * @param {NarrativeState} state - The current narrative state.
  * @param {NarrativeAction} action - The action to be processed.
- * @returns {Partial<GameState>} The updated game state.
+ * @returns {NarrativeState} The updated narrative state.
  */
 export function narrativeReducer(
-  state: Partial<GameState> = initialState,
+  state: NarrativeState = initialNarrativeState,
   action: NarrativeAction
-): Partial<GameState> {
-  // Ensure narrative state exists
-  const narrative = state.narrative || initialNarrativeState;
-
+): NarrativeState {
   switch (action.type) {
     case 'NAVIGATE_TO_POINT': {
       // Ensure we have story points available - this would come from a loaded narrative
-      const storyPoints = narrative.narrativeContext?.storyPoints || {};
+      const storyPoints = state.narrativeContext?.storyPoints || {};
 
       if (!validateStoryPoint(action.payload, storyPoints)) {
         // TODO: Replace with a more robust error handling mechanism (e.g., dispatch an error action)
-        console.error(`Invalid story point ID: ${action.payload}`);
         return state;
       }
 
@@ -90,29 +98,30 @@ export function narrativeReducer(
       const updatedChoices = updateAvailableChoices(newStoryPoint);
 
       // Add current point to visited points if not already there
-      const visitedPoints = narrative.visitedPoints.includes(action.payload)
-        ? narrative.visitedPoints
-        : [...narrative.visitedPoints, action.payload];
+      const visitedPoints =
+        Array.isArray(state.visitedPoints) &&
+        state.visitedPoints.includes(action.payload)
+          ? state.visitedPoints
+          : [
+              ...(Array.isArray(state.visitedPoints) ? state.visitedPoints : []),
+              action.payload,
+            ];
 
       return {
         ...state,
-        narrative: {
-          ...narrative,
-          currentStoryPoint: newStoryPoint,
-          availableChoices: updatedChoices,
-          visitedPoints,
-        },
+        currentStoryPoint: newStoryPoint,
+        availableChoices: updatedChoices,
+        visitedPoints,
       };
     }
 
     case 'SELECT_CHOICE': {
-      if (!validateChoice(action.payload, narrative.availableChoices)) {
+      if (!validateChoice(action.payload, state.availableChoices)) {
         // TODO: Replace with a more robust error handling mechanism (e.g., dispatch an error action)
-        console.error(`Invalid choice ID: ${action.payload}`);
         return state;
       }
 
-      const selectedChoice = narrative.availableChoices.find(
+      const selectedChoice = state.availableChoices.find(
         (choice) => choice.id === action.payload
       );
 
@@ -124,40 +133,30 @@ export function narrativeReducer(
       // The navigation will be handled by a separate NAVIGATE_TO_POINT action
       return {
         ...state,
-        narrative: {
-          ...narrative,
-          selectedChoice: selectedChoice.id,
-        },
+        selectedChoice: selectedChoice.id,
       };
     }
 
     case 'ADD_NARRATIVE_HISTORY': {
       return {
         ...state,
-        narrative: {
-          ...narrative,
-          narrativeHistory: [...narrative.narrativeHistory, action.payload],
-        },
+        narrativeHistory: [...state.narrativeHistory, action.payload],
       };
     }
 
     case 'SET_DISPLAY_MODE': {
       return {
         ...state,
-        narrative: {
-          ...narrative,
-          displayMode: action.payload,
-        },
+        displayMode: action.payload,
       };
     }
 
     case 'START_NARRATIVE_ARC': {
-      const arcs = narrative.narrativeContext?.narrativeArcs || {};
+      const arcs = state.narrativeContext?.narrativeArcs || {};
       const arc = arcs[action.payload];
 
       if (!arc) {
         // TODO: Replace with a more robust error handling mechanism (e.g., dispatch an error action)
-        console.error(`Invalid narrative arc ID: ${action.payload}`);
         return state;
       }
 
@@ -171,21 +170,17 @@ export function narrativeReducer(
       };
 
       const startingBranchId = arc.startingBranch;
-      const branches = narrative.narrativeContext?.narrativeBranches || {};
+      const branches = state.narrativeContext?.narrativeBranches || {};
 
       // Always set currentBranchId if startingBranchId is present
       // Provide default values for required NarrativeContext properties
       const updatedNarrativeContext: NarrativeContext = {
-        ...(narrative.narrativeContext || {
-          characterFocus: [],
-          themes: [],
-          worldContext: '',
-          importantEvents: [],
-          playerChoices: [],
-          storyPoints: {},
-          narrativeArcs: {},
-          narrativeBranches: {},
-        }),
+        ...defaultNarrativeContext(),
+        ...(state.narrativeContext || { characterFocus: [] }),
+        characterFocus: state.narrativeContext?.characterFocus ?? [],
+        themes: state.narrativeContext?.themes ?? [],
+        importantEvents: state.narrativeContext?.importantEvents ?? [],
+        playerChoices: state.narrativeContext?.playerChoices ?? [],
         narrativeArcs: updatedArcs,
         currentArcId: action.payload,
         currentBranchId: startingBranchId ? startingBranchId : undefined,
@@ -205,15 +200,12 @@ export function narrativeReducer(
 
       return {
         ...state,
-        narrative: {
-          ...narrative,
-          narrativeContext: updatedNarrativeContext,
-        },
+        narrativeContext: updatedNarrativeContext,
       };
     }
 
     case 'COMPLETE_NARRATIVE_ARC': {
-      const arcs = narrative.narrativeContext?.narrativeArcs || {};
+      const arcs = state.narrativeContext?.narrativeArcs || {};
       const arc = arcs[action.payload];
 
       if (!arc) {
@@ -233,18 +225,21 @@ export function narrativeReducer(
 
       return {
         ...state,
-        narrative: {
-          ...narrative,
-          narrativeContext: {
-            ...(narrative.narrativeContext || {}),
-            narrativeArcs: updatedArcs,
-          } as NarrativeContext,
+        narrativeContext: {
+          ...defaultNarrativeContext(),
+          ...(state.narrativeContext || {}),
+          narrativeArcs: updatedArcs,
+          characterFocus: state.narrativeContext?.characterFocus ?? [],
+          themes: state.narrativeContext?.themes ?? [],
+          worldContext: state.narrativeContext?.worldContext ?? '',
+          importantEvents: state.narrativeContext?.importantEvents ?? [],
+          playerChoices: state.narrativeContext?.playerChoices ?? []
         },
       };
     }
 
     case 'ACTIVATE_BRANCH': {
-      const branches = narrative.narrativeContext?.narrativeBranches || {};
+      const branches = state.narrativeContext?.narrativeBranches || {};
       const branch = branches[action.payload];
 
       if (!branch) {
@@ -264,19 +259,17 @@ export function narrativeReducer(
 
       return {
         ...state,
-        narrative: {
-          ...narrative,
-          narrativeContext: {
-            ...(narrative.narrativeContext || {}),
-            narrativeBranches: updatedBranches,
-            currentBranchId: action.payload,
-          } as NarrativeContext,
+        narrativeContext: {
+          ...defaultNarrativeContext(),
+          ...(state.narrativeContext || {}),
+          narrativeBranches: updatedBranches,
+          currentBranchId: action.payload,
         },
       };
     }
 
     case 'COMPLETE_BRANCH': {
-      const branches = narrative.narrativeContext?.narrativeBranches || {};
+      const branches = state.narrativeContext?.narrativeBranches || {};
       const branch = branches[action.payload];
 
       if (!branch) {
@@ -297,12 +290,14 @@ export function narrativeReducer(
 
       return {
         ...state,
-        narrative: {
-          ...narrative,
-          narrativeContext: {
-            ...(narrative.narrativeContext || {}),
-            narrativeBranches: updatedBranches,
-          } as NarrativeContext,
+        narrativeContext: {
+          ...defaultNarrativeContext(),
+          ...(state.narrativeContext || {}),
+          narrativeBranches: updatedBranches,
+          characterFocus: state.narrativeContext?.characterFocus ?? [],
+          themes: state.narrativeContext?.themes ?? [],
+          importantEvents: state.narrativeContext?.importantEvents ?? [],
+          playerChoices: state.narrativeContext?.playerChoices ?? []
         },
       };
     }
@@ -310,29 +305,26 @@ export function narrativeReducer(
     case 'UPDATE_NARRATIVE_CONTEXT': {
       return {
         ...state,
-        narrative: {
-          ...narrative,
-          narrativeContext: {
-            ...(narrative.narrativeContext || {}),
-            ...action.payload,
-          } as NarrativeContext,
+        narrativeContext: {
+          ...defaultNarrativeContext(),
+          ...(state.narrativeContext || {}),
+          ...action.payload,
+          // Ensure array properties are properly initialized
+          characterFocus: action.payload.characterFocus ?? state.narrativeContext?.characterFocus ?? [],
+          themes: action.payload.themes ?? state.narrativeContext?.themes ?? [],
+          importantEvents: action.payload.importantEvents ?? state.narrativeContext?.importantEvents ?? [],
+          playerChoices: action.payload.playerChoices ?? state.narrativeContext?.playerChoices ?? []
         },
       };
     }
 
     case 'RESET_NARRATIVE': {
-      return {
-        ...state,
-        narrative: initialNarrativeState,
-      };
+      return initialNarrativeState;
     }
     case 'UPDATE_NARRATIVE': {
       return {
        ...state,
-        narrative: {
-          ...narrative,
-          ...action.payload,
-        },
+        ...action.payload,
       };
     }
 
@@ -343,8 +335,8 @@ export function narrativeReducer(
 
 /**
  * Action creator for navigating to a specific story point.
- * @param {string} storyPointId - ID of the story point to navigate to.
- * @returns {NarrativeAction} Narrative action object.
+ * @param storyPointId - ID of the story point to navigate to.
+ * @returns Narrative action object.
  */
 export const navigateToPoint = (storyPointId: string): NarrativeAction => ({
   type: 'NAVIGATE_TO_POINT',
@@ -353,8 +345,8 @@ export const navigateToPoint = (storyPointId: string): NarrativeAction => ({
 
 /**
  * Action creator for selecting a narrative choice.
- * @param {string} choiceId - ID of the choice to select.
- * @returns {NarrativeAction} Narrative action object.
+ * @param choiceId - ID of the choice to select.
+ * @returns Narrative action object.
  */
 export const selectChoice = (choiceId: string): NarrativeAction => ({
   type: 'SELECT_CHOICE',
@@ -440,3 +432,28 @@ export const updateNarrativeContext = (
 export const resetNarrative = (): NarrativeAction => ({
   type: 'RESET_NARRATIVE',
 });
+
+/**
+ * Test wrapper for the narrative reducer that handles nested state structures.
+ * This is only used in tests and should not be used in production code.
+ *
+ * @param state - The state to pass to the reducer, which may be a nested structure
+ * @param action - The action to dispatch
+ * @returns The updated state with the same structure as the input
+ */
+export function testNarrativeReducer(
+  state: NarrativeState | Partial<GameState> = initialNarrativeState,
+  action: NarrativeAction
+): NarrativeState | Partial<GameState> {
+  // Handle the case where state is a GameState with a narrative property
+  if ('narrative' in state && state.narrative) {
+    const updatedNarrative = narrativeReducer(state.narrative, action);
+    return {
+      ...state,
+      narrative: updatedNarrative
+    };
+  }
+  
+  // Handle the case where state is a NarrativeState directly
+  return narrativeReducer(state as NarrativeState, action);
+}

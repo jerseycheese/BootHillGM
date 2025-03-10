@@ -44,7 +44,6 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
 
     // Determine if a narrative item is a key story point
     const isKeyStoryPoint = useCallback((content: string) => {
-      console.log("mainStorylinePoints:", mainStoryline);
       if (!mainStoryline.length) return false;
 
       // Check if the content matches any story point description or title

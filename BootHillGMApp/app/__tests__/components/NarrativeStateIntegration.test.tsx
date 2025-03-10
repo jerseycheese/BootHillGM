@@ -57,9 +57,7 @@ describe('Narrative State Integration', () => {
       narrative: savedNarrativeState,
       savedTimestamp: Date.now(), // Add a timestamp
     }
-    console.log("Setting localStorage:", JSON.stringify(savedState));
     localStorage.setItem('campaignState', JSON.stringify(savedState));
-    console.log("localStorage after setItem:", localStorage.getItem('campaignState'));
 
   const { getByText, getByTestId } = render(
       <CampaignStateProvider>

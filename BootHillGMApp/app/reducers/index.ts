@@ -38,7 +38,7 @@ function combinedReducer(state: GameState = initialGameState, action: GameEngine
   ) {
     nextState = {
       ...nextState,
-      ...narrativeReducer(nextState, action as NarrativeAction),
+      narrative: narrativeReducer(nextState.narrative, action as NarrativeAction),
     };
   }
 

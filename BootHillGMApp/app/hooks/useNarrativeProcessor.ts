@@ -16,7 +16,6 @@ import { LocationType } from '../services/locationService';
 export function useNarrativeProcessor(): UseNarrativeProcessorResult {
   const [processedSegments, setProcessedSegments] = useState<NarrativeSegment[]>([]);
   const storyProgressionResult = useStoryProgression();
-  console.log('useStoryProgression result:', Object.keys(storyProgressionResult));
   const { processNarrativeForStoryPoints } = storyProgressionResult;
 
   /**
