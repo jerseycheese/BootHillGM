@@ -60,7 +60,6 @@ export const NarrativeProvider: React.FC<NarrativeProviderProps> = ({
         const savedState = localStorage.getItem(NARRATIVE_STATE_STORAGE_KEY);
         if (savedState) {
           const parsedState = JSON.parse(savedState);
-          
           // Dispatch the state to the reducer
           dispatch({
             type: 'UPDATE_NARRATIVE',
@@ -100,9 +99,9 @@ export const NarrativeProvider: React.FC<NarrativeProviderProps> = ({
         if (!savedState) {
           return null;
         }
-        
+
         const parsedState = JSON.parse(savedState) as NarrativeState;
-        
+
         // Ensure we have all the required properties from initialNarrativeState
         return {
           ...initialNarrativeState,
@@ -155,17 +154,17 @@ export const NarrativeProvider: React.FC<NarrativeProviderProps> = ({
 
 /**
  * Custom hook to use the narrative context
- * 
+ *
  * @returns The narrative context value
  * @throws Error if used outside of a NarrativeProvider
  */
 export const useNarrative = (): NarrativeContextValue => {
   const context = useContext(NarrativeContext);
-  
+
   if (context === undefined) {
     throw new Error('useNarrative must be used within a NarrativeProvider');
   }
-  
+
   return context;
 };
 

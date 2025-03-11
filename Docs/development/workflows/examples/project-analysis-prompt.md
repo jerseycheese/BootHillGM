@@ -25,7 +25,7 @@ Based on these sources, help identify:
 - Value to effort assessment
 - Alignment with roadmap goals
 
-Please analyze the selected task using the format below.
+Please analyze the selected task using the format below. Don't make any file changes, I just want an implementation plan.
 
 TASK ANALYSIS
 GitHub Issue: #[number] [title]

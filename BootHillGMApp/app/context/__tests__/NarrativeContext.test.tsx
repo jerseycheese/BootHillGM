@@ -27,6 +27,7 @@ Object.defineProperty(window, 'localStorage', {
 describe('NarrativeContext', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
     mockLocalStorage.clear();
   });
 

@@ -12,9 +12,12 @@ import {
   completeBranch,
   updateNarrativeContext,
   resetNarrative,
+  presentDecision,
+  recordDecision,
+  clearCurrentDecision,
   testNarrativeReducer as narrativeReducer
 } from '../reducers/narrativeReducer';
-import { initialNarrativeState, StoryPoint } from '../types/narrative.types';
+import { initialNarrativeState, StoryPoint, DecisionImportance } from '../types/narrative.types';
 import { GameState } from '../types/gameState';
 import { NarrativeState } from '../types/narrative.types';
 
@@ -72,7 +75,9 @@ describe('narrativeReducer', () => {
           themes: ['western'],
           worldContext: 'Wild West town',
           importantEvents: [],
-          playerChoices: [],
+          activeDecision: undefined,
+          pendingDecisions: [],
+          decisionHistory: [],
           storyPoints: mockStoryPoints,
           narrativeArcs: {
             'arc1': {
@@ -238,5 +243,81 @@ describe('narrativeReducer', () => {
           const narrativeState = getNarrativeState(newState);
           expect(narrativeState).toEqual(initialNarrativeState);
       });
+  });
+  
+  describe('Decision tracking actions', () => {
+    it('should handle PRESENT_DECISION action', () => {
+      const mockDecision = {
+        id: 'decision1',
+        prompt: 'Test prompt',
+        timestamp: Date.now(),
+        options: [
+          { id: 'option1', text: 'Option 1', impact: 'Impact 1' },
+          { id: 'option2', text: 'Option 2', impact: 'Impact 2' }
+        ],
+        context: 'Test context',
+        importance: 'moderate' as DecisionImportance,
+        aiGenerated: true
+      };
+      
+      const action = presentDecision(mockDecision);
+      const newState = narrativeReducer(initialState, action);
+      const narrativeState = getNarrativeState(newState);
+      
+      expect(narrativeState?.currentDecision).toEqual(mockDecision);
+    });
+
+    it('should handle RECORD_DECISION action', () => {
+      // Setup state with a current decision
+      const mockDecision = {
+        id: 'decision1',
+        prompt: 'Test prompt',
+        timestamp: Date.now(),
+        options: [
+          { id: 'option1', text: 'Option 1', impact: 'Impact 1' },
+          { id: 'option2', text: 'Option 2', impact: 'Impact 2' }
+        ],
+        context: 'Test context',
+        importance: 'moderate' as DecisionImportance,
+        aiGenerated: true
+      };
+      
+      let state = narrativeReducer(initialState, presentDecision(mockDecision));
+      
+      // Record the decision
+      const action = recordDecision('decision1', 'option1', 'Test narrative');
+      state = narrativeReducer(state, action);
+      const narrativeState = getNarrativeState(state);
+      
+      // Verify the decision was recorded and current decision was cleared
+      expect(narrativeState?.currentDecision).toBeUndefined();
+      expect(narrativeState?.narrativeContext?.decisionHistory.length).toBe(1);
+    });
+
+    it('should handle CLEAR_CURRENT_DECISION action', () => {
+      // Setup state with a current decision
+      const mockDecision = {
+        id: 'decision1',
+        prompt: 'Test prompt',
+        timestamp: Date.now(),
+        options: [
+          { id: 'option1', text: 'Option 1', impact: 'Impact 1' },
+          { id: 'option2', text: 'Option 2', impact: 'Impact 2' }
+        ],
+        context: 'Test context',
+        importance: 'moderate' as DecisionImportance,
+        aiGenerated: true
+      };
+      
+      let state = narrativeReducer(initialState, presentDecision(mockDecision));
+      
+      // Clear the decision
+      const action = clearCurrentDecision();
+      state = narrativeReducer(state, action);
+      const narrativeState = getNarrativeState(state);
+      
+      // Verify the decision was cleared
+      expect(narrativeState?.currentDecision).toBeUndefined();
+    });
   });
 });

@@ -248,3 +248,87 @@ const NarrativeComponent = () => {
   // Rest of component...
 };
 ```
+
+## 7. Using the Player Decision Tracking System
+
+This section demonstrates how to create, present, and record player decisions using the `NarrativeContext` and related utility functions.
+
+```typescript
+// In your component
+import { useNarrative } from '../context/NarrativeContext';
+import {
+  presentDecision,
+  recordDecision,
+  clearCurrentDecision,
+} from '../reducers/narrativeReducer';
+import {
+  createDecision,
+  createDecisionOption,
+} from '../utils/decisionUtils';
+
+const DecisionComponent = () => {
+  const { state, dispatch } = useNarrative();
+
+  const handlePresentDecision = () => {
+    // Create decision options
+    const option1 = createDecisionOption(
+      'Go to the saloon',
+      'You might find some information at the saloon.'
+    );
+    const option2 = createDecisionOption(
+      'Visit the sheriff\'s office',
+      'The sheriff might have some leads.'
+    );
+
+    // Create the decision
+    const decision = createDecision(
+      'You arrive at a crossroads. Which way do you go?',
+      [option1, option2],
+      'The player has just arrived in town.',
+      'moderate',
+      { type: 'town', name: 'Dusty Gulch' }
+    );
+
+    // Present the decision to the player
+    dispatch(presentDecision(decision));
+  };
+
+  const handleRecordDecision = (selectedOptionId) => {
+    if (state.currentDecision) {
+      // Record the decision with a placeholder narrative for now
+      dispatch(
+        recordDecision(state.currentDecision.id, selectedOptionId, 'You chose an option.')
+      );
+    }
+  };
+
+  return (
+    <div>
+      {state.currentDecision ? (
+        <div>
+          <h2>{state.currentDecision.prompt}</h2>
+          <ul>
+            {state.currentDecision.options.map((option) => (
+              <li key={option.id}>
+                <button onClick={() => handleRecordDecision(option.id)}>
+                  {option.text}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <button onClick={handlePresentDecision}>Present Decision</button>
+      )}
+
+      <h3>Decision History:</h3>
+      <ul>
+        {state.narrativeContext?.decisionHistory.map((record, index) => (
+          <li key={index}>
+            Decision: {record.decisionId}, Option Chosen: {record.selectedOptionId}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};

@@ -13,8 +13,10 @@ import {
   NarrativeDisplayMode,
   initialNarrativeState,
   NarrativeState,
+  PlayerDecision,
 } from '../types/narrative.types';
 import { GameState } from '../types/gameState';
+import { createDecisionRecord } from '../utils/decisionUtils';
 
 /**
  * Generates a default NarrativeContext object.
@@ -26,12 +28,14 @@ const defaultNarrativeContext = (): NarrativeContext => ({
     themes: [],
     worldContext: '',
     importantEvents: [],
-    playerChoices: [],
     storyPoints: {},
     narrativeArcs: {},
     narrativeBranches: {},
     currentArcId: undefined,
-    currentBranchId: undefined
+    currentBranchId: undefined,
+    activeDecision: undefined, // Added
+    pendingDecisions: [],     // Added
+    decisionHistory: [],      // Added
 });
 
 /**
@@ -180,7 +184,6 @@ export function narrativeReducer(
         characterFocus: state.narrativeContext?.characterFocus ?? [],
         themes: state.narrativeContext?.themes ?? [],
         importantEvents: state.narrativeContext?.importantEvents ?? [],
-        playerChoices: state.narrativeContext?.playerChoices ?? [],
         narrativeArcs: updatedArcs,
         currentArcId: action.payload,
         currentBranchId: startingBranchId ? startingBranchId : undefined,
@@ -232,8 +235,7 @@ export function narrativeReducer(
           characterFocus: state.narrativeContext?.characterFocus ?? [],
           themes: state.narrativeContext?.themes ?? [],
           worldContext: state.narrativeContext?.worldContext ?? '',
-          importantEvents: state.narrativeContext?.importantEvents ?? [],
-          playerChoices: state.narrativeContext?.playerChoices ?? []
+          importantEvents: state.narrativeContext?.importantEvents ?? []
         },
       };
     }
@@ -296,34 +298,81 @@ export function narrativeReducer(
           narrativeBranches: updatedBranches,
           characterFocus: state.narrativeContext?.characterFocus ?? [],
           themes: state.narrativeContext?.themes ?? [],
-          importantEvents: state.narrativeContext?.importantEvents ?? [],
-          playerChoices: state.narrativeContext?.playerChoices ?? []
+          importantEvents: state.narrativeContext?.importantEvents ?? []
         },
       };
     }
 
     case 'UPDATE_NARRATIVE_CONTEXT': {
-      return {
+      const updatedContext = {
         ...state,
         narrativeContext: {
           ...defaultNarrativeContext(),
           ...(state.narrativeContext || {}),
           ...action.payload,
-          // Ensure array properties are properly initialized
           characterFocus: action.payload.characterFocus ?? state.narrativeContext?.characterFocus ?? [],
           themes: action.payload.themes ?? state.narrativeContext?.themes ?? [],
-          importantEvents: action.payload.importantEvents ?? state.narrativeContext?.importantEvents ?? [],
-          playerChoices: action.payload.playerChoices ?? state.narrativeContext?.playerChoices ?? []
+          importantEvents: action.payload.importantEvents ?? state.narrativeContext?.importantEvents ?? []
         },
       };
+      console.log('UPDATE_NARRATIVE action:', action.payload);
+      return updatedContext;
     }
+
 
     case 'RESET_NARRATIVE': {
       return initialNarrativeState;
     }
+    case 'PRESENT_DECISION': {
+      return {
+        ...state,
+        currentDecision: action.payload,
+      };
+    }
+
+    case 'RECORD_DECISION': {
+      // Ensure we have a decision to record and a context to store it in
+      if (!state.currentDecision || !state.narrativeContext) {
+        return state;
+      }
+
+      const { decisionId, selectedOptionId, narrative } = action.payload;
+      
+      // Verify this is for the current decision
+      if (state.currentDecision.id !== decisionId) {
+        return state;
+      }
+      // Create the decision record
+      // Create the decision record
+      const decisionRecord = createDecisionRecord(
+        state.currentDecision,
+        selectedOptionId,
+        narrative
+      );
+
+      // Update the narrative context with the new decision record
+      return {
+        ...state,
+        currentDecision: undefined, // Clear the current decision
+        narrativeContext: {
+          ...state.narrativeContext,
+          decisionHistory: [
+            ...(state.narrativeContext.decisionHistory || []),
+            decisionRecord
+          ]
+        },
+      };
+    }
+    case 'CLEAR_CURRENT_DECISION': {
+      return {
+        ...state,
+        currentDecision: undefined,
+      };
+    }
+    
     case 'UPDATE_NARRATIVE': {
       return {
-       ...state,
+        ...state,
         ...action.payload,
       };
     }
@@ -431,6 +480,40 @@ export const updateNarrativeContext = (
  */
 export const resetNarrative = (): NarrativeAction => ({
   type: 'RESET_NARRATIVE',
+});
+
+/**
+ * Action creator for presenting a decision to the player.
+ * @param decision - The decision to present, including prompt, options, and context.
+ * @returns Narrative action object with type 'PRESENT_DECISION' and the decision as payload.
+ */
+export const presentDecision = (decision: PlayerDecision): NarrativeAction => ({
+  type: 'PRESENT_DECISION',
+  payload: decision,
+});
+
+/**
+ * Action creator for recording a player's decision.
+ * @param decisionId - ID of the decision the player is responding to.
+ * @param selectedOptionId - ID of the option the player selected.
+ * @param narrative - The narrative text presented after the player makes the decision.
+ * @returns Narrative action object with type 'RECORD_DECISION' and the relevant IDs and narrative as payload.
+ */
+export const recordDecision = (
+  decisionId: string,
+  selectedOptionId: string,
+  narrative: string
+): NarrativeAction => ({
+  type: 'RECORD_DECISION',
+  payload: { decisionId, selectedOptionId, narrative },
+});
+
+/**
+ * Action creator for clearing the current decision. This is typically called after a decision has been recorded.
+ * @returns Narrative action object with type 'CLEAR_CURRENT_DECISION'.
+ */
+export const clearCurrentDecision = (): NarrativeAction => ({
+  type: 'CLEAR_CURRENT_DECISION',
 });
 
 /**

@@ -14,6 +14,7 @@ BootHillGM is a web application providing an AI-driven Game Master for the Boot 
 - Turn-based combat system with Boot Hill mechanics, including weapon and brawling combat
 - Strength system implementation with derived stats and modifiers
 - Automatic journal entry system with search and filtering
+- Player Decision Tracking System: Tracks player choices, calculates their relevance, and makes them available for influencing future narrative content.
 
 ## Technical Stack
 

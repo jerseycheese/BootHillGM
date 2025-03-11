@@ -1,4 +1,5 @@
-import { render, screen, act } from '@testing-library/react';
+import { useEffect, useState } from "react";
+import { render, screen, act, waitFor } from '@testing-library/react';
 import { NarrativeProvider, useNarrative } from '../../context/NarrativeContext';
 import { initialNarrativeState } from '../../types/narrative.types';
 
@@ -16,15 +17,20 @@ const mockLocalStorage = (() => {
     clear: jest.fn(() => {
       store = {};
     }),
+    reset: jest.fn(() => {
+      store = {};
+    })
   };
 })();
 
+const originalLocalStorage = window.localStorage;
 Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
 
 describe('NarrativeContext', () => {
   beforeEach(() => {
-    mockLocalStorage.clear();
+    mockLocalStorage.reset();
     jest.clearAllMocks();
+    console.log("beforeEach - localStorage:", mockLocalStorage.getItem('narrativeState'));
   });
 
   // Test context creation
@@ -49,7 +55,7 @@ describe('NarrativeContext', () => {
       useNarrative();
       return null;
     };
-    
+
     // Suppress console.error to avoid cluttering test output
     const originalConsoleError = console.error;
     console.error = jest.fn();
@@ -62,34 +68,34 @@ describe('NarrativeContext', () => {
 
   // Test provider functionality
   it('should provide state and dispatch to children', () => {
-      const TestComponent = () => {
-          const { state, dispatch } = useNarrative();
-          return (
-              <>
-                  <div>{JSON.stringify(state)}</div>
-                  <button onClick={() => dispatch({ type: 'RESET_NARRATIVE' })}>Reset</button>
-              </>
-          );
-      };
-
-      render(
-          <NarrativeProvider>
-              <TestComponent />
-          </NarrativeProvider>
+    const TestComponent = () => {
+      const { state, dispatch } = useNarrative();
+      return (
+        <>
+          <div>{JSON.stringify(state)}</div>
+          <button onClick={() => dispatch({ type: 'RESET_NARRATIVE' })}>Reset</button>
+        </>
       );
+    };
 
-      expect(screen.getByText(JSON.stringify(initialNarrativeState))).toBeInTheDocument();
-      act(() => {
-          screen.getByRole('button', { name: 'Reset' }).click();
-      });
-      expect(screen.getByText(JSON.stringify(initialNarrativeState))).toBeInTheDocument(); // State should be reset
+    render(
+      <NarrativeProvider>
+        <TestComponent />
+      </NarrativeProvider>
+    );
+
+    expect(screen.getByText(JSON.stringify(initialNarrativeState))).toBeInTheDocument();
+    act(() => {
+      screen.getByRole('button', { name: 'Reset' }).click();
+    });
+    expect(screen.getByText(JSON.stringify(initialNarrativeState))).toBeInTheDocument(); // State should be reset
   });
 
-    // Test localStorage integration
+  // Test localStorage integration
   it('should save state to localStorage', () => {
     const TestComponent = () => {
       const { state, saveNarrativeState } = useNarrative();
-      
+
       // Modify the state to trigger a save
       const newState = { ...state, narrativeHistory: ['New entry'] };
 
@@ -110,53 +116,91 @@ describe('NarrativeContext', () => {
 
     expect(mockLocalStorage.setItem).toHaveBeenCalledWith('narrativeState', JSON.stringify({ ...initialNarrativeState, narrativeHistory: ['New entry'] }));
   });
-
-  it('should load state from localStorage', () => {
-      const expectedState = { ...initialNarrativeState, narrativeHistory: ['Loaded entry'] };
-      mockLocalStorage.getItem.mockReturnValueOnce(JSON.stringify(expectedState));
-
-      const TestComponent = () => {
-        const { state } = useNarrative();
-        return <div>{JSON.stringify(state)}</div>;
-      };
-
-      render(
-        <NarrativeProvider>
-          <TestComponent />
-        </NarrativeProvider>
-      );
-
-      expect(screen.getByText(JSON.stringify(expectedState))).toBeInTheDocument();
-  });
+    const expectedState = { ...initialNarrativeState, narrativeHistory: ['Loaded entry'] };
+    describe('localStorage loading', () => {
+        beforeAll(() => {
+          mockLocalStorage.getItem.mockReturnValue(JSON.stringify(expectedState));
+        });
+      
+        afterAll(() => {
+          mockLocalStorage.getItem.mockReset();
+          Object.keys(originalLocalStorage).forEach(key => {
+            window.localStorage[key] = originalLocalStorage[key];
+          });
+        });
+        it('should load state from localStorage', async () => {
+            
+            const TestComponent = () => {
+              const { state } = useNarrative();
+              const [, setIsInitialized] = useState(false);
+              useEffect(() => {
+                const savedState = localStorage.getItem('narrativeState');
+                if (savedState) {
+                  setIsInitialized(true);
+                }
+              }, []);
+              return <div data-testid="state">{JSON.stringify(state)}</div>;
+            };
+            render(
+              <NarrativeProvider>
+                <TestComponent />
+              </NarrativeProvider>
+            );
+      
+            await waitFor(() => {
+              expect(screen.getByTestId('state')).toHaveTextContent(/Loaded entry/);
+            });
+          });
+          it('should load state from localStorage and contain Loaded entry', async () => {
+            
+            const TestComponent = () => {
+              const { state } = useNarrative();
+              const [, setIsInitialized] = useState(false);
+              useEffect(() => {
+                const savedState = localStorage.getItem('narrativeState');
+                if (savedState) {
+                  setIsInitialized(true);
+                }
+              }, []);
+              return <div data-testid="state">{JSON.stringify(state)}</div>;
+            };
+            render(<NarrativeProvider><TestComponent /></NarrativeProvider>);
+            await waitFor(() => {
+              expect(screen.getByTestId('state')).toHaveTextContent(/Loaded entry/);
+            });
+          });
+    })
 
   // Test with reducer actions
   it('should update state when actions are dispatched', () => {
-      const TestComponent = () => {
-          const { state, dispatch } = useNarrative();
-          return (
-              <>
-                  <div data-testid="narrative-history">{JSON.stringify(state.narrativeHistory)}</div>
-                  <button onClick={() => dispatch({ type: 'ADD_NARRATIVE_HISTORY', payload: 'New entry' })}>Add History</button>
-                  <button onClick={() => dispatch({ type: 'SET_DISPLAY_MODE', payload: 'flashback' })}>Set Flashback</button>
-              </>
-          );
-      };
-
-      render(
-          <NarrativeProvider>
-              <TestComponent />
-          </NarrativeProvider>
+    mockLocalStorage.clear();
+    const TestComponent = () => {
+      console.log("Inside TestComponent - localStorage:", mockLocalStorage.getItem('narrativeState'));
+      const { state, dispatch } = useNarrative();
+      return (
+        <>
+          <div data-testid="narrative-history">{JSON.stringify(state.narrativeHistory)}</div>
+          <button onClick={() => dispatch({ type: 'ADD_NARRATIVE_HISTORY', payload: 'New entry' })}>Add History</button>
+          <button onClick={() => dispatch({ type: 'SET_DISPLAY_MODE', payload: 'flashback' })}>Set Flashback</button>
+        </>
       );
+    };
+    console.log("Start of test - localStorage:", mockLocalStorage.getItem('narrativeState'));
+    render(
+      <NarrativeProvider>
+        <TestComponent />
+      </NarrativeProvider>
+    );
 
-      expect(screen.getByTestId('narrative-history')).toHaveTextContent(JSON.stringify([]));
-      act(() => {
-          screen.getByRole('button', { name: 'Add History' }).click();
-      });
-      expect(screen.getByTestId('narrative-history')).toHaveTextContent(JSON.stringify(['New entry']));
+    expect(screen.getByTestId('narrative-history')).toHaveTextContent(JSON.stringify([]));
+    act(() => {
+      screen.getByRole('button', { name: 'Add History' }).click();
+    });
+    expect(screen.getByTestId('narrative-history')).toHaveTextContent(JSON.stringify(['New entry']));
 
-      act(() => {
-        screen.getByRole('button', {name: 'Set Flashback'}).click();
-      });
-      expect(screen.getByTestId('narrative-history')).toHaveTextContent(JSON.stringify(['New entry'])); // History shouldn't change
+    act(() => {
+      screen.getByRole('button', { name: 'Set Flashback' }).click();
+    });
+    expect(screen.getByTestId('narrative-history')).toHaveTextContent(JSON.stringify(['New entry'])); // History shouldn't change
   });
 });
