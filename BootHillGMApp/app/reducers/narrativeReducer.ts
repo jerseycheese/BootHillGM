@@ -14,9 +14,15 @@ import {
   initialNarrativeState,
   NarrativeState,
   PlayerDecision,
+  ImpactState,
+  PlayerDecisionRecordWithImpact,
 } from '../types/narrative.types';
 import { GameState } from '../types/gameState';
 import { createDecisionRecord } from '../utils/decisionUtils';
+import {
+  processDecisionImpacts as processImpacts,
+  evolveImpactsOverTime
+} from '../utils/decisionImpactUtils';
 
 /**
  * Generates a default NarrativeContext object.
@@ -36,6 +42,13 @@ const defaultNarrativeContext = (): NarrativeContext => ({
     activeDecision: undefined, // Added
     pendingDecisions: [],     // Added
     decisionHistory: [],      // Added
+    impactState: { 
+      reputationImpacts: {}, 
+      relationshipImpacts: {}, 
+      worldStateImpacts: {}, 
+      storyArcImpacts: {}, 
+      lastUpdated: Date.now() 
+    },
 });
 
 /**
@@ -213,7 +226,6 @@ export function narrativeReducer(
 
       if (!arc) {
         // TODO: Replace with a more robust error handling mechanism (e.g., dispatch an error action)
-        console.error(`Invalid narrative arc ID: ${action.payload}`);
         return state;
       }
 
@@ -246,7 +258,6 @@ export function narrativeReducer(
 
       if (!branch) {
         // TODO: Replace with a more robust error handling mechanism (e.g., dispatch an error action)
-        console.error(`Invalid narrative branch ID: ${action.payload}`);
         return state;
       }
 
@@ -276,7 +287,6 @@ export function narrativeReducer(
 
       if (!branch) {
         // TODO: Replace with a more robust error handling mechanism (e.g., dispatch an error action)
-        console.error(`Invalid narrative branch ID: ${action.payload}`);
         return state;
       }
 
@@ -340,7 +350,6 @@ export function narrativeReducer(
         return state;
       }
       // Create the decision record
-      // Create the decision record
       const decisionRecord = createDecisionRecord(
         state.currentDecision,
         selectedOptionId,
@@ -371,6 +380,85 @@ export function narrativeReducer(
       return {
         ...state,
         ...action.payload,
+      };
+    }
+
+    // New action types for decision impact processing
+    case 'PROCESS_DECISION_IMPACTS': {
+      // Process the impacts of a specific decision and update the impact state
+      if (!state.narrativeContext?.impactState) {
+        return state;
+      }
+
+      const decisionRecord = state.narrativeContext.decisionHistory.find(
+        record => record.decisionId === action.payload
+      );
+
+      if (!decisionRecord || !('impacts' in decisionRecord)) {
+        return state;
+      }
+
+      const updatedImpactState = processImpacts(
+        state.narrativeContext.impactState,
+        decisionRecord as PlayerDecisionRecordWithImpact
+      );
+
+      return {
+        ...state,
+        narrativeContext: {
+          ...state.narrativeContext,
+          impactState: updatedImpactState,
+          decisionHistory: state.narrativeContext.decisionHistory.map(
+            record => record.decisionId === action.payload && 'impacts' in record
+              ? { ...record, processedForImpact: true }
+              : record
+          )
+        }
+      };
+    }
+
+    case 'UPDATE_IMPACT_STATE': {
+      // Direct update to the impact state with provided values
+      if (!state.narrativeContext?.impactState) {
+        return state;
+      }
+
+      return {
+        ...state,
+        narrativeContext: {
+          ...state.narrativeContext,
+          impactState: {
+            ...state.narrativeContext.impactState,
+            ...action.payload,
+            lastUpdated: Date.now()
+          }
+        }
+      };
+    }
+
+    case 'EVOLVE_IMPACTS': {
+      // Update impact values based on time passed and other factors
+      if (!state.narrativeContext?.impactState) {
+        return state;
+      }
+
+      const impactRecords = state.narrativeContext.decisionHistory.filter(
+        (record): record is PlayerDecisionRecordWithImpact => 
+          'impacts' in record && 'processedForImpact' in record
+      );
+
+      const updatedImpactState = evolveImpactsOverTime(
+        state.narrativeContext.impactState,
+        impactRecords,
+        Date.now()
+      );
+
+      return {
+        ...state,
+        narrativeContext: {
+          ...state.narrativeContext,
+          impactState: updatedImpactState
+        }
       };
     }
 
@@ -511,6 +599,45 @@ export const recordDecision = (
  */
 export const clearCurrentDecision = (): NarrativeAction => ({
   type: 'CLEAR_CURRENT_DECISION',
+});
+
+/**
+ * Action creator for processing the impacts of a decision.
+ * This action triggers the calculation of how a decision affects various aspects of the game world,
+ * such as reputation, relationships, and story progression.
+ * 
+ * @param decisionId - ID of the decision to process impacts for.
+ * @returns Narrative action object with type 'PROCESS_DECISION_IMPACTS'.
+ */
+export const processDecisionImpacts = (decisionId: string): NarrativeAction => ({
+  type: 'PROCESS_DECISION_IMPACTS',
+  payload: decisionId,
+});
+
+/**
+ * Action creator for directly updating the impact state.
+ * This allows for manual adjustment of impact values, which can be useful
+ * for scripted events or developer overrides.
+ * 
+ * @param impactStateUpdate - Partial update to the impact state, containing only the values to be updated.
+ * @returns Narrative action object with type 'UPDATE_IMPACT_STATE'.
+ */
+export const updateImpactState = (
+  impactStateUpdate: Partial<ImpactState>
+): NarrativeAction => ({
+  type: 'UPDATE_IMPACT_STATE',
+  payload: impactStateUpdate,
+});
+
+/**
+ * Action creator for evolving impacts over time.
+ * This action causes temporary impacts to decay or expire based on the time elapsed
+ * since they were created, simulating the natural fading of consequences over time.
+ * 
+ * @returns Narrative action object with type 'EVOLVE_IMPACTS'.
+ */
+export const evolveImpacts = (): NarrativeAction => ({
+  type: 'EVOLVE_IMPACTS',
 });
 
 /**

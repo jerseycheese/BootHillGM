@@ -42,7 +42,7 @@ VERIFICATION
 ```
 
 ## Implementation Handoff
-When completing this phase, provide a summary in this format:
+Review changes made with git diff --cached, and any implementation plans we used, then provide a summary in this format:
 
 ```markdown
 IMPLEMENTATION COMPLETE

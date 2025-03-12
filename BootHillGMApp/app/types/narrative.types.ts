@@ -176,11 +176,6 @@ export type DecisionImportance =
 
 /**
  * Defines a single option in a player decision
- * 
- * @property id - Unique identifier for the option
- * @property text - Display text for the option
- * @property impact - Description of the potential impact
- * @property tags - Optional tags for categorization and filtering
  */
 export interface PlayerDecisionOption {
   id: string;
@@ -236,6 +231,61 @@ export interface PlayerDecisionRecord {
   relevanceScore: number;
   expirationTimestamp?: number;
 }
+/**
+ * Defines the type of impact a decision has on the game world
+ */
+export type DecisionImpactType =
+  | 'reputation'    // Impact on character's reputation
+  | 'relationship'  // Impact on relationship with NPCs
+  | 'story-arc'     // Impact on story progression
+  | 'world-state'   // Impact on the game world state
+  | 'character'     // Impact on character development
+  | 'inventory';    // Impact on items/resources
+
+/**
+ * Defines the severity of a decision impact
+ */
+export type ImpactSeverity =
+  | 'major'     // Significant, long-lasting impact
+  | 'moderate'  // Medium-level impact
+  | 'minor';    // Small, possibly temporary impact
+
+/**
+ * Defines a single impact of a player decision
+ */
+export interface DecisionImpact {
+  id: string;
+  type: DecisionImpactType;
+  target: string;           // Entity affected (character name, location, etc.)
+  severity: ImpactSeverity;
+  description: string;      // Human-readable description
+  value: number;            // Numeric value/magnitude (-10 to +10)
+  duration?: number;        // Duration in milliseconds, undefined = permanent
+  conditions?: string[];    // Conditions that might modify this impact
+  relatedDecisionIds?: string[]; // IDs of related decisions
+}
+
+/**
+ * Extended PlayerDecisionRecord with impact metadata
+ */
+export interface PlayerDecisionRecordWithImpact extends PlayerDecisionRecord {
+  impacts: DecisionImpact[];
+  processedForImpact: boolean; // Flag to track if impact processing has occurred
+  lastImpactUpdate: number;    // Timestamp of last impact update
+}
+
+/**
+ * Represents the accumulated state of decision impacts
+ */
+export type WorldStateImpactValue = number;
+
+export interface ImpactState {
+  reputationImpacts: Record<string, number>; // Character -> reputation value
+  relationshipImpacts: Record<string, Record<string, number>>; // Character -> Target -> value
+  worldStateImpacts: Record<string, WorldStateImpactValue>; // Key -> value for world state changes
+  storyArcImpacts: Record<string, number>; // Story arc ID -> progression value
+  lastUpdated: number; // Timestamp of last update
+}
 
 export interface NarrativeContext {
   tone?: 'serious' | 'lighthearted' | 'tense' | 'mysterious';
@@ -245,6 +295,7 @@ export interface NarrativeContext {
   importantEvents: string[];
   storyPoints: Record<string, StoryPoint>;
   narrativeArcs: Record<string, NarrativeArc>;
+  impactState: ImpactState;
   narrativeBranches: Record<string, NarrativeBranch>;
   currentArcId?: string;
   currentBranchId?: string;
@@ -271,7 +322,10 @@ export type NarrativeActionType =
   | 'RESET_NARRATIVE'
   | 'PRESENT_DECISION'         // New action for presenting a decision
   | 'RECORD_DECISION'          // New action for recording a decision
-  | 'CLEAR_CURRENT_DECISION';  // New action for clearing the current decision
+  | 'CLEAR_CURRENT_DECISION'
+  | 'PROCESS_DECISION_IMPACTS'
+  | 'UPDATE_IMPACT_STATE'
+  | 'EVOLVE_IMPACTS';  // New action for clearing the current decision
 
 /**
  * Defines the narrative action for the reducer
@@ -293,7 +347,10 @@ export type NarrativeAction =
   // New actions for decision tracking
   | { type: 'PRESENT_DECISION'; payload: PlayerDecision }
   | { type: 'RECORD_DECISION'; payload: { decisionId: string; selectedOptionId: string; narrative: string } }
-  | { type: 'CLEAR_CURRENT_DECISION' };
+  | { type: 'CLEAR_CURRENT_DECISION' }
+  | { type: 'PROCESS_DECISION_IMPACTS'; payload: string } // decisionId
+  | { type: 'UPDATE_IMPACT_STATE'; payload: Partial<ImpactState> }
+  | { type: 'EVOLVE_IMPACTS' };
 
 /**
  * Defines utility type for narrative state updates
