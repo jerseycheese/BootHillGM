@@ -30,7 +30,6 @@ describe('NarrativeContext', () => {
   beforeEach(() => {
     mockLocalStorage.reset();
     jest.clearAllMocks();
-    console.log("beforeEach - localStorage:", mockLocalStorage.getItem('narrativeState'));
   });
 
   // Test context creation
@@ -175,7 +174,6 @@ describe('NarrativeContext', () => {
   it('should update state when actions are dispatched', () => {
     mockLocalStorage.clear();
     const TestComponent = () => {
-      console.log("Inside TestComponent - localStorage:", mockLocalStorage.getItem('narrativeState'));
       const { state, dispatch } = useNarrative();
       return (
         <>
@@ -185,7 +183,6 @@ describe('NarrativeContext', () => {
         </>
       );
     };
-    console.log("Start of test - localStorage:", mockLocalStorage.getItem('narrativeState'));
     render(
       <NarrativeProvider>
         <TestComponent />

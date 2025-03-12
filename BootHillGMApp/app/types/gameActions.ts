@@ -5,7 +5,7 @@ import { SuggestedAction } from "./campaign";
 import { CombatState, CombatType, Wound } from "./combat";
 import { GameState } from "./gameState";
 import { LocationType } from "../services/locationService";
-import { NarrativeAction, NarrativeState } from './narrative.types';
+import { NarrativeAction, NarrativeState, StoryProgressionState } from './narrative.types';
 
 // Define a specific type for the UPDATE_CHARACTER payload
 export interface UpdateCharacterPayload {
@@ -34,7 +34,7 @@ export type GameEngineAction =
   | { type: "ADD_QUEST"; payload: string }
   | { type: "SET_CHARACTER"; payload: Character | null }
   | { type: "UPDATE_CHARACTER"; payload: UpdateCharacterPayload }
-  | { type: "SET_NARRATIVE"; payload: string }
+  | { type: "SET_NARRATIVE"; payload: { text: string; storyProgression?: Partial<StoryProgressionState> } }
   | { type: "SET_GAME_PROGRESS"; payload: number }
   | { type: "UPDATE_JOURNAL"; payload: JournalEntry | JournalEntry[] }
   | { type: "SET_COMBAT_ACTIVE"; payload: boolean }

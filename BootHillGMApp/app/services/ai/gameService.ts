@@ -5,8 +5,9 @@ import { SuggestedAction } from '../../types/campaign';
 import { getAIModel } from '../../utils/ai/aiConfig';
 import { retryWithExponentialBackoff } from '../../utils/retry';
 import { GenerateContentResult } from '@google/generative-ai';
-import { StoryProgressionData } from '../../types/narrative.types';
+import { StoryProgressionData, PlayerDecision } from '../../types/narrative.types';
 import { buildStoryPointPromptExtension } from '../../utils/storyUtils';
+import { parsePlayerDecision } from './responseParser';
 
 /**
  * Retrieves a response from the AI Game Master based on player input and game context.
@@ -33,6 +34,7 @@ export async function getAIResponse(
   removedItems: string[];
   suggestedActions: SuggestedAction[];
   storyProgression?: StoryProgressionData;
+  playerDecision?: PlayerDecision; // New field
 }> {
   try {
     const model = getAIModel();
@@ -55,6 +57,22 @@ export async function getAIResponse(
         { text: 'action description', type: 'basic, combat, interaction, or chaotic', context: 'tooltip explanation' },
         { text: 'action description', type: 'basic, combat, interaction, or chaotic', context: 'tooltip explanation' },
       ],
+      playerDecision: {
+        prompt: '[Question or situation requiring player decision]',
+        options: [
+          {
+            text: '[Option 1 text]',
+            impact: '[Description of potential impact]',
+            tags: ['optional', 'tags']
+          },
+          {
+            text: '[Option 2 text]',
+            impact: '[Description of potential impact]',
+            tags: ['optional', 'tags']
+          }
+        ],
+        importance: '[critical, significant, moderate, or minor]'
+      },
       storyProgression: {
         currentPoint: '[Brief identifier for this story point]',
         title: '[Brief title for this story beat]',
@@ -107,6 +125,12 @@ export async function getAIResponse(
       - Only include the 'opponent' field if \`combatInitiated\` is true
       - Maintain perfect consistency between narrative text and location object
       - Example: If narrative says "You arrive in the town of Redemption", location must be { "type": "town", "name": "Redemption" }
+      - Player Decision Points:
+        - Include a playerDecision field when the narrative presents a meaningful choice
+        - Each decision should have a prompt and 2-4 options
+        - Each option needs text and impact fields
+        - Set importance to: critical (major story impact), significant (important), moderate (medium impact), or minor (small impact)
+        - Not every response needs a decision point - only include when meaningful choices arise
       
       ${storyPointPrompt}
     `;
@@ -160,16 +184,16 @@ export async function getAIResponse(
 
       // Process storyProgression field if it exists
       let storyProgression: StoryProgressionData | undefined = undefined;
-      
+
       if (jsonResponse.storyProgression && typeof jsonResponse.storyProgression === 'object') {
         // Validate and format story progression data
         const spData = jsonResponse.storyProgression;
-        
+
         storyProgression = {
           title: typeof spData.title === 'string' ? spData.title : undefined,
           description: typeof spData.description === 'string' ? spData.description : undefined,
-          significance: ['major', 'minor', 'background', 'character', 'milestone'].includes(spData.significance) 
-            ? spData.significance 
+          significance: ['major', 'minor', 'background', 'character', 'milestone'].includes(spData.significance)
+            ? spData.significance
             : undefined,
           characters: Array.isArray(spData.characters) ? spData.characters : undefined,
           isMilestone: typeof spData.isMilestone === 'boolean' ? spData.isMilestone : undefined,
@@ -177,23 +201,31 @@ export async function getAIResponse(
         };
       }
 
-      // Return the structured data with optional story progression
+      // Process playerDecision field if it exists
+      let playerDecision: PlayerDecision | undefined = undefined;
+
+      if (jsonResponse.playerDecision && typeof jsonResponse.playerDecision === 'object') {
+        playerDecision = parsePlayerDecision(jsonResponse.playerDecision, jsonResponse.location);
+      }
+
+      // Return the structured data with optional story progression and player decision
       return {
         narrative: jsonResponse.narrative,
         location: jsonResponse.location,
         combatInitiated: jsonResponse.combatInitiated,
-        opponent: jsonResponse.opponent ?? null, // Handle potentially missing opponent
+        opponent: jsonResponse.opponent ?? null,
         acquiredItems: jsonResponse.acquiredItems,
         removedItems: jsonResponse.removedItems,
         suggestedActions: jsonResponse.suggestedActions,
-        storyProgression
+        storyProgression,
+        playerDecision
       };
     } catch (error) {
       console.error('Error parsing AI response as JSON:', error);
       console.error('Raw AI response:', text);
-      
+
       if (error instanceof SyntaxError) {
-          console.error('SyntaxError message:', error.message);
+        console.error('SyntaxError message:', error.message);
       }
       // Fallback: Return a default response with an error message
       return {

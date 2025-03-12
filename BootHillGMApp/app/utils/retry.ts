@@ -4,7 +4,8 @@ export async function retryWithExponentialBackoff<T>(
 ): Promise<T> {
   for (let i = 0; i < maxRetries; i++) {
     try {
-      return await fn();
+      const result = await fn(); // Store the result
+      return result; // Return after the try...catch
     } catch (error) {
       if (i === maxRetries - 1) throw error;
       await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));

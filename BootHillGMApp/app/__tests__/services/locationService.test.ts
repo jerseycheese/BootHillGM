@@ -1,4 +1,4 @@
-import { LocationService, LocationType } from '../locationService';
+import { LocationService, LocationType } from '../../services/locationService';
 
 // Test type for invalid locations
 type InvalidLocation = {

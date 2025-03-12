@@ -69,20 +69,21 @@ describe('useAIInteractions', () => {
       expect(mockGetResponse).toHaveBeenCalled();
 
       // Verify narrative update
-      expect(mockDispatch).toHaveBeenCalledWith({
-        type: 'SET_NARRATIVE',
-        payload: expect.stringContaining('AI response narrative')
-      });
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'SET_NARRATIVE',
+      payload: { text: expect.stringContaining('AI response narrative') }
+    });
 
-      // Verify journal update
-      expect(mockDispatch).toHaveBeenCalledWith({
-        type: 'UPDATE_JOURNAL',
-        payload: expect.objectContaining({
-          type: 'narrative',
-          content: userInput,
-          narrativeSummary: 'Test summary'
-        })
-      });
+    // Verify journal update
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'UPDATE_JOURNAL',
+      payload: {
+        timestamp: expect.any(Number), // Use expect.any(Number) for the timestamp
+        type: 'narrative',
+        content: userInput,
+        narrativeSummary: 'Test summary',
+      }
+    });
 
       // Verify location update
       expect(mockDispatch).toHaveBeenCalledWith({

@@ -1,12 +1,24 @@
 import { calculateUpdatedStrength } from "../utils/strengthSystem";
-import { GameState } from "../types/gameState";
-import { GameEngineAction, UpdateCharacterPayload } from "../types/gameActions";
-import type { Character } from "../types/character";
-import { ensureCombatState } from "../types/combat";
-import { validateCombatEndState } from "../utils/combatStateValidation";
-import { inventoryReducer } from "./inventory/inventoryReducer";
-import { journalReducer } from "./journal/journalReducer";
-import { narrativeReducer } from "./narrativeReducer";
+import { GameState } from '../types/gameState';
+import { GameEngineAction, UpdateCharacterPayload } from '../types/gameActions';
+import type { Character } from '../types/character';
+import { ensureCombatState } from '../types/combat';
+import { validateCombatEndState } from '../utils/combatStateValidation';
+import { inventoryReducer } from './inventory/inventoryReducer';
+import { journalReducer } from './journal/journalReducer';
+import { narrativeReducer } from './narrativeReducer';
+import { StoryProgressionData, StoryProgressionPoint } from '../types/narrative.types';
+
+
+type SetNarrativeAction = {
+  type: 'SET_NARRATIVE';
+  payload:
+    | {
+        text: string;
+        storyProgression?: StoryProgressionData;
+      }
+    | string;
+};
 
 /**
  * Reducer function to handle game state updates related to the game in general,
@@ -15,8 +27,8 @@ import { narrativeReducer } from "./narrativeReducer";
  * @param action - The action to be processed.
  * @returns The updated game state.
  */
-export function gameReducer(state: GameState, action: GameEngineAction): GameState {
-    // Delegate inventory-related actions to the inventoryReducer
+export function gameReducer(state: GameState, action: GameEngineAction | SetNarrativeAction): GameState {
+  // Delegate inventory-related actions to the inventoryReducer
   if (
     action.type === 'ADD_ITEM' ||
     action.type === 'REMOVE_ITEM' ||
@@ -173,11 +185,54 @@ export function gameReducer(state: GameState, action: GameEngineAction): GameSta
       return newState;
     }
     case 'SET_NARRATIVE':
+      // Extract currentPoint logic
+      let currentPoint: string | null;
+      const storyProgressionData = (action.payload as { text: string; storyProgression?: StoryProgressionData; }).storyProgression;
+      if (storyProgressionData?.currentPoint !== undefined) {
+          currentPoint = storyProgressionData.currentPoint ?? null;
+      } else {
+          currentPoint = state.narrative.storyProgression?.currentPoint ?? null;
+      }
+
+      let updatedProgressionPoints = state.narrative.storyProgression?.progressionPoints ?? {};
+
+      if (typeof action.payload !== 'string' && action.payload.storyProgression) {
+        const newPointId = `story_point_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          if (storyProgressionData && storyProgressionData.currentPoint === undefined) {
+            currentPoint = newPointId;
+          }
+
+          const newStoryPoint: StoryProgressionPoint = {
+              id: newPointId,
+              title: storyProgressionData?.title ?? '',
+              description: storyProgressionData?.description ?? '',
+              significance: storyProgressionData?.significance ?? 'minor',
+              characters: storyProgressionData?.characters ?? [],
+              timestamp: Date.now(),
+              aiGenerated: true, // Assuming AI-generated for now, can be adjusted
+              location: state.location ?? undefined,
+          };
+          updatedProgressionPoints = {
+              ...updatedProgressionPoints,
+              [newPointId]: newStoryPoint,
+          };
+      }
+      
       return {
         ...state,
         narrative: {
           ...state.narrative,
-          narrativeHistory: [...(state.narrative?.narrativeHistory || []), action.payload]
+          narrativeHistory: [...(state.narrative.narrativeHistory || []),
+            typeof action.payload === 'string' ? action.payload : action.payload.text
+          ],
+          storyProgression: {
+            ...state.narrative.storyProgression,
+            currentPoint,
+            progressionPoints: updatedProgressionPoints,
+            mainStorylinePoints: state.narrative.storyProgression?.mainStorylinePoints ?? [],
+            branchingPoints: state.narrative.storyProgression?.branchingPoints ?? {},
+            lastUpdated: Date.now()
+          }
         }
       };
     case 'SET_GAME_PROGRESS':

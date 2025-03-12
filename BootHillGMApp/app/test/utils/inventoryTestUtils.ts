@@ -105,6 +105,7 @@ interface MockCampaignStateOverrides {
 }
 
 import { LocationType } from '../../services/locationService';
+import { initialNarrativeState } from '../../types/narrative.types';
 
 const defaultMockCampaignState: CampaignState = {
     currentPlayer: 'test-player',
@@ -114,7 +115,7 @@ const defaultMockCampaignState: CampaignState = {
     savedTimestamp: undefined,
     gameProgress: 0,
     journal: [],
-    narrative: '',
+    narrative: initialNarrativeState,
     inventory: [],
     quests: [],
     isCombatActive: false,

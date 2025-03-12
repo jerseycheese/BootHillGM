@@ -6,7 +6,7 @@ jest.mock('../../utils/inventoryManager', () => ({
 
 import { renderHook, act } from '@testing-library/react';
 import { InventoryManager } from '../../utils/inventoryManager';
-import { useGameSession } from '../useGameSession';
+import { useGameSession } from '../../hooks/useGameSession';
 import { useCampaignState } from '../../components/CampaignStateManager';
 import { ItemCategory } from '../../types/item.types';
 import { getAIResponse } from '../../services/ai/gameService';

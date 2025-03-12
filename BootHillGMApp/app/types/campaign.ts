@@ -3,6 +3,7 @@ import { JournalEntry } from './journal';
 import { InventoryItem } from './item.types';
 import { CombatState } from './combat';
 import { LocationType } from '../services/locationService';
+import { StoryProgressionState, NarrativeState, initialNarrativeState } from './narrative.types';
 
 /**
  * Defines the structure of a suggested action in the campaign.
@@ -28,7 +29,7 @@ export interface SuggestedAction {
  * @property savedTimestamp - Optional timestamp of when the game state was last saved
  * @property gameProgress - The current progress of the game
  * @property journal - List of journal entries
- * @property narrative - The current narrative text
+ * @property narrative - The current narrative state, including text and story progression
  * @property inventory - List of inventory items
  * @property quests - List of quest identifiers
  * @property isCombatActive - Boolean indicating if combat is active
@@ -43,10 +44,10 @@ export interface CampaignState {
   location: LocationType | null;
   savedTimestamp?: number;
   gameProgress: number;
-  journal: JournalEntry[];
-  narrative: string;
-  inventory: InventoryItem[];
-  quests: string[];
+    journal: JournalEntry[];
+    narrative: NarrativeState;
+    inventory: InventoryItem[];
+    quests: string[];
   isCombatActive: boolean;
   opponent: Character | null;
   isClient?: boolean;
@@ -64,7 +65,7 @@ export const initialGameState: CampaignState = {
   location: null,
   gameProgress: 0,
   journal: [],
-  narrative: '',
+  narrative: initialNarrativeState,
   inventory: [],
   quests: [],
   isCombatActive: false,
@@ -88,7 +89,7 @@ export type GameAction =
   | { type: 'ADD_QUEST'; payload: string }
   | { type: 'SET_CHARACTER'; payload: Character | null }
   | { type: 'UPDATE_CHARACTER'; payload: Partial<Character> }
-  | { type: 'SET_NARRATIVE'; payload: string }
+  | { type: 'SET_NARRATIVE'; payload: { text: string; storyProgression?: Partial<StoryProgressionState> } }
   | { type: 'SET_GAME_PROGRESS'; payload: number }
   | { type: 'UPDATE_JOURNAL'; payload: JournalEntry | JournalEntry[] }
   | { type: 'SET_COMBAT_ACTIVE'; payload: boolean }

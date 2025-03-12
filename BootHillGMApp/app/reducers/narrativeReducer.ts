@@ -315,11 +315,8 @@ export function narrativeReducer(
           importantEvents: action.payload.importantEvents ?? state.narrativeContext?.importantEvents ?? []
         },
       };
-      console.log('UPDATE_NARRATIVE action:', action.payload);
       return updatedContext;
     }
-
-
     case 'RESET_NARRATIVE': {
       return initialNarrativeState;
     }

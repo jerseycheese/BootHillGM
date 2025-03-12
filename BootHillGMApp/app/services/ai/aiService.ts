@@ -3,25 +3,37 @@ import { InventoryItem } from '../../types/item.types';
 import { SuggestedAction } from '../../types/campaign';
 import { retryWithExponentialBackoff } from '../../utils/retry';
 import { GenerateContentResult } from '@google/generative-ai';
-
-/**
- * Retrieves a response from the AI Game Master based on player input and game context.
- * 
- * @param prompt - The player's input action
- * @param journalContext - Recent important story events
- * @param inventory - The player's current inventory
- * @returns A Promise that resolves to an object containing the narrative, location, combat status, opponent, acquired items, removed items, and suggested actions
- */
-
+import { LocationType } from '../locationService';
+import { PlayerDecision } from '../../types/narrative.types';
+import { parsePlayerDecision } from './responseParser';
 import { getAIModel } from '../../utils/ai/aiConfig';
 
+/**
+ * Service for handling AI model interactions for the game.
+ * Provides methods for generating content, parsing responses, and managing the API communication.
+ */
 class AIService {
   private model: ReturnType<typeof getAIModel>;
 
   constructor() {
     this.model = getAIModel();
   }
+  
+  /**
+   * Test-specific method to access constructPrompt
+   * @param prompt - The player's input action
+   * @param journalContext - Recent important story events
+   * @param inventory - The player's current inventory
+   * @returns Constructed prompt string
+   */
+  async testConstructPrompt(prompt: string, journalContext: string, inventory: InventoryItem[]): Promise<string> {
+    return this.constructPrompt(prompt, journalContext, inventory);
+  }
 
+  /**
+   * Generates character data from the AI model.
+   * @returns Promise resolving to the character data as a string
+   */
   async generateFromAI(): Promise<string> {
     const prompt = `
       Generate a complete character following Boot Hill v2 rules. Include:
@@ -55,21 +67,40 @@ class AIService {
     return result.response.text();
   }
 
-  async getAIResponse(prompt: string, journalContext: string, inventory: InventoryItem[]): Promise<{ 
-    narrative: string; 
-    location?: string; 
-    combatInitiated?: boolean; 
+  /**
+   * Retrieves a response from the AI Game Master based on player input and game context.
+   * @param prompt - The player's input action
+   * @param journalContext - Recent important story events
+   * @param inventory - The player's current inventory
+   * @returns A Promise that resolves to an object containing game state data including narrative, location, and player decision
+   */
+  async getAIResponse(prompt: string, journalContext: string, inventory: InventoryItem[]): Promise<{
+    narrative: string;
+    location?: LocationType;
+    combatInitiated?: boolean;
     opponent?: Character;
     acquiredItems: string[];
     removedItems: string[];
     suggestedActions: SuggestedAction[];
+    playerDecision?: PlayerDecision;
   }> {
     try {
       const fullPrompt = await this.constructPrompt(prompt, journalContext, inventory);
       const result = await retryWithExponentialBackoff<GenerateContentResult>(() => this.model.generateContent(fullPrompt));
       const text = await result.response.text();
       
-      return this.parseAIResponse(text);
+      try {
+        return this.parseAIResponse(text);
+      } catch {
+        // Return a basic response with just the narrative text
+        return {
+          narrative: text,
+          acquiredItems: [],
+          removedItems: [],
+          suggestedActions: [],
+          // playerDecision is undefined by default
+        };
+      }
     } catch (error) {
       if (error instanceof Error) {
         if (error.message.includes('API key expired') || error.message.includes('API_KEY_INVALID')) {
@@ -80,6 +111,14 @@ class AIService {
     }
   }
 
+  /**
+   * Constructs the prompt for the AI model based on player input and game context.
+   * @param prompt - The player's input action
+   * @param journalContext - Recent important story events
+   * @param inventory - The player's current inventory
+   * @returns Constructed prompt string with formatting and instructions for the AI
+   * @private
+   */
   private async constructPrompt(prompt: string, journalContext: string, inventory: InventoryItem[]): Promise<string> {
     return `
       You are an AI Game Master for a Western-themed RPG. Your role is to facilitate an immersive and uncensored gaming experience. Always remember:
@@ -112,29 +151,67 @@ class AIService {
       If the location has changed, on a new line, write "LOCATION:" followed by a brief (2-5 words) description of the new location. 
       If the location hasn't changed, don't include a LOCATION line.
       If there's an important story development, include "important:" followed by a brief summary of the key information.
+
+      If the narrative presents a meaningful choice for the player, include a playerDecision field in your JSON response with the following structure:
+      {
+        "playerDecision": {
+          "prompt": "[Question or situation requiring player decision]",
+          "options": [
+            {
+              "text": "[Option 1 text]",
+              "impact": "[Description of potential impact]",
+              "tags": ["optional", "tags"]
+            },
+            {
+              "text": "[Option 2 text]",
+              "impact": "[Description of potential impact]",
+              "tags": ["optional", "tags"]
+            }
+          ],
+          "importance": "[critical, significant, moderate, or minor]",
+          "context": "[Optional additional context for the decision]",
+          "characters": ["Optional array of character names involved in the decision"]
+        }
+      }
+
+      Not every response needs a decision point - only include when meaningful choices arise.
+      Each decision should have a prompt and 2-4 options.
+      Each option needs text and impact fields.
+      Set importance to: critical (major story impact), significant (important), moderate (medium impact), or minor (small impact).
       
       Game Master response:
     `;
   }
 
+  /**
+   * Parses the AI response text into structured game data.
+   * @param text - The raw text response from the AI model
+   * @returns Structured game data including narrative, location, and player decision
+   * @private
+   */
   private async parseAIResponse(text: string): Promise<{
     narrative: string;
-    location?: string;
+    location?: LocationType;
     combatInitiated?: boolean;
     opponent?: Character;
     acquiredItems: string[];
     removedItems: string[];
     suggestedActions: SuggestedAction[];
+    playerDecision?: PlayerDecision;
   }> {
     const parts = text.split('LOCATION:');
     let narrative = parts[0].trim();
-    const location = parts[1] ? parts[1].trim() : undefined;
+    // Convert string location to LocationType
+    const locationString = parts[1] ? parts[1].trim() : undefined;
+    const location: LocationType | undefined = locationString
+      ? { type: 'town', name: locationString }
+      : undefined;
 
     const acquiredItemsMatch = text.match(/ACQUIRED_ITEMS:\s*(.*?)(?=\n|$)/);
     const removedItemsMatch = text.match(/REMOVED_ITEMS:\s*(.*?)(?=\n|$)/);
     const suggestedActionsMatch = text.match(/SUGGESTED_ACTIONS:\s*(\[[\s\S]*?\])/);
 
-    const acquiredItems = acquiredItemsMatch 
+    const acquiredItems = acquiredItemsMatch
       ? acquiredItemsMatch[1].split(',').map(item => item.trim()).filter(Boolean).map(item => item.replace(/^\[|\]$/g, ''))
       : [];
     const removedItems = removedItemsMatch
@@ -146,9 +223,9 @@ class AIService {
       try {
         const parsedActions = JSON.parse(suggestedActionsMatch[1]);
         if (Array.isArray(parsedActions)) {
-          suggestedActions = parsedActions.filter(action => 
-            action.text && 
-            action.type && 
+          suggestedActions = parsedActions.filter(action =>
+            action.text &&
+            action.type &&
             ['basic', 'combat', 'interaction', 'chaotic'].includes(action.type)
           );
         }
@@ -173,7 +250,7 @@ class AIService {
       const combatParts = narrative.split('COMBAT:');
       narrative = combatParts[0].trim();
       const opponentName = combatParts[1].trim();
-      
+
       opponent = {
         id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: opponentName,
@@ -211,7 +288,7 @@ class AIService {
         isPlayer: false
       };
     }
-    
+
     // Remove the metadata lines from the narrative
     narrative = narrative
       .replace(/ACQUIRED_ITEMS: \[.*?\]\n?/, '')
@@ -222,16 +299,81 @@ class AIService {
       .replace(/\n\s*\n+/g, '\n')  // Clean up multiple newlines
       .trim();
 
-    return { 
-      narrative, 
-      location, 
-      combatInitiated, 
-      opponent, 
-      acquiredItems: filteredAcquiredItems, 
+    let playerDecision: PlayerDecision | undefined;
+
+    try {
+      // First try to parse the entire response as JSON to extract playerDecision
+      try {
+        const jsonResponse = JSON.parse(text);
+        if (jsonResponse.playerDecision && typeof jsonResponse.playerDecision === 'object') {
+          playerDecision = parsePlayerDecision(jsonResponse.playerDecision, location);
+        } else {
+          playerDecision = undefined;
+        }
+      } catch {
+        // If full JSON parsing fails, try the substring approach
+        const playerDecisionStartIndex = text.indexOf('"playerDecision":');
+        if (playerDecisionStartIndex !== -1) {
+          const jsonStartIndex = playerDecisionStartIndex + '"playerDecision":'.length;
+          const jsonEndIndex = findClosingBrace(text, jsonStartIndex);
+
+          if (jsonEndIndex !== -1) {
+            const jsonString = text.substring(jsonStartIndex, jsonEndIndex + 1);
+            const decisionData = JSON.parse(jsonString);
+            playerDecision = parsePlayerDecision(decisionData, location);
+          }
+        } else {
+          playerDecision = undefined;
+        }
+      }
+    } catch {
+      // Failed to parse, leave playerDecision as undefined
+      playerDecision = undefined;
+    }
+
+    // Create the final response object
+    const response = {
+      narrative,
+      location,
+      combatInitiated,
+      opponent,
+      acquiredItems: filteredAcquiredItems,
       removedItems: removedItems.map(item => item.replace("REMOVED_ITEMS: ", "").trim()).filter(Boolean),
-      suggestedActions
+      suggestedActions,
     };
+
+    // Only add playerDecision if it's defined and valid
+    if (playerDecision) {
+      return {
+        ...response,
+        playerDecision
+      };
+    } else {
+      return response;
+    }
   }
+}
+
+/**
+ * Helper function to find the closing brace in a JSON string.
+ * Used for extracting nested JSON objects from text responses.
+ * @param str - The string to search in
+ * @param openBraceIndex - The index where to start searching from (after the opening brace)
+ * @returns The index of the closing brace or -1 if not found
+ */
+function findClosingBrace(str: string, openBraceIndex: number): number {
+  let openBraceCount = 0;
+  for (let i = openBraceIndex; i < str.length; i++) {
+    if (str[i] === '{') {
+      openBraceCount++;
+    } else if (str[i] === '}') {
+      openBraceCount--;
+      if (openBraceCount === 0) {
+        return i;
+      }
+    }
+  }
+  return -1; // Should never happen with correct JSON, but handle for robustness
 }
 
 export { AIService };

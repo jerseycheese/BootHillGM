@@ -1,25 +1,15 @@
 import { useCallback, useState } from 'react';
 import { cleanCharacterName } from '../utils/combatUtils';
 import { AIService } from '../services/ai';
-import { GameState, SuggestedAction } from '../types/campaign';
-import { LocationType } from '../services/locationService';
+import { GameState } from '../types/campaign';
 import { GameEngineAction } from '../types/gameActions';
 import { JournalEntry } from '../types/journal';
-import { Character } from '../types/character';
 import { generateNarrativeSummary } from '../utils/aiService';
 import { WEAPON_STATS } from '../types/combat';
+import { AIResponse } from '../services/ai/types';
+import { presentDecision } from '../reducers/narrativeReducer';
 
 const aiService = new AIService();
-
-type AIResponse = {
-  narrative: string;
-  location?: LocationType;
-  combatInitiated?: boolean;
-  opponent?: Character;
-  acquiredItems: string[];
-  removedItems: string[];
-  suggestedActions?: SuggestedAction[];
-};
 
 const getJournalContext = (journal: JournalEntry[]) => {
   return journal.slice(-5).map(entry => entry.content).join('\n');
@@ -33,29 +23,30 @@ interface ProcessResponseParams {
 }
 
 const processAIResponse = async ({ input, response, state, dispatch }: ProcessResponseParams) => {
-  const narrativeUpdate = state.narrative 
-    ? `${state.narrative}\n\nPlayer: ${input}\n\nGame Master: ${response.narrative}`
+  const narrativeUpdate = state.narrative?.narrativeHistory
+    ? `${state.narrative.narrativeHistory.join('')}\n\nPlayer: ${input}\n\nGame Master: ${response.narrative}`
     : response.narrative;
 
-  dispatch({ type: 'SET_NARRATIVE', payload: narrativeUpdate });
+  dispatch({ type: 'SET_NARRATIVE', payload: { text: narrativeUpdate } });
 
-  const narrativeSummary = await generateNarrativeSummary(
-    input,
-    `${state.character?.name || 'You'} ${input}`
-  );
+  const narrativeSummary = await generateNarrativeSummary(input, response.narrative);
 
   dispatch({
     type: 'UPDATE_JOURNAL',
     payload: {
       timestamp: Date.now(),
       type: 'narrative' as const,
-      content: input,
-      narrativeSummary
-    }
+      content: input, // Use input as content
+      narrativeSummary,
+    },
   });
 
   if (response.location) {
     dispatch({ type: 'SET_LOCATION', payload: response.location });
+  }
+
+  if (response.playerDecision) {
+    dispatch(presentDecision(response.playerDecision));
   }
 
   if (response.combatInitiated && response.opponent) {
@@ -63,9 +54,9 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
     const opponentNameParts = response.opponent.name.split(/^[^.!?\n]+/);
     if (opponentNameParts[1]) {
       const narrativePart = opponentNameParts[1].trim();
-      dispatch({ 
-        type: 'SET_NARRATIVE', 
-        payload: `${narrativeUpdate}\n${narrativePart}`
+      dispatch({
+        type: 'SET_NARRATIVE',
+        payload: { text: `${narrativeUpdate}\n${narrativePart}` },
       });
     }
 
@@ -82,7 +73,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
         strength: response.opponent.attributes.strength,
         baseStrength: response.opponent.attributes.baseStrength,
         bravery: response.opponent.attributes.bravery,
-        experience: response.opponent.attributes.experience
+        experience: response.opponent.attributes.experience,
       },
       minAttributes: {
         speed: 1,
@@ -91,7 +82,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
         strength: 1,
         baseStrength: 1,
         bravery: 1,
-        experience: 0
+        experience: 0,
       },
       maxAttributes: {
         speed: 10,
@@ -100,31 +91,34 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
         strength: 10,
         baseStrength: 10,
         bravery: 10,
-        experience: 100
+        experience: 100,
       },
       inventory: response.opponent.inventory || [],
-      weapon: response.opponent.weapon ? {
-        id: `weapon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        name: response.opponent.weapon.name.split(/[.!?]/)[0].trim(),
-        modifiers: WEAPON_STATS[response.opponent.weapon.name.split(/[.!?]/)[0].trim()] || {
-          accuracy: 0,
-          range: 0,
-          reliability: 0,
-          damage: '0d0',
-          speed: 0
-        },
-        ammunition: response.opponent.weapon.ammunition,
-        maxAmmunition: response.opponent.weapon.maxAmmunition
-      } : undefined,
+      weapon: response.opponent.weapon
+        ? {
+            id: `weapon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            name: response.opponent.weapon.name.split(/[.!?]/)[0].trim(),
+            modifiers:
+              WEAPON_STATS[response.opponent.weapon.name.split(/[.!?]/)[0].trim()] || {
+                accuracy: 0,
+                range: 0,
+                reliability: 0,
+                damage: '0d0',
+                speed: 0,
+              },
+            ammunition: response.opponent.weapon.ammunition,
+            maxAmmunition: response.opponent.weapon.maxAmmunition,
+          }
+        : undefined,
       wounds: response.opponent.wounds || [],
-      isUnconscious: response.opponent.isUnconscious || false
+      isUnconscious: response.opponent.isUnconscious || false,
     };
-    
+
     dispatch({
       type: 'SET_OPPONENT',
-      payload: structuredOpponent
+      payload: structuredOpponent,
     });
-    
+
     // Initialize combat state with null combat type to trigger selection
     dispatch({
       type: 'UPDATE_COMBAT_STATE',
@@ -135,13 +129,13 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
         winner: null,
         combatLog: [],
         participants: [],
-        rounds: 0
-      }
+        rounds: 0,
+      },
     });
-    
+
     dispatch({
       type: 'SET_COMBAT_ACTIVE',
-      payload: true
+      payload: true,
     });
 
     dispatch({ type: 'SET_CHARACTER', payload: structuredOpponent });
@@ -149,11 +143,11 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
 
   const WEAPON_KEYWORDS = ['gun', 'rifle', 'pistol', 'revolver', 'peacemaker'];
 
-  (response.acquiredItems || []).forEach(itemName => {
-    const isWeapon = WEAPON_KEYWORDS.some(keyword => 
+  (response.acquiredItems || []).forEach((itemName) => {
+    const isWeapon = WEAPON_KEYWORDS.some((keyword) =>
       itemName.toLowerCase().includes(keyword.toLowerCase())
     );
-    
+
     dispatch({
       type: 'ADD_ITEM',
       payload: {
@@ -161,20 +155,20 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
         name: itemName,
         description: itemName,
         quantity: 1,
-        category: isWeapon ? 'weapon' : 'general'
-      }
+        category: isWeapon ? 'weapon' : 'general',
+      },
     });
   });
 
-  dispatch({ 
-    type: 'SET_GAME_PROGRESS', 
-    payload: state.gameProgress + 1
+  dispatch({
+    type: 'SET_GAME_PROGRESS',
+    payload: state.gameProgress + 1,
   });
 
   if (response.suggestedActions) {
     dispatch({
       type: 'SET_SUGGESTED_ACTIONS',
-      payload: response.suggestedActions
+      payload: response.suggestedActions,
     });
   }
 
@@ -184,46 +178,44 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
 export const useAIInteractions = (
   state: GameState,
   dispatch: React.Dispatch<GameEngineAction>,
-  onInventoryChange: (acquired: string[], removed: string[]) => void,
+  onInventoryChange: (acquired: string[], removed: string[]) => void
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
 
-  const handleUserInput = useCallback(async (input: string) => {
-    setIsLoading(true);
-    setError(null);
-    setLastAction(input);
+  const handleUserInput = useCallback(
+    async (input: string) => {
+      setIsLoading(true);
+      setError(null);
+      setLastAction(input);
 
-    try {
-      const journalContext = getJournalContext(state.journal || []);
-      const aiResponse = await aiService.getAIResponse(
-        input,
-        journalContext,
-        state.inventory || []
-      );
-
-      const response: AIResponse = {
-        ...aiResponse,
-        location: aiResponse.location as unknown as LocationType
-      };
-
-      const { acquiredItems, removedItems } = await processAIResponse({
-        input,
-        response,
-        state,
-        dispatch
-      });
-
-      onInventoryChange(acquiredItems, removedItems);
-      return response;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [state, dispatch, onInventoryChange]);
+      try {
+        const journalContext = getJournalContext(state.journal || []);
+        
+        // The getAIResponse method in AIService only accepts 3 parameters, not 4
+        const aiResponse = await aiService.getAIResponse(
+          input,
+          journalContext,
+          state.inventory || []
+        );
+        const { acquiredItems, removedItems } = await processAIResponse({
+          input,
+          response: aiResponse,
+          state,
+          dispatch,
+        });
+        onInventoryChange(acquiredItems, removedItems);
+        return aiResponse;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [state, dispatch, onInventoryChange]
+  );
 
   const retryLastAction = useCallback(async () => {
     if (!lastAction) return;
@@ -234,6 +226,6 @@ export const useAIInteractions = (
     handleUserInput,
     retryLastAction,
     isLoading,
-    error
+    error,
   };
 };

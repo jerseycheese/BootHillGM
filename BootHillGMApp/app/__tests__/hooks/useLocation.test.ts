@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { useLocation } from '../useLocation';
+import { useLocation } from '../../hooks/useLocation';
 import { LocationType } from '../../services/locationService';
 import { useCampaignState } from '../../components/CampaignStateManager';
 

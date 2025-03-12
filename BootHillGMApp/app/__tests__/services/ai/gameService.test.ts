@@ -1,4 +1,4 @@
-import { getAIResponse } from '../gameService';
+import { getAIResponse } from '../../../services/ai/gameService';
 import { getAIModel } from '../../../utils/ai/aiConfig';
 import { GenerateContentResult } from '@google/generative-ai';
 
@@ -38,6 +38,64 @@ describe('getAIResponse', () => {
 
     expect(result).toEqual(mockJsonResponse);
     expect(mockGenerateContent).toHaveBeenCalledWith(expect.any(String));
+  });
+  it('should extract and validate playerDecision from AI response', async () => {
+    const mockResponse = {
+      narrative: 'Test narrative',
+      location: { type: 'town', name: 'Test Town' },
+      combatInitiated: false,
+      acquiredItems: [],
+      removedItems: [],
+      suggestedActions: [],
+      playerDecision: {
+        prompt: 'What will you do?',
+        options: [
+          { text: 'Option 1', impact: 'Impact 1' },
+          { text: 'Option 2', impact: 'Impact 2' }
+        ],
+        importance: 'significant',
+        context: 'Decision context'
+      }
+    };
+
+    mockGenerateContent.mockResolvedValueOnce({
+      response: {
+        text: () => Promise.resolve(JSON.stringify(mockResponse)),
+      },
+    });
+
+    const result = await getAIResponse('test prompt', '', []);
+    
+    expect(result.playerDecision).toBeDefined();
+    expect(result.playerDecision?.prompt).toBe('What will you do?');
+    expect(result.playerDecision?.options).toHaveLength(2);
+    expect(result.playerDecision?.importance).toBe('significant');
+  });
+
+  it('should handle invalid playerDecision in AI response', async () => {
+    const mockResponse = {
+      narrative: 'Test narrative',
+      location: { type: 'town', name: 'Test Town' },
+      combatInitiated: false,
+      acquiredItems: [],
+      removedItems: [],
+      suggestedActions: [],
+      playerDecision: {
+        prompt: 'What will you do?',
+        options: [{ text: 'Option 1', impact: 'Impact 1' }], // Only one option, should be invalid
+        importance: 'significant'
+      }
+    };
+
+    mockGenerateContent.mockResolvedValueOnce({
+      response: {
+        text: () => Promise.resolve(JSON.stringify(mockResponse)),
+      },
+    });
+
+    const result = await getAIResponse('test prompt', '', []);
+    
+    expect(result.playerDecision).toBeUndefined();
   });
 
   it('should handle various location types correctly', async () => {

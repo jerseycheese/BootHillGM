@@ -185,10 +185,10 @@ export const useGameSession = () => {
       }
 
       // Validate item use *before* calling getAIResponse
-      const validationResult = InventoryManager.validateItemUse(item, state.character || undefined, { 
-        ...state, 
-        narrative: state.narrative?.toString() || '',
-        isCombatActive: !!state.combatState 
+      const validationResult = InventoryManager.validateItemUse(item, state.character || undefined, {
+        ...state,
+        narrative: state.narrative || '',
+        isCombatActive: !!state.combatState
       });
       if (!validationResult.valid) {
         setError(validationResult.reason || `Cannot use ${item.name}`);

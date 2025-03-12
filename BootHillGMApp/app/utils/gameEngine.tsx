@@ -36,7 +36,7 @@ export function useGameSession() {
   // Handle combat end by setting combat status and updating narrative
   const handleCombatEnd = useCallback((winner: 'player' | 'opponent', summary: string) => {
     dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
-    dispatch({ type: 'SET_NARRATIVE', payload: summary });
+    dispatch({ type: 'SET_NARRATIVE', payload: { text: summary } });
   }, [dispatch]);
 
   // Handle player health change by updating character attributes
