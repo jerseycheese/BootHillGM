@@ -5,26 +5,43 @@ import { SuggestedAction } from '../../types/campaign';
 import { getAIModel } from '../../utils/ai/aiConfig';
 import { retryWithExponentialBackoff } from '../../utils/retry';
 import { GenerateContentResult } from '@google/generative-ai';
-import { StoryProgressionData, PlayerDecision } from '../../types/narrative.types';
+import { 
+  StoryProgressionData, 
+  PlayerDecision, 
+  NarrativeContext 
+} from '../../types/narrative.types';
 import { buildStoryPointPromptExtension } from '../../utils/storyUtils';
 import { parsePlayerDecision } from './responseParser';
+import { buildComprehensiveContextExtension } from '../../utils/decisionPromptBuilder';
 
 /**
  * Retrieves a response from the AI Game Master based on player input and game context.
- * Extended to include story progression tracking.
+ * This function sends the player's prompt and relevant game state information
+ * to the AI model to generate a narrative response, game updates, and potential
+ * player decision points.
  *
- * @param prompt - The player's input action
- * @param journalContext - Recent important story events
- * @param inventory - The player's current inventory
- * @param storyProgressionContext - Optional context about the story progression
- * @returns A Promise that resolves to an object containing the narrative, location, combat status,
- *          opponent, acquired items, removed items, suggested actions, and story progression data
+ * @param prompt - The player's input action or command string.
+ * @param journalContext - A string summarizing recent important story events,
+ *                       used to maintain narrative coherence.
+ * @param inventory - An array of InventoryItem objects representing the player's current inventory.
+ * @param storyProgressionContext - [Optional] A string containing context about the current
+ *                                story progression, if available.
+ * @param narrativeContext - [Optional] A NarrativeContext object containing:
+ *                         - decisionHistory: An array of past player decisions.
+ *                         - currentTags: Tags describing the current game context.
+ *                         This context is used to make AI responses more dynamic and relevant
+ *                         by incorporating the player's decision history.
+ *
+ * @returns A Promise that resolves to an object containing the AI-generated response,
+ *          including narrative text, location updates, combat status, items, actions,
+ *          story progression hints, and potential player decisions.
  */
 export async function getAIResponse(
   prompt: string,
   journalContext: string,
   inventory: InventoryItem[],
-  storyProgressionContext?: string
+  storyProgressionContext?: string,
+  narrativeContext?: NarrativeContext
 ): Promise<{
   narrative: string;
   location: LocationType;
@@ -34,7 +51,7 @@ export async function getAIResponse(
   removedItems: string[];
   suggestedActions: SuggestedAction[];
   storyProgression?: StoryProgressionData;
-  playerDecision?: PlayerDecision; // New field
+  playerDecision?: PlayerDecision; 
 }> {
   try {
     const model = getAIModel();
@@ -88,6 +105,11 @@ export async function getAIResponse(
       ? `\nCurrent story progression:\n${storyProgressionContext}\n` 
       : '';
     
+    // Generate decision-related context using the new utilities
+    const decisionsContext = narrativeContext
+      ? buildComprehensiveContextExtension(narrativeContext)
+      : '';
+    
     // Add the story point prompt extension
     const storyPointPrompt = buildStoryPointPromptExtension();
 
@@ -100,10 +122,13 @@ export async function getAIResponse(
       4. If the player's actions would have consequences in the game world, describe these consequences without moralizing.
       5. Maintain a neutral tone and focus on narrating the events and environment as they unfold.
       6. Do not break character or reference modern-day ethics or sensibilities.
+      7. Remember and reference the player's past decisions when appropriate to create a coherent narrative.
+      8. When presenting new choices, consider how they relate to the player's previous decisions.
 
       Recent important story events:
       ${journalContext}
       ${storyContext}
+      ${decisionsContext}
 
       Player's current inventory (Do not mention this directly in your response):
       ${inventory.map((item) => `- ${item.name} (x${item.quantity})`).join('\n')}
@@ -115,7 +140,7 @@ export async function getAIResponse(
       ${JSON.stringify(expectedJsonResponse, null, 2)}
 
       Ensure you ALWAYS return valid JSON. Provide all fields, even if they are empty arrays or null. 
-      Do NOT include any markdown code block delimiters (\\\`\\\`\\\`json or \\\`\\\`\\\`) in your response. Return ONLY the raw JSON object.
+      Do NOT include any markdown code block delimiters (\`\`\`json or \`\`\`) in your response. Return ONLY the raw JSON object.
       
       Specific instructions:
       - The location object MUST match what's described in the narrative:
@@ -131,6 +156,7 @@ export async function getAIResponse(
         - Each option needs text and impact fields
         - Set importance to: critical (major story impact), significant (important), moderate (medium impact), or minor (small impact)
         - Not every response needs a decision point - only include when meaningful choices arise
+        - When creating decision options, reference relevant past player decisions to show continuity
       
       ${storyPointPrompt}
     `;

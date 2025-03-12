@@ -33,6 +33,8 @@ The documentation aims to:
 - [[core-systems/combat-system|Combat System]]
 - [[core-systems/state-management|State Management]]
 - [[core-systems/journal-system|Journal System]]
+- [[core-systems/player-decision-tracking|Player Decision Tracking System]]
+- [[core-systems/player-decision-relevance-system|Player Decision Relevance System]]
 - [[core-systems/combat-modifiers|Combat Modifiers]]
 
 ### Features
