@@ -1,0 +1,250 @@
+/* PlayerDecisionCard.module.css */
+
+/* Main container */
+.bhgm-decision-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--card-bg, #2a2a2a);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  max-width: 800px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Importance indicator styles */
+.bhgm-decision-importance-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0.25rem;
+  background-color: var(--importance-color, #6c757d);
+}
+
+.bhgm-decision-importance-label {
+  position: absolute;
+  top: 0.5rem;
+  right: 1rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  background-color: var(--importance-bg, #6c757d);
+  color: white;
+}
+
+/* Decision prompt styles */
+.bhgm-decision-prompt {
+  margin: 1.5rem 0;
+  padding-top: 1rem;
+}
+
+.bhgm-decision-prompt h3 {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  margin: 0;
+  color: var(--text-primary, #e9e9e9);
+}
+
+/* Options container */
+.bhgm-decision-options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+/* Option button styles */
+.bhgm-decision-option-button {
+  background-color: var(--option-bg, #3a3a3a);
+  color: var(--text-primary, #e9e9e9);
+  border: 2px solid transparent;
+  border-radius: 0.25rem;
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+  position: relative;
+  overflow: hidden;
+}
+
+.bhgm-decision-option-button:hover {
+  background-color: var(--option-hover-bg, #4a4a4a);
+  transform: translateY(-2px);
+}
+
+.bhgm-decision-option-button:focus {
+  outline: none;
+  border-color: var(--focus-color, #6a6aff);
+}
+
+.bhgm-decision-option-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Selected option style */
+.bhgm-decision-option-selected {
+  border-color: var(--selected-border, #8a8aff);
+  background-color: var(--selected-bg, #4a4a6a);
+}
+
+.bhgm-decision-option-selected::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-style: solid;
+  border-width: 0 2rem 2rem 0;
+  border-color: transparent var(--selected-indicator, #8a8aff) transparent transparent;
+}
+
+/* No options message */
+.bhgm-decision-no-options {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: var(--option-bg, #3a3a3a);
+  border-radius: 0.25rem;
+  text-align: center;
+  color: var(--text-secondary, #aaaaaa);
+  font-style: italic;
+}
+
+/* Error message */
+.bhgm-decision-error {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 0.25rem;
+  color: #dc3545;
+  text-align: center;
+}
+
+/* Action container for submit button */
+.bhgm-decision-action-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+/* Submit button style */
+.bhgm-decision-submit-button {
+  background-color: var(--submit-bg, #6a6aff);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.bhgm-decision-submit-button:hover:not(:disabled) {
+  background-color: var(--submit-hover, #8a8aff);
+  transform: translateY(-2px);
+}
+
+.bhgm-decision-submit-button:disabled {
+  background-color: var(--submit-disabled, #5a5a7a);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Importance-specific styles */
+.bhgm-decision-critical .bhgm-decision-importance-indicator,
+.bhgm-decision-critical .bhgm-decision-importance-label {
+  background-color: var(--critical-color, #dc3545);
+}
+
+.bhgm-decision-critical {
+  border-left: 4px solid var(--critical-color, #dc3545);
+}
+
+.bhgm-decision-significant .bhgm-decision-importance-indicator,
+.bhgm-decision-significant .bhgm-decision-importance-label {
+  background-color: var(--significant-color, #fd7e14);
+}
+
+.bhgm-decision-significant {
+  border-left: 4px solid var(--significant-color, #fd7e14);
+}
+
+.bhgm-decision-moderate .bhgm-decision-importance-indicator,
+.bhgm-decision-moderate .bhgm-decision-importance-label {
+  background-color: var(--moderate-color, #6c757d);
+}
+
+.bhgm-decision-minor .bhgm-decision-importance-indicator,
+.bhgm-decision-minor .bhgm-decision-importance-label {
+  background-color: var(--minor-color, #20c997);
+}
+
+/* Animation for card appearance */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Focus state improvements for accessibility */
+.bhgm-decision-option-button:focus-visible {
+  outline: 2px solid var(--focus-color, #6a6aff);
+  outline-offset: 2px;
+}
+
+.bhgm-decision-submit-button:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .bhgm-decision-card {
+    padding: 1rem;
+    margin: 0.75rem 0;
+  }
+  
+  .bhgm-decision-prompt h3 {
+    font-size: 1.1rem;
+  }
+  
+  .bhgm-decision-option-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .bhgm-decision-submit-button {
+    padding: 0.6rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .bhgm-decision-prompt h3 {
+    font-size: 1rem;
+  }
+  
+  .bhgm-decision-option-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .bhgm-decision-importance-label {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+}

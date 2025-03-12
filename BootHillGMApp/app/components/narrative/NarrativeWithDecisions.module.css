@@ -1,0 +1,114 @@
+/* NarrativeWithDecisions.module.css */
+
+.bhgm-narrative-container {
+  position: relative;
+  width: 100%;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Narrative display wrapper */
+.bhgm-narrative-wrapper {
+  width: 100%;
+  transition: opacity 0.5s ease, filter 0.5s ease;
+}
+
+/* When decision is active, fade the narrative */
+.bhgm-narrative-faded {
+  opacity: 0.4;
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+/* Decision card wrapper with positioning */
+.bhgm-narrative-decision-wrapper {
+  position: absolute;
+  top: 2rem;
+  z-index: 10;
+  width: 90%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* Transition animations */
+.bhgm-narrative-transition-in {
+  animation: slideDown 0.5s ease forwards;
+}
+
+.bhgm-narrative-transition-out {
+  animation: slideUp 0.5s ease forwards;
+}
+
+/* Error message styling */
+.bhgm-narrative-error-message {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.5);
+  border-radius: 0.5rem;
+  color: #dc3545;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 90%;
+  text-align: center;
+}
+
+.bhgm-narrative-dismiss-button {
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.bhgm-narrative-dismiss-button:hover {
+  background-color: #bd2130;
+}
+
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .bhgm-narrative-decision-wrapper {
+    width: 95%;
+    top: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .bhgm-narrative-decision-wrapper {
+    width: 100%;
+    top: 0.5rem;
+  }
+}
