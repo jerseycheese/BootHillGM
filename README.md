@@ -14,7 +14,7 @@ BootHillGM is a web application providing an AI-driven Game Master for the Boot 
 - Turn-based combat system with Boot Hill mechanics, including weapon and brawling combat
 - Strength system implementation with derived stats and modifiers
 - Automatic journal entry system with search and filtering
-- Player Decision Tracking System: Tracks player choices, calculates their relevance, and makes them available for influencing future narrative content.
+- **Player Decision System**: Interactive choice system that presents decisions to the player, records their choices, and integrates seamlessly with the narrative flow
 
 ## Technical Stack
 
@@ -60,6 +60,7 @@ BootHillGM is a web application providing an AI-driven Game Master for the Boot 
 - [Character Generation](Docs/core-systems/character-generation.md): Character creation process and rules
 - [Combat System](Docs/core-systems/combat-system.md): Combat mechanics and rules
 - [Journal System](Docs/core-systems/journal-system.md): Journal system functionality and design
+- [Player Decision System](Docs/core-systems/player-decision-system.md): Interactive decision system architecture and implementation
 - [State Management](Docs/core-systems/state-management.md): State management approach and implementation
 - [Strength System](Docs/core-systems/strength-system.md): Strength system mechanics and calculations
 - [Combat Modifiers](Docs/core-systems/combat-modifiers.md): Combat modifiers and their effects
@@ -76,3 +77,17 @@ BootHillGM is a web application providing an AI-driven Game Master for the Boot 
 - [Environment Configuration](Docs/technical-guides/environment-configuration.md): Guide to configuring environment variables
 - [Testing Guide](Docs/technical-guides/testing.md): Information on testing procedures and tools
 - [Development Workflow](Docs/technical-guides/workflow.md): Best practices for development workflow
+
+## Player Decision System
+
+The BootHillGM Player Decision System enhances gameplay by:
+
+- Presenting contextual decisions to players during narrative flow
+- Providing multiple choice options with potential impact information
+- Recording player choices for future narrative influence
+- Visually distinguishing decisions by importance (critical, significant, moderate, minor)
+- Seamlessly integrating with the narrative display system
+
+Decisions can be triggered based on narrative context, similar to how dialogue choices work in Bioware RPGs. The system is designed to be easily integrated with AI, allowing for dynamic decision generation based on the game state.
+
+See the full [Player Decision System documentation](Docs/core-systems/player-decision-system.md) for technical details.

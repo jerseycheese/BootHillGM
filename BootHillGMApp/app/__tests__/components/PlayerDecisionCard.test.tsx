@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import PlayerDecisionCard from '../../components/player/PlayerDecisionCard';
 import { PlayerDecision } from '../../types/narrative.types';
+import { NarrativeProvider } from '../../context/NarrativeContext';
 
 // Create a mock for useNarrativeContext
 const mockRecordPlayerDecision = jest.fn();
@@ -10,6 +11,11 @@ jest.mock('../../hooks/useNarrativeContext', () => ({
   useNarrativeContext: () => ({
     recordPlayerDecision: mockRecordPlayerDecision,
   }),
+}));
+
+// Mock NarrativeProvider
+jest.mock('../../context/NarrativeContext', () => ({
+  NarrativeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 describe('PlayerDecisionCard', () => {
@@ -35,8 +41,16 @@ describe('PlayerDecisionCard', () => {
     mockRecordPlayerDecision.mockResolvedValue(undefined);
   });
 
+  const renderWithProvider = (ui: React.ReactElement) => {
+    return render(
+      <NarrativeProvider>
+        {ui}
+      </NarrativeProvider>
+    );
+  };
+
   it('renders the decision prompt correctly', () => {
-    render(<PlayerDecisionCard decision={mockDecision} />);
+    renderWithProvider(<PlayerDecisionCard decision={mockDecision} />);
     
     expect(screen.getByText('What will you do next?')).toBeInTheDocument();
     expect(screen.getByText('significant')).toBeInTheDocument();
@@ -44,7 +58,7 @@ describe('PlayerDecisionCard', () => {
   });
 
   it('renders all decision options', () => {
-    render(<PlayerDecisionCard decision={mockDecision} />);
+    renderWithProvider(<PlayerDecisionCard decision={mockDecision} />);
     
     expect(screen.getByText('Go to the saloon')).toBeInTheDocument();
     expect(screen.getByText('Visit the sheriff')).toBeInTheDocument();
@@ -55,18 +69,18 @@ describe('PlayerDecisionCard', () => {
   });
 
   it('renders nothing when no decision is provided', () => {
-    const { container } = render(<PlayerDecisionCard decision={undefined} />);
+    const { container } = renderWithProvider(<PlayerDecisionCard decision={undefined} />);
     expect(container.firstChild).toBeNull();
   });
 
   it('allows selecting an option', () => {
-    render(<PlayerDecisionCard decision={mockDecision} />);
+    renderWithProvider(<PlayerDecisionCard decision={mockDecision} />);
     
     const optionButton = screen.getByRole('button', {name: 'Go to the saloon'});
     fireEvent.click(optionButton);
     
-    // The option should now be selected (have proper aria-selected attribute)
-    expect(optionButton).toHaveAttribute('aria-selected', 'true');
+    // The option should now be selected (with aria-pressed attribute)
+    expect(optionButton).toHaveAttribute('aria-pressed', 'true');
     expect(optionButton).toHaveClass('bhgm-decision-option-selected');
     
     // The submit button should be enabled
@@ -77,7 +91,7 @@ describe('PlayerDecisionCard', () => {
   it('calls onDecisionMade callback when a decision is submitted', async () => {
     const mockOnDecisionMade = jest.fn();
     
-    render(
+    renderWithProvider(
       <PlayerDecisionCard 
         decision={mockDecision} 
         onDecisionMade={mockOnDecisionMade} 
@@ -109,7 +123,7 @@ describe('PlayerDecisionCard', () => {
       return new Promise(resolve => setTimeout(resolve, 100));
     });
     
-    render(<PlayerDecisionCard decision={mockDecision} />);
+    renderWithProvider(<PlayerDecisionCard decision={mockDecision} />);
     
     // Select an option
     fireEvent.click(screen.getByText('Go to the saloon'));
@@ -140,7 +154,7 @@ describe('PlayerDecisionCard', () => {
     // Spy on console.error to verify it's called
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
     
-    render(<PlayerDecisionCard decision={mockDecision} />);
+    renderWithProvider(<PlayerDecisionCard decision={mockDecision} />);
     
     // Select an option
     fireEvent.click(screen.getByText('Go to the saloon'));
@@ -168,7 +182,7 @@ describe('PlayerDecisionCard', () => {
       options: []
     };
     
-    render(<PlayerDecisionCard decision={emptyOptionsDecision} />);
+    renderWithProvider(<PlayerDecisionCard decision={emptyOptionsDecision} />);
     
     // Should still render the prompt
     expect(screen.getByText('What will you do next?')).toBeInTheDocument();
@@ -187,7 +201,7 @@ describe('PlayerDecisionCard', () => {
       importance: 'critical' as const
     };
     
-    const { rerender } = render(<PlayerDecisionCard decision={criticalDecision} />);
+    const { rerender } = renderWithProvider(<PlayerDecisionCard decision={criticalDecision} />);
     
     // Check for critical class
     expect(screen.getByTestId('player-decision-card')).toHaveClass('bhgm-decision-critical');
@@ -197,7 +211,11 @@ describe('PlayerDecisionCard', () => {
       importance: 'minor' as const
     };
     
-    rerender(<PlayerDecisionCard decision={minorDecision} />);
+    rerender(
+      <NarrativeProvider>
+        <PlayerDecisionCard decision={minorDecision} />
+      </NarrativeProvider>
+    );
     
     // Check for minor class
     expect(screen.getByTestId('player-decision-card')).toHaveClass('bhgm-decision-minor');

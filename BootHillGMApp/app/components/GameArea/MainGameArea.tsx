@@ -3,7 +3,7 @@
  * Combines narrative display with gameplay controls in a scrollable container.
  * Manages the display of both normal gameplay and combat interfaces.
  */
-import { NarrativeDisplay } from '../NarrativeDisplay';
+import NarrativeWithDecisions from '../narrative/NarrativeWithDecisions';
 import { GameplayControls } from './GameplayControls';
 import type { GameSessionProps } from './types';
 
@@ -22,12 +22,13 @@ export function MainGameArea({
   return (
     <div id="bhgmMainGameAreaContainer" data-testid="main-game-area-container" className="h-full flex flex-col overflow-auto bhgm-main-game-area">
       <div className="wireframe-section flex-1 flex flex-col overflow-auto">
-        <NarrativeDisplay
-          id="bhgmNarrativeDisplay"
-          data-testid="narrative-display"
+        <NarrativeWithDecisions
+          id="bhgmNarrativeWithDecisions"
+          data-testid="narrative-with-decisions"
           narrative={state.narrative.narrativeHistory.join('\n')}
           error={error}
           onRetry={retryLastAction}
+          className="flex-1"
         />
         <GameplayControls
           id="bhgmGameplayControls"

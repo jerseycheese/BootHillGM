@@ -4,9 +4,10 @@ import { NarrativeDisplay } from '../../components/NarrativeDisplay';
 import { CampaignStateContext } from '../../components/CampaignStateManager';
 import { initialNarrativeState } from '../../types/narrative.types';
 import { initialGameState } from '../../types/gameState';
+import { MockNarrativeProvider } from '../utils/narrativeProviderMock';
 
 describe('Narrative Processing', () => {
-  // Create a test wrapper function that provides the CampaignStateContext
+  // Create a test wrapper function that provides the CampaignStateContext and NarrativeProvider
   const renderWithContext = (ui: React.ReactElement) => {
     const mockState = {
       ...initialGameState,
@@ -31,17 +32,17 @@ describe('Narrative Processing', () => {
     };
 
     return render(
-      React.createElement(
-        CampaignStateContext.Provider,
-        { value: mockContextValue },
-        ui
-      )
+      <CampaignStateContext.Provider value={mockContextValue}>
+        <MockNarrativeProvider>
+          {ui}
+        </MockNarrativeProvider>
+      </CampaignStateContext.Provider>
     );
   };
 
   it('processes player actions correctly', () => {
     renderWithContext(
-      React.createElement(NarrativeDisplay, { narrative: "Player: swings the sword" })
+      <NarrativeDisplay narrative="Player: swings the sword" />
     );
     const playerActionContainer = screen.getByTestId('narrative-item-player-action');
     const playerAction = within(playerActionContainer).getByText(/swings the sword/);
@@ -50,7 +51,7 @@ describe('Narrative Processing', () => {
 
   it('processes GM responses correctly', () => {
     renderWithContext(
-      React.createElement(NarrativeDisplay, { narrative: "GM: The sword hits its target" })
+      <NarrativeDisplay narrative="GM: The sword hits its target" />
     );
     const gmResponseContainer = screen.getByTestId('narrative-item-gm-response');
     const gmResponse = within(gmResponseContainer).getByText(/The sword hits its target/);
@@ -64,7 +65,7 @@ describe('Narrative Processing', () => {
       ACQUIRED_ITEMS: gold pouch, silver dagger
     `;
     renderWithContext(
-      React.createElement(NarrativeDisplay, { narrative })
+      <NarrativeDisplay narrative={narrative} />
     );
     const itemUpdates = screen.getAllByTestId('item-update-acquired');
     expect(itemUpdates).toHaveLength(1);
@@ -77,7 +78,7 @@ describe('Narrative Processing', () => {
       REMOVED_ITEMS: healing potion
     `;
     renderWithContext(
-      React.createElement(NarrativeDisplay, { narrative })
+      <NarrativeDisplay narrative={narrative} />
     );
     const itemUpdate = screen.getByTestId('item-update-used');
     expect(itemUpdate).toHaveTextContent('Used/Removed Items: healing potion');
@@ -96,7 +97,7 @@ describe('Narrative Processing', () => {
     `;
 
     renderWithContext(
-      React.createElement(NarrativeDisplay, { narrative })
+      <NarrativeDisplay narrative={narrative} />
     );
 
     const playerActions = screen.getAllByTestId('narrative-item-player-action');
@@ -120,7 +121,7 @@ describe('Narrative Processing', () => {
       The room is dimly lit
     `;
     renderWithContext(
-      React.createElement(NarrativeDisplay, { narrative })
+      <NarrativeDisplay narrative={narrative} />
     );
 
     expect(screen.getByTestId('narrative-display')).not.toHaveTextContent('SUGGESTED_ACTIONS');
@@ -137,7 +138,7 @@ describe('Narrative Processing', () => {
       GM: Your attack hits true
     `;
     renderWithContext(
-      React.createElement(NarrativeDisplay, { narrative })
+      <NarrativeDisplay narrative={narrative} />
     );
 
     const playerActions = screen.getAllByText(/draws sword|attacks the goblin/);
@@ -158,7 +159,7 @@ describe('Narrative Processing', () => {
       REMOVED_ITEMS: healing potion
     `;
     renderWithContext(
-      React.createElement(NarrativeDisplay, { narrative })
+      <NarrativeDisplay narrative={narrative} />
     );
 
     const itemUpdates = screen.getAllByTestId('item-update-acquired');

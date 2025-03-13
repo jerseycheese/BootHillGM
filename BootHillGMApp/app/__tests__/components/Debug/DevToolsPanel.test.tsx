@@ -5,11 +5,43 @@ import { useCampaignState } from '../../../components/CampaignStateManager';
 import { initialState } from '../../../types/initialState';
 import { Wound } from '../../../types/wound';
 import { initialNarrativeState } from '../../../types/narrative.types';
+import { NarrativeProvider } from '../../../context/NarrativeContext';
 
 // Mock useCampaignState
 jest.mock('../../../components/CampaignStateManager', () => ({
   useCampaignState: jest.fn(),
 }));
+
+// Mock useNarrativeContext
+jest.mock('../../../hooks/useNarrativeContext', () => ({
+  useNarrativeContext: () => ({
+    currentDecision: null,
+    hasActiveDecision: false,
+    decisionHistory: [],
+    presentPlayerDecision: jest.fn(),
+    recordPlayerDecision: jest.fn(),
+    clearPlayerDecision: jest.fn(),
+    getDecisionHistory: jest.fn(),
+    checkForDecisionTriggers: jest.fn(),
+    triggerAIDecision: jest.fn(),
+  }),
+}));
+
+// Mock useNarrative
+jest.mock('../../../context/NarrativeContext', () => {
+  const originalModule = jest.requireActual('../../../context/NarrativeContext');
+  return {
+    ...originalModule,
+    useNarrative: () => ({
+      state: initialNarrativeState,
+      dispatch: jest.fn(),
+      saveNarrativeState: jest.fn(),
+      loadNarrativeState: jest.fn(),
+      resetNarrativeState: jest.fn(),
+    }),
+    NarrativeProvider: ({ children }) => <>{children}</>,
+  };
+});
 
 describe('DevToolsPanel', () => {
   const mockDispatch = jest.fn();
@@ -67,12 +99,25 @@ describe('DevToolsPanel', () => {
       dispatch: mockDispatch,
       state: mockGameState
     });
-    render(<DevToolsPanel gameState={initialState} dispatch={mockDispatch} />);
-    expect(screen.getByText('DevTools')).toBeInTheDocument();
+    render(
+      <NarrativeProvider>
+        <DevToolsPanel gameState={initialState} dispatch={mockDispatch} />
+      </NarrativeProvider>
+    );
+    expect(screen.getByText(/DevTools/i)).toBeInTheDocument();
   });
 
   it('calls cleanupState when Reset Game is clicked', async () => {
-    render(<DevToolsPanel gameState={initialState} dispatch={mockDispatch} />);
+    (useCampaignState as jest.Mock).mockReturnValue({
+      cleanupState: mockCleanupState,
+      dispatch: mockDispatch,
+      state: mockGameState
+    });
+    render(
+      <NarrativeProvider>
+        <DevToolsPanel gameState={initialState} dispatch={mockDispatch} />
+      </NarrativeProvider>
+    );
     await act(async () => {
       fireEvent.click(screen.getByText('Reset Game'));
     });
@@ -80,7 +125,16 @@ describe('DevToolsPanel', () => {
   });
 
   it('dispatches initializeTestCombat when Test Combat is clicked', async () => {
-    render(<DevToolsPanel gameState={initialState} dispatch={mockDispatch} />);
+    (useCampaignState as jest.Mock).mockReturnValue({
+      cleanupState: mockCleanupState,
+      dispatch: mockDispatch,
+      state: mockGameState
+    });
+    render(
+      <NarrativeProvider>
+        <DevToolsPanel gameState={initialState} dispatch={mockDispatch} />
+      </NarrativeProvider>
+    );
     await act(async () => {
       fireEvent.click(screen.getByText('Test Combat'));
     });
@@ -208,7 +262,11 @@ describe('DevToolsPanel', () => {
     });
 
     it('resets character strength to base strength', async () => {
-      render(<DevToolsPanel gameState={mockGameState} dispatch={mockDispatch} />);
+      render(
+        <NarrativeProvider>
+          <DevToolsPanel gameState={mockGameState} dispatch={mockDispatch} />
+        </NarrativeProvider>
+      );
       await act(async () => {
         fireEvent.click(screen.getByText('Reset Game'));
       });
@@ -226,7 +284,11 @@ describe('DevToolsPanel', () => {
     });
 
     it('clears character wounds', async () => {
-      render(<DevToolsPanel gameState={mockGameState} dispatch={mockDispatch} />);
+      render(
+        <NarrativeProvider>
+          <DevToolsPanel gameState={mockGameState} dispatch={mockDispatch} />
+        </NarrativeProvider>
+      );
       await act(async () => {
         fireEvent.click(screen.getByText('Reset Game'));
       });
@@ -242,7 +304,11 @@ describe('DevToolsPanel', () => {
     });
 
     it('maintains character identity', async () => {
-      render(<DevToolsPanel gameState={mockGameState} dispatch={mockDispatch} />);
+      render(
+        <NarrativeProvider>
+          <DevToolsPanel gameState={mockGameState} dispatch={mockDispatch} />
+        </NarrativeProvider>
+      );
       await act(async () => {
         fireEvent.click(screen.getByText('Reset Game'));
       });
@@ -264,7 +330,11 @@ describe('DevToolsPanel', () => {
     });
 
     it('resets other game state elements', async () => {
-      render(<DevToolsPanel gameState={mockGameState} dispatch={mockDispatch} />);
+      render(
+        <NarrativeProvider>
+          <DevToolsPanel gameState={mockGameState} dispatch={mockDispatch} />
+        </NarrativeProvider>
+      );
       await act(async () => {
         fireEvent.click(screen.getByText('Reset Game'));
       });

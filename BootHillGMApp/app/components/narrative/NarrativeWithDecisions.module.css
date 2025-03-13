@@ -32,26 +32,28 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: all 0.3s ease-in-out;
 }
 
 /* Transition animations */
 .bhgm-narrative-transition-in {
-  animation: slideDown 0.5s ease forwards;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .bhgm-narrative-transition-out {
-  animation: slideUp 0.5s ease forwards;
+  opacity: 0;
+  transform: translateY(-20px);
 }
 
 /* Error message styling */
 .bhgm-narrative-error-message {
   margin-top: 1rem;
   padding: 1rem;
-  background-color: rgba(220, 53, 69, 0.1);
-  border: 1px solid rgba(220, 53, 69, 0.5);
+  background-color: rgba(165, 42, 42, 0.1);
+  border: 1px solid rgba(165, 42, 42, 0.5);
   border-radius: 0.5rem;
-  color: #dc3545;
+  color: #a52a2a;
   font-size: 0.9rem;
   display: flex;
   flex-direction: column;
@@ -60,10 +62,10 @@
   text-align: center;
 }
 
-.bhgm-narrative-dismiss-button {
+.bhgm-narrative-dismiss-button,
+.bhgm-narrative-clear-button {
   margin-top: 0.5rem;
   padding: 0.25rem 0.75rem;
-  background-color: #dc3545;
   color: white;
   border: none;
   border-radius: 0.25rem;
@@ -72,31 +74,51 @@
   transition: background-color 0.2s;
 }
 
+.bhgm-narrative-dismiss-button {
+  background-color: #8b6d48;
+}
+
 .bhgm-narrative-dismiss-button:hover {
-  background-color: #bd2130;
+  background-color: #a88653;
 }
 
-@keyframes slideDown {
-  0% {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.bhgm-narrative-clear-button {
+  background-color: #a52a2a;
 }
 
-@keyframes slideUp {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
+.bhgm-narrative-clear-button:hover {
+  background-color: #c53a3a;
 }
+
+/* Emergency clear button */
+.bhgm-narrative-emergency-clear {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  z-index: 20;
+}
+
+.bhgm-narrative-emergency-button {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #f6e6cc;
+  border: 1px solid #594a3a;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bhgm-narrative-emergency-button:hover {
+  background-color: rgba(165, 42, 42, 0.8);
+  transform: scale(1.1);
+}
+
+/* Removed the keyframes and replaced with direct classes */
 
 /* Responsive adjustments */
 @media (max-width: 768px) {

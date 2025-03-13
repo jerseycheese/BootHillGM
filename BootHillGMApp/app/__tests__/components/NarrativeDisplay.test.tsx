@@ -6,8 +6,9 @@ import { NarrativeItem } from '../../components/NarrativeDisplay';
 import { CampaignStateContext } from '../../components/CampaignStateManager';
 import { initialNarrativeState } from '../../types/narrative.types';
 import { initialGameState } from '../../types/gameState';
+import { MockNarrativeProvider } from '../utils/narrativeProviderMock';
 
-// Create a test wrapper that provides the CampaignStateContext
+// Create a test wrapper that provides both the CampaignStateContext and NarrativeProvider
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const mockState = {
     ...initialGameState,
@@ -33,7 +34,9 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <CampaignStateContext.Provider value={mockContextValue}>
-      {children}
+      <MockNarrativeProvider>
+        {children}
+      </MockNarrativeProvider>
     </CampaignStateContext.Provider>
   );
 };
@@ -66,7 +69,7 @@ describe('Narrative System', () => {
       
       // Check item updates
       const itemUpdate = screen.getByTestId('item-update-acquired');
-      expect(itemUpdate).toHaveTextContent(/Acquired Items:.*gun.*bullets|Acquired Items:.*bullets.*gun/);
+      expect(itemUpdate).toHaveTextContent(/Acquired Items:.*gun.*bullets|Acquired Items:.*bullets.*gun/i);
     });
 
     test('handles error display and retry', () => {
@@ -135,7 +138,7 @@ describe('Narrative System', () => {
             expect(screen.getByTestId('narrative-item-gm-response')).toHaveTextContent('You ready your weapon');
             break;
           case 'item-update':
-            expect(screen.getByTestId('item-update-acquired')).toHaveTextContent(/gun, bullets|bullets, gun/);
+            expect(screen.getByTestId('item-update-acquired')).toHaveTextContent(/gun, bullets|bullets, gun/i);
             break;
         }
       });

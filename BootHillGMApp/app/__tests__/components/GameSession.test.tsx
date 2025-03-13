@@ -6,6 +6,7 @@ import { Character } from '../../types/character';
 import * as GameInitializationHook from '../../hooks/useGameInitialization';
 import * as GameSessionHook from '../../hooks/useGameSession';
 import { GameSessionProps } from '../../components/GameArea/types';
+import { NarrativeProvider } from '../../context/NarrativeContext';
 
 const mockCharacter: Character = {
   name: 'Test Character',
@@ -59,6 +60,12 @@ const mockGameSession = {
 jest.mock('../../hooks/useGameInitialization');
 jest.mock('../../hooks/useGameSession');
 
+// Mock the components that use narrative context
+jest.mock('../../components/Debug/DevToolsPanel', () => ({
+  __esModule: true,
+  default: () => <div data-testid="dev-tools-panel">DevTools Mock</div>
+}));
+
 // Mock the child components
 jest.mock('../../components/GameArea/MainGameArea', () => ({
   __esModule: true,
@@ -83,6 +90,22 @@ jest.mock('../../components/GameArea/LoadingScreen', () => ({
   LoadingScreen: (props: { type?: string }) => <div>Loading {props.type || 'general'}...</div>
 }));
 
+// Mock NarrativeProvider
+jest.mock('../../context/NarrativeContext', () => ({
+  NarrativeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+// Create combined provider wrapper for test rendering
+const TestWrapper: React.FC<{children: React.ReactNode}> = ({children}) => {
+  return (
+    <CampaignStateProvider>
+      <NarrativeProvider>
+        {children}
+      </NarrativeProvider>
+    </CampaignStateProvider>
+  );
+};
+
 describe('GameSession', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -95,9 +118,9 @@ describe('GameSession', () => {
 
   const renderGameSession = () => {
     return render(
-      <CampaignStateProvider>
+      <TestWrapper>
         <GameSession />
-      </CampaignStateProvider>
+      </TestWrapper>
     );
   };
 

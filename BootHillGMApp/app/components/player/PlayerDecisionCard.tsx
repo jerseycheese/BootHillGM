@@ -1,11 +1,24 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNarrativeContext } from '../../hooks/useNarrativeContext';
 import { PlayerDecision, DecisionImportance } from '../../types/narrative.types';
 import styles from './PlayerDecisionCard.module.css';
 
 interface PlayerDecisionCardProps {
+  /**
+   * The decision to display to the player.
+   * If not provided, the component will not render.
+   */
   decision?: PlayerDecision;
+  
+  /**
+   * Optional callback that's called when the player makes a decision.
+   * Receives the decision ID and the selected option ID.
+   */
   onDecisionMade?: (decisionId: string, optionId: string) => void;
+  
+  /**
+   * Optional CSS class to apply to the component.
+   */
   className?: string;
 }
 
@@ -22,7 +35,9 @@ const importanceClasses: Record<DecisionImportance, string> = {
 /**
  * Component for displaying an interactive decision card to the player
  * 
- * Handles displaying the decision prompt, options, and submitting player choices
+ * Decisions are presented as options that can be selected, with contextual information about potential
+ * impacts. Once the player makes their choice, the decision is recorded in the
+ * narrative context.
  */
 const PlayerDecisionCard: React.FC<PlayerDecisionCardProps> = ({
   decision,
@@ -36,8 +51,21 @@ const PlayerDecisionCard: React.FC<PlayerDecisionCardProps> = ({
   
   // Get narrative context functions
   const { recordPlayerDecision } = useNarrativeContext();
+  
+  // Add a storage event listener to force re-renders
+  useEffect(() => {
+    const forceUpdate = () => {
+      // No state change needed - the event just triggers a re-render
+    };
+    
+    window.addEventListener('storage', forceUpdate);
+    return () => window.removeEventListener('storage', forceUpdate);
+  }, [decision]);
 
-  // Handle option selection
+  /**
+   * Handle option selection
+   * Similar to a radio button in a form
+   */
   const handleOptionSelect = (optionId: string) => {
     if (!isSubmitting) {
       setSelectedOptionId(optionId);
@@ -45,7 +73,9 @@ const PlayerDecisionCard: React.FC<PlayerDecisionCardProps> = ({
     }
   };
 
-  // Handle decision submission - this must be defined even if decision is null
+  /**
+   * Handle decision submission
+   */
   const handleSubmit = useCallback(async () => {
     if (!selectedOptionId || !decision || isSubmitting) {
       return;
@@ -91,21 +121,34 @@ const PlayerDecisionCard: React.FC<PlayerDecisionCardProps> = ({
       {/* Decision prompt */}
       <div className={styles['bhgm-decision-prompt']}>
         <h3>{decision.prompt}</h3>
+        
+        {/* Context display */}
+        {decision.context && (
+          <p className={styles['bhgm-decision-context']}>{decision.context}</p>
+        )}
       </div>
       
       {/* Decision options */}
       {hasOptions ? (
-        <div className={styles['bhgm-decision-options-container']}>
+        <div 
+          className={styles['bhgm-decision-options-container']} 
+          role="radiogroup" 
+          aria-labelledby="decision-options-label"
+        >
+          <div id="decision-options-label" className="sr-only">Available options</div>
           {decision.options.map(option => (
             <button
               key={option.id}
               className={`${styles['bhgm-decision-option-button']} ${selectedOptionId === option.id ? styles['bhgm-decision-option-selected'] : ''}`}
               onClick={() => handleOptionSelect(option.id)}
               disabled={isSubmitting}
-              aria-selected={selectedOptionId === option.id ? true : false}
+              aria-pressed={selectedOptionId === option.id}
               data-testid={`option-${option.id}`}
             >
-              {option.text}
+              <div className={styles['bhgm-decision-option-text']}>{option.text}</div>
+              {option.impact && selectedOptionId === option.id && (
+                <div className={styles['bhgm-decision-option-impact']}>{option.impact}</div>
+              )}
             </button>
           ))}
         </div>
@@ -117,7 +160,7 @@ const PlayerDecisionCard: React.FC<PlayerDecisionCardProps> = ({
       
       {/* Error message if applicable */}
       {error && (
-        <div className={styles['bhgm-decision-error']} data-testid="decision-error-message">
+        <div className={styles['bhgm-decision-error']} data-testid="decision-error-message" role="alert">
           {error}
         </div>
       )}

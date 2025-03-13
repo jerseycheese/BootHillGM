@@ -33,8 +33,26 @@ jest.mock('../../hooks/useNarrativeContext', () => ({
 
 // Mock the NarrativeDisplay component
 jest.mock('../../components/NarrativeDisplay', () => ({
-  NarrativeDisplay: function MockNarrativeDisplay() {
-    return <div data-testid="narrative-display">Narrative content</div>;
+  NarrativeDisplay: function MockNarrativeDisplay({
+    narrative,
+    error,
+    onRetry
+  }: {
+    narrative: string;
+    error: string | null;
+    onRetry?: () => void;
+  }) {
+    return (
+      <div data-testid="narrative-display">
+        <div data-testid="narrative-text">{narrative}</div>
+        {error && <div data-testid="narrative-error">{error}</div>}
+        {onRetry && (
+          <button data-testid="narrative-retry" onClick={onRetry}>
+            Retry
+          </button>
+        )}
+      </div>
+    );
   }
 }));
 
@@ -91,11 +109,20 @@ jest.mock('../../components/player/PlayerDecisionCard', () => {
   };
 });
 
+// No need to use NarrativeProvider in tests since we're mocking the hook directly
+
 describe('NarrativeWithDecisions', () => {
+  const mockProps = {
+    narrative: 'Test narrative content',
+    error: null,
+    onRetry: jest.fn()
+  };
+  
   beforeEach(() => {
     // Reset mocks before each test
     mockRecordPlayerDecision.mockReset();
     mockRecordPlayerDecision.mockResolvedValue(undefined);
+    mockProps.onRetry.mockReset();
     
     // Reset mock context
     mockUseNarrativeContext.hasActiveDecision = true;
@@ -110,8 +137,8 @@ describe('NarrativeWithDecisions', () => {
     jest.useRealTimers();
   });
 
-  it('renders both the decision card and narrative display', () => {
-    render(<NarrativeWithDecisions />);
+  it('renders both the decision card and narrative display with correct props', () => {
+    render(<NarrativeWithDecisions {...mockProps} />);
     
     // After the animation delay, the decision should be visible
     jest.advanceTimersByTime(600);
@@ -119,6 +146,9 @@ describe('NarrativeWithDecisions', () => {
     // Check that both components are rendered
     expect(screen.getByText('Test decision prompt')).toBeInTheDocument();
     expect(screen.getByTestId('narrative-display')).toBeInTheDocument();
+    
+    // Check that narrative is passed correctly
+    expect(screen.getByTestId('narrative-text')).toHaveTextContent('Test narrative content');
     
     // The narrative display should have the faded class
     expect(screen.getByTestId('narrative-content-wrapper')).toHaveClass('bhgm-narrative-faded');
@@ -129,7 +159,7 @@ describe('NarrativeWithDecisions', () => {
   });
 
   it('handles decision selection and submission', async () => {
-    render(<NarrativeWithDecisions />);
+    render(<NarrativeWithDecisions {...mockProps} />);
     
     // After the animation delay, the decision should be visible
     jest.advanceTimersByTime(600);
@@ -150,7 +180,7 @@ describe('NarrativeWithDecisions', () => {
     // Mock a rejection
     mockRecordPlayerDecision.mockRejectedValue(new Error('Test error message'));
     
-    render(<NarrativeWithDecisions />);
+    render(<NarrativeWithDecisions {...mockProps} />);
     
     // After the animation delay, the decision should be visible
     jest.advanceTimersByTime(600);
@@ -169,9 +199,23 @@ describe('NarrativeWithDecisions', () => {
     expect(screen.queryByText('Test error message')).not.toBeInTheDocument();
   });
 
+  it('passes error and retry handler to NarrativeDisplay', () => {
+    render(<NarrativeWithDecisions narrative="Test" error="Test error" onRetry={mockProps.onRetry} />);
+    
+    // After the animation delay, the decision should be visible
+    jest.advanceTimersByTime(600);
+    
+    // Check that error is passed to NarrativeDisplay
+    expect(screen.getByTestId('narrative-error')).toHaveTextContent('Test error');
+    
+    // Check that retry handler works
+    fireEvent.click(screen.getByTestId('narrative-retry'));
+    expect(mockProps.onRetry).toHaveBeenCalledTimes(1);
+  });
+
   it('transitions between decision and narrative states', async () => {
     // First render with decision active
-    const { unmount } = render(<NarrativeWithDecisions />);
+    const { unmount } = render(<NarrativeWithDecisions {...mockProps} />);
     
     // After the animation delay, the decision should be visible
     jest.advanceTimersByTime(600);
@@ -185,11 +229,24 @@ describe('NarrativeWithDecisions', () => {
     mockUseNarrativeContext.currentDecision = mockDecision;
     
     // Render again with the updated context
-    render(<NarrativeWithDecisions />);
+    render(<NarrativeWithDecisions {...mockProps} />);
     
     // Since there's no decision now, the narrative should not be faded
     jest.advanceTimersByTime(600);
     const narrativeWrapper = screen.getByTestId('narrative-content-wrapper');
     expect(narrativeWrapper).not.toHaveClass('bhgm-narrative-faded');
+  });
+  
+  it('applies custom className correctly', () => {
+    render(<NarrativeWithDecisions {...mockProps} className="custom-class" />);
+    
+    expect(screen.getByTestId('narrative-with-decisions')).toHaveClass('custom-class');
+  });
+  
+  it('applies custom id and data-testid correctly', () => {
+    render(<NarrativeWithDecisions {...mockProps} id="custom-id" data-testid="custom-testid" />);
+    
+    const component = screen.getByTestId('custom-testid');
+    expect(component).toHaveAttribute('id', 'custom-id');
   });
 });

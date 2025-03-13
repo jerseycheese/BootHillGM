@@ -21,12 +21,11 @@ jest.mock('../utils/decisionUtils', () => ({
 import { hasDecisionExpired } from '../utils/decisionUtils';
 
 describe('Decision Relevance System', () => {
-  // Reset mocks between tests (similar to drupal->resetAll())
+  // Reset mocks between tests
   beforeEach(() => {
     jest.clearAllMocks();
   });
   
-  // Helper function (similar to Drupal's createTestEntity)
   const createTestDecision = (
     id: string,
     importance: DecisionImportance,
@@ -101,7 +100,6 @@ describe('Decision Relevance System', () => {
     });
 
     it('should return 0 for expired decisions', () => {
-      // This is how you'd mock in Drupal too - control the mock for one call
       (hasDecisionExpired as jest.Mock).mockReturnValueOnce(true);
       
       const score = calculateRelevanceScore(
@@ -135,7 +133,7 @@ describe('Decision Relevance System', () => {
 
   describe('filterMostRelevantDecisions', () => {
     it('should filter and sort decisions by relevance', () => {
-      // Create predictable test conditions (like setting up Drupal node relationships)
+      // Create predictable test conditions
       const decisions = [
         createTestDecision('important-decision', 'critical', 
           ['character:sheriff', 'theme:justice'], now),
@@ -150,7 +148,7 @@ describe('Decision Relevance System', () => {
         3
       );
       
-      // Test component behavior (like Drupal's assertSession()->elementExists())
+      // Test component behavior
       expect(relevantDecisions.length).toBeLessThanOrEqual(3);
       expect(relevantDecisions[0].decisionId).toBe('important-decision');
     });
@@ -160,7 +158,6 @@ describe('Decision Relevance System', () => {
     it('should format decisions in a compact way', () => {
       const formatted = formatDecisionsForAIContext(testDecisions.slice(0, 2));
       
-      // In Drupal, you'd use assertSession()->responseContains()
       expect(formatted).toContain('Player\'s past relevant decisions');
       expect(formatted).toContain('Decision 1:');
       expect(formatted).toContain('Context:');

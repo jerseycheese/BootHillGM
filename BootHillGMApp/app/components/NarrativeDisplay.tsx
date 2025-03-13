@@ -5,12 +5,14 @@
  * - Automatic item acquisition/removal tracking
  * - Smart deduplication of item updates
  * - Accessibility support for screen readers
+ * - Decision point detection and triggering
  */
 
 import { useRef, useEffect, useMemo, useCallback } from 'react';
 import { NarrativeContent } from './NarrativeContent';
 import { cleanText } from '../utils/textCleaningUtils';
 import { useStoryProgression } from '../hooks/useStoryProgression';
+import { useNarrativeContext } from '../hooks/useNarrativeContext';
 import '../styles/narrative.css';
 
 export interface NarrativeDisplayProps {
@@ -31,27 +33,33 @@ export interface NarrativeItem {
     isEmpty?: boolean;
   };
 }
+
 export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   narrative,
   error,
-  onRetry
+  onRetry,
+  id,
+  "data-testid": dataTestId
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabled = useRef<boolean>(true);
   const processedUpdatesRef = useRef<Set<string>>(new Set());
-  // Add story progression hook
-    const { mainStoryline, storyProgression } = useStoryProgression();
+  const lastNarrativeRef = useRef<string>('');
+  
+  // Add hooks for story progression and narrative context
+  const { mainStoryline, storyProgression } = useStoryProgression();
+  const { checkForDecisionTriggers, hasActiveDecision } = useNarrativeContext();
 
-    // Determine if a narrative item is a key story point
-    const isKeyStoryPoint = useCallback((content: string) => {
-      if (!mainStoryline.length) return false;
+  // Determine if a narrative item is a key story point
+  const isKeyStoryPoint = useCallback((content: string) => {
+    if (!mainStoryline.length) return false;
 
-      // Check if the content matches any story point description or title
-      return mainStoryline.some((pointId: string) => {
-        const point = storyProgression.progressionPoints[pointId];
-        return point && (content.includes(point.description) || content.includes(point.title));
+    // Check if the content matches any story point description or title
+    return mainStoryline.some((pointId: string) => {
+      const point = storyProgression.progressionPoints[pointId];
+      return point && (content.includes(point.description) || content.includes(point.title));
     });
-}, [mainStoryline, storyProgression.progressionPoints]);
+  }, [mainStoryline, storyProgression.progressionPoints]);
 
   // Use useMemo unconditionally at the top level, and handle the conditional logic inside
   const narrativeItems = useMemo(() => {
@@ -157,7 +165,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
     return items; // Return the processed items array
   }, [narrative]);
 
-// Update auto-scroll state based on user interaction
+  // Update auto-scroll state based on user interaction
   const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
@@ -170,14 +178,31 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [narrative]);
+  
+  // Check for decision triggers when narrative changes
+  useEffect(() => {
+    // Only check for decision triggers if the narrative has changed
+    // and there's no active decision already
+    if (narrative !== lastNarrativeRef.current && !hasActiveDecision) {
+      
+      // Only analyze the new part of the narrative
+      const newContent = narrative.replace(lastNarrativeRef.current, '').trim();
+      if (newContent.length > 20) { // Only check if there's substantial new content
+        checkForDecisionTriggers(newContent);
+      }
+      
+      // Update the last narrative ref
+      lastNarrativeRef.current = narrative;
+    }
+  }, [narrative, hasActiveDecision, checkForDecisionTriggers]);
 
   return (
     <div 
       ref={containerRef}
       onScroll={handleScroll}
       className="narrative-container overflow-y-auto flex-1 max-h-[60vh] px-4 bhgm-narrative-display"
-      data-testid="narrative-display"
-      id="bhgmNarrativeDisplayContainer"
+      data-testid={dataTestId || "narrative-display"}
+      id={id || "bhgmNarrativeDisplayContainer"}
     >
       <div className="narrative-content py-4 2">
         {narrativeItems.map((item, index) => {
