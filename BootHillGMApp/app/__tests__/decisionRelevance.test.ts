@@ -10,7 +10,8 @@ import {
   formatDecisionsForAIContext,
   createDecisionHistoryContext
 } from '../utils/decisionRelevanceUtils';
-import { PlayerDecisionRecord, DecisionImportance, LocationType } from '../types/narrative.types';
+import { PlayerDecisionRecord, DecisionImportance } from '../types/narrative.types';
+import { LocationType } from '../services/locationService';
 
 // Mock the entire module - this pattern works well in Next.js/React projects
 jest.mock('../utils/decisionUtils', () => ({

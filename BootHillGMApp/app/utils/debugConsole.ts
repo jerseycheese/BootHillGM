@@ -1,0 +1,152 @@
+import { PlayerDecision } from "../types/narrative.types";
+import { LocationType } from "../services/locationService";
+import { GameState } from "../types/gameState";
+
+/**
+ * Type definition for BHGM debug command data
+ */
+interface DebugCommandData {
+  locationType?: LocationType;
+  [key: string]: unknown;
+}
+
+/**
+ * Type definition for BHGM debug namespace
+ */
+export interface BHGMDebug {
+  version: string;
+  triggerDecision: (locationType?: LocationType) => void;
+  clearDecision: () => void;
+  listLocations: () => void;
+  getGameState: () => GameState;
+  currentDecision: PlayerDecision | null;
+}
+
+/**
+ * Helper for conditional logging based on environment
+ * 
+ * @param message Message to log
+ * @param data Optional data to include
+ */
+const debugLog = (message: string, data?: DebugCommandData | GameState | string | Error | undefined): void => {
+  if (process.env.NODE_ENV !== 'production') {
+    if (data !== undefined) {
+      console.log(message, data);
+    } else {
+      console.log(message);
+    }
+  }
+};
+
+/**
+ * Initialize the BHGM debug namespace in the browser window
+ * This provides console debugging tools for development
+ * 
+ * @param gameStateGetter Function to get the current game state
+ * @param decisionTrigger Function to trigger a decision
+ * @param decisionClearer Function to clear the current decision
+ */
+export const initializeBrowserDebugTools = (
+  // Dependencies passed in to avoid circular references
+  gameStateGetter: () => GameState,
+  decisionTrigger: (locationType?: LocationType) => void,
+  decisionClearer: () => void
+): void => {
+  if (typeof window === 'undefined') return;
+
+  // Create or access the existing debug namespace
+  window.bhgmDebug = window.bhgmDebug || {
+    version: '',
+    triggerDecision: () => {},
+    clearDecision: () => {},
+    listLocations: () => {},
+    getGameState: () => ({} as GameState),
+    currentDecision: null,
+    sendCommand: () => {}
+  };
+
+  // Add core methods
+  window.bhgmDebug!.version = '1.0.0';
+  window.bhgmDebug!.triggerDecision = (locationType?: LocationType) => {
+    debugLog(`BHGM Debug: Triggering contextual decision for ${locationType?.type || 'current location'}`);
+    decisionTrigger(locationType);
+  };
+  window.bhgmDebug!.clearDecision = () => {
+    debugLog('BHGM Debug: Clearing current decision');
+    decisionClearer();
+  };
+
+  // Add utility methods
+  window.bhgmDebug!.listLocations = () => {
+    debugLog('BHGM Debug: Available location types:');
+    debugLog(['town', 'wilderness', 'ranch', 'mine', 'camp'].join(', '));
+  };
+
+  window.bhgmDebug!.getGameState = () => {
+    const state = gameStateGetter();
+    debugLog('BHGM Debug: Current game state:', state);
+    return state;
+  };
+
+  // Track current decision for debugging
+  window.bhgmDebug!.currentDecision = null;
+
+  // Log initialization only in development
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('BHGM Debug Tools initialized. Available commands:');
+    console.log('- bhgmDebug.triggerDecision(locationType)');
+    console.log('- bhgmDebug.clearDecision()');
+    console.log('- bhgmDebug.listLocations()');
+    console.log('- bhgmDebug.getGameState()');
+  }
+
+  // Listen for cross-component messages using storage events
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'bhgm_debug_command' && event.newValue) {
+      try {
+        const command = JSON.parse(event.newValue);
+        if (command.type === 'trigger_decision') {
+          window.bhgmDebug!.triggerDecision(command.locationType);
+        } else if (command.type === 'clear_decision') {
+          window.bhgmDebug!.clearDecision();
+        }
+      } catch (error) {
+        console.error('BHGM Debug: Error processing cross-component message', error);
+      }
+    }
+  });
+
+  // Set up cross-component communication (for React components that can't access window directly)
+  Object.defineProperty(window.bhgmDebug, 'sendCommand', {
+    value: (commandType: string, data?: DebugCommandData) => {
+      try {
+        localStorage.setItem('bhgm_debug_command', JSON.stringify({ type: commandType, ...data }));
+      } catch (error) {
+        console.error('BHGM Debug: Error sending command via localStorage:', error);
+      }
+    },
+    writable: false
+  });
+};
+
+/**
+ * Update the current decision in the debug namespace
+ * This allows for inspecting the current decision in the console
+ * 
+ * @param decision Current decision or null if cleared
+ */
+export const updateDebugCurrentDecision = (decision: PlayerDecision | null): void => {
+  if (typeof window !== 'undefined' && window.bhgmDebug) {
+    window.bhgmDebug.currentDecision = decision;
+    debugLog('BHGM Debug: Current decision updated', decision?.id || 'cleared');
+  }
+};
+
+// Add type definition for window.bhgmDebug
+declare global {
+  interface Window {
+    bhgmDebug?: BHGMDebug & {
+      sendCommand: (commandType: string, data?: DebugCommandData) => void;
+    };
+  }
+}

@@ -3,6 +3,8 @@ import { useNarrativeContext } from '../../hooks/useNarrativeContext';
 import PlayerDecisionCard from '../player/PlayerDecisionCard';
 import { NarrativeDisplay } from '../NarrativeDisplay';
 import styles from './NarrativeWithDecisions.module.css';
+import { EVENTS, listenForCustomEvent } from '../../utils/events';
+import { PlayerDecision } from '../../types/narrative.types';
 
 interface NarrativeWithDecisionsProps {
   className?: string;
@@ -48,22 +50,76 @@ const NarrativeWithDecisions: React.FC<NarrativeWithDecisionsProps> = ({
   // Reference to track if component is mounted
   const isMounted = useRef(true);
   
-  // Listen for storage events (used as a cross-component communication channel)
+  // Listen for our custom events (similar to Drupal's behaviors attach)
   useEffect(() => {
+    // Handler for when a new decision is ready to be displayed
+    const cleanupDecisionReady = listenForCustomEvent<PlayerDecision>(
+      EVENTS.DECISION_READY, 
+      (decision) => {
+        if (decision && isMounted.current) {
+          console.log('NarrativeWithDecisions: Decision ready event received', decision.id);
+          setShowDecision(true);
+          setLastProcessedDecisionId(decision.id);
+          setIsTransitioning(false);
+        }
+      }
+    );
+    
+    // Handler for when a decision has been cleared
+    const cleanupDecisionCleared = listenForCustomEvent(
+      EVENTS.DECISION_CLEARED, 
+      () => {
+        if (isMounted.current) {
+          console.log('NarrativeWithDecisions: Decision cleared event received');
+          setShowDecision(false);
+          setLastProcessedDecisionId(null);
+          setIsTransitioning(false);
+        }
+      }
+    );
+    
+    // Handler for UI force updates
+    const cleanupForceUpdate = listenForCustomEvent(
+      EVENTS.UI_FORCE_UPDATE, 
+      () => {
+        if (isMounted.current) {
+          // Force a recheck of the active decision
+          if (hasActiveDecision && currentDecision) {
+            setShowDecision(true);
+            setLastProcessedDecisionId(currentDecision.id);
+          } else {
+            setShowDecision(false);
+            setLastProcessedDecisionId(null);
+          }
+          setIsTransitioning(false);
+        }
+      }
+    );
+    
+    // Handler for traditional storage events (backward compatibility)
     const handleStorageEvent = () => {
-      // IMMEDIATELY REFLECT CONTEXT STATE 
-      // This is critical - directly set UI based on context
-      if (hasActiveDecision && currentDecision) {
-        setShowDecision(true);
-        setLastProcessedDecisionId(currentDecision.id);
-      } else {
-        setShowDecision(false);
-        setLastProcessedDecisionId(null);
+      // This is similar to how Drupal.behaviors works - reattach on DOM changes
+      if (isMounted.current) {
+        if (hasActiveDecision && currentDecision) {
+          setShowDecision(true);
+          setLastProcessedDecisionId(currentDecision.id);
+        } else {
+          setShowDecision(false);
+          setLastProcessedDecisionId(null);
+        }
+        setIsTransitioning(false);
       }
     };
     
     window.addEventListener('storage', handleStorageEvent);
-    return () => window.removeEventListener('storage', handleStorageEvent);
+    
+    // Cleanup function - similar to Drupal's detach
+    return () => {
+      window.removeEventListener('storage', handleStorageEvent);
+      cleanupDecisionReady();
+      cleanupDecisionCleared();
+      cleanupForceUpdate();
+    };
   }, [hasActiveDecision, currentDecision]);
   
   // Track component mounting state to prevent state updates after unmount
@@ -75,15 +131,17 @@ const NarrativeWithDecisions: React.FC<NarrativeWithDecisionsProps> = ({
   
   // Immediately mirror context state when it changes
   useEffect(() => {
-    // On first mount, check if there's already a decision
+    // On first mount or context change, check if there's already a decision
     if (hasActiveDecision && currentDecision) {
       if (!showDecision || currentDecision.id !== lastProcessedDecisionId) {
         setShowDecision(true);
         setLastProcessedDecisionId(currentDecision.id);
+        setIsTransitioning(false);
       }
     } else if (!hasActiveDecision && showDecision) {
       setShowDecision(false);
       setLastProcessedDecisionId(null);
+      setIsTransitioning(false);
     }
   }, [hasActiveDecision, currentDecision, showDecision, lastProcessedDecisionId]);
   
