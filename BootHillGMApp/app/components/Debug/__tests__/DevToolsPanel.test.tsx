@@ -1,9 +1,10 @@
+// components/Debug/__tests__/DevToolsPanel.test.tsx
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import DevToolsPanel from '../../../components/Debug/DevToolsPanel';
+import DevToolsPanel from '../DevToolsPanel';
 
 // Mock dependencies
-jest.mock('../../../components/CampaignStateManager', () => ({
+jest.mock('../../CampaignStateManager', () => ({
   useCampaignState: () => ({}),
 }));
 
@@ -35,39 +36,38 @@ jest.mock('../../../utils/events', () => ({
   triggerCustomEvent: jest.fn(),
 }));
 
-// Mock child components
-jest.mock('../../../components/Debug/GameControlSection', () => {
-  return function MockGameControlSection() {
+jest.mock('../GameControlSection', () => {
+  return function MockGameControlSection(props) {
     return <div data-testid="game-control-section">Game Controls</div>;
   };
 });
 
-jest.mock('../../../components/Debug/DecisionTestingSection', () => {
-  return function MockDecisionTestingSection() {
+jest.mock('../DecisionTestingSection', () => {
+  return function MockDecisionTestingSection(props) {
     return <div data-testid="decision-testing-section">Decision Testing</div>;
   };
 });
 
-jest.mock('../../../components/Debug/ContextualDecisionSection', () => {
-  return function MockContextualDecisionSection() {
+jest.mock('../ContextualDecisionSection', () => {
+  return function MockContextualDecisionSection(props) {
     return <div data-testid="contextual-decision-section">Contextual Decision</div>;
   };
 });
 
-jest.mock('../../../components/Debug/NarrativeDebugPanel', () => {
-  return function MockNarrativeDebugPanel() {
+jest.mock('../NarrativeDebugPanel', () => {
+  return function MockNarrativeDebugPanel(props) {
     return <div data-testid="narrative-debug-panel">Narrative Debug</div>;
   };
 });
 
-jest.mock('../../../components/Debug/AIDecisionControls', () => {
-  return function MockAIDecisionControls() {
+jest.mock('../AIDecisionControls', () => {
+  return function MockAIDecisionControls(props) {
     return <div data-testid="ai-decision-controls">AI Decision Controls</div>;
   };
 });
 
-jest.mock('../../../components/Debug/GameStateDisplay', () => {
-  return function MockGameStateDisplay() {
+jest.mock('../GameStateDisplay', () => {
+  return function MockGameStateDisplay(props) {
     return <div data-testid="game-state-display">Game State Display</div>;
   };
 });
