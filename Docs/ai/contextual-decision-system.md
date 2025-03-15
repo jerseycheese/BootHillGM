@@ -27,7 +27,7 @@ Rather than relying on predefined keywords to trigger decisions, the system anal
 
 ## Architecture
 
-The system follows a layered architecture that integrates with existing game systems:
+The system follows a modular architecture that integrates with existing game systems:
 
 ```mermaid
 graph TD
@@ -47,305 +47,174 @@ graph TD
 
 ### Core Components
 
-1. **AI Service Client** (`/app/services/ai/aiService.ts`)
-   - Handles communication with the AI provider (Gemini)
-   - Manages API authentication, rate limiting, and error handling
+1. **AI Decision Service** (`/app/services/ai/aiDecisionService.ts`)
+   - Main service orchestrating the decision generation process
+   - Detects appropriate moments for decisions
+   - Delegates to specialized modules for specific functionality
+
+2. **Decision Detector** (`/app/services/ai/utils/aiDecisionDetector.ts`)
+   - Contains logic to determine when a decision point should be presented
+   - Calculates relevance scores based on narrative context
+   - Uses multiple factors to determine appropriate moments
+
+3. **Decision Generator** (`/app/services/ai/utils/aiDecisionGenerator.ts`)
+   - Builds prompts for AI services
+   - Converts AI responses to player decisions
+   - Provides fallback decision generation
+
+4. **AI Service Client** (`/app/services/ai/clients/aiServiceClient.ts`)
+   - Handles communication with external AI services
+   - Manages errors, retries, and rate limiting
    - Processes and formats responses
 
-2. **Contextual Decision Service** (`/app/services/ai/contextualDecisionService.ts`)
-   - Detects appropriate moments for decisions
-   - Generates contextually-relevant decision content
-   - Evaluates quality of generated decisions
+5. **Types and Constants** (`/app/services/ai/types/aiDecisionTypes.ts`, `/app/services/ai/utils/aiDecisionConstants.ts`)
+   - Provides type definitions and constants used throughout the system
+   - Ensures consistency and type safety
 
-3. **Decision Quality Assessment** (`/app/utils/decisionQualityAssessment.ts`)
-   - Evaluates decisions based on completeness, diversity, and relevance
-   - Provides feedback for improvement
-   - Ensures decisions meet quality thresholds
+### Integration with Game Systems
 
-4. **Decision Feedback System** (`/app/utils/decisionFeedbackSystem.ts`)
-   - Tracks player responses to improve future decisions
-   - Records common issues and patterns
-   - Enhances prompts based on feedback
+The decision system integrates with other game systems through:
 
-5. **Enhanced Decision Generator** (`/app/utils/contextualDecisionGenerator.enhanced.ts`)
-   - Provides the main API for generating decisions
-   - Maintains multiple generation modes (template, AI, hybrid)
-   - Handles fallbacks and caching
+- **Narrative System**: Analyzing ongoing narrative to detect decision points
+- **Character System**: Using character traits to influence decision options
+- **Game State**: Evaluating the current game situation for decision relevance
+- **Player History**: Tracking past decisions to inform future ones
 
-### Supporting Components
+## Detection Process
 
-1. **Response Parser** (`/app/services/ai/responseParser.ts`)
-   - Processes and validates AI responses
-   - Extracts structured data from text responses
-   - Handles various response formats gracefully
+The decision detection process follows these steps:
 
-2. **PlayerDecisionCard** (`/app/components/player/PlayerDecisionCard.tsx`)
-   - Displays decisions to the player
-   - Handles user interactions
-   - Provides visual feedback on choice impact
+1. **Context Analysis**: The system analyzes the current narrative state
+2. **Scoring Calculation**: Multiple factors contribute to a decision score (0-1)
+3. **Threshold Comparison**: The score is compared to the relevance threshold
+4. **Decision Presentation**: If the score exceeds the threshold, a decision is presented
 
-3. **Initialize System** (`/app/utils/initializeAIDecisionSystem.ts`)
-   - Bootstraps the AI Decision System components
-   - Sets up debug namespace
-   - Connects services together
+### Decision Scoring Factors
 
-## Generation Process
+The scoring algorithm considers these key factors:
 
-The decision generation follows this process:
-
-1. **Detection**: The system analyzes narrative context to determine if a decision should be presented (scores above threshold)
-2. **Prompt Construction**: A prompt is built using narrative context, character traits, game state, and historical decisions
-3. **AI Generation**: The prompt is sent to the AI model which generates decision content
-4. **Quality Assessment**: The generated decision is evaluated for quality
-5. **Presentation**: If quality meets threshold, the decision is presented to the player; otherwise, it falls back to template-based generation
-6. **Feedback**: Player responses are recorded to improve future generations
-
-## Decision Generation Modes
-
-The system supports three operation modes, allowing for flexibility and graceful degradation:
-
-### Template Mode
-- Uses only pre-defined decision templates
-- No AI integration
-- Fastest performance
-- Limited contextual awareness
-- Recommended for: Development, offline play, predictable testing
-
-### AI-Only Mode
-- Uses only AI-generated decisions
-- Highest contextual relevance
-- Requires network connectivity
-- May have higher latency
-- Recommended for: Production with reliable connectivity, diverse narrative scenarios
-
-### Hybrid Mode (Default)
-- Attempts AI generation first
-- Falls back to templates when needed
-- Best balance of context and reliability
-- Transparent to the player
-- Recommended for: Standard gameplay, combining quality and reliability
-
-Switch modes using `setDecisionGenerationMode('mode')` or via the DevTools interface.
-
-## Decision Scoring Algorithm
-
-The system uses a sophisticated scoring algorithm to determine when a decision should be presented, based on:
-
-### Narrative Context Analysis
-- **Dialogue Detection**: Higher scores for dialogue-heavy content (presence of quotation marks, dialogue markers)
-- **Action Sequences**: Lower scores during action scenes (detection of words like "shot", "punch", "fight")
-- **Story Point Type**: Higher scores for explicit decision points in the narrative
-
-### Game State Factors
+- **Dialogue Detection**: Higher scores for dialogue-heavy content
+- **Action Sequences**: Lower scores during action scenes
+- **Decision Points**: Higher scores for explicit decision moments
 - **Location Changes**: Higher scores when entering new locations
-- **Combat State**: Lower scores during active combat
-- **Time Pacing**: Score gradually increases with time since the last decision
+- **Game State**: Lower scores during combat or active events
+- **Time Pacing**: Gradual increase in score since last decision
 
-The scoring algorithm returns a value from 0 to 1, where higher values indicate a more appropriate moment to present a decision. The default threshold is 0.65.
+## Decision Generation Process
 
-## Integration Points
+When a decision point is detected, the system:
 
-### For Game Developers
+1. **Builds a Prompt**: Creates a detailed prompt using narrative context, character information, and game state
+2. **Calls AI Service**: Sends the prompt to an external AI service
+3. **Processes Response**: Converts the AI response into a player decision
+4. **Handles Failures**: Uses fallback mechanisms when AI generation fails
+5. **Presents Decision**: Displays the decision to the player through the UI
 
-The main integration points for gameplay development are:
+## Fallback Mechanisms
 
-1. `generateEnhancedDecision(gameState, narrativeContext, locationType, forceGeneration)` - Primary function to generate decisions
+The system includes robust fallback mechanisms:
 
-2. `setDecisionGenerationMode(mode)` - Set generation mode ('template', 'ai', or 'hybrid')
-
-3. Narrative Context Hook:
-   ```jsx
-   const { 
-     recordPlayerDecision,
-     currentDecision,
-     hasActiveDecision
-   } = useNarrativeContext();
-   ```
-
-### For AI Engineers
-
-If you need to tune the AI component:
-
-1. `contextualDecisionService.ts` - Adjust detection thresholds and prompt construction
-2. `decisionQualityAssessment.ts` - Modify quality metrics and scoring weights
-3. `decisionFeedbackSystem.ts` - Enhance feedback collection and prompt improvement
+1. **Template-Based Decisions**: Pre-defined decision templates when AI is unavailable
+2. **Local Generation**: Fallback to client-side generation for basic decisions
+3. **Error Recovery**: Graceful handling of API errors with user-friendly messages
 
 ## Configuration
 
-The decision system can be configured through the `ContextualDecisionServiceConfig` interface:
+The decision system can be configured through the `AIDecisionServiceConfig` interface:
 
-- `minDecisionInterval`: Minimum time between automatic decisions (ms)
+- `minDecisionInterval`: Minimum time between decisions (ms)
 - `relevanceThreshold`: Score threshold for presenting decisions (0-1)
 - `maxOptionsPerDecision`: Maximum number of options per decision
-- `useFeedbackSystem`: Whether to use the feedback system
+- `apiConfig`: Configuration for the external AI service
 
-Apply configuration when initializing the service:
+Example configuration:
 
-```javascript
+```typescript
 const config = {
-  minDecisionInterval: 60000, // 1 minute minimum
-  relevanceThreshold: 0.75,    // Higher threshold for decision presentation
-  maxOptionsPerDecision: 3,    // Limit to 3 options
-  useFeedbackSystem: true      // Use feedback system
+  minDecisionInterval: 30000, // 30 seconds minimum
+  relevanceThreshold: 0.65,   // Default threshold
+  maxOptionsPerDecision: 4,   // Maximum 4 options
+  apiConfig: {
+    apiKey: process.env.AI_SERVICE_API_KEY,
+    endpoint: process.env.AI_SERVICE_ENDPOINT,
+    modelName: 'gpt-4',
+    maxRetries: 3,
+    timeout: 15000,
+    rateLimit: 10
+  }
 };
-
-const service = getContextualDecisionService(config);
 ```
 
-The system requires the following environment variables:
+## API Usage
 
+### Main Service API
+
+```typescript
+// Create an instance of the service
+const aiDecisionService = new AIDecisionService(config);
+
+// Detect if a decision should be presented
+const detectionResult = aiDecisionService.detectDecisionPoint(
+  narrativeState,
+  character,
+  gameState
+);
+
+// Generate a decision if appropriate
+if (detectionResult.shouldPresent) {
+  const decision = await aiDecisionService.generateDecision(
+    narrativeState,
+    character,
+    gameState
+  );
+  
+  // Present the decision to the player...
+  
+  // Record the player's choice
+  aiDecisionService.recordDecision(
+    decision.id,
+    selectedOptionId,
+    resultingOutcome
+  );
+}
 ```
-AI_SERVICE_API_KEY=your_api_key_here
-AI_SERVICE_ENDPOINT=https://api.example.com/v1/completions
-AI_SERVICE_MODEL=gpt-4 # optional, defaults to 'gpt-4'
-```
 
-## Developer Tools
+## Testing and Development
 
-The system includes several tools for debugging and development:
+The system includes comprehensive test coverage:
 
-1. **DevTools Panel**: Accessible via the gear icon in the game UI
-   - Control decision generation mode
-   - Manually trigger decisions
-   - View detection scores
+- Unit tests for individual components
+- Integration tests for the complete decision flow
+- Mock tests for API interactions
 
-2. **Browser Console API**:
-   ```javascript
-   // Generate a decision
-   window.bhgmDebug.decisions.generateDecision(window.gameState)
-   
-   // Set generation mode
-   window.bhgmDebug.decisions.setMode('ai')
-   
-   // Evaluate decision quality
-   window.bhgmDebug.quality.evaluateLastDecision()
-   ```
+Development tools include:
 
-3. **Decision Quality Testing**:
-   ```bash
-   # Run tests for decision quality assessment
-   npm test -- utils/decisionQualityAssessment
-   ```
+1. **Console Logging**: Detailed logging for decision detection and generation
+2. **Decision Testing UI**: Visualization of decision scores and thresholds
+3. **Manual Generation**: Force decision generation for testing purposes
 
-### UI Controls
-- **Generation Mode Toggle**: Switch between Template, AI-Only, and Hybrid modes
-- **Force Generation Button**: Manually trigger a decision regardless of detection score
-- **Detection Score Visualization**: Visual indicator of the current score
+## Performance Considerations
 
-## Prompt Structure
+The decision system is designed for optimal performance:
 
-The AI prompt structure is similar to Drupal's twig templates, with distinct sections for:
-
-1. System instruction
-2. Narrative context
-3. Character information
-4. Location data
-5. Previous decisions
-6. Response format guidelines
-
-This provides a consistent framework that the AI model can use to generate contextually appropriate decisions.
-
-## Error Handling
-
-The system includes comprehensive error handling:
-
-1. API connectivity issues trigger template fallbacks
-2. Parsing errors are caught and logged
-3. Low-quality generations fall back to templates
-4. Client-side errors display user-friendly messages
-
-## Integration with Game Systems
-
-### Narrative System
-
-The decision system integrates with the narrative system through:
-
-- Detecting decision points in ongoing narrative
-- Analyzing dialogue and story progression
-- Presenting contextually relevant choices
-
-### Character System
-
-Character traits and history influence decision generation:
-
-- Character personality traits affect decision options
-- Previous choices influence future decision presentation
-- Character relationships impact decision context
-
-### Combat System
-
-Combat state affects decision presentation:
-
-- Fewer decisions during active combat
-- Combat-specific decisions when appropriate
-- Post-combat decisions with higher priority
-
-## Performance Optimization
-
-The decision system includes several performance optimizations:
-
-1. **Memoized Components**: `PlayerDecisionCard` uses `React.memo()` to prevent unnecessary re-renders
-2. **Lazy Generation**: Decision content is generated asynchronously to avoid blocking the UI
-3. **Template Fallbacks**: Fast, synchronous fallbacks when AI generation is slow or fails
-4. **Detection Threshold**: Avoids generating decisions when narrative context isn't suitable
-
-## Troubleshooting
-
-Common issues and solutions:
-
-1. **Decision not appearing**: Check the detection score in DevTools; if consistently low, adjust detection thresholds
-2. **Low-quality decisions**: Review quality assessment suggestions in console; adjust prompt if needed
-3. **Slow generation**: Verify API connectivity; consider temporary template mode
-4. **API errors**: Check API key configuration in `.env` file
-
-## Implementation Status
-
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Detection Algorithm | Complete | Contextual analysis working |
-| AI Integration | Complete | Using Gemini API |
-| Template Fallback | Complete | Works offline |
-| DevTools | Complete | Testing and visualization |
-| Documentation | Complete | You're reading it! |
-| Quality Assessment | Complete | Evaluates completeness, diversity, and relevance |
-| Performance Optimization | Complete | Memoized components and lazy loading |
+- **Async Operations**: Non-blocking API calls
+- **Throttling**: Minimum interval between decisions
+- **Caching**: Memorization of expensive calculations
+- **Fallbacks**: Fast local generation when needed
 
 ## Future Improvements
 
 Planned improvements include:
 
-1. Better narrative integration with player choices
-2. Enhanced quality assessment using more sophisticated metrics
-3. Expanded feedback system with reinforcement learning
-4. More diverse decision templates for fallbacks
-5. Integration with other narrative systems like dialogue
-6. Enhanced detection of narrative themes
-7. Character relationship-based decision weighting
-8. Analytics for decision quality assessment
-9. Personalization based on player history
-
-## Testing
-
-### Manual Testing
-
-To test the system:
-
-1. Open the DevTools panel in the game UI
-2. Navigate to the AI Decision System section
-3. Toggle between different generation modes
-4. Use the "Generate AI Decision" button to force a decision
-5. Monitor the detection score visualization
-
-### Automated Testing
-
-- Unit tests for decision scoring algorithm
-- Integration tests for fallback mechanisms
-- End-to-end tests for decision presentation
+1. Better integration with character personality traits
+2. Enhanced narrative analysis for more contextual decisions
+3. Expanded decision templates for fallback scenarios
+4. Multi-stage decisions with branching outcomes
+5. Analytics for decision quality and player satisfaction
 
 ## Related Components
 
-- [[game-master-logic|Game Master Logic]]
-- [[context-management|Context Management]]
+- [[../core-systems/player-decision-system|Player Decision System]]
 - [[../core-systems/narrative-system|Narrative System]]
 - [[../features/_current/player-choice|Player Choice System]]
 

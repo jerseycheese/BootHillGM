@@ -1,78 +1,82 @@
-// types/debug.types.ts
-import { GameState } from "../types/gameState";
-import { GameEngineAction } from "../types/gameActions";
-import { DecisionImportance } from "../types/narrative.types";
-import { LocationType } from "../services/locationService";
-import { NarrativeContextType } from "../context/NarrativeContext";
-
 /**
- * Props for the DevToolsPanel component
+ * Debug-related type definitions
  */
-export interface DevToolsPanelProps {
-  gameState: GameState;
-  dispatch: React.Dispatch<GameEngineAction>;
-  id?: string;
-  "data-testid"?: string;
+
+import { LocationType } from '../services/locationService';
+import type { NarrativeState } from './narrative.types';
+
+export interface DebugMessage {
+  id: string;
+  timestamp: number;
+  message: string;
+  details?: string;
+  level: 'info' | 'warning' | 'error' | 'success';
+  category?: string;
+  source?: string;
 }
 
-/**
- * Props for the GameControlSection component
- */
-export interface GameControlSectionProps {
-  dispatch: React.Dispatch<GameEngineAction>;
-  loading: string | null;
-  setLoading: React.Dispatch<React.SetStateAction<string | null>>;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
+export interface DebugPanel {
+  id: string;
+  title: string;
+  content: string | object;
+  expanded?: boolean;
+  createdAt: number;
+  updatedAt: number;
+  category?: string;
 }
 
-/**
- * Props for the DecisionTestingSection component
- */
-export interface DecisionTestingSectionProps {
-  narrativeContext: NarrativeContextType;
-  loading: string | null;
-  setLoading: React.Dispatch<React.SetStateAction<string | null>>;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
-  forceRender: () => void;
-  hasActiveDecision: boolean;
-  handleClearDecision: () => void;
+export interface DebugState {
+  messages: DebugMessage[];
+  panels: DebugPanel[];
+  isEnabled: boolean;
+  showInUi: boolean;
+  isExpanded: boolean;
+  activeView: 'messages' | 'panels' | 'timeline';
+  filters: {
+    levels: ('info' | 'warning' | 'error' | 'success')[];
+    categories: string[];
+    sources: string[];
+    searchTerm: string;
+  };
 }
 
-/**
- * Props for the ContextualDecisionSection component
- */
-export interface ContextualDecisionSectionProps {
-  selectedLocationType: LocationType;
-  setSelectedLocationType: React.Dispatch<React.SetStateAction<LocationType>>;
-  loading: string | null;
-  hasActiveDecision: boolean;
-  handleContextualDecision: (locationType?: LocationType) => void;
+export interface DebugAction {
+  type: string;
+  payload?: unknown;
 }
 
-/**
- * Props for the NarrativeDebugPanel component
- */
-export interface NarrativeDebugPanelProps {
-  narrativeContext: NarrativeContextType;
-  renderCount: number;
-  showDecisionHistory: boolean;
-  decisionHistory: any[]; // Use the specific type from your narrative context
+export interface GameDebugState {
+  // Narrative state
+  narrativeState?: Partial<NarrativeState>;
+  
+  // Location information
+  currentLocation?: LocationType | string;
+  previousLocations?: Array<LocationType | string>;
+  
+  // Engine state
+  activeRules?: string[];
+  evaluationResults?: Record<string, boolean>;
+  
+  // Performance metrics
+  narrativeRenderTime?: number;
+  ruleEvaluationTime?: number;
+  decisionDetectionTime?: number;
+  
+  // Decision tracking
+  decisionsGenerated?: number;
+  decisionsShown?: number;
+  decisionSatisfactionRating?: number;
+  
+  // Metrics specific to location
+  locationSpecificData?: Record<string, unknown>;
 }
 
-/**
- * Props for the GameStateDisplay component
- */
-export interface GameStateDisplayProps {
-  gameState: GameState;
-}
-
-/**
- * Props for ErrorBoundary component
- */
-export interface ErrorBoundaryProps {
-  children: React.ReactNode;
-}
-
-export interface ErrorBoundaryState {
-  hasError: boolean;
+export interface DebugConfig {
+  maxMessages: number;
+  maxPanels: number;
+  autoExpand: boolean;
+  persistBetweenSessions: boolean;
+  defaultActiveView: 'messages' | 'panels' | 'timeline';
+  categoriesEnabled: string[];
+  levelsEnabled: ('info' | 'warning' | 'error' | 'success')[];
 }

@@ -11,8 +11,6 @@ const NarrativeDebugPanel: React.FC<NarrativeDebugPanelProps> = ({
   showDecisionHistory,
   decisionHistory
 }) => {
-  // Check if there's currently an active decision
-  const hasActiveDecision = !!narrativeContext.state.currentDecision;
 
   return (
     <div className="mb-4 p-2 border border-gray-700 rounded">

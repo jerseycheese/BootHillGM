@@ -37,37 +37,37 @@ jest.mock('../../../utils/events', () => ({
 }));
 
 jest.mock('../GameControlSection', () => {
-  return function MockGameControlSection(props) {
+  return function MockGameControlSection() {
     return <div data-testid="game-control-section">Game Controls</div>;
   };
 });
 
 jest.mock('../DecisionTestingSection', () => {
-  return function MockDecisionTestingSection(props) {
+  return function MockDecisionTestingSection() {
     return <div data-testid="decision-testing-section">Decision Testing</div>;
   };
 });
 
 jest.mock('../ContextualDecisionSection', () => {
-  return function MockContextualDecisionSection(props) {
+  return function MockContextualDecisionSection() {
     return <div data-testid="contextual-decision-section">Contextual Decision</div>;
   };
 });
 
 jest.mock('../NarrativeDebugPanel', () => {
-  return function MockNarrativeDebugPanel(props) {
+  return function MockNarrativeDebugPanel() {
     return <div data-testid="narrative-debug-panel">Narrative Debug</div>;
   };
 });
 
 jest.mock('../AIDecisionControls', () => {
-  return function MockAIDecisionControls(props) {
+  return function MockAIDecisionControls() {
     return <div data-testid="ai-decision-controls">AI Decision Controls</div>;
   };
 });
 
 jest.mock('../GameStateDisplay', () => {
-  return function MockGameStateDisplay(props) {
+  return function MockGameStateDisplay() {
     return <div data-testid="game-state-display">Game State Display</div>;
   };
 });

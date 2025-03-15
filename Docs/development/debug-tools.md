@@ -65,6 +65,21 @@ The DevTools panel is accessible in development mode and provides a visual inter
 - Viewing decision history
 - Inspecting game state
 
+### Component Structure
+
+The DevTools UI has been refactored into a modular component structure:
+
+- `DevToolsPanel`: Main container component that orchestrates the debug UI
+- `GameControlSection`: Controls for resetting the game and testing combat
+- `DecisionTestingSection`: Interface for creating and testing decisions
+- `ContextualDecisionSection`: Location-based decision testing tools
+- `NarrativeDebugPanel`: Displays narrative context and decision history
+- `GameStateDisplay`: Shows the current game state for debugging
+- `AIDecisionControls`: AI-specific decision testing tools
+- `ErrorBoundary`: Catches and displays rendering errors
+
+This modular structure makes the debug tools more maintainable and easier to extend.
+
 ### Location Types
 
 The system supports these location types for testing:
@@ -107,9 +122,18 @@ Console logs are conditionally displayed based on environment:
 To add new debug functionality:
 
 1. Update `debugConsole.ts` with new functions
-2. Add UI controls in `DevToolsPanel.tsx` if needed
+2. Add UI controls in the appropriate component (previously all in `DevToolsPanel.tsx`)
 3. Register any new event types in `events.ts`
 4. Document the new functionality in this file
+
+### Adding New Debug Components
+
+With the refactored structure, you can now add new debug UI sections by:
+
+1. Creating a new component in the `components/Debug/` directory
+2. Adding appropriate props interface in `types/debug.types.ts`
+3. Importing and using the component in `DevToolsPanel.tsx`
+4. Adding tests in `app/__tests__/components/Debug/`
 
 ## Related Systems
 

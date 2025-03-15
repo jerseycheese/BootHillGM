@@ -3,7 +3,7 @@ title: Testing Guide
 aliases: [Test Strategy, Testing Documentation]
 tags: [technical, testing, development, jest, react-testing-library]
 created: 2024-12-28
-updated: 2024-12-28
+updated: 2025-03-15
 ---
 
 # Testing Guide
@@ -16,6 +16,9 @@ This guide outlines the testing strategy and implementation details for the Boot
 ### Unit Tests
 Located in `app/__tests__/` with subdirectories matching the source structure:
 - components/
+  - Common/ (shared components)
+  - Debug/ (DevTools components)
+  - ...
 - game-session/
 - hooks/
 - services/
@@ -113,6 +116,66 @@ describe('Hook Tests', () => {
 - Check error states
 - Test recovery mechanisms
 
+### Component Tests
+- Test component rendering
+- Test user interactions
+- Verify correct props are passed to children
+- Test component state changes
+
+## DevTools Component Testing
+
+The DevTools components have been refactored into smaller, focused components and include test coverage:
+
+### Test Coverage
+
+Current test coverage includes:
+- **DevToolsPanel**: Tests for rendering, collapsing/expanding, and child component integration
+- **GameControlSection**: Tests for button interactions and action dispatching
+- **ErrorBoundary**: Tests for error catching and fallback UI rendering
+
+### Testing Complex Components
+
+For complex components like those in the DevTools panel:
+
+1. **Isolate Components**: Test each component in isolation using mocks for dependencies
+2. **Mock Child Components**: Use Jest's `jest.mock()` to simplify child component testing
+3. **Test Interactions**: Use `fireEvent` to test button clicks and user interactions
+4. **Test State Changes**: Verify components respond correctly to state changes
+5. **Test Edge Cases**: Include tests for loading states, errors, and edge cases
+
+### Example: DevToolsPanel Test
+
+```typescript
+// Mock dependencies to isolate component
+jest.mock('../../../components/CampaignStateManager', () => ({
+  useCampaignState: () => ({}),
+}));
+
+// Mock child components for focused testing
+jest.mock('../../../components/Debug/GameControlSection', () => {
+  return function MockGameControlSection() {
+    return <div data-testid="game-control-section">Game Controls</div>;
+  };
+});
+
+// Test component behavior
+it('collapses and expands panel when toggle button is clicked', () => {
+  render(<DevToolsPanel {...mockProps} />);
+  
+  // Initially visible
+  expect(screen.getByTestId('game-control-section')).toBeVisible();
+  
+  // Click collapse button
+  const toggleButton = screen.getByRole('button', { name: /Toggle DevTools Panel/i });
+  fireEvent.click(toggleButton);
+  
+  // Should be collapsed
+  expect(screen.queryByTestId('game-control-section')).not.toBeInTheDocument();
+});
+```
+
+For more examples, see the tests in `app/__tests__/components/Debug/`.
+
 ## Test Data
 
 ### Fixtures
@@ -169,8 +232,26 @@ npm test -- path/to/test
 - Use debug logging
 - Check coverage reports
 
+## Further Component Testing
+
+For additional component testing, see the GitHub issue "Add Comprehensive Testing for DevTools Components" which outlines plans for expanding test coverage of all Debug components.
+
+## React vs Drupal Testing
+
+For developers familiar with Drupal's PHPUnit testing:
+
+| Drupal Testing Concept | React Testing Equivalent |
+|------------------------|--------------------------|
+| `KernelTestBase` | Component unit tests |
+| Service container mocks | Jest mocks for hooks and contexts |
+| `renderRoot()` | React Testing Library's `render()` |
+| Twig template assertions | DOM element queries with `screen` |
+| Drupal settings/behaviors | React props and state |
+| Theme hook testing | Component props testing |
+
 ## Related Documentation
 - [[../development/test-strategy|Test Strategy]]
+- [[../development/debug-tools|Debug Tools Documentation]]
 - [[./setup|Development Setup]]
 - [[./deployment|Deployment Guide]]
 - [[./contributing|Contributing Guide]]

@@ -6,3 +6,13 @@ export { generateCompleteCharacter, generateCharacterSummary } from './character
 export { getAIResponse } from './gameService';
 export { generateNarrativeSummary, determineIfWeapon };
 export * from './types';
+
+// Export AI Decision Service
+export { default as AIDecisionService } from './aiDecisionService';
+
+// Export type definitions
+export * from './types/aiDecisionTypes';
+
+// Export utility functions for direct access if needed
+export * from './utils/aiDecisionDetector';
+export * from './utils/aiDecisionGenerator';
