@@ -3,7 +3,7 @@ title: AI Systems Overview
 aliases: [AI MOC, AI Documentation]
 tags: [moc, ai, gemini, prompt-engineering]
 created: 2024-12-28
-updated: 2024-12-28
+updated: 2025-03-14
 ---
 
 # AI Systems Overview
@@ -13,6 +13,8 @@ This Map of Content (MOC) provides a comprehensive overview of AI integration, p
 ## Core AI Components
 - [[game-master-logic|Game Master Logic]] - Core AI decision making
 - [[gemini-integration|Gemini Integration]] - Gemini 1.5 Pro implementation
+- [[contextual-decision-system|Contextual Decision System]] - AI-driven decision detection and generation
+- [[context-management|Context Management]] - AI context tracking and optimization
 - [[../reference/gemini-api-guide|API Reference]] - Gemini API documentation
 
 ## Prompt Engineering
@@ -31,6 +33,8 @@ graph TD
     E[Training Data] --> B
     E --> C
     E --> D
+    F[Contextual Decision System] --> C
+    G[Context Management] --> F
 ```
 
 ## Training Data
@@ -42,6 +46,7 @@ graph TD
 |-----------|---------|-------------|
 | Game Master Logic | Active | Core System |
 | Gemini Integration | Active | API |
+| Contextual Decision System | Active | Narrative System |
 | Combat Prompts | Active | Combat System |
 | Storytelling Prompts | Active | Narrative |
 | Character Creation | Active | Creation System |

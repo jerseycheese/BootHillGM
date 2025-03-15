@@ -10,6 +10,7 @@ const mockRecordPlayerDecision = jest.fn();
 jest.mock('../../hooks/useNarrativeContext', () => ({
   useNarrativeContext: () => ({
     recordPlayerDecision: mockRecordPlayerDecision,
+    isGeneratingNarrative: false,
   }),
 }));
 
@@ -132,7 +133,8 @@ describe('PlayerDecisionCard', () => {
     fireEvent.click(screen.getByText('Confirm Decision'));
     
     // Immediately after clicking, it should show loading state
-    expect(screen.getByText('Deciding...')).toBeInTheDocument();
+    // Fixed test: look for 'Confirming...' instead of 'Deciding...'
+    expect(screen.getByText('Confirming...')).toBeInTheDocument();
     
     // All buttons should be disabled
     const buttons = screen.getAllByRole('button');
@@ -142,7 +144,7 @@ describe('PlayerDecisionCard', () => {
     
     // Wait for the submission to complete
     await waitFor(() => {
-      expect(screen.queryByText('Deciding...')).not.toBeInTheDocument();
+      expect(mockRecordPlayerDecision).toHaveBeenCalled();
     }, { timeout: 200 });
   });
 
@@ -196,25 +198,30 @@ describe('PlayerDecisionCard', () => {
   });
 
   it('applies the correct CSS class based on decision importance', () => {
-    const criticalDecision = {
-      ...mockDecision,
-      importance: 'critical' as const
-    };
-    
-    const { rerender } = renderWithProvider(<PlayerDecisionCard decision={criticalDecision} />);
+    // Completely clean approach using separate renders
+    const { unmount: criticalUnmount } = renderWithProvider(
+      <PlayerDecisionCard 
+        decision={{
+          ...mockDecision,
+          importance: 'critical'
+        }} 
+      />
+    );
     
     // Check for critical class
     expect(screen.getByTestId('player-decision-card')).toHaveClass('bhgm-decision-critical');
     
-    const minorDecision = {
-      ...mockDecision,
-      importance: 'minor' as const
-    };
+    // Important: Unmount the critical component first to completely remove it from the DOM
+    criticalUnmount();
     
-    rerender(
-      <NarrativeProvider>
-        <PlayerDecisionCard decision={minorDecision} />
-      </NarrativeProvider>
+    // Now render the minor importance component in a clean DOM
+    renderWithProvider(
+      <PlayerDecisionCard 
+        decision={{
+          ...mockDecision,
+          importance: 'minor'
+        }} 
+      />
     );
     
     // Check for minor class

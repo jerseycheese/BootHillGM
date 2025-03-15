@@ -16,5 +16,10 @@ export const initialState: GameState = {
   combatState: undefined,
   savedTimestamp: 0,
   isClient: false,
-  suggestedActions: []
+  suggestedActions: [],
+  
+  // Add player getter that returns the character property
+  get player() {
+    return this.character;
+  }
 };

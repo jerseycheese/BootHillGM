@@ -6,6 +6,9 @@ import { CombatState } from './combat';
 import { LocationType } from '../services/locationService';
 import { NarrativeState, initialNarrativeState } from './narrative.types';
 
+// Type alias for backward compatibility with code that expects "player"
+export type PlayerCharacter = Character;
+
 export interface GameState {
   currentPlayer: string;
   npcs: string[];
@@ -23,6 +26,9 @@ export interface GameState {
   suggestedActions: SuggestedAction[];
   combatState?: CombatState;
   error?: string | null;
+  
+  // For backward compatibility, add a player getter that returns character
+  get player(): Character | null;
 }
 
 export const initialGameState: GameState = {
@@ -41,4 +47,9 @@ export const initialGameState: GameState = {
   isClient: false,
   suggestedActions: [],
   combatState: undefined,
+  
+  // For backward compatibility
+  get player() {
+    return this.character;
+  }
 };

@@ -5,12 +5,16 @@ import { useCampaignState } from "../CampaignStateManager";
 import { GameState } from "../../types/gameState";
 import { useNarrative } from "../../context/NarrativeContext";
 import { DecisionImportance } from "../../types/narrative.types";
-import { clearCurrentDecision } from "../../reducers/narrativeReducer";
+import { clearCurrentDecision, addNarrativeHistory } from "../../reducers/narrativeReducer";
 import { createTestDecision } from "../../utils/testNarrativeWithDecision";
-import { generateContextualDecision } from "../../utils/contextualDecisionGenerator";
 import { LocationType } from "../../services/locationService";
 import { initializeBrowserDebugTools, updateDebugCurrentDecision } from "../../utils/debugConsole";
 import { EVENTS, triggerCustomEvent } from "../../utils/events";
+import AIDecisionControls from './AIDecisionControls';
+import { 
+  generateEnhancedDecision, 
+  initializeDecisionDebugTools 
+} from '../../utils/contextualDecisionGenerator.enhanced';
 
 /**
  * DevTools panel for game debugging and testing.
@@ -42,6 +46,8 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({
   const [selectedLocationType, setSelectedLocationType] = useState<LocationType>({ type: 'town', name: 'Starting Town' });
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
+  // State for AI decision detection score
+  const [decisionScore, setDecisionScore] = useState<number | undefined>(undefined);
 
   const { } = useCampaignState();
 
@@ -60,50 +66,80 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({
     setError(null);
     
     try {
-      // First, ensure current decision is fully cleared with no delay
-      narrativeContext.dispatch(clearCurrentDecision());
+      // First, notify the user that we're generating a decision
+      narrativeContext.dispatch(addNarrativeHistory("\nGenerating a contextual decision based on the current situation...\n"));
       
-      // Notify components that a decision has been cleared
+      // Clear any existing decision to prevent conflicts
+      narrativeContext.dispatch(clearCurrentDecision());
       triggerCustomEvent(EVENTS.DECISION_CLEARED);
       
-      // Add a delay to ensure the UI has time to process the clear operation
-      setTimeout(() => {
-        // Use the location type parameter or fall back to selected state
-        const locationToUse = locationType || selectedLocationType;
-        
-        // Generate a contextual decision based on game state
-        const contextualDecision = generateContextualDecision(
-          gameState,
-          narrativeContext.state.narrativeContext,
-          locationToUse
-        );
-        
-        if (!contextualDecision) {
-          setError(`Failed to generate a decision for location type: ${locationToUse}`);
-          return;
+      // Add a slight delay to ensure the UI updates with our message
+      setTimeout(async () => {
+        try {
+          // Use the location type parameter or fall back to selected state
+          const locationToUse = locationType || selectedLocationType;
+          
+          // Generate a contextual decision using the AI-enhanced generator
+          const contextualDecision = await generateEnhancedDecision(
+            gameState,
+            narrativeContext.state.narrativeContext,
+            locationToUse,
+            true // Force generation
+          );
+          
+          // In case of generation failure
+          if (!contextualDecision) {
+            const errorMessage = `Failed to generate a decision for location type: ${locationToUse.type}`;
+            narrativeContext.dispatch(addNarrativeHistory(`\n${errorMessage}\n`));
+            setError(errorMessage);
+            setLoading(null);
+            return;
+          }
+          
+          // Update decision score display for the UI
+          if (window.bhgmDebug?.decisions?.lastDetectionScore) {
+            setDecisionScore(window.bhgmDebug.decisions.lastDetectionScore);
+          }
+          
+          // Remove the generating message
+          const narrativeHistory = [...narrativeContext.state.narrativeHistory];
+          narrativeHistory.pop(); // Remove the loading message
+          
+          narrativeContext.dispatch({
+            type: 'UPDATE_NARRATIVE',
+            payload: {
+              narrativeHistory: narrativeHistory
+            }
+          });
+          
+          // Now present the new decision
+          narrativeContext.dispatch({
+            type: 'PRESENT_DECISION',
+            payload: contextualDecision
+          });
+          
+          // Notify all components that a new decision is ready
+          triggerCustomEvent(EVENTS.DECISION_READY, contextualDecision);
+          
+          // Also trigger a UI update
+          forceRender();
+          
+          // Set loading to null after a short delay for UI feedback
+          setTimeout(() => {
+            setLoading(null);
+          }, 300);
+        } catch (innerError) {
+          const error = innerError instanceof Error ? innerError : new Error('Unknown error occurred');
+          setError(`Failed to generate contextual decision: ${error.message}`);
+          console.error('BHGM Debug: Contextual decision error:', innerError);
+          setLoading(null);
         }
-        
-        // Now add the new decision to the context
-        narrativeContext.dispatch({
-          type: 'PRESENT_DECISION',
-          payload: contextualDecision
-        });
-        
-        // Notify all components that a new decision is ready
-        triggerCustomEvent(EVENTS.DECISION_READY, contextualDecision);
-        
-        // Also trigger a UI update (belt-and-suspenders approach)
-        forceRender();
-      }, 200); // Increased delay to ensure clear completes and UI updates
-      
+      }, 300); // Short delay for UI updates
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error occurred');
       setError(`Failed to generate contextual decision: ${error.message}`);
       console.error('BHGM Debug: Contextual decision error:', err);
-    } finally {
-      setTimeout(() => {
-        setLoading(null);
-      }, 300); // Delayed to ensure UI feedback is visible
+      setLoading(null);
     }
   }, [gameState, narrativeContext, selectedLocationType]);
 
@@ -137,7 +173,7 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({
     // Only run in client-side environment
     if (typeof window === 'undefined') return;
 
-    // Initialize debug tools with necessary dependencies
+    // Initialize standard debug tools
     initializeBrowserDebugTools(
       // Game state getter
       () => gameState,
@@ -146,9 +182,27 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({
       // Decision clear function
       () => handleClearDecision()
     );
+    
+    // Initialize enhanced decision debug tools
+    initializeDecisionDebugTools();
+    
+    // Instead of creating a complete object, just set the trigger decision function
+    // This avoids TypeScript errors from property mismatches
+    if (!window.bhgmDebug) {
+      console.warn('BHGM Debug namespace not initialized properly');
+      return;
+    }
+    
+    window.bhgmDebug.triggerDecision = async (locationType?: LocationType) => {
+      try {
+        handleContextualDecision(locationType);
+      } catch (error) {
+        console.error('Failed to trigger AI decision:', error);
+      }
+    };
 
     // Cleanup function is intentionally empty - browser will handle cleanup
-  }, [gameState, handleClearDecision, handleContextualDecision]); // Re-initialize if game state reference changes
+  }, [gameState, handleClearDecision, handleContextualDecision]);
 
   // Update the debug namespace with current decision
   useEffect(() => {
@@ -436,7 +490,7 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({
               </div>
             </div>
             
-            {/* New Contextual Decision Testing Section */}
+            {/* Contextual Decision Testing Section */}
             <div className="w-full mt-2 p-2 border border-gray-700 rounded bg-gray-900">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-md font-semibold">Contextual Decision Testing</h3>
@@ -500,11 +554,19 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({
 
                   <div className="flex gap-2 flex-wrap">
                     <button
-                      className="bg-teal-600 hover:bg-teal-800 text-white font-bold py-2 px-4 rounded"
+                      className="bg-teal-600 hover:bg-teal-800 text-white font-bold py-2 px-4 rounded relative"
                       onClick={() => handleContextualDecision()}
                       disabled={loading === "contextual-decision" || hasActiveDecision}
                     >
-                      {loading === "contextual-decision" ? "Generating..." : "Trigger Contextual Decision"}
+                      <span className={loading === "contextual-decision" ? "opacity-0" : ""}>
+                        Trigger Contextual Decision
+                      </span>
+                      {loading === "contextual-decision" && (
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <span className="inline-block w-5 h-5 border-t-2 border-white rounded-full animate-spin"></span>
+                          <span className="ml-2">Generating...</span>
+                        </span>
+                      )}
                     </button>
 
                     <div className="text-xs text-gray-400 mt-2">
@@ -515,6 +577,13 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({
                 </>
               )}
             </div>
+
+            {/* AI Decision Controls */}
+            <AIDecisionControls 
+              onGenerateDecision={() => handleContextualDecision()}
+              isGenerating={loading === "contextual-decision"}
+              detectionScore={decisionScore}
+            />
           </div>
 
           {/* Narrative Context Debug Panel */}

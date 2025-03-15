@@ -29,6 +29,24 @@ interface RawDecisionOption {
 }
 
 /**
+ * Custom error types for more specific error handling
+ * Prefixed with underscore to indicate they're defined but not directly used
+ */
+class _ParsingError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ParsingError';
+  }
+}
+
+class _ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
+/**
  * Parses a player decision from AI response data.
  * Validates and transforms the raw decision data into a structured PlayerDecision object.
  * 
@@ -46,6 +64,9 @@ export function parsePlayerDecision(
 
   // Validate required fields
   if (!decisionData.prompt || !Array.isArray(decisionData.options) || decisionData.options.length < 2) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('Invalid player decision data: missing prompt or insufficient options');
+    }
     return undefined;
   }
 
@@ -61,6 +82,9 @@ export function parsePlayerDecision(
 
   // If we don't have at least 2 valid options, return undefined
   if (options.length < 2) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('Invalid player decision data: insufficient valid options after filtering');
+    }
     return undefined;
   }
 
@@ -106,6 +130,57 @@ export function isValidPlayerDecision(decision: unknown): decision is PlayerDeci
                 'impact' in option && typeof option.impact === 'string'
         )
     );
+}
+
+/**
+ * Extract JSON from text content using multiple strategies
+ * 
+ * @param text - Text that may contain JSON
+ * @param marker - Optional JSON marker (e.g., "playerDecision")
+ * @returns Parsed JSON object or null if parsing fails
+ */
+function extractJSON(text: string, marker?: string): Record<string, unknown> | null {
+  // Try parsing the whole text as JSON first
+  try {
+    return JSON.parse(text);
+  } catch {
+    // If that fails, look for JSON within the text
+    if (marker) {
+      try {
+        // Try to find JSON with a specific marker
+        const markerRegex = new RegExp(`"${marker}"\\s*:\\s*(\\{[\\s\\S]*?\\})`, 'g');
+        const matches = text.match(markerRegex);
+        
+        if (matches && matches.length > 0) {
+          // Wrap in an object to make it valid JSON
+          return JSON.parse(`{${matches[0]}}`);
+        }
+      } catch {
+        // Fall through to next approach
+      }
+    }
+    
+    // Try to extract any JSON object
+    try {
+      const jsonRegex = /(\{[\s\S]*?\})/g;
+      const matches = text.match(jsonRegex);
+      
+      if (matches && matches.length > 0) {
+        // Try each match until one parses successfully
+        for (const match of matches) {
+          try {
+            return JSON.parse(match);
+          } catch {
+            // Continue to next match
+          }
+        }
+      }
+    } catch {
+      // Fall through to return null
+    }
+    
+    return null;
+  }
 }
 
 /**
@@ -168,8 +243,12 @@ export function parseAIResponse(text: string): AIResponse | Character {
         isPlayer: false
       };
     }
-  } catch {
-    // If JSON parsing fails, fall through to regular parsing
+  } catch (error) {
+    // If it's a SyntaxError, it's not JSON, so continue to text parsing
+    if (!(error instanceof SyntaxError)) {
+      console.error('Unexpected error in character data parsing:', error);
+    }
+    // Otherwise, just fall through to text parsing
   }
 
   // Fall back to regular AI response parsing
@@ -234,8 +313,11 @@ export function parseAIResponse(text: string): AIResponse | Character {
             ['basic', 'combat', 'interaction'].includes(action.type)
           );
         }
-      } catch {
-        // Failed to parse suggested actions, continue without them
+      } catch (error) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Failed to parse suggested actions:', error);
+        }
+        // Continue without suggested actions
       }
     }
 
@@ -339,28 +421,30 @@ export function parseAIResponse(text: string): AIResponse | Character {
       .replace(/\s{2,}/g, ' ')
       .trim();
 
-    // Try to extract playerDecision from JSON content
+    // Try multiple approaches to extract playerDecision from the response
     try {
       // First attempt: Try to parse the entire text as JSON
-      const jsonResponse = JSON.parse(text);
-      if (jsonResponse.playerDecision && typeof jsonResponse.playerDecision === 'object') {
-        playerDecision = parsePlayerDecision(jsonResponse.playerDecision, location);
-      }
-    } catch {
-      // Second attempt: Try to extract just the playerDecision part
-      try {
-        const playerDecisionMatch = text.match(/"playerDecision"\s*:\s*(\{[\s\S]*?\})/);
-        if (playerDecisionMatch && playerDecisionMatch[1]) {
-          // Need to wrap in curly braces to make valid JSON
-          const decisionJsonStr = `{${playerDecisionMatch[0]}}`;
-          const decisionObj = JSON.parse(decisionJsonStr);
-          if (decisionObj.playerDecision && typeof decisionObj.playerDecision === 'object') {
-            playerDecision = parsePlayerDecision(decisionObj.playerDecision, location);
-          }
+      const jsonResponse = extractJSON(text);
+      if (jsonResponse && jsonResponse.playerDecision && typeof jsonResponse.playerDecision === 'object') {
+        playerDecision = parsePlayerDecision(jsonResponse.playerDecision as RawPlayerDecision, location);
+      } else {
+        // Second attempt: Try to extract just the playerDecision part
+        const decisionJson = extractJSON(text, 'playerDecision');
+        if (decisionJson && decisionJson.playerDecision && typeof decisionJson.playerDecision === 'object') {
+          playerDecision = parsePlayerDecision(decisionJson.playerDecision as RawPlayerDecision, location);
         }
-      } catch {
-        // Failed to extract playerDecision, leave as undefined
       }
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        if (error instanceof SyntaxError) {
+          console.warn('JSON syntax error in player decision extraction:', error.message);
+        } else if (error instanceof TypeError) {
+          console.warn('Type error in player decision extraction:', error.message);
+        } else {
+          console.warn('Unknown error in player decision extraction:', error);
+        }
+      }
+      // Failed to extract playerDecision, leave as undefined
     }
 
     // Return the structured response
@@ -380,6 +464,18 @@ export function parseAIResponse(text: string): AIResponse | Character {
       (error.message.includes('API Error') || error.message.includes('response'))) {
       throw error;
     }
+    
+    // Log the specific error type for debugging
+    if (process.env.NODE_ENV !== 'production') {
+      if (error instanceof SyntaxError) {
+        console.error('JSON syntax error in AI response parsing:', error.message);
+      } else if (error instanceof TypeError) {
+        console.error('Type error in AI response parsing:', error.message);
+      } else {
+        console.error('Unknown error in AI response parsing:', error);
+      }
+    }
+    
     // For parsing errors, return a basic response
     return {
       ...defaultResponse,

@@ -46,6 +46,10 @@ function useCharacterCreationHandler() {
             isCombatActive: false,
             opponent: null,
             suggestedActions: [],
+            // Add the player getter to match the GameState interface
+            get player() {
+              return mockCharacter;
+            }
           };
           saveGame(gameState);
         }

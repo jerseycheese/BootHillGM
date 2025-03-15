@@ -91,7 +91,10 @@ class AIService {
       
       try {
         return this.parseAIResponse(text);
-      } catch {
+      } catch (error) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Error parsing AI response:', error);
+        }
         // Return a basic response with just the narrative text
         return {
           narrative: text,
@@ -229,7 +232,10 @@ class AIService {
             ['basic', 'combat', 'interaction', 'chaotic'].includes(action.type)
           );
         }
-      } catch {
+      } catch (error) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('Failed to parse suggested actions:', error);
+        }
         // Provide default actions if parsing fails
         suggestedActions = [
           { text: "Look around", type: "basic", context: "Observe your surroundings" },
@@ -302,31 +308,12 @@ class AIService {
     let playerDecision: PlayerDecision | undefined;
 
     try {
-      // First try to parse the entire response as JSON to extract playerDecision
-      try {
-        const jsonResponse = JSON.parse(text);
-        if (jsonResponse.playerDecision && typeof jsonResponse.playerDecision === 'object') {
-          playerDecision = parsePlayerDecision(jsonResponse.playerDecision, location);
-        } else {
-          playerDecision = undefined;
-        }
-      } catch {
-        // If full JSON parsing fails, try the substring approach
-        const playerDecisionStartIndex = text.indexOf('"playerDecision":');
-        if (playerDecisionStartIndex !== -1) {
-          const jsonStartIndex = playerDecisionStartIndex + '"playerDecision":'.length;
-          const jsonEndIndex = findClosingBrace(text, jsonStartIndex);
-
-          if (jsonEndIndex !== -1) {
-            const jsonString = text.substring(jsonStartIndex, jsonEndIndex + 1);
-            const decisionData = JSON.parse(jsonString);
-            playerDecision = parsePlayerDecision(decisionData, location);
-          }
-        } else {
-          playerDecision = undefined;
-        }
+      // Use a more robust approach to extract JSON data
+      playerDecision = extractPlayerDecisionFromText(text, location);
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('Failed to extract player decision:', error);
       }
-    } catch {
       // Failed to parse, leave playerDecision as undefined
       playerDecision = undefined;
     }
@@ -355,25 +342,75 @@ class AIService {
 }
 
 /**
- * Helper function to find the closing brace in a JSON string.
- * Used for extracting nested JSON objects from text responses.
- * @param str - The string to search in
- * @param openBraceIndex - The index where to start searching from (after the opening brace)
- * @returns The index of the closing brace or -1 if not found
+ * Extracts a PlayerDecision object from text content that may contain mixed formats.
+ * Uses multiple strategies to find and parse the decision data.
+ * 
+ * @param text - Text content that may contain JSON or decision data
+ * @param location - Current game location
+ * @returns Parsed PlayerDecision or undefined if extraction fails
  */
-function findClosingBrace(str: string, openBraceIndex: number): number {
-  let openBraceCount = 0;
-  for (let i = openBraceIndex; i < str.length; i++) {
-    if (str[i] === '{') {
-      openBraceCount++;
-    } else if (str[i] === '}') {
-      openBraceCount--;
-      if (openBraceCount === 0) {
-        return i;
+function extractPlayerDecisionFromText(text: string, location?: LocationType): PlayerDecision | undefined {
+  // Strategy 1: Try parsing the whole text as JSON
+  try {
+    const jsonResponse = JSON.parse(text);
+    if (jsonResponse.playerDecision && typeof jsonResponse.playerDecision === 'object') {
+      return parsePlayerDecision(jsonResponse.playerDecision, location);
+    }
+  } catch {
+    // Not valid JSON, continue to next approach
+  }
+  
+  // Strategy 2: Look for playerDecision object
+  try {
+    const regex = /"playerDecision"\s*:\s*(\{[\s\S]*?\})/;
+    const match = text.match(regex);
+    
+    if (match && match[1]) {
+      // Wrap in an object to make valid JSON
+      const jsonString = `{"playerDecision":${match[1]}}`;
+      try {
+        const decisionObj = JSON.parse(jsonString);
+        if (decisionObj.playerDecision && typeof decisionObj.playerDecision === 'object') {
+          return parsePlayerDecision(decisionObj.playerDecision, location);
+        }
+      } catch {
+        // Invalid JSON in the matched string, continue
       }
     }
+  } catch {
+    // Regex or parsing error, continue
   }
-  return -1; // Should never happen with correct JSON, but handle for robustness
+  
+  // Strategy 3: Search for JSON blocks in the content
+  try {
+    const jsonBlockRegex = /\{[\s\S]*?\}/g;
+    const matches = text.match(jsonBlockRegex);
+    
+    if (matches) {
+      // Try each match until we find a valid playerDecision
+      for (const match of matches) {
+        try {
+          // First try direct parsing
+          const obj = JSON.parse(match);
+          if (obj.playerDecision) {
+            return parsePlayerDecision(obj.playerDecision, location);
+          }
+          
+          // Then try the object itself as a decision
+          if (obj.prompt && obj.options && Array.isArray(obj.options)) {
+            return parsePlayerDecision(obj, location);
+          }
+        } catch {
+          // Invalid JSON, try next match
+        }
+      }
+    }
+  } catch {
+    // Error in regex or iteration, continue
+  }
+  
+  // No valid playerDecision found
+  return undefined;
 }
 
 export { AIService };

@@ -1,4 +1,4 @@
-import { useContext, useCallback } from 'react';
+import { useContext, useCallback, useState, useMemo } from 'react';
 import { 
   PlayerDecision, 
   PlayerDecisionRecord,
@@ -14,6 +14,9 @@ import {
   updateNarrativeContext
 } from '../reducers/narrativeReducer';
 import { createDecisionRecord } from '../utils/decisionUtils';
+import { AIService } from '../services/ai/aiService';
+import { EVENTS, triggerCustomEvent } from '../utils/events';
+import { InventoryItem } from '../types/item.types';
 
 /**
  * Custom hook for interacting with narrative context and player decisions
@@ -31,6 +34,11 @@ import { createDecisionRecord } from '../utils/decisionUtils';
  */
 export function useNarrativeContext() {
   const context = useContext(NarrativeContext);
+  // Keep track of AI request state
+  const [isGeneratingNarrative, setIsGeneratingNarrative] = useState(false);
+  
+  // Instance of the AI service - wrapped in useMemo to prevent recreation on every render
+  const aiService = useMemo(() => new AIService(), []);
   
   if (!context) {
     throw new Error('useNarrativeContext must be used within a NarrativeProvider');
@@ -49,36 +57,69 @@ export function useNarrativeContext() {
   const presentPlayerDecision = useCallback((decision: PlayerDecision) => {
     dispatch(presentDecision(decision));
     
-    // Force re-render via storage event
-    setTimeout(() => {
-      window.dispatchEvent(new Event('storage'));
-    }, 50);
+    // Trigger custom event for more reliable UI updates
+    triggerCustomEvent(EVENTS.DECISION_READY, decision);
+    
+    // Force re-render via storage event (legacy support)
+    window.dispatchEvent(new Event('storage'));
     
   }, [dispatch]);
 
   /**
-   * Generate a fallback narrative response when AI is unavailable
+   * Generate a narrative response based on the player's choice
    * 
-   * This provides a simple text response based on the player's choice,
-   * ensuring the game can continue even without AI integration.
+   * This function uses the AI service to generate a contextual response
+   * to the player's decision, or falls back to a simpler response if
+   * AI generation fails.
    * 
-   * @param input - Text of the selected option
+   * @param option - The selected decision option text
+   * @param decisionPrompt - The original decision prompt
    * @returns Object with narrative text and item updates
    */
-  const generateFallbackNarrative = useCallback((input: string) => {
-    return {
-      narrative: `You decided: ${input}. The story continues with your choice, the consequences echoing through the dusty streets of Boot Hill.`,
-      acquiredItems: [],
-      removedItems: []
-    };
-  }, []);
+  const generateNarrativeResponse = useCallback(async (
+    option: string,
+    decisionPrompt: string
+  ) => {
+    setIsGeneratingNarrative(true);
+    
+    try {
+      // Use recent narrative history as context
+      const recentHistory = state.narrativeHistory.slice(-3).join('\n\n');
+      
+      // Get player inventory from game state - as an array of InventoryItem objects
+      const inventory: InventoryItem[] = []; // In a real implementation, get this from game state
+      
+      // Create a prompt that includes the decision context and selected option
+      const prompt = `In response to "${decisionPrompt}", I chose to "${option}". What happens next?`;
+      
+      // Get AI response with narrative continuation
+      const response = await aiService.getAIResponse(prompt, recentHistory, inventory);
+      
+      setIsGeneratingNarrative(false);
+      return {
+        narrative: response.narrative,
+        acquiredItems: response.acquiredItems || [],
+        removedItems: response.removedItems || []
+      };
+    } catch (error) {
+      console.error('Error generating AI narrative response:', error);
+      setIsGeneratingNarrative(false);
+      
+      // Fall back to a basic response
+      return {
+        narrative: `You decided: ${option}. The story continues with your choice, the consequences echoing through the dusty streets of Boot Hill.`,
+        acquiredItems: [],
+        removedItems: []
+      };
+    }
+  }, [state.narrativeHistory, aiService]);
 
   /**
    * Record a player's decision and generate a narrative response
    * 
    * This function handles the complete workflow of recording a decision:
    * 1. Validates the decision and option IDs
-   * 2. Generates narrative response
+   * 2. Generates narrative response via AI
    * 3. Creates and stores decision record
    * 4. Updates narrative history
    * 5. Processes decision impacts
@@ -104,10 +145,35 @@ export function useNarrativeContext() {
     }
 
     try {
-      // Generate narrative response
-      const narrativeResponse = generateFallbackNarrative(selectedOption.text);
+      // First set the generation state to true - this will show our loading UI
+      setIsGeneratingNarrative(true);
       
-      // Add to narrative history
+      // Show a temporary loading message in the narrative
+      dispatch(addNarrativeHistory("...\n"));
+      
+      // Generate narrative response based on the player's choice
+      const narrativeResponse = await generateNarrativeResponse(
+        selectedOption.text,
+        decision.prompt
+      );
+      
+      // Now that we have the response, we can clear the decision
+      dispatch(clearCurrentDecision());
+      triggerCustomEvent(EVENTS.DECISION_CLEARED);
+      
+      // Update the temporary message with the actual response
+      // First, remove the temporary loading message
+      const narrativeHistory = [...state.narrativeHistory];
+      narrativeHistory.pop(); // Remove the loading message
+      
+      dispatch({
+        type: 'UPDATE_NARRATIVE',
+        payload: {
+          narrativeHistory: narrativeHistory
+        }
+      });
+      
+      // Then add the real narrative response
       dispatch(addNarrativeHistory(narrativeResponse.narrative));
       
       // Create the decision record
@@ -144,22 +210,22 @@ export function useNarrativeContext() {
       
       // Process the impacts of this decision
       dispatch(processDecisionImpacts(decisionId));
-      
-      // Explicitly clear the current decision to fix UI issues
-      dispatch(clearCurrentDecision());
 
       // Force context update to ensure UI updates properly
-      setTimeout(() => {
-        window.dispatchEvent(new Event('storage'));
-      }, 50);
+      triggerCustomEvent(EVENTS.UI_FORCE_UPDATE);
+      window.dispatchEvent(new Event('storage'));
+      
+      // Final cleanup of state
+      setIsGeneratingNarrative(false);
 
     } catch (error) {
       console.error('Error recording player decision:', error);
       // Make sure to still clear even if there's an error
       dispatch(clearCurrentDecision());
+      setIsGeneratingNarrative(false);
       throw error;
     }
-  }, [state.currentDecision, state.narrativeContext, dispatch, generateFallbackNarrative]);
+  }, [state.currentDecision, state.narrativeContext, state.narrativeHistory, dispatch, generateNarrativeResponse]);
 
   /**
    * Clear the current decision without recording it
@@ -169,10 +235,12 @@ export function useNarrativeContext() {
   const clearPlayerDecision = useCallback(() => {
     dispatch(clearCurrentDecision());
     
+    // Trigger custom event for more reliable UI updates
+    triggerCustomEvent(EVENTS.DECISION_CLEARED);
+    
     // Force update to ensure UI components reflect the change
-    setTimeout(() => {
-      window.dispatchEvent(new Event('storage'));
-    }, 50);
+    triggerCustomEvent(EVENTS.UI_FORCE_UPDATE);
+    window.dispatchEvent(new Event('storage'));
   }, [dispatch]);
 
   /**
@@ -327,5 +395,6 @@ export function useNarrativeContext() {
     
     // Decision state checks
     hasActiveDecision: Boolean(state.currentDecision),
+    isGeneratingNarrative,
   };
 }

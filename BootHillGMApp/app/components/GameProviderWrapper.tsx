@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { GameProvider, useGame } from '../hooks/useGame';
 import { useCampaignState } from './CampaignStateManager';
+import { initializeAIDecisionSystem } from '../utils/initializeAIDecisionSystem';
 
 function GameStateSync({ children }: { children: React.ReactNode }) {
   const { state: campaignState } = useCampaignState();
@@ -37,6 +38,11 @@ export function GameProviderWrapper({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     setIsClient(true);
+    
+    // Initialize the AI Decision System on client-side
+    if (typeof window !== 'undefined') {
+      initializeAIDecisionSystem();
+    }
   }, []);
 
   return (

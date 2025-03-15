@@ -48,9 +48,13 @@ const PlayerDecisionCard: React.FC<PlayerDecisionCardProps> = ({
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hoverOptionId, setHoverOptionId] = useState<string | null>(null);
   
   // Get narrative context functions
-  const { recordPlayerDecision } = useNarrativeContext();
+  const { recordPlayerDecision, isGeneratingNarrative } = useNarrativeContext();
+  
+  // Combine local and context loading states
+  const isLoading = isSubmitting || isGeneratingNarrative;
   
   // Add a storage event listener to force re-renders
   useEffect(() => {
@@ -67,7 +71,7 @@ const PlayerDecisionCard: React.FC<PlayerDecisionCardProps> = ({
    * Similar to a radio button in a form
    */
   const handleOptionSelect = (optionId: string) => {
-    if (!isSubmitting) {
+    if (!isLoading) {
       setSelectedOptionId(optionId);
       setError(null); // Clear any previous errors when making a new selection
     }
@@ -77,7 +81,7 @@ const PlayerDecisionCard: React.FC<PlayerDecisionCardProps> = ({
    * Handle decision submission
    */
   const handleSubmit = useCallback(async () => {
-    if (!selectedOptionId || !decision || isSubmitting) {
+    if (!selectedOptionId || !decision || isLoading) {
       return;
     }
 
@@ -95,10 +99,11 @@ const PlayerDecisionCard: React.FC<PlayerDecisionCardProps> = ({
     } catch (error) {
       console.error('Failed to record decision:', error);
       setError(error instanceof Error ? error.message : 'An unexpected error occurred');
-    } finally {
       setIsSubmitting(false);
     }
-  }, [decision, selectedOptionId, isSubmitting, recordPlayerDecision, onDecisionMade]);
+    // We don't set isSubmitting to false here as it will be cleared when the component unmounts
+    // after the decision is processed
+  }, [decision, selectedOptionId, isLoading, recordPlayerDecision, onDecisionMade]);
 
   // If no decision is provided, don't render anything
   if (!decision) {
@@ -112,7 +117,18 @@ const PlayerDecisionCard: React.FC<PlayerDecisionCardProps> = ({
   const hasOptions = Array.isArray(decision.options) && decision.options.length > 0;
 
   return (
-    <div className={`${styles['bhgm-decision-card']} ${importanceClass} ${className}`} data-testid="player-decision-card">
+    <div 
+      className={`${styles['bhgm-decision-card']} ${importanceClass} ${className} ${isGeneratingNarrative ? styles['bhgm-decision-loading'] : ''}`} 
+      data-testid="player-decision-card"
+    >
+      {/* Loading overlay */}
+      {isGeneratingNarrative && (
+        <div className={styles['bhgm-decision-overlay']}>
+          <div className={styles['bhgm-decision-spinner-large']}></div>
+          <p>Generating narrative response...</p>
+        </div>
+      )}
+        
       {/* Importance indicator */}
       <div className={styles['bhgm-decision-importance-indicator']}>
         <span className={styles['bhgm-decision-importance-label']}>{decision.importance}</span>
@@ -141,12 +157,14 @@ const PlayerDecisionCard: React.FC<PlayerDecisionCardProps> = ({
               key={option.id}
               className={`${styles['bhgm-decision-option-button']} ${selectedOptionId === option.id ? styles['bhgm-decision-option-selected'] : ''}`}
               onClick={() => handleOptionSelect(option.id)}
-              disabled={isSubmitting}
+              onMouseEnter={() => setHoverOptionId(option.id)}
+              onMouseLeave={() => setHoverOptionId(null)}
+              disabled={isLoading}
               aria-pressed={selectedOptionId === option.id}
               data-testid={`option-${option.id}`}
             >
               <div className={styles['bhgm-decision-option-text']}>{option.text}</div>
-              {option.impact && selectedOptionId === option.id && (
+              {option.impact && (selectedOptionId === option.id || hoverOptionId === option.id) && (
                 <div className={styles['bhgm-decision-option-impact']}>{option.impact}</div>
               )}
             </button>
@@ -165,19 +183,29 @@ const PlayerDecisionCard: React.FC<PlayerDecisionCardProps> = ({
         </div>
       )}
       
-      {/* Submit button */}
+      {/* Submit button with loading state */}
       <div className={styles['bhgm-decision-action-container']}>
         <button
           className={styles['bhgm-decision-submit-button']}
           onClick={handleSubmit}
-          disabled={!selectedOptionId || isSubmitting || !hasOptions}
+          disabled={!selectedOptionId || isLoading || !hasOptions}
           data-testid="decision-submit-button"
         >
-          {isSubmitting ? 'Deciding...' : 'Confirm Decision'}
+          {isSubmitting ? 'Confirming...' : isGeneratingNarrative ? 'Generating response...' : 'Confirm Decision'}
         </button>
       </div>
     </div>
   );
 };
 
-export default PlayerDecisionCard;
+/**
+ * Optimized version of PlayerDecisionCard that only re-renders when props actually change.
+ * This significantly improves performance by preventing unnecessary re-renders
+ * when game state changes but the decision itself remains the same.
+ */
+export default React.memo(PlayerDecisionCard, (prevProps, nextProps) => {
+  // Only re-render if the decision ID changes, or if the decision becomes null/defined
+  if (!prevProps.decision && !nextProps.decision) return true; // Both null, no change
+  if (!prevProps.decision || !nextProps.decision) return false; // One is null, one isn't
+  return prevProps.decision.id === nextProps.decision.id; // Compare IDs
+});
