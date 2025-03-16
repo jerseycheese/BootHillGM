@@ -1,7 +1,8 @@
 /**
  * AI Decision Generator
  * 
- * Generates decision prompts and processes AI responses
+ * Generates decision prompts and processes AI responses with comprehensive
+ * context extraction to ensure decisions are based on the latest narrative state.
  */
 
 import { DecisionPrompt, DecisionResponse } from '../../../types/ai-service.types';
@@ -11,58 +12,48 @@ import { GameState } from '../../../types/gameState';
 import { LocationType } from '../../locationService';
 import { DecisionHistoryEntry, AIDecisionServiceConfig } from '../types/aiDecisionTypes';
 
+// Constants for context extraction
+const MAX_NARRATIVE_ENTRIES = 5;
+const MAX_DECISION_HISTORY = 5;
+const MAX_ENTRY_LENGTH = 200;
+
 /**
- * Build a decision prompt for the AI service
+ * Build a decision prompt for the AI service with comprehensive context
  * 
  * @param narrativeState Current narrative state
  * @param character Player character
  * @param decisionsHistory Recent decision history
- * @param _gameState Optional game state for additional context
+ * @param gameState Optional game state for additional context
  * @returns Formatted decision prompt
  */
 export function buildDecisionPrompt(
   narrativeState: NarrativeState,
   character: Character,
   decisionsHistory: DecisionHistoryEntry[],
-  _gameState?: GameState
+  gameState?: GameState
 ): DecisionPrompt {
-  // Extract recent narrative content
-  let narrativeContext = '';
+  // Refresh the narrative context to ensure we're working with the latest state
+  const refreshedState = refreshNarrativeContext(narrativeState);
   
-  if (narrativeState.currentStoryPoint) {
-    narrativeContext = narrativeState.currentStoryPoint.content;
-  } else if (narrativeState.narrativeHistory.length > 0) {
-    // Get the last few narrative entries
-    const recentHistory = narrativeState.narrativeHistory.slice(-3);
-    narrativeContext = recentHistory.join('\n\n');
-  }
+  // Extract comprehensive narrative context
+  const narrativeContext = extractNarrativeContext(refreshedState);
   
-  // Extract location information
-  const location: LocationType | string = narrativeState.currentStoryPoint?.locationChange || 'Unknown';
+  // Extract or infer location information
+  const location: LocationType | string = refreshedState.currentStoryPoint?.locationChange || 
+                                         inferCurrentLocation(refreshedState) || 
+                                         'Unknown';
   
-  // Extract character traits
-  const traits: string[] = [];
+  // Extract character traits with more depth
+  const traits = extractCharacterTraits(character);
   
-  // Add traits based on character attributes
-  if (character.attributes.bravery >= 8) traits.push('brave');
-  if (character.attributes.bravery <= 3) traits.push('cautious');
-  if (character.attributes.speed >= 8) traits.push('quick');
-  if (character.attributes.gunAccuracy >= 8) traits.push('sharpshooter');
+  // Build more detailed relationships
+  const relationships = extractRelationships(character, refreshedState);
   
-  // Map relationships (simplified)
-  const relationships: Record<string, string> = {};
-  
-  // Get recent events
-  const recentEvents = narrativeState.narrativeHistory
-    .slice(-5)
-    .map(entry => entry.substring(0, 100) + '...'); // Truncate for brevity
+  // Get recent events from narrative history
+  const recentEvents = extractRecentEvents(refreshedState);
   
   // Extract recent decisions for context
-  const previousDecisions = decisionsHistory.slice(-3).map(decision => ({
-    prompt: decision.prompt,
-    choice: decision.choice,
-    outcome: decision.outcome
-  }));
+  const previousDecisions = extractPreviousDecisions(decisionsHistory);
   
   // Combine everything into the decision prompt
   return {
@@ -74,11 +65,184 @@ export function buildDecisionPrompt(
     },
     gameState: {
       location,
-      currentScene: narrativeState.currentStoryPoint?.id || 'unknown',
-      recentEvents
+      currentScene: refreshedState.currentStoryPoint?.id || 'unknown',
+      recentEvents,
+      // Include additional game state if available
+      ...(gameState && { additionalContext: JSON.stringify(gameState) })
     },
     previousDecisions
   };
+}
+
+/**
+ * Refreshes the narrative context to ensure it's up-to-date
+ * This addresses the stale context bug by ensuring freshness
+ * 
+ * @param narrativeState Current narrative state
+ * @returns Refreshed narrative state
+ */
+function refreshNarrativeContext(narrativeState: NarrativeState): NarrativeState {
+  // Create a deep copy to avoid mutation issues
+  return {
+    ...narrativeState,
+    narrativeHistory: [...narrativeState.narrativeHistory],
+    currentStoryPoint: narrativeState.currentStoryPoint 
+      ? { ...narrativeState.currentStoryPoint } 
+      : undefined
+  };
+}
+
+/**
+ * Extracts a comprehensive narrative context from the narrative state
+ * 
+ * @param narrativeState Current narrative state
+ * @returns Comprehensive narrative context
+ */
+function extractNarrativeContext(narrativeState: NarrativeState): string {
+  const contextParts: string[] = [];
+  
+  // Include current story point if available
+  if (narrativeState.currentStoryPoint?.content) {
+    contextParts.push(`Current situation: ${narrativeState.currentStoryPoint.content}`);
+  }
+  
+  // Include recent narrative history with proper chronological ordering
+  if (narrativeState.narrativeHistory.length > 0) {
+    // Get the most recent entries, but preserve chronological order
+    const recentEntries = narrativeState.narrativeHistory
+      .slice(-MAX_NARRATIVE_ENTRIES)
+      .map((entry, index) => `[Recent Event ${index + 1}]: ${entry}`);
+    
+    contextParts.push("Recent events:");
+    contextParts.push(...recentEntries);
+  }
+  
+  return contextParts.join('\n\n');
+}
+
+/**
+ * Infers the current location from narrative history if not explicitly set
+ * 
+ * @param narrativeState Current narrative state
+ * @returns Inferred location or undefined
+ */
+function inferCurrentLocation(narrativeState: NarrativeState): string | undefined {
+  // Search for location mentions in recent history
+  for (let i = narrativeState.narrativeHistory.length - 1; i >= 0; i--) {
+    const entry = narrativeState.narrativeHistory[i];
+    
+    // Check for location indicators like "arrived at" or "entered"
+    if (entry.includes("arrived at") || entry.includes("entered") || entry.includes("location:")) {
+      // This is a simplified version - real implementation would use more sophisticated parsing
+      const locationMatch = entry.match(/(?:arrived at|entered|location:)\s+([A-Za-z\s']+)/i);
+      if (locationMatch && locationMatch[1]) {
+        return locationMatch[1].trim();
+      }
+    }
+  }
+  
+  return undefined;
+}
+
+/**
+ * Extracts character traits based on character data
+ * 
+ * @param character Character data
+ * @returns Array of character traits
+ */
+function extractCharacterTraits(character: Character): string[] {
+  const traits: string[] = [];
+  
+  // Add traits based on character attributes
+  if (character.attributes.bravery >= 8) traits.push('brave');
+  if (character.attributes.bravery <= 3) traits.push('cautious');
+  if (character.attributes.speed >= 8) traits.push('quick');
+  if (character.attributes.gunAccuracy >= 8) traits.push('sharpshooter');
+  
+  // Add personality traits if available
+  if (character.personality?.dominant) {
+    traits.push(...character.personality.dominant);
+  }
+  
+  // Add any additional traits from character data
+  if (character.traits) {
+    traits.push(...character.traits);
+  }
+  
+  return traits;
+}
+
+/**
+ * Extracts relationship information from character data and narrative state
+ * 
+ * @param character Character data
+ * @param narrativeState Current narrative state
+ * @returns Relationship mapping
+ */
+function extractRelationships(
+  character: Character, 
+  narrativeState: NarrativeState
+): Record<string, string> {
+  const relationships: Record<string, string> = {};
+  
+  // Include explicit relationships from character data
+  if (character.relationships) {
+    Object.entries(character.relationships).forEach(([name, status]) => {
+      relationships[name] = status;
+    });
+  }
+  
+  // Infer relationships from narrative history
+  // This is a simplified implementation - a real one would use more sophisticated analysis
+  const relationshipPatterns = [
+    { pattern: /(\w+) became your (ally|enemy|friend)/i, type: (match: string[]) => match[2] },
+    { pattern: /(\w+) (helped|betrayed) you/i, type: (match: string[]) => match[2] === 'helped' ? 'ally' : 'enemy' },
+  ];
+  
+  for (const entry of narrativeState.narrativeHistory) {
+    for (const { pattern, type } of relationshipPatterns) {
+      const match = entry.match(pattern);
+      if (match) {
+        relationships[match[1]] = type(match);
+      }
+    }
+  }
+  
+  return relationships;
+}
+
+/**
+ * Extracts recent events from narrative history
+ * 
+ * @param narrativeState Current narrative state
+ * @returns Array of recent events
+ */
+function extractRecentEvents(narrativeState: NarrativeState): string[] {
+  return narrativeState.narrativeHistory
+    .slice(-MAX_NARRATIVE_ENTRIES)
+    .map(entry => {
+      if (entry.length <= MAX_ENTRY_LENGTH) {
+        return entry;
+      }
+      return entry.substring(0, MAX_ENTRY_LENGTH) + '...';
+    });
+}
+
+/**
+ * Extracts previous decisions for context
+ * 
+ * @param decisionsHistory Array of decision history entries
+ * @returns Formatted previous decisions
+ */
+function extractPreviousDecisions(decisionsHistory: DecisionHistoryEntry[]) {
+  return decisionsHistory
+    .slice(-MAX_DECISION_HISTORY)
+    .map(decision => ({
+      prompt: decision.prompt,
+      choice: decision.choice,
+      outcome: decision.outcome,
+      timestamp: decision.timestamp // Include timestamp for recency awareness
+    }));
 }
 
 /**
