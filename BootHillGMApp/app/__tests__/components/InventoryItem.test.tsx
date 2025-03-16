@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { InventoryItem } from '../InventoryItem';
+import { InventoryItem } from '../../components/InventoryItem';
 import { createMockInventoryItem } from '../../test/utils/inventoryTestUtils';
 import { GameContext, GameContextProps } from '../../hooks/useGame';
 import { createMockCharacter } from '../../test/character/characterData';

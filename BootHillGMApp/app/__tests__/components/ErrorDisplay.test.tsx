@@ -1,4 +1,4 @@
-//import { ErrorDisplay } from '../ErrorDisplay'; // Will be imported after creation
+//import { ErrorDisplay } from '../../components/ErrorDisplay'; // Will be imported after creation
 
 // Placeholder tests - will be populated later
 describe('ErrorDisplay', () => {

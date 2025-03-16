@@ -10,75 +10,35 @@ import { getAIModel } from '../../utils/ai/aiConfig';
 import { retryWithExponentialBackoff } from '../../utils/retry';
 import { 
   NarrativeState,
-  PlayerDecision, 
-  DecisionImportance,
+  PlayerDecision,
 } from '../../types/narrative.types';
 import { GameState } from '../../types/gameState';
 import { Character } from '../../types/character';
 import { buildComprehensiveContextExtension } from '../../utils/decisionPromptBuilder';
-import { LocationType } from '../locationService';
-import { v4 as uuidv4 } from 'uuid';
+import { generateFeedbackEnhancedPrompt } from '../../utils/decisionFeedbackSystem';
 import { evaluateDecisionQuality } from '../../utils/decisionQualityAssessment';
-import { processDecisionQuality, generateFeedbackEnhancedPrompt } from '../../utils/decisionFeedbackSystem';
 
-// Decision Detection Configuration
-const DEFAULT_DECISION_THRESHOLD = 0.65;
-const MIN_DECISION_INTERVAL = 30 * 1000; // 30 seconds minimum between decisions
-
-// Decision service configuration
-export interface ContextualDecisionServiceConfig {
-  // Minimum time between automatic decisions (ms)
-  minDecisionInterval: number;
-  
-  // Threshold score to present a decision (0-1)
-  relevanceThreshold: number;
-  
-  // Maximum number of options per decision
-  maxOptionsPerDecision: number;
-  
-  // Whether to use the feedback system for prompt enhancement
-  useFeedbackSystem: boolean;
-}
-
-/**
- * Result from the decision point detection process
- */
-export interface DecisionDetectionResult {
-  /** Should a decision be presented? */
-  shouldPresent: boolean;
-  
-  /** Detection score (0-1) */
-  score: number;
-  
-  /** Reason for the detection result */
-  reason: string;
-}
-
-/**
- * Extended GameState with predicted properties we use for decision scoring
- * This interface represents the expected game state structure used by the decision service
- */
-interface ExtendedGameState extends GameState {
-  combat?: {
-    active: boolean;
-  };
-  activeEvent?: boolean;
-}
+// Import the separated components
+import { 
+  ContextualDecisionServiceConfig,
+  DecisionDetectionResult,
+  DEFAULT_DECISION_THRESHOLD,
+  MIN_DECISION_INTERVAL,
+  DecisionHistoryEntry
+} from './contextualDecision.types';
+import { DecisionDetector } from './decisionDetector';
+import { processResponse, toPlayerDecision } from './decisionResponseProcessor';
+import { generateFallbackDecision } from './fallbackDecisionGenerator';
 
 /**
  * Service for AI-driven contextual decision generation
  */
 export class ContextualDecisionService {
   private config: ContextualDecisionServiceConfig;
-  private lastDecisionTime: number = 0;
+  private detector: DecisionDetector;
   
   // Cache of recent decisions for context
-  private decisionsHistory: Array<{
-    prompt: string;
-    choice: string;
-    outcome: string;
-    timestamp: number;
-  }> = [];
+  private decisionsHistory: DecisionHistoryEntry[] = [];
   
   /**
    * Initialize the contextual decision service
@@ -93,13 +53,13 @@ export class ContextualDecisionService {
       useFeedbackSystem: true,
       ...config
     };
+    
+    // Initialize the decision detector
+    this.detector = new DecisionDetector(this.config);
   }
   
   /**
    * Detects if a decision point should be presented
-   * 
-   * This function analyzes the narrative context to determine if this
-   * is an appropriate moment to present a decision to the player.
    * 
    * @param narrativeState Current narrative state
    * @param character Player character data
@@ -111,113 +71,7 @@ export class ContextualDecisionService {
     character: Character,
     gameState?: GameState
   ): DecisionDetectionResult {
-    // Don't present decisions too frequently
-    if (Date.now() - this.lastDecisionTime < this.config.minDecisionInterval) {
-      return {
-        shouldPresent: false,
-        score: 0,
-        reason: 'Too soon since last decision'
-      };
-    }
-    
-    // Calculate decision score based on narrative context
-    const score = this.calculateDecisionScore(narrativeState, character, gameState as ExtendedGameState);
-    
-    // Determine if we should present a decision
-    const shouldPresent = score >= this.config.relevanceThreshold;
-    
-    return {
-      shouldPresent,
-      score,
-      reason: shouldPresent 
-        ? 'Narrative context indicates decision point'
-        : 'Decision threshold not met'
-    };
-  }
-  
-  /**
-   * Calculates a score representing how appropriate it is to present a decision
-   * 
-   * Higher scores mean a decision is more appropriate at this moment
-   * 
-   * @param narrativeState Current narrative state
-   * @param _character Player character data
-   * @param _gameState Additional game state for context
-   * @returns Score from 0-1
-   */
-  private calculateDecisionScore(
-    narrativeState: NarrativeState,
-    _character: Character,
-    _gameState?: ExtendedGameState
-  ): number {
-    // Start with a base score
-    let score = 0.4;
-    
-    // Get the current story point for analysis
-    const currentPoint = narrativeState.currentStoryPoint;
-    
-    // Analyze narrative content
-    if (currentPoint?.content) {
-      const content = currentPoint.content.toLowerCase();
-      
-      // Increase score for dialogue-heavy content
-      const dialogueMarkers = ['"', "'", '"', '"', "said", "asked", "replied", "shouted"];
-      
-      if (dialogueMarkers.some(marker => content.includes(marker))) {
-        score += 0.15;
-        
-        // Additional boost for interactive dialogue
-        if (content.includes("?") || /\b(what|where|when|why|who|how)\b/i.test(content)) {
-          score += 0.05;
-        }
-      }
-      
-      // Decrease score during action sequences
-      const actionWords = ['shot', 'punch', 'run', 'fight', 'chase', 'attack', 
-                        'defend', 'dodge', 'fire', 'flee', 'strike', 'hit'];
-      
-      if (actionWords.some(word => content.includes(word))) {
-        score -= 0.2;
-        
-        // But increase slightly for action conclusion
-        if (content.includes("stopped") || 
-            content.includes("ended") || 
-            content.includes("finally") ||
-            content.includes("after")) {
-          score += 0.1;
-        }
-      }
-      
-      // Increase score for explicit decision points
-      if (content.includes("decide") || 
-          content.includes("choice") || 
-          content.includes("option") ||
-          content.includes("what will you do") ||
-          content.includes("what do you do")) {
-        score += 0.25;
-      }
-    }
-    
-    // Increase score for decision-type story points
-    if (currentPoint?.type === 'decision') {
-      score += 0.3;
-    }
-    
-    // Increase score when entering new locations
-    if (narrativeState.narrativeContext?.worldContext &&
-        narrativeState.narrativeContext.worldContext.includes('new location')) {
-      score += 0.2;
-    }
-    
-    // Factor in time since last decision (gradually increasing importance)
-    const timeFactor = Math.min(
-      (Date.now() - this.lastDecisionTime) / (5 * this.config.minDecisionInterval),
-      1.0
-    );
-    score += timeFactor * 0.25;
-    
-    // Ensure score is within 0-1 range
-    return Math.max(0, Math.min(1, score));
+    return this.detector.detectDecisionPoint(narrativeState, character, gameState);
   }
   
   /**
@@ -238,7 +92,7 @@ export class ContextualDecisionService {
     try {
       // Only update the decision time if not forced
       if (!forceGeneration) {
-        this.lastDecisionTime = Date.now();
+        this.detector.updateLastDecisionTime();
       }
       
       // Build decision prompt
@@ -257,12 +111,13 @@ export class ContextualDecisionService {
       
       // Process the result
       const responseText = result.response.text();
-      const processedResponse = this.processResponse(responseText);
+      const processedResponse = processResponse(responseText);
       
       // Convert to PlayerDecision
       if (processedResponse) {
-        const decision = this.toPlayerDecision(
+        const decision = toPlayerDecision(
           processedResponse,
+          this.config,
           narrativeState.currentStoryPoint?.locationChange
         );
         
@@ -280,8 +135,7 @@ export class ContextualDecisionService {
           }
         }
         
-        // Record quality metrics in the feedback system
-        processDecisionQuality(decision, narrativeState.narrativeContext);
+        // Quality metrics are recorded as part of the evaluation
         
         // If quality is unacceptable and we're not forcing generation, try again or fall back
         if (!qualityEvaluation.acceptable && !forceGeneration) {
@@ -290,8 +144,7 @@ export class ContextualDecisionService {
           }
           
           // For simplicity, we'll use the fallback decision instead of recursive retries
-          // In a full implementation, you might want to try generating again with an improved prompt
-          return this.generateFallbackDecision(narrativeState, character);
+          return generateFallbackDecision(narrativeState, character);
         }
         
         // Add quality metadata to the decision
@@ -310,7 +163,7 @@ export class ContextualDecisionService {
       return null;
     } catch (error) {
       console.error('Error generating AI decision:', error);
-      return this.generateFallbackDecision(narrativeState, character);
+      return generateFallbackDecision(narrativeState, character);
     }
   }
   
@@ -408,131 +261,6 @@ Respond with a player decision in JSON format:
 
 Only include the JSON in your response and make sure it is valid.
 `;
-  }
-  
-  /**
-   * Process the AI response into a structured object
-   * 
-   * @param responseText Response text from the AI
-   * @returns Processed decision object or null if parsing fails
-   */
-  private processResponse(responseText: string): Record<string, unknown> | null {
-    try {
-      // Remove any markdown code block delimiters
-      const cleanedText = responseText
-        .replace(/```json\s*/g, '')
-        .replace(/```\s*/g, '')
-        .trim();
-      
-      // Parse the JSON
-      return JSON.parse(cleanedText) as Record<string, unknown>;
-    } catch (error) {
-      console.error('Error parsing AI response:', error);
-      // Only log the raw response in development mode
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('Raw response:', responseText);
-      }
-      return null;
-    }
-  }
-  
-  /**
-   * Generate a fallback decision when AI generation fails
-   * 
-   * @param narrativeState Current narrative state
-   * @param _character Player character
-   * @returns A simple default decision
-   */
-  private generateFallbackDecision(
-    narrativeState: NarrativeState,
-    _character: Character
-  ): PlayerDecision {
-    // Character param kept for future implementation
-    
-    return {
-      id: `fallback-${uuidv4()}`,
-      prompt: 'What would you like to do?',
-      timestamp: Date.now(),
-      location: narrativeState.currentStoryPoint?.locationChange,
-      options: [
-        {
-          id: `option1-${uuidv4()}`,
-          text: 'Proceed cautiously',
-          impact: 'Taking a careful approach may reveal more information.',
-          tags: ['cautious']
-        },
-        {
-          id: `option2-${uuidv4()}`,
-          text: 'Take immediate action',
-          impact: 'Bold moves can yield faster results but may be riskier.',
-          tags: ['brave']
-        },
-        {
-          id: `option3-${uuidv4()}`,
-          text: 'Look for another approach',
-          impact: 'There might be a less obvious but advantageous solution.',
-          tags: ['resourceful']
-        }
-      ],
-      context: 'Based on the current situation',
-      importance: 'moderate',
-      characters: [],
-      aiGenerated: true
-    };
-  }
-  
-  /**
-   * Convert a raw response object to a PlayerDecision
-   * 
-   * @param response Processed response from AI
-   * @param location Current location
-   * @returns PlayerDecision object
-   */
-  private toPlayerDecision(
-    response: Record<string, unknown>,
-    location?: LocationType
-  ): PlayerDecision {
-    // Validate importance
-    const validImportance = ['critical', 'significant', 'moderate', 'minor'];
-    const importance: DecisionImportance = 
-      (response.importance as string) && validImportance.includes(response.importance as string)
-        ? response.importance as DecisionImportance
-        : 'moderate';
-    
-    // Generate option IDs if missing
-    const options = ((response.options as unknown[]) || []).map(option => ({
-      id: uuidv4(),
-      text: (option as Record<string, unknown>).text as string || 'Option',
-      impact: (option as Record<string, unknown>).impact as string || 'Unknown impact',
-      tags: Array.isArray((option as Record<string, unknown>).tags) 
-        ? (option as Record<string, unknown>).tags as string[] 
-        : []
-    }));
-    
-    // Limit options based on config
-    const limitedOptions = options.slice(0, this.config.maxOptionsPerDecision);
-    
-    // Ensure we have at least 2 options
-    if (limitedOptions.length < 2) {
-      limitedOptions.push({
-        id: uuidv4(),
-        text: 'Continue forward',
-        impact: 'Proceed with the current course of action.',
-        tags: ['default']
-      });
-    }
-    
-    return {
-      id: `decision-${uuidv4()}`,
-      prompt: (response.prompt as string) || 'What would you like to do?',
-      timestamp: Date.now(),
-      location,
-      options: limitedOptions,
-      context: (response.context as string) || 'Based on narrative context',
-      importance,
-      characters: [],
-      aiGenerated: true
-    };
   }
   
   /**

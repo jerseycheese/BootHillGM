@@ -1,78 +1,56 @@
-# AI Services Module
+# Contextual Decision Service
 
-This module contains AI-powered services for the Boot Hill GM application, including decision generation, character services, and other AI-driven features.
+This directory contains the Contextual Decision Service implementation for BootHillGM. The service analyzes narrative context to intelligently generate contextually appropriate decision points for players, replacing keyword-based approaches with sophisticated AI analysis.
 
-## Main Components
+## File Structure
 
-### AI Decision Service
+The service is split into several modular components:
 
-The AI Decision Service enhances the game with AI-driven contextual decisions that analyze narrative content and game state to present decisions at appropriate moments.
+- `contextualDecisionService.ts` - Main service class and singleton implementation
+- `contextualDecision.types.ts` - Type definitions and interfaces
+- `decisionDetector.ts` - Logic for detecting appropriate decision points
+- `decisionResponseProcessor.ts` - Processing AI responses into structured decisions
+- `fallbackDecisionGenerator.ts` - Generating fallback decisions when AI fails
 
-#### File Structure
+## Usage
 
-```
-/services/ai/
-├── aiDecisionService.ts         - Main service class
-├── types/
-│   └── aiDecisionTypes.ts       - Type definitions
-├── utils/
-│   ├── aiDecisionConstants.ts   - Constants
-│   ├── aiDecisionDetector.ts    - Decision detection logic
-│   └── aiDecisionGenerator.ts   - Decision generation logic
-└── clients/
-    └── aiServiceClient.ts       - External API communication
-```
-
-#### Responsibilities
-
-- **aiDecisionService.ts**: Main service class that orchestrates the decision generation process
-- **aiDecisionTypes.ts**: Type definitions for the decision service
-- **aiDecisionConstants.ts**: Constants used by the decision service
-- **aiDecisionDetector.ts**: Logic for detecting when to present decisions
-- **aiDecisionGenerator.ts**: Logic for generating decision content
-- **aiServiceClient.ts**: Communication with external AI services
-
-## Usage Example
+The service is accessed through a singleton pattern:
 
 ```typescript
-import AIDecisionService from './services/ai/aiDecisionService';
+import { getContextualDecisionService } from './services/ai/contextualDecisionService';
 
-// Initialize the service
-const decisionService = new AIDecisionService({
-  relevanceThreshold: 0.7,  // Adjust how often decisions appear
-  maxOptionsPerDecision: 3, // Set maximum options per decision
-});
+// Get the service instance with default config
+const decisionService = getContextualDecisionService();
 
-// Check if we should present a decision
-const detectionResult = decisionService.detectDecisionPoint(
-  narrativeState,
-  playerCharacter,
-  gameState
-);
-
+// Use the service
+const detectionResult = decisionService.detectDecisionPoint(narrativeState, character);
 if (detectionResult.shouldPresent) {
-  // Generate a decision
-  const decision = await decisionService.generateDecision(
-    narrativeState,
-    playerCharacter,
-    gameState
-  );
-  
-  // Present the decision to the player...
-  
-  // Record the player's choice
-  decisionService.recordDecision(
-    decision.id,
-    selectedOptionId,
-    resultingOutcome
-  );
+  const decision = await decisionService.generateDecision(narrativeState, character);
+  // Present decision to player
 }
 ```
 
-## Environment Variables
+## Configuration
 
-The service uses these environment variables:
+You can configure the service by passing a config object when getting the instance:
 
-- `AI_SERVICE_API_KEY`: API key for the external AI service
-- `AI_SERVICE_ENDPOINT`: Endpoint URL for the external AI service
-- `AI_SERVICE_MODEL`: Model name to use (default: 'gpt-4')
+```typescript
+const decisionService = getContextualDecisionService({
+  minDecisionInterval: 60 * 1000, // 1 minute minimum between decisions
+  relevanceThreshold: 0.75,       // Higher threshold for presenting decisions
+  maxOptionsPerDecision: 3,        // Maximum options per decision
+  useFeedbackSystem: true          // Whether to use feedback enhancement
+});
+```
+
+## Testing
+
+Tests for the service are located in `app/__tests__/services/ai/contextualDecisionService.test.ts`. Run tests with:
+
+```bash
+npm test
+```
+
+## Refactoring Notes
+
+This service was refactored from a monolithic implementation into separate modules following the Single Responsibility Principle. Each file now focuses on a specific aspect of the decision generation process, improving maintainability and testability.

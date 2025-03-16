@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { InventoryList } from '../InventoryList';
+import { InventoryList } from '../../components/InventoryList';
 import { createMockInventoryItem } from '../../test/utils/inventoryTestUtils';
 
 describe('InventoryList', () => {

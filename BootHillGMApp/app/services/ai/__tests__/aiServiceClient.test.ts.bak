@@ -1,6 +1,0 @@
-/**
- * This test file is obsolete - tests have been moved to:
- * /app/__tests__/services/ai/aiServiceClient.test.ts
- * 
- * This file can be safely deleted.
- */
