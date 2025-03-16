@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, ReactNode } from 'react';
-import rootReducer from '../reducers/index';
+import { gameReducer } from '../reducers/index';
 import { GameState } from '../types/gameState';
 import { GameEngineAction } from '../types/gameActions';
 import { initialState } from '../types/initialState';
@@ -12,7 +12,7 @@ export interface GameContextProps {
 export const GameContext = createContext<GameContextProps | undefined>(undefined);
 
 export function GameProvider({ children }: { children: ReactNode }): JSX.Element {
-  const [state, dispatch] = useReducer(rootReducer, initialState);
+  const [state, dispatch] = useReducer(gameReducer, initialState);
 
   return (
     <GameContext.Provider value={{ state, dispatch }}>

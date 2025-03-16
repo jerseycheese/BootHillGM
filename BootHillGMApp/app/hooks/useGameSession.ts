@@ -6,7 +6,7 @@ import { getJournalContext, addJournalEntry } from '../utils/JournalManager';
 import { useCombatManager } from './useCombatManager';
 import { InventoryItem, ItemCategory } from '../types/item.types';
 import { InventoryManager } from '../utils/inventoryManager';
-import { addNarrativeHistory } from '../reducers/narrativeReducer';
+import { addNarrativeHistory } from '../actions/narrativeActions';
 
 // Parameters for updating the narrative display
 type UpdateNarrativeParams = {
@@ -258,4 +258,11 @@ export const useGameSession = () => {
       isUsingItem,
       ...combatManager
     };
+};
+
+// Empty mock object that's safe for production builds
+export const __mocks = {
+  // Implementation is replaced in test environment
+  handleUserInput: () => Promise.resolve({}),
+  retryLastAction: () => Promise.resolve(null)
 };

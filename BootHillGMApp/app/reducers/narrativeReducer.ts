@@ -7,89 +7,30 @@
 
 import {
   NarrativeAction,
-  NarrativeContext,
-  StoryPoint,
-  NarrativeChoice,
-  NarrativeDisplayMode,
-  initialNarrativeState,
   NarrativeState,
-  PlayerDecision,
-  ImpactState,
-  PlayerDecisionRecordWithImpact,
+  initialNarrativeState,
+  // Commented out to avoid unused import error
+  /* NarrativeErrorInfo */
 } from '../types/narrative.types';
 import { GameState } from '../types/gameState';
-import { createDecisionRecord } from '../utils/decisionUtils';
+
+// Import helper functions
 import {
-  processDecisionImpacts as processImpacts,
-  evolveImpactsOverTime
-} from '../utils/decisionImpactUtils';
+  defaultNarrativeContext,
+  validateStoryPoint,
+  validateChoice,
+  updateAvailableChoices
+} from '../utils/narrativeHelpers';
 
-/**
- * Generates a default NarrativeContext object.
- * @returns {NarrativeContext} A default NarrativeContext object.
- */
-const defaultNarrativeContext = (): NarrativeContext => ({
-    tone: undefined,
-    characterFocus: [],
-    themes: [],
-    worldContext: '',
-    importantEvents: [],
-    storyPoints: {},
-    narrativeArcs: {},
-    narrativeBranches: {},
-    currentArcId: undefined,
-    currentBranchId: undefined,
-    activeDecision: undefined, // Added
-    pendingDecisions: [],     // Added
-    decisionHistory: [],      // Added
-    impactState: { 
-      reputationImpacts: {}, 
-      relationshipImpacts: {}, 
-      worldStateImpacts: {}, 
-      storyArcImpacts: {}, 
-      lastUpdated: Date.now() 
-    },
-});
-
-/**
- * Validates that a story point exists in the current narrative.
- * @param {string} storyPointId - ID of the story point to validate.
- * @param {Record<string, StoryPoint>} storyPoints - Collection of available story points.
- * @returns {boolean} True if the story point exists, false otherwise.
- */
-const validateStoryPoint = (
-  storyPointId: string,
-  storyPoints: Record<string, StoryPoint>
-): boolean => {
-  return Boolean(storyPoints[storyPointId]);
-};
-
-/**
- * Validates that a choice is available and valid for the current story point.
- * @param choiceId - ID of the choice to validate.
- * @param availableChoices - Current available choices.
- * @returns True if the choice is valid, false otherwise.
- */
-const validateChoice = (
-  choiceId: string,
-  availableChoices: NarrativeChoice[]
-): boolean => {
-  return availableChoices.some((choice) => choice.id === choiceId);
-};
-
-/**
- * Updates the available choices based on the current story point.
- * @param storyPoint - Current story point.
- * @returns Array of available narrative choices.
- */
-const updateAvailableChoices = (
-  storyPoint: StoryPoint | null
-): NarrativeChoice[] => {
-  if (!storyPoint || !storyPoint.choices) {
-    return [];
-  }
-  return storyPoint.choices;
-};
+// Import decision-specific reducer functions
+import {
+  handlePresentDecision,
+  handleRecordDecision,
+  handleClearCurrentDecision,
+  handleProcessDecisionImpacts,
+  handleUpdateImpactState,
+  handleEvolveImpacts
+} from './decisionReducer';
 
 /**
  * Reducer function to handle narrative-related state updates.
@@ -103,12 +44,19 @@ export function narrativeReducer(
 ): NarrativeState {
   switch (action.type) {
     case 'NAVIGATE_TO_POINT': {
-      // Ensure we have story points available - this would come from a loaded narrative
+      // Ensure we have story points available
       const storyPoints = state.narrativeContext?.storyPoints || {};
 
       if (!validateStoryPoint(action.payload, storyPoints)) {
-        // TODO: Replace with a more robust error handling mechanism (e.g., dispatch an error action)
-        return state;
+        return {
+          ...state,
+          error: {
+            code: 'invalid_navigation',
+            message: `Story point with ID "${action.payload}" does not exist.`,
+            context: { storyPointId: action.payload },
+            timestamp: Date.now()
+          }
+        };
       }
 
       const newStoryPoint = storyPoints[action.payload];
@@ -129,13 +77,24 @@ export function narrativeReducer(
         currentStoryPoint: newStoryPoint,
         availableChoices: updatedChoices,
         visitedPoints,
+        error: null // Clear any previous errors
       };
     }
 
     case 'SELECT_CHOICE': {
       if (!validateChoice(action.payload, state.availableChoices)) {
-        // TODO: Replace with a more robust error handling mechanism (e.g., dispatch an error action)
-        return state;
+        return {
+          ...state,
+          error: {
+            code: 'invalid_choice',
+            message: `Choice with ID "${action.payload}" is not available.`,
+            context: { 
+              choiceId: action.payload,
+              availableChoices: state.availableChoices.map(c => c.id)
+            },
+            timestamp: Date.now()
+          }
+        };
       }
 
       const selectedChoice = state.availableChoices.find(
@@ -151,6 +110,7 @@ export function narrativeReducer(
       return {
         ...state,
         selectedChoice: selectedChoice.id,
+        error: null // Clear any previous errors
       };
     }
 
@@ -173,8 +133,15 @@ export function narrativeReducer(
       const arc = arcs[action.payload];
 
       if (!arc) {
-        // TODO: Replace with a more robust error handling mechanism (e.g., dispatch an error action)
-        return state;
+        return {
+          ...state,
+          error: {
+            code: 'arc_not_found',
+            message: `Narrative arc with ID "${action.payload}" does not exist.`,
+            context: { arcId: action.payload },
+            timestamp: Date.now()
+          }
+        };
       }
 
       // Mark the arc as active
@@ -191,7 +158,7 @@ export function narrativeReducer(
 
       // Always set currentBranchId if startingBranchId is present
       // Provide default values for required NarrativeContext properties
-      const updatedNarrativeContext: NarrativeContext = {
+      const updatedNarrativeContext = {
         ...defaultNarrativeContext(),
         ...(state.narrativeContext || { characterFocus: [] }),
         characterFocus: state.narrativeContext?.characterFocus ?? [],
@@ -217,6 +184,7 @@ export function narrativeReducer(
       return {
         ...state,
         narrativeContext: updatedNarrativeContext,
+        error: null // Clear any previous errors
       };
     }
 
@@ -225,8 +193,15 @@ export function narrativeReducer(
       const arc = arcs[action.payload];
 
       if (!arc) {
-        // TODO: Replace with a more robust error handling mechanism (e.g., dispatch an error action)
-        return state;
+        return {
+          ...state,
+          error: {
+            code: 'arc_not_found',
+            message: `Narrative arc with ID "${action.payload}" does not exist.`,
+            context: { arcId: action.payload },
+            timestamp: Date.now()
+          }
+        };
       }
 
       // Mark the arc as completed
@@ -249,6 +224,7 @@ export function narrativeReducer(
           worldContext: state.narrativeContext?.worldContext ?? '',
           importantEvents: state.narrativeContext?.importantEvents ?? []
         },
+        error: null // Clear any previous errors
       };
     }
 
@@ -257,8 +233,15 @@ export function narrativeReducer(
       const branch = branches[action.payload];
 
       if (!branch) {
-        // TODO: Replace with a more robust error handling mechanism (e.g., dispatch an error action)
-        return state;
+        return {
+          ...state,
+          error: {
+            code: 'branch_not_found',
+            message: `Narrative branch with ID "${action.payload}" does not exist.`,
+            context: { branchId: action.payload },
+            timestamp: Date.now()
+          }
+        };
       }
 
       // Mark the branch as active
@@ -278,6 +261,7 @@ export function narrativeReducer(
           narrativeBranches: updatedBranches,
           currentBranchId: action.payload,
         },
+        error: null // Clear any previous errors
       };
     }
 
@@ -286,8 +270,15 @@ export function narrativeReducer(
       const branch = branches[action.payload];
 
       if (!branch) {
-        // TODO: Replace with a more robust error handling mechanism (e.g., dispatch an error action)
-        return state;
+        return {
+          ...state,
+          error: {
+            code: 'branch_not_found',
+            message: `Narrative branch with ID "${action.payload}" does not exist.`,
+            context: { branchId: action.payload },
+            timestamp: Date.now()
+          }
+        };
       }
 
       // Mark the branch as inactive (completed)
@@ -310,6 +301,7 @@ export function narrativeReducer(
           themes: state.narrativeContext?.themes ?? [],
           importantEvents: state.narrativeContext?.importantEvents ?? []
         },
+        error: null // Clear any previous errors
       };
     }
 
@@ -324,58 +316,15 @@ export function narrativeReducer(
           themes: action.payload.themes ?? state.narrativeContext?.themes ?? [],
           importantEvents: action.payload.importantEvents ?? state.narrativeContext?.importantEvents ?? []
         },
+        error: null // Clear any previous errors
       };
       return updatedContext;
     }
+
     case 'RESET_NARRATIVE': {
       return initialNarrativeState;
     }
-    case 'PRESENT_DECISION': {
-      return {
-        ...state,
-        currentDecision: action.payload,
-      };
-    }
 
-    case 'RECORD_DECISION': {
-      // Ensure we have a decision to record and a context to store it in
-      if (!state.currentDecision || !state.narrativeContext) {
-        return state;
-      }
-
-      const { decisionId, selectedOptionId, narrative } = action.payload;
-      
-      // Verify this is for the current decision
-      if (state.currentDecision.id !== decisionId) {
-        return state;
-      }
-      // Create the decision record
-      const decisionRecord = createDecisionRecord(
-        state.currentDecision,
-        selectedOptionId,
-        narrative
-      );
-
-      // Update the narrative context with the new decision record
-      return {
-        ...state,
-        currentDecision: undefined, // Clear the current decision
-        narrativeContext: {
-          ...state.narrativeContext,
-          decisionHistory: [
-            ...(state.narrativeContext.decisionHistory || []),
-            decisionRecord
-          ]
-        },
-      };
-    }
-    case 'CLEAR_CURRENT_DECISION': {
-      return {
-        ...state,
-        currentDecision: undefined,
-      };
-    }
-    
     case 'UPDATE_NARRATIVE': {
       return {
         ...state,
@@ -383,262 +332,50 @@ export function narrativeReducer(
       };
     }
 
-    // New action types for decision impact processing
-    case 'PROCESS_DECISION_IMPACTS': {
-      // Process the impacts of a specific decision and update the impact state
-      if (!state.narrativeContext?.impactState) {
-        return state;
-      }
-
-      const decisionRecord = state.narrativeContext.decisionHistory.find(
-        record => record.decisionId === action.payload
-      );
-
-      if (!decisionRecord || !('impacts' in decisionRecord)) {
-        return state;
-      }
-
-      const updatedImpactState = processImpacts(
-        state.narrativeContext.impactState,
-        decisionRecord as PlayerDecisionRecordWithImpact
-      );
-
+    // Handle error actions
+    case 'NARRATIVE_ERROR': {
       return {
         ...state,
-        narrativeContext: {
-          ...state.narrativeContext,
-          impactState: updatedImpactState,
-          decisionHistory: state.narrativeContext.decisionHistory.map(
-            record => record.decisionId === action.payload && 'impacts' in record
-              ? { ...record, processedForImpact: true }
-              : record
-          )
-        }
+        error: action.payload
       };
+    }
+
+    case 'CLEAR_ERROR': {
+      return {
+        ...state,
+        error: null
+      };
+    }
+
+    // Decision-related action types delegated to specialized handlers
+    case 'PRESENT_DECISION': {
+      return handlePresentDecision(state, action);
+    }
+
+    case 'RECORD_DECISION': {
+      return handleRecordDecision(state, action);
+    }
+
+    case 'CLEAR_CURRENT_DECISION': {
+      return handleClearCurrentDecision(state);
+    }
+    
+    case 'PROCESS_DECISION_IMPACTS': {
+      return handleProcessDecisionImpacts(state, action);
     }
 
     case 'UPDATE_IMPACT_STATE': {
-      // Direct update to the impact state with provided values
-      if (!state.narrativeContext?.impactState) {
-        return state;
-      }
-
-      return {
-        ...state,
-        narrativeContext: {
-          ...state.narrativeContext,
-          impactState: {
-            ...state.narrativeContext.impactState,
-            ...action.payload,
-            lastUpdated: Date.now()
-          }
-        }
-      };
+      return handleUpdateImpactState(state, action);
     }
 
     case 'EVOLVE_IMPACTS': {
-      // Update impact values based on time passed and other factors
-      if (!state.narrativeContext?.impactState) {
-        return state;
-      }
-
-      const impactRecords = state.narrativeContext.decisionHistory.filter(
-        (record): record is PlayerDecisionRecordWithImpact => 
-          'impacts' in record && 'processedForImpact' in record
-      );
-
-      const updatedImpactState = evolveImpactsOverTime(
-        state.narrativeContext.impactState,
-        impactRecords,
-        Date.now()
-      );
-
-      return {
-        ...state,
-        narrativeContext: {
-          ...state.narrativeContext,
-          impactState: updatedImpactState
-        }
-      };
+      return handleEvolveImpacts(state);
     }
 
     default:
       return state;
   }
 }
-
-/**
- * Action creator for navigating to a specific story point.
- * @param storyPointId - ID of the story point to navigate to.
- * @returns Narrative action object.
- */
-export const navigateToPoint = (storyPointId: string): NarrativeAction => ({
-  type: 'NAVIGATE_TO_POINT',
-  payload: storyPointId,
-});
-
-/**
- * Action creator for selecting a narrative choice.
- * @param choiceId - ID of the choice to select.
- * @returns Narrative action object.
- */
-export const selectChoice = (choiceId: string): NarrativeAction => ({
-  type: 'SELECT_CHOICE',
-  payload: choiceId,
-});
-
-/**
- * Action creator for adding an entry to the narrative history.
- * @param {string} historyEntry - Text to add to the narrative history.
- * @returns {NarrativeAction} Narrative action object.
- */
-export const addNarrativeHistory = (historyEntry: string): NarrativeAction => ({
-  type: 'ADD_NARRATIVE_HISTORY',
-  payload: historyEntry,
-});
-
-/**
- * Action creator for setting the narrative display mode.
- * @param {NarrativeDisplayMode} mode - Display mode to set.
- * @returns {NarrativeAction} Narrative action object.
- */
-export const setDisplayMode = (mode: NarrativeDisplayMode): NarrativeAction => ({
-  type: 'SET_DISPLAY_MODE',
-  payload: mode,
-});
-
-/**
- * Action creator for starting a narrative arc.
- * @param {string} arcId - ID of the arc to start.
- * @returns {NarrativeAction} Narrative action object.
- */
-export const startNarrativeArc = (arcId: string): NarrativeAction => ({
-  type: 'START_NARRATIVE_ARC',
-  payload: arcId,
-});
-
-/**
- * Action creator for completing a narrative arc.
- * @param {string} arcId - ID of the arc to complete.
- * @returns {NarrativeAction} Narrative action object.
- */
-export const completeNarrativeArc = (arcId: string): NarrativeAction => ({
-  type: 'COMPLETE_NARRATIVE_ARC',
-  payload: arcId,
-});
-
-/**
- * Action creator for activating a narrative branch.
- * @param {string} branchId - ID of the branch to activate.
- * @returns {NarrativeAction} Narrative action object.
- */
-export const activateBranch = (branchId: string): NarrativeAction => ({
-  type: 'ACTIVATE_BRANCH',
-  payload: branchId,
-});
-
-/**
- * Action creator for completing a narrative branch.
- * @param {string} branchId - ID of the branch to complete.
- * @returns {NarrativeAction} Narrative action object.
- */
-export const completeBranch = (branchId: string): NarrativeAction => ({
-  type: 'COMPLETE_BRANCH',
-  payload: branchId,
-});
-
-/**
- * Action creator for updating narrative context.
- * @param {Partial<NarrativeContext>} contextUpdate - Partial context update.
- * @returns {NarrativeAction} Narrative action object.
- */
-export const updateNarrativeContext = (
-  contextUpdate: Partial<NarrativeContext>
-): NarrativeAction => ({
-  type: 'UPDATE_NARRATIVE_CONTEXT',
-  payload: contextUpdate,
-});
-
-/**
- * Action creator for resetting the narrative state.
- * @returns {NarrativeAction} Narrative action object.
- */
-export const resetNarrative = (): NarrativeAction => ({
-  type: 'RESET_NARRATIVE',
-});
-
-/**
- * Action creator for presenting a decision to the player.
- * @param decision - The decision to present, including prompt, options, and context.
- * @returns Narrative action object with type 'PRESENT_DECISION' and the decision as payload.
- */
-export const presentDecision = (decision: PlayerDecision): NarrativeAction => ({
-  type: 'PRESENT_DECISION',
-  payload: decision,
-});
-
-/**
- * Action creator for recording a player's decision.
- * @param decisionId - ID of the decision the player is responding to.
- * @param selectedOptionId - ID of the option the player selected.
- * @param narrative - The narrative text presented after the player makes the decision.
- * @returns Narrative action object with type 'RECORD_DECISION' and the relevant IDs and narrative as payload.
- */
-export const recordDecision = (
-  decisionId: string,
-  selectedOptionId: string,
-  narrative: string
-): NarrativeAction => ({
-  type: 'RECORD_DECISION',
-  payload: { decisionId, selectedOptionId, narrative },
-});
-
-/**
- * Action creator for clearing the current decision. This is typically called after a decision has been recorded.
- * @returns Narrative action object with type 'CLEAR_CURRENT_DECISION'.
- */
-export const clearCurrentDecision = (): NarrativeAction => ({
-  type: 'CLEAR_CURRENT_DECISION',
-});
-
-/**
- * Action creator for processing the impacts of a decision.
- * This action triggers the calculation of how a decision affects various aspects of the game world,
- * such as reputation, relationships, and story progression.
- * 
- * @param decisionId - ID of the decision to process impacts for.
- * @returns Narrative action object with type 'PROCESS_DECISION_IMPACTS'.
- */
-export const processDecisionImpacts = (decisionId: string): NarrativeAction => ({
-  type: 'PROCESS_DECISION_IMPACTS',
-  payload: decisionId,
-});
-
-/**
- * Action creator for directly updating the impact state.
- * This allows for manual adjustment of impact values, which can be useful
- * for scripted events or developer overrides.
- * 
- * @param impactStateUpdate - Partial update to the impact state, containing only the values to be updated.
- * @returns Narrative action object with type 'UPDATE_IMPACT_STATE'.
- */
-export const updateImpactState = (
-  impactStateUpdate: Partial<ImpactState>
-): NarrativeAction => ({
-  type: 'UPDATE_IMPACT_STATE',
-  payload: impactStateUpdate,
-});
-
-/**
- * Action creator for evolving impacts over time.
- * This action causes temporary impacts to decay or expire based on the time elapsed
- * since they were created, simulating the natural fading of consequences over time.
- * 
- * @returns Narrative action object with type 'EVOLVE_IMPACTS'.
- */
-export const evolveImpacts = (): NarrativeAction => ({
-  type: 'EVOLVE_IMPACTS',
-});
 
 /**
  * Test wrapper for the narrative reducer that handles nested state structures.

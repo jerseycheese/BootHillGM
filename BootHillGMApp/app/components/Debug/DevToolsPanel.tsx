@@ -20,7 +20,7 @@ import {
   initializeDecisionDebugTools,
   generateEnhancedDecision 
 } from '../../utils/contextualDecisionGenerator.enhanced';
-import { clearCurrentDecision, addNarrativeHistory } from "../../reducers/narrativeReducer";
+import { clearCurrentDecision, addNarrativeHistory } from "../../actions/narrativeActions";
 
 /**
  * DevTools panel for game debugging and testing.

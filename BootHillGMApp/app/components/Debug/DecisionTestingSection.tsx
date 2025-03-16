@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { DecisionTestingSectionProps } from "../../types/debug.types";
 import { DecisionImportance } from "../../types/narrative.types";
 import { createTestDecision } from "../../utils/testNarrativeWithDecision";
-import { clearCurrentDecision } from "../../reducers/narrativeReducer";
+import { clearCurrentDecision } from "../../actions/narrativeActions";
 import { EVENTS, triggerCustomEvent } from "../../utils/events";
 
 /**

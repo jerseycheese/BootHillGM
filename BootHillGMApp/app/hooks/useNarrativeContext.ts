@@ -12,12 +12,12 @@ import {
   processDecisionImpacts,
   addNarrativeHistory,
   updateNarrativeContext
-} from '../reducers/narrativeReducer';
-import { createDecisionRecord } from '../utils/decisionUtils';
+} from '../actions/narrativeActions';
 // Import from barrel file to avoid case-sensitivity issues
 import { AIService } from '../services/ai';
 import { EVENTS, triggerCustomEvent } from '../utils/events';
 import { InventoryItem } from '../types/item.types';
+import { createDecisionRecord } from '../utils/decisionUtils';
 
 /**
  * Custom hook for interacting with narrative context and player decisions

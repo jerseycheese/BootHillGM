@@ -1,7 +1,8 @@
 /**
  * Unit tests for the narrative reducer
  */
-import {
+import { testNarrativeReducer as narrativeReducer } from '../reducers/narrativeReducer';
+import { 
   navigateToPoint,
   selectChoice,
   addNarrativeHistory,
@@ -15,8 +16,9 @@ import {
   presentDecision,
   recordDecision,
   clearCurrentDecision,
-  testNarrativeReducer as narrativeReducer
-} from '../reducers/narrativeReducer';
+  clearError
+} from '../actions/narrativeActions';
+
 import { initialNarrativeState, StoryPoint, DecisionImportance } from '../types/narrative.types';
 import { GameState } from '../types/gameState';
 import { NarrativeState } from '../types/narrative.types';
@@ -117,7 +119,16 @@ describe('narrativeReducer', () => {
     it('should not navigate to an invalid story point', () => {
       const action = navigateToPoint('non-existent-point');
       const newState = narrativeReducer(initialState, action);
-      expect(getNarrativeState(newState)).toEqual(initialState.narrative);
+      const narrativeState = getNarrativeState(newState);
+      
+      // With our new error handling, we expect an error object to be set
+      expect(narrativeState.error).toBeDefined();
+      expect(narrativeState.error?.code).toBe('invalid_navigation');
+      expect(narrativeState.error?.context?.storyPointId).toBe('non-existent-point');
+      
+      // Core state should remain unchanged
+      expect(narrativeState.currentStoryPoint).toEqual(initialState.narrative?.currentStoryPoint);
+      expect(narrativeState.availableChoices).toEqual(initialState.narrative?.availableChoices);
     });
   });
 
@@ -136,12 +147,19 @@ describe('narrativeReducer', () => {
     it('should not select an invalid choice', () => {
       // First navigate to a point with choices
       let state = narrativeReducer(initialState, navigateToPoint('point1'));
+      
       // Try to select an invalid choice
       const action = selectChoice('non-existent-choice');
       state = narrativeReducer(state, action);
-      const expectedState = narrativeReducer(initialState, navigateToPoint('point1'));
-
-      expect(getNarrativeState(state)).toEqual(getNarrativeState(expectedState));
+      const narrativeState = getNarrativeState(state);
+      
+      // With our new error handling, we expect an error object to be set
+      expect(narrativeState.error).toBeDefined();
+      expect(narrativeState.error?.code).toBe('invalid_choice');
+      expect(narrativeState.error?.context?.choiceId).toBe('non-existent-choice');
+      
+      // No choice should be selected
+      expect(narrativeState.selectedChoice).toBeUndefined();
     });
   });
 
@@ -179,7 +197,15 @@ describe('narrativeReducer', () => {
       it('should not start a non-existent arc', () => {
         const action = startNarrativeArc('non-existent-arc');
         const newState = narrativeReducer(initialState, action);
-        expect(getNarrativeState(newState)).toEqual(initialState.narrative);
+        const narrativeState = getNarrativeState(newState);
+        
+        // With our new error handling, we expect an error object to be set
+        expect(narrativeState.error).toBeDefined();
+        expect(narrativeState.error?.code).toBe('arc_not_found');
+        expect(narrativeState.error?.context?.arcId).toBe('non-existent-arc');
+        
+        // No arc should be started
+        expect(narrativeState.narrativeContext?.currentArcId).toBeUndefined();
       });
   });
 
@@ -231,7 +257,6 @@ describe('narrativeReducer', () => {
 
   describe('RESET_NARRATIVE action', () => {
       it('should reset the narrative state to initial values', () => {
-
           // First make some changes to the state.  Use a properly initialized
           // narrative state, not the full initialState.
           let state = narrativeReducer({ narrative: { ...initialNarrativeState, narrativeContext: initialState.narrative?.narrativeContext } }, navigateToPoint('point1'));
@@ -243,6 +268,20 @@ describe('narrativeReducer', () => {
           const narrativeState = getNarrativeState(newState);
           expect(narrativeState).toEqual(initialNarrativeState);
       });
+  });
+  
+  describe('Error handling actions', () => {
+    it('should clear error state with CLEAR_ERROR action', () => {
+      // First create an error
+      let state = narrativeReducer(initialState, navigateToPoint('non-existent-point'));
+      const errorState = getNarrativeState(state);
+      expect(errorState.error).toBeDefined();
+      
+      // Then clear it
+      state = narrativeReducer(state, clearError());
+      const clearedState = getNarrativeState(state);
+      expect(clearedState.error).toBeNull();
+    });
   });
   
   describe('Decision tracking actions', () => {

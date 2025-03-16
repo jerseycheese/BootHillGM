@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, ReactNode, Dispatch, useC
 import { InventoryManager } from './inventoryManager';
 import { GameState, initialGameState } from '../types/gameState';
 import { GameEngineAction } from '../types/gameActions';
-import rootReducer from '../reducers/index';
+import { gameReducer } from '../reducers/index';
 
 // Create a context for the game state and dispatch function
 const GameContext = createContext<{
@@ -12,7 +12,7 @@ const GameContext = createContext<{
 
 // Provider component to wrap the app and provide game state and dispatch function
 export function GameProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(rootReducer, initialGameState);
+  const [state, dispatch] = useReducer(gameReducer, initialGameState);
   return (
     <GameContext.Provider value={{ state, dispatch }}>
       {children}

@@ -373,3 +373,6 @@ export function gameReducer(state: GameState, action: GameEngineAction | SetNarr
       return state;
   }
 }
+
+// Add default export to fix import issues in other files
+export default gameReducer;

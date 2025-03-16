@@ -3,7 +3,7 @@ title: Core Systems
 aliases: [Core Systems MOC, Core Systems Overview]
 tags: [moc, core-systems, overview, architecture]
 created: 2024-12-28
-updated: 2025-01-17
+updated: 2025-03-16
 ---
 
 # Core Systems Overview
@@ -31,6 +31,12 @@ This Map of Content (MOC) provides an overview of all core systems in the BootHi
 - [[./state-management|State Management]] - Game state and persistence
 - [[./journal-system|Journal System]] - Game history and event tracking
 
+## Narrative Systems
+- [[./narrative-system|Narrative System]] - Core storytelling engine
+- [[./player-decision-system|Player Decision System]] - Player choice management
+- [[./player-decision-tracking|Player Decision Tracking]] - Choice history
+- [[./player-decision-relevance-system|Player Decision Relevance]] - Impact assessment
+
 ## Character Systems
 - [[./character-generation|Character Generation]] - Character creation and validation
   - Logging Infrastructure
@@ -52,6 +58,11 @@ graph TD
     C --> A
     E[Character Systems] --> B
     E --> C
+    F[Narrative System] --> B
+    F --> C
+    F --> G[Player Decision System]
+    G --> B
+    G --> D
 ```
 
 ## Implementation Status
@@ -63,6 +74,8 @@ graph TD
 | Journal System | Active | Medium |
 | AI Integration | Active | High |
 | Character Generation | Complete | High |
+| Narrative System | Active | High |
+| Player Decision System | Active | High |
 
 ## Recent Combat System Updates
 - Added combat summary system with detailed stats tracking
@@ -70,8 +83,15 @@ graph TD
   - Combat statistics (rounds, damage)
   - Integration with combat log display
 
+## Recent Narrative System Updates
+- Refactored narrative reducer for better maintainability
+- Implemented standardized error handling
+- Improved decision impact tracking
+- Added documentation for narrative architecture
+
 ## Related Documentation
 - [[../architecture/component-structure|Component Structure]]
+- [[../architecture/narrative-architecture|Narrative Architecture]]
 - [[../technical-guides/testing|Testing Guide]]
 - [[../planning/roadmap|Development Roadmap]]
 
@@ -80,3 +100,4 @@ graph TD
 - Implemented character data validation
 - Enhanced error handling for character creation
 - Added comprehensive testing coverage
+- Refactored narrative system architecture

@@ -18,6 +18,7 @@ describe('Narrative Types', () => {
       availableChoices: [],
       narrativeHistory: [],
       displayMode: 'standard',
+      error: null
     });
   });
 

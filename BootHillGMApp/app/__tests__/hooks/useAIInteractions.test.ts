@@ -1,5 +1,5 @@
 // We need to put jest.mock calls before any imports
-jest.mock('../../reducers/narrativeReducer');
+jest.mock('../../actions/narrativeActions');
 jest.mock('../../utils/aiService', () => ({
   generateNarrativeSummary: jest.fn().mockResolvedValue('Mocked narrative summary'),
 }));
@@ -17,7 +17,7 @@ jest.mock('../../hooks/useAIInteractions', () => {
 
 // Now we can import modules
 import { renderHook, act } from '@testing-library/react';
-import { presentDecision } from '../../reducers/narrativeReducer';
+import { presentDecision } from '../../actions/narrativeActions';
 import { initialGameState } from '../../types/campaign';
 import { useAIInteractions, __mockAIService } from '../../hooks/useAIInteractions';
 

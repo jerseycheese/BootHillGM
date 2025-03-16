@@ -1,7 +1,7 @@
 // All jest.mock calls must come first
 jest.mock('../services/ai');  // Mock the barrel file
 jest.mock('../services/ai/responseParser');
-jest.mock('../reducers/narrativeReducer');
+jest.mock('../actions/narrativeActions');
 jest.mock('../utils/aiService', () => ({
   generateNarrativeSummary: jest.fn().mockResolvedValue('Mocked narrative summary'),
 }));
@@ -21,7 +21,7 @@ jest.mock('../hooks/useAIInteractions', () => {
 import { renderHook, act } from '@testing-library/react';
 // Removed the unused AIService import
 import { parsePlayerDecision } from '../services/ai/responseParser';
-import { presentDecision } from '../reducers/narrativeReducer';
+import { presentDecision } from '../actions/narrativeActions';
 import { initialGameState } from '../types/campaign';
 import { useAIInteractions, __mockAIService } from '../hooks/useAIInteractions';
 

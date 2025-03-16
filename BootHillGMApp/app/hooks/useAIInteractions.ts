@@ -7,7 +7,7 @@ import { JournalEntry } from '../types/journal';
 import { generateNarrativeSummary } from '../utils/aiService';
 import { WEAPON_STATS } from '../types/combat';
 import { AIResponse } from '../services/ai/types';
-import { presentDecision } from '../reducers/narrativeReducer';
+import { presentDecision } from '../actions/narrativeActions';
 
 // Create a service instance that can be replaced in tests
 export const aiService = new AIService();

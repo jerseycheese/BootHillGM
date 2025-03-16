@@ -84,6 +84,30 @@ export type NarrativeDisplayMode =
   | 'dialogue';      // Focus on character dialogue
 
 /**
+ * Types of errors that can occur in narrative operations
+ */
+export type NarrativeErrorType =
+  | 'invalid_navigation'       // Invalid story point 
+  | 'invalid_choice'           // Invalid choice selection
+  | 'arc_not_found'            // Narrative arc not found
+  | 'branch_not_found'         // Narrative branch not found
+  | 'decision_not_found'       // Player decision not found
+  | 'decision_mismatch'        // Decision ID mismatch
+  | 'validation_failed'        // General validation failure
+  | 'state_corruption'         // Corrupted state
+  | 'system_error';            // System-level error
+
+/**
+ * Error information for narrative operations
+ */
+export interface NarrativeErrorInfo {
+  code: NarrativeErrorType;
+  message: string;
+  context?: Record<string, unknown>;  // Changed from 'any' to 'unknown'
+  timestamp: number;
+}
+
+/**
  * Defines the current narrative state within the game
  * 
  * @property currentStoryPoint - Current active story point
@@ -93,6 +117,7 @@ export type NarrativeDisplayMode =
  * @property displayMode - How the narrative should be presented
  * @property narrativeContext - Additional context for AI generation
  * @property storyProgression - Story progression tracking state
+ * @property error - Current error state, if any
  */
 export interface NarrativeState {
   currentStoryPoint: StoryPoint | null;
@@ -103,7 +128,8 @@ export interface NarrativeState {
   narrativeContext?: NarrativeContext;
   selectedChoice?: string;
   storyProgression?: StoryProgressionState;
-  currentDecision?: PlayerDecision; // Added in previous step
+  currentDecision?: PlayerDecision;
+  error?: NarrativeErrorInfo | null;
 }
 
 /**
@@ -320,12 +346,14 @@ export type NarrativeActionType =
   | 'COMPLETE_BRANCH'
   | 'UPDATE_NARRATIVE_CONTEXT'
   | 'RESET_NARRATIVE'
-  | 'PRESENT_DECISION'         // New action for presenting a decision
-  | 'RECORD_DECISION'          // New action for recording a decision
+  | 'PRESENT_DECISION'         
+  | 'RECORD_DECISION'          
   | 'CLEAR_CURRENT_DECISION'
   | 'PROCESS_DECISION_IMPACTS'
   | 'UPDATE_IMPACT_STATE'
-  | 'EVOLVE_IMPACTS';  // New action for clearing the current decision
+  | 'EVOLVE_IMPACTS'
+  | 'NARRATIVE_ERROR'          // New action for error handling
+  | 'CLEAR_ERROR';             // New action for clearing errors
 
 /**
  * Defines the narrative action for the reducer
@@ -344,13 +372,17 @@ export type NarrativeAction =
   | { type: 'UPDATE_NARRATIVE_CONTEXT'; payload: Partial<NarrativeContext> }
   | { type: 'RESET_NARRATIVE' }
 
-  // New actions for decision tracking
+  // Decision tracking actions
   | { type: 'PRESENT_DECISION'; payload: PlayerDecision }
   | { type: 'RECORD_DECISION'; payload: { decisionId: string; selectedOptionId: string; narrative: string } }
   | { type: 'CLEAR_CURRENT_DECISION' }
   | { type: 'PROCESS_DECISION_IMPACTS'; payload: string } // decisionId
   | { type: 'UPDATE_IMPACT_STATE'; payload: Partial<ImpactState> }
-  | { type: 'EVOLVE_IMPACTS' };
+  | { type: 'EVOLVE_IMPACTS' }
+  
+  // Error handling actions
+  | { type: 'NARRATIVE_ERROR'; payload: NarrativeErrorInfo }
+  | { type: 'CLEAR_ERROR' };
 
 /**
  * Defines utility type for narrative state updates
@@ -503,7 +535,8 @@ export const initialNarrativeState: NarrativeState = {
   visitedPoints: [],
   availableChoices: [],
   narrativeHistory: [],
-  displayMode: 'standard'
+  displayMode: 'standard',
+  error: null
 };
 
 /**
