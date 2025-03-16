@@ -4,10 +4,16 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import GameControlSection from '../GameControlSection';
 import { resetGame, initializeTestCombat } from '../../../utils/debugActions';
 
-// Mock dependencies
+// Mock dependencies with implementation that returns action objects
 jest.mock('../../../utils/debugActions', () => ({
-  resetGame: jest.fn(),
-  initializeTestCombat: jest.fn(),
+  resetGame: jest.fn().mockReturnValue({ 
+    type: 'SET_STATE', 
+    payload: {} 
+  }),
+  initializeTestCombat: jest.fn().mockReturnValue({ 
+    type: 'SET_STATE', 
+    payload: {} 
+  }),
 }));
 
 describe('GameControlSection', () => {

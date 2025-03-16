@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNarrative } from './NarrativeContext';
-import DecisionService from '../services/ai/decisionService';
+import AIDecisionService from '../services/ai/aiDecisionService';
 import { PlayerDecision } from '../types/narrative.types';
 import { Character } from '../types/character';
 
@@ -38,7 +38,7 @@ const DecisionContext = createContext<DecisionContextValue | undefined>(undefine
 interface DecisionProviderProps {
   children: React.ReactNode;
   character: Character; // Player character
-  decisionService?: DecisionService; // Optional custom service
+  decisionService?: AIDecisionService; // Optional custom service
 }
 
 /**
@@ -50,7 +50,7 @@ export const DecisionProvider: React.FC<DecisionProviderProps> = ({
   decisionService 
 }) => {
   // Initialize the decision service if not provided
-  const [service] = useState(() => decisionService || new DecisionService());
+  const [service] = useState(() => decisionService || new AIDecisionService());
   
   // Access the narrative context
   const { state: narrativeState, dispatch } = useNarrative();
@@ -72,11 +72,8 @@ export const DecisionProvider: React.FC<DecisionProviderProps> = ({
       // Generate a decision from the service
       const decision = await service.generateDecision(narrativeState, character);
       
-      // Convert to PlayerDecision format
-      const playerDecision = service.toPlayerDecision(
-        decision, 
-        narrativeState.currentStoryPoint?.locationChange
-      );
+      // PlayerDecision is now directly returned from generateDecision
+      const playerDecision = decision;
       
       // Update state
       setCurrentDecision(playerDecision);

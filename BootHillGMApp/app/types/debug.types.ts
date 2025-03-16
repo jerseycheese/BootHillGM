@@ -3,7 +3,75 @@
  */
 
 import { LocationType } from '../services/locationService';
-import type { NarrativeState } from './narrative.types';
+import type { NarrativeState, NarrativeAction, PlayerDecisionRecord } from './narrative.types';
+import { ReactNode, Dispatch } from 'react';
+import { GameState, GameAction } from '../types/campaign';
+
+/**
+ * Error Boundary component types
+ */
+export interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback?: ReactNode;
+}
+
+export interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+}
+
+/**
+ * Debug UI component props
+ */
+export interface DevToolsPanelProps {
+  gameState: GameState;
+  dispatch: Dispatch<GameAction>;
+}
+
+export interface GameControlSectionProps {
+  dispatch: Dispatch<GameAction>;
+  loading: string | null;
+  setLoading: (state: string | null) => void;
+  setError: (error: string | null) => void;
+}
+
+export interface GameStateDisplayProps {
+  gameState: GameState;
+}
+
+export interface ContextualDecisionSectionProps {
+  selectedLocationType: LocationType;
+  setSelectedLocationType: (location: LocationType) => void;
+  loading: string | null;
+  hasActiveDecision: boolean;
+  handleContextualDecision: () => void;
+}
+
+export interface DecisionTestingSectionProps {
+  narrativeContext: {
+    state: NarrativeState;
+    dispatch: Dispatch<NarrativeAction>;
+  };
+  loading: string | null;
+  setLoading: (state: string | null) => void;
+  setError: (error: string | null) => void;
+  forceRender: () => void;
+  hasActiveDecision: boolean;
+  handleClearDecision: () => void;
+}
+
+/**
+ * Narrative Debug Panel component props
+ */
+export interface NarrativeDebugPanelProps {
+  narrativeContext: {
+    state: NarrativeState;
+    dispatch: Dispatch<NarrativeAction>;
+  };
+  renderCount: number;
+  showDecisionHistory: boolean;
+  decisionHistory: PlayerDecisionRecord[];
+}
 
 export interface DebugMessage {
   id: string;

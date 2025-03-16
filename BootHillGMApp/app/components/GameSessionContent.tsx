@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useGameInitialization } from "../hooks/useGameInitialization";
 import { useGameSession } from "../hooks/useGameSession";
 import { useCombatStateRestoration } from "../hooks/useCombatStateRestoration";
@@ -9,11 +9,39 @@ import { MainGameArea } from "./GameArea/MainGameArea";
 import { SidePanel } from "./GameArea/SidePanel";
 import { InventoryManager } from "../utils/inventoryManager";
 import DevToolsPanel from "./Debug/DevToolsPanel";
+import { GameAction } from "../types/campaign";
+import { GameEngineAction } from "../types/gameActions";
+import { Dispatch } from "react";
+import { LocationService } from "../services/locationService";
 
 export default function GameSessionContent() {
   const { isInitializing, isClient } = useGameInitialization();
   const gameSession = useGameSession();
   const { state, dispatch, executeCombatRound } = gameSession;
+  
+  // Get LocationService singleton instance for parsing locations
+  const locationService = useMemo(() => LocationService.getInstance(), []);
+
+  // Create a dispatch adapter that converts GameAction to GameEngineAction
+  const dispatchAdapter = useMemo<Dispatch<GameAction>>(() => {
+    return (action) => {
+      // Handle any necessary type conversions
+      if (action.type === 'SET_LOCATION' && typeof action.payload === 'string') {
+        // Convert string locations to LocationType using the LocationService
+        const locationObject = locationService.parseLocation(action.payload);
+        
+        // Dispatch with properly typed location object
+        dispatch({
+          type: 'SET_LOCATION',
+          payload: locationObject
+        });
+        return;
+      }
+      
+      // For all other actions, pass through
+      dispatch(action as unknown as GameEngineAction);
+    };
+  }, [dispatch, locationService]);
 
   const handleUseItem = useCallback(() => {
     // Existing implementation
@@ -69,7 +97,13 @@ export default function GameSessionContent() {
         <MainGameArea id="bhgmMainGameArea" data-testid="main-game-area" {...sessionProps} />
         <SidePanel id="bhgmSidePanel" data-testid="side-panel" {...sessionProps} />
       </div>
-      <DevToolsPanel id="bhgmDevToolsPanel" data-testid="dev-tools-panel" gameState={state} dispatch={dispatch} />
+      {/* The wrapper div handles the ID and test attributes */}
+      <div id="bhgmDevToolsPanel" data-testid="dev-tools-panel">
+        <DevToolsPanel
+          gameState={state}
+          dispatch={dispatchAdapter}
+        />
+      </div>
     </div>
   );
 }

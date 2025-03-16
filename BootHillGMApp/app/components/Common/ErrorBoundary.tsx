@@ -6,17 +6,25 @@ import { ErrorBoundaryProps, ErrorBoundaryState } from "../../types/debug.types"
  * Error boundary component that catches JavaScript errors and displays
  * a fallback UI instead of crashing the entire application.
  * 
- * Usage: <ErrorBoundary>{children}</ErrorBoundary>
+ * Usage: 
+ * Basic: <ErrorBoundary>{children}</ErrorBoundary>
+ * With custom fallback: <ErrorBoundary fallback={<CustomErrorComponent />}>{children}</ErrorBoundary>
  */
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { 
+      hasError: false,
+      error: undefined
+    };
   }
 
-  static getDerivedStateFromError() {
+  static getDerivedStateFromError(error: Error) {
     // Update state so the next render will show the fallback UI
-    return { hasError: true };
+    return { 
+      hasError: true,
+      error
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
@@ -26,8 +34,20 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
   render() {
     if (this.state.hasError) {
-      // Fallback UI when an error occurs
-      return <p className="text-red-500">Error displaying content.</p>;
+      // Use custom fallback if provided, otherwise use default error message
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+      
+      // Default fallback UI
+      return (
+        <div className="p-4 border border-red-500 rounded bg-red-50 text-red-700">
+          <h3 className="font-bold mb-2">Something went wrong</h3>
+          <p className="text-sm">
+            {this.state.error?.message || "An unexpected error occurred."}
+          </p>
+        </div>
+      );
     }
     
     // Normal rendering when no errors

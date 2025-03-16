@@ -1,3 +1,4 @@
+// __tests__/components/Common/ErrorBoundary.test.tsx
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import ErrorBoundary from '../../../components/Common/ErrorBoundary';
@@ -44,7 +45,9 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
     
-    expect(screen.getByText('Error displaying content.')).toBeInTheDocument();
+    // Update to match the actual text in the component
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText('Test error')).toBeInTheDocument();
   });
 
   it('can handle multiple children with one throwing an error', () => {
@@ -59,7 +62,9 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
     
-    expect(screen.getByText('Error displaying content.')).toBeInTheDocument();
+    // Update to match the actual text in the component
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByText('Test error')).toBeInTheDocument();
     expect(screen.queryByText('This is a safe component')).not.toBeInTheDocument();
   });
 });

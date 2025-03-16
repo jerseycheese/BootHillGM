@@ -28,7 +28,7 @@ export async function callAIService(
   
   try {
     // Make the API request
-    const response = await makeAPIRequest(prompt, config, rateLimitData);
+    const response = await makeAPIRequest(prompt, config);
     
     // Process and return the response
     return processResponse(response);
@@ -54,7 +54,6 @@ export async function callAIService(
  * 
  * @param prompt Formatted decision prompt
  * @param config Service configuration
- * @param rateLimitData Current rate limit information
  * @returns Raw API response
  */
 async function makeAPIRequest(

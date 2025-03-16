@@ -14,7 +14,8 @@ import {
   updateNarrativeContext
 } from '../reducers/narrativeReducer';
 import { createDecisionRecord } from '../utils/decisionUtils';
-import { AIService } from '../services/ai/aiService';
+// Import from barrel file to avoid case-sensitivity issues
+import { AIService } from '../services/ai';
 import { EVENTS, triggerCustomEvent } from '../utils/events';
 import { InventoryItem } from '../types/item.types';
 
@@ -105,9 +106,11 @@ export function useNarrativeContext() {
       console.error('Error generating AI narrative response:', error);
       setIsGeneratingNarrative(false);
       
-      // Fall back to a basic response
+      // Fall back to a basic response that explicitly mentions the player's choice
+      const fallbackResponse = `The story continues as you ${option.toLowerCase()}. Your choice leads to new developments in the western town of Redemption. The locals take note of your actions as you continue your journey.`;
+      
       return {
-        narrative: `You decided: ${option}. The story continues with your choice, the consequences echoing through the dusty streets of Boot Hill.`,
+        narrative: fallbackResponse,
         acquiredItems: [],
         removedItems: []
       };
@@ -136,12 +139,14 @@ export function useNarrativeContext() {
     // Find the decision and selected option
     const decision = state.currentDecision;
     if (!decision || decision.id !== decisionId) {
-      throw new Error('Decision not found or does not match current decision');
+      const errorMsg = 'Decision not found or does not match current decision';
+      throw new Error(errorMsg);
     }
 
     const selectedOption = decision.options.find((option) => option.id === selectedOptionId);
     if (!selectedOption) {
-      throw new Error('Selected option not found');
+      const errorMsg = 'Selected option not found';
+      throw new Error(errorMsg);
     }
 
     try {
@@ -156,6 +161,10 @@ export function useNarrativeContext() {
         selectedOption.text,
         decision.prompt
       );
+      
+      // Create an explicit player decision narrative - make sure it starts with "Player:" for correct parsing
+      const playerActionText = `${selectedOption.text.toLowerCase()}`;
+      const playerChoiceNarrative = `Player: ${playerActionText}`;
       
       // Now that we have the response, we can clear the decision
       dispatch(clearCurrentDecision());
@@ -173,8 +182,11 @@ export function useNarrativeContext() {
         }
       });
       
-      // Then add the real narrative response
-      dispatch(addNarrativeHistory(narrativeResponse.narrative));
+      // First, add the player's choice explicitly
+      dispatch(addNarrativeHistory(playerChoiceNarrative));
+      
+      // Then add the AI narrative response as a Game Master response
+      dispatch(addNarrativeHistory(`Game Master: ${narrativeResponse.narrative}`));
       
       // Create the decision record
       const decisionRecord = createDecisionRecord(

@@ -8,18 +8,6 @@ import { InventoryItem, ItemCategory } from '../types/item.types';
 import { InventoryManager } from '../utils/inventoryManager';
 import { addNarrativeHistory } from '../reducers/narrativeReducer';
 
-// Mock getAIResponse in test environment
-if (process.env.NODE_ENV === 'test') {
-  jest.mock('../services/ai/gameService', () => {
-    const originalModule = jest.requireActual('../services/ai/gameService');
-    return {
-      __esModule: true, // Use __esModule: true, because it is a module
-      ...originalModule,
-      getAIResponse: jest.fn().mockResolvedValue({ narrative: 'Mocked AI response.' }),
-    };
-  });
-}
-
 // Parameters for updating the narrative display
 type UpdateNarrativeParams = {
   text: string;
@@ -83,7 +71,7 @@ export const useGameSession = () => {
   const handleUserInput = useCallback(async (input: string) => {
     setIsLoading(true);
     setError(null);
-    setLastAction(input);
+    setLastAction(input);  // Store the last action
 
     try {
       const currentJournal = state.journal || [];
@@ -169,10 +157,12 @@ export const useGameSession = () => {
     updateLocation, // Add updateLocation to dependency array
   ]);
 
-    const retryLastAction = useCallback(() => {
+    // Fixed retryLastAction to properly call handleUserInput
+    const retryLastAction = useCallback(async () => {
         if (lastAction) {
-            handleUserInput(lastAction);
+            return await handleUserInput(lastAction);
         }
+        return null;  // Explicit return for clarity
     }, [lastAction, handleUserInput]);
 
     // Handles using an item from the inventory

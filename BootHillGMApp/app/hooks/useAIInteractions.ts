@@ -9,7 +9,8 @@ import { WEAPON_STATS } from '../types/combat';
 import { AIResponse } from '../services/ai/types';
 import { presentDecision } from '../reducers/narrativeReducer';
 
-const aiService = new AIService();
+// Create a service instance that can be replaced in tests
+export const aiService = new AIService();
 
 const getJournalContext = (journal: JournalEntry[]) => {
   return journal.slice(-5).map(entry => entry.content).join('\n');
@@ -45,8 +46,10 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
     dispatch({ type: 'SET_LOCATION', payload: response.location });
   }
 
+  // Process player decision if present
   if (response.playerDecision) {
-    dispatch(presentDecision(response.playerDecision));
+    const action = presentDecision(response.playerDecision);
+    dispatch(action);
   }
 
   if (response.combatInitiated && response.opponent) {
@@ -193,19 +196,24 @@ export const useAIInteractions = (
       try {
         const journalContext = getJournalContext(state.journal || []);
         
-        // The getAIResponse method in AIService only accepts 3 parameters, not 4
+        // Get AI response
         const aiResponse = await aiService.getAIResponse(
           input,
           journalContext,
           state.inventory || []
         );
+        
+        // Process the response and update game state
         const { acquiredItems, removedItems } = await processAIResponse({
           input,
           response: aiResponse,
           state,
           dispatch,
         });
-        onInventoryChange(acquiredItems, removedItems);
+        
+        // Notify about inventory changes
+        onInventoryChange(acquiredItems || [], removedItems || []);
+        
         return aiResponse;
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -218,7 +226,7 @@ export const useAIInteractions = (
   );
 
   const retryLastAction = useCallback(async () => {
-    if (!lastAction) return;
+    if (!lastAction) return null;
     return handleUserInput(lastAction);
   }, [lastAction, handleUserInput]);
 

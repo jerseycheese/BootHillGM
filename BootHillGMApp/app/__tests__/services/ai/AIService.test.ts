@@ -1,11 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AIService } from '../../../services/ai/aiService';
+import { AIService } from '../../../services/ai'; // Import from barrel file
 import { InventoryItem } from '../../../types/item.types';
-
-// Mock the getAIModel function
-jest.mock('../../../utils/ai/aiConfig', () => ({
-  getAIModel: jest.fn(),
-}));
 
 // Define a type for the mock model
 type MockModel = {
@@ -21,13 +16,12 @@ describe('AIService', () => {
     aiService = new AIService();
 
     // Save the original model property to restore it later
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     originalModel = (aiService as any).model;
   });
 
   afterEach(() => {
     // Restore the original model after each test
-    (aiService as unknown as { model: MockModel }).model = originalModel as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    (aiService as unknown as { model: MockModel }).model = originalModel as any;
     jest.clearAllMocks();
   });
 
@@ -112,19 +106,6 @@ describe('AIService', () => {
       })),
     };
 
-    // Mock the parseAIResponse method to return a response without playerDecision
-    jest.spyOn(aiService as any, 'parseAIResponse').mockImplementation(() => { // eslint-disable-line @typescript-eslint/no-explicit-any
-      return {
-        narrative: mockResponse.narrative,
-        location: mockResponse.location,
-        combatInitiated: mockResponse.combatInitiated,
-        acquiredItems: [],
-        removedItems: [],
-        suggestedActions: mockResponse.suggestedActions,
-        // playerDecision is intentionally omitted
-      };
-    });
-
     const result = await aiService.getAIResponse('Test prompt', 'Test context', []);
 
     // Verify the mock was called
@@ -139,6 +120,7 @@ describe('AIService', () => {
     const journalContext = 'test context';
     const inventory: InventoryItem[] = [];
 
+    // Use the public test method to access the prompt
     const fullPrompt = await aiService.testConstructPrompt(prompt, journalContext, inventory);
 
     expect(fullPrompt).toContain('playerDecision');

@@ -44,15 +44,19 @@ export interface CampaignState {
   location: LocationType | null;
   savedTimestamp?: number;
   gameProgress: number;
-    journal: JournalEntry[];
-    narrative: NarrativeState;
-    inventory: InventoryItem[];
-    quests: string[];
+  journal: JournalEntry[];
+  narrative: NarrativeState;
+  inventory: InventoryItem[];
+  quests: string[];
   isCombatActive: boolean;
   opponent: Character | null;
   isClient?: boolean;
   suggestedActions: SuggestedAction[];
   combatState?: CombatState;
+  error?: string | null;
+  
+  // For backward compatibility with GameState interface
+  get player(): Character | null;
 }
 
 /**
@@ -72,7 +76,12 @@ export const initialGameState: CampaignState = {
   opponent: null,
   isClient: false,
   suggestedActions: [],
-  combatState: undefined
+  combatState: undefined,
+  
+  // For backward compatibility
+  get player() {
+    return this.character;
+  }
 };
 
 // Union type of all possible actions

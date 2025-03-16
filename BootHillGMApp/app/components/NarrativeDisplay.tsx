@@ -70,7 +70,9 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
     
     processedUpdatesRef.current.clear();
 
-    const items = narrative.split('\n').reduce<NarrativeItem[]>((items, line) => {
+    const lines = narrative.split('\n');
+    
+    const items = lines.reduce<NarrativeItem[]>((items, line) => {
       const trimmedLine = line.trim();
 
       if (!trimmedLine) return items;
