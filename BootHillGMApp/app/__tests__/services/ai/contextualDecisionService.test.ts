@@ -9,7 +9,7 @@ import { ContextualDecisionService } from '../../../services/ai/contextualDecisi
 import { DecisionDetector } from '../../../services/ai/decisionDetector';
 import { processResponse } from '../../../services/ai/decisionResponseProcessor';
 import { generateFallbackDecision } from '../../../services/ai/fallbackDecisionGenerator';
-import { ContextualDecisionServiceConfig, DecisionHistoryEntry } from '../../../services/ai/contextualDecision.types';
+import { ContextualDecisionServiceConfig } from '../../../services/ai/contextualDecision.types';
 import { NarrativeState } from '../../../types/narrative.types';
 import { Character } from '../../../types/character';
 
@@ -123,8 +123,8 @@ describe('Contextual Decision Service', () => {
       const service = new ContextualDecisionService(mockConfig);
       service.recordDecision('Test prompt', 'Test choice', 'Test outcome');
       
-      // Access private property for testing - this approach is cleaner for TypeScript
-      const history = (service as any).decisionsHistory as DecisionHistoryEntry[];
+      // Use the testing method instead of casting to any
+      const history = service.getDecisionsHistoryForTesting();
       expect(history.length).toBe(1);
       expect(history[0]).toHaveProperty('prompt', 'Test prompt');
     });

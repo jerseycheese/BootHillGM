@@ -1,6 +1,6 @@
 import { act, render } from '@testing-library/react';
 import { CampaignStateProvider, useCampaignState } from '../../components/CampaignStateManager';
-import { initialNarrativeState } from '../../types/narrative.types';
+import { initialNarrativeState } from '../../types/narrative/utils';
 import { GameState } from '../../types/gameState';
 
 describe('Narrative State Integration', () => {

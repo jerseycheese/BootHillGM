@@ -4,16 +4,12 @@
  * This file contains action creators for the narrative reducer.
  */
 
-import {
-  NarrativeAction,
-  NarrativeContext,
-  NarrativeDisplayMode,
-  PlayerDecision,
-  ImpactState,
-  // Import but don't use directly - ESLint will ignore this pattern
-  /* NarrativeErrorInfo, */
-  NarrativeErrorType,
-} from '../types/narrative.types';
+// Import specific types from their respective modules
+import { NarrativeAction } from '../types/narrative/actions.types';
+import { NarrativeDisplayMode } from '../types/narrative/choice.types';
+import { NarrativeContext, ImpactState } from '../types/narrative/context.types';
+import { PlayerDecision } from '../types/narrative/decision.types';
+import { NarrativeErrorType } from '../types/narrative/error.types';
 
 /**
  * Action creator for navigating to a specific story point.

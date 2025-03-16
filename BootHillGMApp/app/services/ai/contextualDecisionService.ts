@@ -288,6 +288,14 @@ Only include the JSON in your response and make sure it is valid.
       this.decisionsHistory.shift();
     }
   }
+  
+  /**
+   * Returns the decision history for testing purposes
+   * @internal This method should only be used for testing
+   */
+  public getDecisionsHistoryForTesting(): DecisionHistoryEntry[] {
+    return [...this.decisionsHistory];
+  }
 }
 
 // Create singleton instance

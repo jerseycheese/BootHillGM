@@ -211,6 +211,7 @@ export function gameReducer(state: GameState, action: GameEngineAction | SetNarr
               timestamp: Date.now(),
               aiGenerated: true, // Assuming AI-generated for now, can be adjusted
               location: state.location ?? undefined,
+              tags: storyProgressionData?.tags ?? [] // Added tags field with fallback to empty array
           };
           updatedProgressionPoints = {
               ...updatedProgressionPoints,
