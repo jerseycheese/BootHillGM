@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GameProviderWrapper } from './components/GameProviderWrapper';
 import { CampaignStateProvider } from './components/CampaignStateManager';
+import NarrativeOptimizationProvider from './components/NarrativeOptimizationProvider';
 import Navigation from './components/Navigation';
 import { Suspense } from 'react';
 import "./globals.css";
@@ -30,12 +31,14 @@ export default function RootLayout({
       <body>
         <CampaignStateProvider>
           <GameProviderWrapper>
-            <Suspense fallback={<p>Loading...</p>}>
-              <Navigation />
-            </Suspense>
-            <main className="p-4">
-              {children}
-            </main>
+            <NarrativeOptimizationProvider>
+              <Suspense fallback={<p>Loading...</p>}>
+                <Navigation />
+              </Suspense>
+              <main className="p-4">
+                {children}
+              </main>
+            </NarrativeOptimizationProvider>
           </GameProviderWrapper>
         </CampaignStateProvider>
       </body>

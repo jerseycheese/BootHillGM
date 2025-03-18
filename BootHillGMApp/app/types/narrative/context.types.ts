@@ -45,3 +45,140 @@ export interface NarrativeContext {
   pendingDecisions: PlayerDecision[];
   decisionHistory: PlayerDecisionRecord[]; // Replaces playerChoices
 }
+
+/**
+ * Compression levels for narrative text
+ */
+export type CompressionLevel = 'none' | 'low' | 'medium' | 'high';
+
+/**
+ * Options for narrative context building
+ */
+export interface NarrativeContextOptions {
+  maxHistoryEntries?: number;
+  maxDecisionHistory?: number;
+  includedContextSections?: ContextSection[];
+  compressionLevel?: CompressionLevel;
+  relevanceThreshold?: number;
+  prioritizeRecentEvents?: boolean;
+  includeWorldState?: boolean;
+  includeCharacterRelationships?: boolean;
+  maxTokens?: number;
+  tokenAllocation?: {
+    narrativeHistory?: number;
+    decisionHistory?: number;
+    worldState?: number;
+    relationships?: number;
+    storyContext?: number;
+  };
+}
+
+/**
+ * Context section types
+ */
+export type ContextSection = 
+  'narrative_history' | 
+  'decision_history' | 
+  'character_relationships' | 
+  'world_state' | 
+  'story_progression';
+
+/**
+ * Element types for context building
+ */
+export type ContextElementType = 
+  'narrative' | 
+  'decision' | 
+  'character' | 
+  'location' | 
+  'event' | 
+  'world_state' | 
+  'story_point';
+
+/**
+ * Types of content blocks
+ */
+export type ContextBlockType = 
+  'narrative_history' | 
+  'decision' | 
+  'character' | 
+  'location' | 
+  'world_state' | 
+  'story_progression' | 
+  'instruction';
+
+/**
+ * Interface for narrative content blocks
+ */
+export interface NarrativeContentBlock {
+  type: ContextBlockType;
+  content: string;
+  tokens: number;
+  priority: number;
+  metadata: Record<string, unknown>;
+}
+
+/**
+ * Compressed narrative entry
+ */
+export interface CompressedNarrativeEntry {
+  original: string;
+  compressed: string;
+  compressionRatio: number;
+  tokens: {
+    original: number;
+    compressed: number;
+  };
+}
+
+/**
+ * Relevant decision with metadata
+ */
+export interface RelevantDecision {
+  decision: PlayerDecisionRecord;
+  relevance: number;
+  tokens: number;
+}
+
+/**
+ * Element with relevance score
+ */
+export interface ScoredContextElement {
+  id: string;
+  content: string;
+  relevance: number;
+  timestamp: number;
+  type: ContextElementType;
+  tokens: number;
+}
+
+/**
+ * Results of narrative context building
+ */
+export interface BuiltNarrativeContext {
+  formattedContext: string;
+  tokenEstimate: number;
+  includedElements: {
+    historyEntries: number;
+    decisions: number;
+    characters: string[];
+    locations: string[];
+    recentEvents: string[];
+  };
+  metadata: {
+    compressionRatio: number;
+    buildTime: number;
+    relevanceScores: Record<string, number>;
+  };
+}
+
+/**
+ * Narrative summary structure
+ */
+export interface NarrativeSummary {
+  summary: string;
+  keyPoints: string[];
+  characterMentions: Record<string, number>;
+  tokenCount: number;
+  compressionRatio: number;
+}

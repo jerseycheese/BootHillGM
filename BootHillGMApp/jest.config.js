@@ -16,7 +16,8 @@ const customJestConfig = {
   testPathIgnorePatterns: [
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
-    '<rootDir>/app/__tests__/hooks/useCharacterCreation.test.ts'
+    '<rootDir>/app/__tests__/hooks/useCharacterCreation.test.ts',
+    '<rootDir>/app/__tests__/types/global.d.ts'
   ],
   collectCoverage: true,
   collectCoverageFrom: [

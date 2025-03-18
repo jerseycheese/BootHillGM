@@ -57,7 +57,7 @@ export function initializeAIDecisionSystem(): void {
           // Use optional chaining for both bhgmDebug and decisions
           if (window.bhgmDebug?.decisions?.pendingDecision) {
             const decision = window.bhgmDebug.decisions.pendingDecision;
-            const narrativeContext = window.bhgmDebug?.getGameState?.()?.narrative?.narrativeContext;
+            const narrativeContext = window.bhgmDebug?.getState?.()?.narrative?.narrativeContext;
             
             // Use the imported function directly to avoid require()
             const quality = evaluateDecisionQuality(decision, narrativeContext);

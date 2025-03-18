@@ -50,10 +50,29 @@ graph TD
     end
     
     subgraph "Types"
-        Types[Narrative Types] --> |Defines structure for| State
-        Types --> |Provides types for| ActionCreators
-        Types --> |Validates data in| Reducers
-        Types --> |Enforces structure in| Helpers
+        CoreTypes[Narrative Core Types] --> |Defines structure for| State
+        CoreTypes --> |Provides types for| ActionCreators
+        CoreTypes --> |Validates data in| Reducers
+        
+        subgraph "Specialized Types"
+            ActionTypes[Action Types]
+            ChoiceTypes[Choice Types]
+            StoryPointTypes[Story Point Types]
+            DecisionTypes[Decision Types]
+            ErrorTypes[Error Types]
+            ContextTypes[Context Types]
+            ArcTypes[Arc Types]
+            ProgressionTypes[Progression Types]
+        end
+        
+        CoreTypes --> |Imports from| ChoiceTypes
+        CoreTypes --> |Imports from| StoryPointTypes
+        CoreTypes --> |Imports from| DecisionTypes
+        CoreTypes --> |Imports from| ErrorTypes
+        CoreTypes --> |Imports from| ContextTypes
+        CoreTypes --> |Imports from| ArcTypes
+        CoreTypes --> |Imports from| ProgressionTypes
+        CoreTypes --> |Imports from| ActionTypes
     end
 ```
 
@@ -68,7 +87,20 @@ BootHillGMApp/
 │   ├── decisionReducer.ts     # Decision-specific handlers
 │   └── index.ts               # Exports all reducer functionality
 ├── types/
-│   └── narrative.types.ts     # Type definitions
+│   ├── narrative.types.ts     # Core type definitions (re-exports)
+│   └── narrative/             # Modularized type definitions
+│       ├── actions.types.ts   # Action types
+│       ├── arc.types.ts       # Arc and branch types
+│       ├── choice.types.ts    # Choice types
+│       ├── context.types.ts   # Context types
+│       ├── decision.types.ts  # Decision types
+│       ├── error.types.ts     # Error types
+│       ├── hooks.types.ts     # Hook interfaces
+│       ├── index.ts           # Barrel file for exports
+│       ├── progression.types.ts # Progression types
+│       ├── segment.types.ts   # Segment types
+│       ├── story-point.types.ts # Story point types
+│       └── utils.ts           # Type guards and initial states
 └── utils/
     ├── narrativeHelpers.ts    # Utility functions
     ├── decisionUtils.ts       # Decision-related utilities
@@ -115,6 +147,10 @@ Specialized reducer for decision-related state handling:
 Provides strongly-typed action creators:
 
 ```typescript
+// Import specific types from their respective modules
+import { NarrativeAction } from '../types/narrative/actions.types';
+import { NarrativeDisplayMode } from '../types/narrative/choice.types';
+
 export const navigateToPoint = (storyPointId: string): NarrativeAction => ({
   type: 'NAVIGATE_TO_POINT',
   payload: storyPointId,
@@ -132,25 +168,81 @@ export const recordDecision = (
 
 ### 3. Types & Interfaces
 
+The types system has been modularized for better organization and maintainability. 
+
 #### narrative.types.ts
-Comprehensive type definitions for the narrative system:
+Core type definitions that re-export specialized types for backward compatibility:
 
 ```typescript
+import { NarrativeChoice, NarrativeDisplayMode } from './narrative/choice.types';
+import { StoryPoint } from './narrative/story-point.types';
+// Other imports...
+
+// Re-export types
+export {
+  NarrativeChoice,
+  StoryPoint,
+  // Other re-exports...
+};
+
+// Define core interfaces that depend on multiple specialized types
 export interface NarrativeState {
   currentStoryPoint: StoryPoint | null;
   visitedPoints: string[];
   availableChoices: NarrativeChoice[];
   narrativeHistory: string[];
   displayMode: NarrativeDisplayMode;
-  narrativeContext?: NarrativeContext;
-  selectedChoice?: string;
-  storyProgression?: StoryProgressionState;
-  currentDecision?: PlayerDecision;
-  error?: NarrativeErrorInfo | null;
+  // Other properties...
+}
+```
+
+#### Specialized Type Modules
+
+Each specialized aspect of the narrative system has its own type module:
+
+- **choice.types.ts**: Defines `NarrativeChoice` and `NarrativeDisplayMode`
+- **story-point.types.ts**: Defines `StoryPoint` and related types
+- **decision.types.ts**: Defines decision-related interfaces
+- **error.types.ts**: Defines error handling types
+- **arc.types.ts**: Defines narrative arc and branch structures
+- **progression.types.ts**: Defines story progression tracking
+- **actions.types.ts**: Defines Redux action types
+- **utils.ts**: Provides type guards and initial states
+
+For example, from `error.types.ts`:
+
+```typescript
+export type NarrativeErrorType =
+  | 'invalid_navigation'
+  | 'invalid_choice'
+  | 'arc_not_found'
+  // Other error types...
+
+export interface NarrativeErrorInfo {
+  code: NarrativeErrorType;
+  message: string;
+  context?: Record<string, unknown>;  // Type-safe, no 'any'
+  timestamp: number;
 }
 ```
 
 ### 4. Helper Utilities
+
+#### utils.ts
+Type guards for runtime type checking:
+
+```typescript
+export const isStoryPoint = (obj: unknown): obj is StoryPoint => {
+  return (
+    obj !== null &&
+    typeof obj === 'object' &&
+    typeof (obj as Record<string, unknown>).id === 'string' &&
+    typeof (obj as Record<string, unknown>).title === 'string' &&
+    typeof (obj as Record<string, unknown>).content === 'string' &&
+    typeof (obj as Record<string, unknown>).type === 'string'
+  );
+};
+```
 
 #### narrativeHelpers.ts
 Common helper functions for narrative operations:
@@ -175,7 +267,7 @@ export const validateStoryPoint = (
 
 ## Error Handling System
 
-The narrative architecture includes a robust error handling mechanism:
+The narrative architecture includes a robust error handling mechanism through the `error.types.ts` module:
 
 ```typescript
 export type NarrativeErrorType =
@@ -192,7 +284,7 @@ export type NarrativeErrorType =
 export interface NarrativeErrorInfo {
   code: NarrativeErrorType;
   message: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;  // Type-safe, using 'unknown' instead of 'any'
   timestamp: number;
 }
 ```
@@ -215,7 +307,7 @@ if (error) {
 
 ## Decision Impact System
 
-The decision impact system tracks how player choices affect the game world over time:
+The decision impact system tracks how player choices affect the game world over time, defined in `arc.types.ts` and `context.types.ts`:
 
 ```typescript
 export interface ImpactState {
@@ -237,55 +329,52 @@ The system also handles impact evolution over time, with some impacts fading whi
 
 ## Integration with React Components
 
-The narrative system integrates with React components through:
+The narrative system integrates with React components through custom hooks defined in `hooks.types.ts`:
 
 ```typescript
-function NarrativeView() {
-  const dispatch = useDispatch();
-  const { 
-    currentStoryPoint, 
-    availableChoices, 
-    narrativeHistory,
-    error
-  } = useSelector(state => state.narrative);
-  
-  const handleChoice = (choiceId) => {
-    dispatch(selectChoice(choiceId));
-    
-    // Get destination from choice
-    const choice = availableChoices.find(c => c.id === choiceId);
-    if (choice) {
-      dispatch(navigateToPoint(choice.leadsTo));
-    }
-  };
-  
-  // Handle errors
-  if (error) {
-    return <ErrorDisplay error={error} onDismiss={() => dispatch(clearError())} />;
-  }
+export interface UseNarrativeChoiceResult {
+  availableChoices: NarrativeChoice[];
+  selectChoice: (choiceId: string) => void;
+  canSelectChoice: (choiceId: string) => boolean;
+}
+
+// Usage in component:
+function NarrativeChoices() {
+  const { availableChoices, selectChoice, canSelectChoice } = useNarrativeChoices();
   
   return (
-    <div className="narrative-container">
-      <div className="narrative-text">
-        <h2>{currentStoryPoint?.title}</h2>
-        <p>{currentStoryPoint?.content}</p>
-      </div>
-      
-      {availableChoices.length > 0 && (
-        <div className="choices">
-          {availableChoices.map(choice => (
-            <button
-              key={choice.id}
-              onClick={() => handleChoice(choice.id)}
-            >
-              {choice.text}
-            </button>
-          ))}
-        </div>
-      )}
+    <div className="choices">
+      {availableChoices.map(choice => (
+        <button
+          key={choice.id}
+          onClick={() => selectChoice(choice.id)}
+          disabled={!canSelectChoice(choice.id)}
+        >
+          {choice.text}
+        </button>
+      ))}
     </div>
   );
 }
+```
+
+## Import Patterns
+
+The modularized type system supports two import patterns:
+
+1. **Direct imports** from specific modules (preferred for new code):
+
+```typescript
+// Import specific types directly
+import { StoryPoint } from '../types/narrative/story-point.types';
+import { NarrativeAction } from '../types/narrative/actions.types';
+```
+
+2. **Compatibility imports** from the main file (for backward compatibility):
+
+```typescript
+// Import from main file (all types re-exported)
+import { StoryPoint, NarrativeAction } from '../types/narrative.types';
 ```
 
 ## Testing Strategy
@@ -296,6 +385,7 @@ The architecture is designed for testability:
 2. **Isolated action creators**: Can be tested independently of state
 3. **Helper utility functions**: Pure functions with predictable behavior
 4. **Type safety**: TypeScript prevents many common runtime errors
+5. **Type guards**: Facilitate runtime type checking in tests
 
 For testing complex state transitions, the `testNarrativeReducer` wrapper function handles nested state structures:
 
@@ -310,11 +400,12 @@ export function testNarrativeReducer(
 
 ## Performance Considerations
 
-1. **Immutable updates**: All state updates use immutable patterns
-2. **Selective rendering**: Components can select specific parts of state
-3. **Memoization opportunities**: Pure functions can be memoized
-4. **Serializable state**: State can be easily persisted or transferred
-5. **Targeted updates**: Decision impacts only update affected state portions
+1. **Modular imports**: Allow for better tree-shaking
+2. **Immutable updates**: All state updates use immutable patterns
+3. **Selective rendering**: Components can select specific parts of state
+4. **Memoization opportunities**: Pure functions can be memoized
+5. **Serializable state**: State can be easily persisted or transferred
+6. **Targeted updates**: Decision impacts only update affected state portions
 
 ## Related Documentation
 

@@ -1,7 +1,19 @@
-import { initializeBrowserDebugTools, updateDebugCurrentDecision, BHGMDebug } from '../../utils/debugConsole';
+import { initializeBrowserDebugTools, updateDebugCurrentDecision } from '../../utils/debugConsole';
 import { LocationType } from '../../services/locationService';
 import { initialGameState } from '../../types/gameState';
 import { PlayerDecision, DecisionImportance } from '../../types/narrative.types';
+import { DebugCommandData } from '../../types/global.d';
+import { GameState } from '../../types/gameState';
+
+interface BHGMDebug {
+  version: string;
+  triggerDecision: (locationType?: LocationType) => void;
+  clearDecision: () => void;
+  listLocations: () => string[];
+  getState: () => GameState;
+  currentDecision: PlayerDecision | null;
+  sendCommand: (commandType: string, data?: DebugCommandData) => void;
+}
 
 describe('debugConsole', () => {
   // Store original window properties
@@ -60,7 +72,7 @@ describe('debugConsole', () => {
       expect(typeof window.bhgmDebug!.triggerDecision).toBe('function');
       expect(typeof window.bhgmDebug!.clearDecision).toBe('function');
       expect(typeof window.bhgmDebug!.listLocations).toBe('function');
-      expect(typeof window.bhgmDebug!.getGameState).toBe('function');
+      expect(typeof window.bhgmDebug!.getState).toBe('function');
     });
 
     it('calls decision trigger with correct location type', () => {
@@ -92,7 +104,9 @@ describe('debugConsole', () => {
         mockDecisionClearer
       );
 
-      const result = window.bhgmDebug!.getGameState();
+      const bhgmDebug = (window as Window & { bhgmDebug?: BHGMDebug }).bhgmDebug;
+      if (!bhgmDebug) throw new Error('bhgmDebug not initialized');
+      const result = bhgmDebug.getState();
       expect(mockGameStateGetter).toHaveBeenCalled();
       expect(result).toEqual(initialGameState);
     });

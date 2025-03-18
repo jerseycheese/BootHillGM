@@ -10,6 +10,8 @@ import { PlayerDecision, NarrativeContext } from './narrative.types';
 import { GameState } from './gameState';
 import { DecisionGenerationMode } from '../utils/contextualDecisionGenerator.enhanced';
 import { ContextualDecisionService } from '../services/ai/contextualDecisionService';
+import { CompressionLevel } from './narrative/context.types';
+import { EstimatorComparisonResult, CompressionBenchmarkResult } from './optimization.types';
 
 /**
  * Debug command data interface
@@ -29,6 +31,45 @@ export interface DecisionQualityResult {
 }
 
 /**
+ * Interface for Narrative Context Debug Tools
+ */
+export interface NarrativeContextDebugTools {
+  // Show optimized context and return the result
+  showOptimizedContext: () => {
+    formattedContext: string;
+    tokenEstimate: number;
+    metadata: {
+      compressionRatio: number;
+      buildTime: number;
+    };
+    includedElements: {
+      historyEntries: number;
+      decisions: number;
+      characters: string[];
+    };
+  } | undefined;
+  
+  // Test different compression levels
+  testCompression: (text: string) => Array<{
+    level: CompressionLevel;
+    compressed: string;
+    originalLength: number;
+  }> | undefined;
+  
+  // Compare token estimation methods
+  compareTokenEstimation: (text: string) => EstimatorComparisonResult | { message: string };
+  
+  // Benchmark different compression approaches
+  benchmarkCompressionEfficiency: (sampleSize?: number) => CompressionBenchmarkResult[] | { message: string } | undefined;
+  
+  // Get optimal compression level for current state
+  getOptimalCompression: () => CompressionLevel;
+  
+  // Allow additional properties
+  [key: string]: unknown;
+}
+
+/**
  * Core BHGM debug interface
  */
 export interface BHGMDebug {
@@ -36,7 +77,7 @@ export interface BHGMDebug {
   triggerDecision: (locationType?: LocationType) => void;
   clearDecision: () => void;
   listLocations: () => unknown[];
-  getGameState?: () => GameState;
+  getState?: () => GameState;  // Updated from getGameState to getState to match usage
   currentDecision?: PlayerDecision | null;
   sendCommand: (commandType: string, data?: unknown) => void;
   
@@ -70,6 +111,9 @@ export interface BHGMDebug {
     evaluateLastDecision: () => boolean;
     evaluateDecision: (decision: PlayerDecision, context?: NarrativeContext) => DecisionQualityResult;
   };
+  
+  // Narrative context debug tools
+  narrativeContext?: NarrativeContextDebugTools;
   
   // Legacy enhanced decision generator properties 
   pendingAIDecision?: PlayerDecision | null;
