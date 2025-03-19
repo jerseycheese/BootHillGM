@@ -1,15 +1,15 @@
 ---
-title: Claude Development Workflow
-aliases: [Claude Process, Three-Phase Development]
-tags: [development, workflow, claude, process]
+title: Claude Legacy API Development Workflow
+aliases: [Claude API Process, Three-Phase Development, Legacy Claude Process]
+tags: [development, workflow, claude, process, api, legacy]
 created: 2025-01-13
-updated: 2025-02-25
+updated: 2025-03-16
 ---
 
-# Three-Phase Claude Development Workflow
+# Three-Phase Claude API Development Workflow (Legacy)
 
-> [!note] 
-> Streamlined development workflow combining analysis and planning into a single phase, followed by implementation and cleanup phases using Claude 3.5 Sonnet and Claude 3 Haiku.
+> [!warning] 
+> This is a legacy workflow using Claude API via VS Code extensions like Cline/Roo Code. The recommended approach is now the [[claude-app-workflow|Claude App Workflow]] which uses MCP tools for better cost efficiency and capability.
 
 ## Development Flow
 ```mermaid
@@ -25,7 +25,7 @@ graph TD
 **Purpose:** Select and plan next most valuable task
 **Output:** Combined Analysis & Technical Specification
 
-> [!tip] Use [[examples/analysis-planning-prompt|Analysis & Planning Prompt]]
+> [!tip] Use the Analysis & Planning templates in [[claude-app-prompt-templates|Claude App Prompt Templates]]
 
 Selection Criteria:
 1. Priority & blocking status
@@ -44,7 +44,7 @@ Planning Focus:
 **Purpose:** Execute technical specification
 **Output:** Code Changes, Tests, Core Documentation
 
-> [!tip] Use [[examples/implementation-prompt|Implementation Prompt]]
+> [!tip] Use the Implementation templates in [[claude-app-prompt-templates|Claude App Prompt Templates]]
 
 Implementation Steps:
 1. Write tests
@@ -57,7 +57,7 @@ Implementation Steps:
 **Purpose:** Clean up code and update documentation
 **Output:** Clean codebase, updated documentation, closed issues
 
-> [!tip] Use [[examples/cleanup-docs-prompt|Cleanup & Documentation Prompt]]
+> [!tip] Use the Cleanup & Documentation templates in [[claude-app-prompt-templates|Claude App Prompt Templates]]
 
 Cleanup Steps:
 1. Update project docs
@@ -172,8 +172,7 @@ FUTURE TASKS
 - Update labels
 
 ## Related Documents
-- [[examples/analysis-planning-prompt|Analysis & Planning]]
-- [[examples/implementation-prompt|Implementation]]
-- [[examples/cleanup-docs-prompt|Cleanup & Documentation]]
-- [[examples/refactor-prompt|Refactoring Guide]]
+- [[claude-app-workflow|Claude App Workflow]] - Recommended current approach
+- [[api-vs-app-comparison|API vs App Comparison]]
+- [[claude-app-prompt-templates|Claude App Prompt Templates]]
 - GitHub: https://github.com/jerseycheese/BootHillGM
