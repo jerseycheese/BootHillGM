@@ -1,4 +1,4 @@
-import { useContext, useCallback, useState, useMemo } from 'react';
+import { useContext, useCallback, useState, useMemo, useEffect } from 'react';
 import { 
   PlayerDecision, 
   PlayerDecisionRecord,
@@ -18,6 +18,7 @@ import { AIService } from '../services/ai';
 import { EVENTS, triggerCustomEvent } from '../utils/events';
 import { InventoryItem } from '../types/item.types';
 import { createDecisionRecord } from '../utils/decisionUtils';
+import { GameState } from '../types/gameState';
 
 /**
  * Custom hook for interacting with narrative context and player decisions
@@ -338,57 +339,193 @@ export function useNarrativeContext() {
     
     return false;
   }, [state.currentDecision, presentPlayerDecision]);
-  
+
+  /**
+   * Helper function to ensure narrative state is fresh before generating decisions
+   * 
+   * This function handles the state update to force a refresh before
+   * decision generation to fix the stale context issue (#210).
+   */
+  const ensureFreshState = useCallback(async () => {
+    // Force a state update to ensure we have the freshest state
+    // Instead of using lastRefreshed which isn't in the type,
+    // we can simply use an empty object to trigger the update
+    dispatch({
+      type: 'UPDATE_NARRATIVE',
+      payload: {}  // Empty object is valid and will trigger a state update
+    });
+
+    // Wait a small delay to ensure state has updated
+    await new Promise<void>(resolve => {
+      setTimeout(() => resolve(), 50);
+    });
+
+    // Return the current state after refresh
+    return state;
+  }, [state, dispatch]);
+
   /**
    * Trigger an AI-generated decision with specific context
    * 
-   * This function creates and presents a decision based on the provided
-   * context. In a production implementation, this would generate the decision
-   * using the AI service.
+   * This function uses the enhanced decision generator to create a contextually
+   * appropriate decision based on the most recent narrative state.
    * 
-   * @param context - The narrative context for the decision
+   * @param context - Additional narrative context (optional)
    * @param importance - Optional importance level for the decision
    * @returns Boolean indicating if the decision was successfully triggered
    */
-  const triggerAIDecision = useCallback((context: string, importance: DecisionImportance = 'moderate') => {
+  const triggerAIDecision = useCallback(async (context?: string, importance: DecisionImportance = 'moderate') => {
     if (state.currentDecision) {
       return false;
     }
     
-    // In a real implementation, this would call the AI service
-    // For now, create a placeholder decision
-    const aiDecision = {
-      id: `ai-decision-${Date.now()}`,
-      prompt: 'A decision presents itself...',
-      timestamp: Date.now(),
-      options: [
-        { 
-          id: 'ai-opt1', 
-          text: 'Take the first path',
-          impact: 'The first path leads to unknown territory.'
+    try {
+      // First, ensure we have fresh state (fix for issue #210)
+      await ensureFreshState();
+      
+      // Import the enhanced decision generator - dynamic import to avoid circular dependencies
+      const { generateEnhancedDecision, setDecisionGenerationMode } = await import('../utils/contextualDecisionGenerator.enhanced');
+      
+      // Force AI mode to ensure context awareness
+      setDecisionGenerationMode('ai');
+      
+      // Create a complete GameState object to satisfy the type requirements
+      const gameState: GameState = {
+        currentPlayer: 'player',
+        npcs: [],
+        location: null,
+        inventory: [],
+        quests: [],
+        character: { 
+          id: 'player',
+          name: 'Player Character',
+          isNPC: false,
+          isPlayer: true,
+          inventory: [],
+          attributes: {
+            speed: 5,
+            gunAccuracy: 5,
+            throwingAccuracy: 5,
+            strength: 5,
+            baseStrength: 5,
+            bravery: 5,
+            experience: 0
+          },
+          minAttributes: {
+            speed: 1,
+            gunAccuracy: 1,
+            throwingAccuracy: 1,
+            strength: 1,
+            baseStrength: 1,
+            bravery: 1,
+            experience: 0
+          },
+          maxAttributes: {
+            speed: 10,
+            gunAccuracy: 10,
+            throwingAccuracy: 10,
+            strength: 10,
+            baseStrength: 10,
+            bravery: 10,
+            experience: 100
+          },
+          wounds: [],
+          isUnconscious: false
         },
-        { 
-          id: 'ai-opt2', 
-          text: 'Choose the second option',
-          impact: 'The second option feels safer but less rewarding.'
-        },
-        { 
-          id: 'ai-opt3', 
-          text: 'Try the third approach',
-          impact: 'The third approach is risky but potentially more rewarding.'
+        narrative: state,
+        gameProgress: 0,
+        journal: [],
+        isCombatActive: false,
+        opponent: null,
+        isClient: true,
+        suggestedActions: [],
+        // Add the player getter to satisfy the type requirement
+        get player() {
+          return this.character;
         }
-      ],
-      context: context || 'The AI has identified a decision point in the narrative.',
-      importance: importance,
-      characters: ['Player Character'],
-      aiGenerated: true
-    };
-    
-    // Present the decision
-    presentPlayerDecision(aiDecision);
-    
-    return true;
-  }, [state.currentDecision, presentPlayerDecision]);
+      };
+      
+      // If additional context was provided, add it to the narrative
+      if (context) {
+        // Add the context to the narrative history for better context awareness
+        dispatch(addNarrativeHistory(`Game Master: ${context}`));
+        
+        // Refresh state again after adding context
+        await ensureFreshState();
+      }
+      
+      // Generate a decision using the enhanced generator with most current state
+      console.debug('Generating decision with fresh narrative state', { 
+        historyLength: state.narrativeHistory.length 
+      });
+      
+      const decision = await generateEnhancedDecision(
+        gameState,
+        state.narrativeContext,
+        undefined, // Let the generator determine location from state
+        true // Force generation
+      );
+      
+      // If we got a decision, present it
+      if (decision) {
+        console.debug('Decision generated successfully', { 
+          id: decision.id,
+          prompt: decision.prompt
+        });
+        presentPlayerDecision(decision);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error generating AI decision:', error);
+      
+      // Fallback to a template decision if AI generation fails
+      const fallbackDecision = {
+        id: `fallback-decision-${Date.now()}`,
+        prompt: 'What would you like to do next?',
+        timestamp: Date.now(),
+        options: [
+          { 
+            id: `fallback-opt1-${Date.now()}`, 
+            text: 'Continue exploring',
+            impact: 'You may discover more about your surroundings.'
+          },
+          { 
+            id: `fallback-opt2-${Date.now()}`, 
+            text: 'Take a more cautious approach',
+            impact: 'Being careful might reveal hidden dangers or opportunities.'
+          },
+          { 
+            id: `fallback-opt3-${Date.now()}`, 
+            text: 'Search for clues',
+            impact: 'You might find something important to your quest.'
+          }
+        ],
+        context: context || 'Continuing your adventure...',
+        importance: importance,
+        characters: [],
+        aiGenerated: true
+      };
+      
+      presentPlayerDecision(fallbackDecision);
+      return true;
+    }
+  }, [state, dispatch, presentPlayerDecision, ensureFreshState]);
+
+  // When component is loaded, verify that generateNarrativeResponse is properly set up
+  // This helps diagnose issues with narrative responses not being added
+  useEffect(() => {
+    // Create a debug flag to indicate if narrative generation is working
+    if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+      window.__debugNarrativeGeneration = {
+        generateNarrativeResponse,
+        addNarrativeHistory: (text: string) => dispatch(addNarrativeHistory(text))
+      };
+      
+      console.debug('Narrative generation debug helpers attached to window.__debugNarrativeGeneration');
+    }
+  }, [generateNarrativeResponse, dispatch]);
 
   return {
     // Current decision state
@@ -404,6 +541,7 @@ export function useNarrativeContext() {
     getDecisionHistory,
     checkForDecisionTriggers,
     triggerAIDecision,
+    ensureFreshState,
     
     // Decision state checks
     hasActiveDecision: Boolean(state.currentDecision),

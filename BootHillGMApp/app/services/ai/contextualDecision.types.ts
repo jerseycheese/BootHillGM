@@ -7,7 +7,7 @@
 import { GameState } from '../../types/gameState';
 import { 
   DecisionImportance
-} from '../../types/narrative.types';
+} from '../../types/narrative/decision.types';
 
 /**
  * Decision service configuration

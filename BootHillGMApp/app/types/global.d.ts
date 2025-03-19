@@ -31,6 +31,18 @@ export interface DecisionQualityResult {
 }
 
 /**
+ * Interface for Decision Feedback System Debug Tools
+ */
+export interface FeedbackSystemDebugTools {
+  patterns: Array<{
+    pattern: string;
+    weight: number;
+  }>;
+  updateWeights: (appliedPatterns: string[], success: boolean) => void;
+  reset: () => void;
+}
+
+/**
  * Interface for Narrative Context Debug Tools
  */
 export interface NarrativeContextDebugTools {
@@ -64,6 +76,9 @@ export interface NarrativeContextDebugTools {
   
   // Get optimal compression level for current state
   getOptimalCompression: () => CompressionLevel;
+  
+  // Feedback system debug tools
+  feedbackSystem?: FeedbackSystemDebugTools;
   
   // Allow additional properties
   [key: string]: unknown;
@@ -133,6 +148,18 @@ export interface BHGMDebug {
 }
 
 /**
+ * Interface for narrative generation debug helpers
+ */
+export interface NarrativeGenerationDebug {
+  generateNarrativeResponse: (option: string, decisionPrompt: string) => Promise<{
+    narrative: string;
+    acquiredItems: unknown[];
+    removedItems: unknown[];
+  }>;
+  addNarrativeHistory: (text: string) => void;
+}
+
+/**
  * Extending the global Window interface
  */
 declare global {
@@ -144,5 +171,7 @@ declare global {
       narrativeContext?: Record<string, unknown>,
       locationType?: LocationType
     ) => PlayerDecision | null;
+    // Debug narrative generation
+    __debugNarrativeGeneration?: NarrativeGenerationDebug;
   }
 }

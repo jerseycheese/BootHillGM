@@ -10,7 +10,8 @@ import {
   getContextualDecisionService 
 } from '../services/ai/contextualDecisionService';
 import { generateContextualDecision as generateTemplateDecision } from './contextualDecisionGenerator';
-import { PlayerDecision, NarrativeContext } from '../types/narrative.types';
+import { PlayerDecision } from '../types/narrative/decision.types';
+import { NarrativeContext } from '../types/narrative/context.types';
 import { GameState } from '../types/gameState';
 import { LocationType } from '../services/locationService';
 import { v4 as uuidv4 } from 'uuid';
@@ -20,8 +21,8 @@ import '../types/global.d';
 // Decision generation modes
 export type DecisionGenerationMode = 'template' | 'ai' | 'hybrid';
 
-// Default to hybrid mode
-let currentGenerationMode: DecisionGenerationMode = 'hybrid';
+// Default to AI mode to prioritize context-awareness
+let currentGenerationMode: DecisionGenerationMode = 'ai';
 
 // Cache for pending decisions
 let pendingDecision: PlayerDecision | null = null;
@@ -81,6 +82,39 @@ function isGameStateReadyForDecisions(gameState: GameState): boolean {
 }
 
 /**
+ * Get the latest game state from debug tools if available
+ * 
+ * This helper ensures we always work with the most up-to-date state
+ * when generating decisions, fixing the stale context issue (#210)
+ * 
+ * @param originalState - The state initially passed to the function
+ * @returns The most up-to-date game state available
+ */
+function getRefreshedGameState(originalState: GameState): GameState {
+  // In browser environment, try to get fresh state from debug tools
+  if (typeof window !== 'undefined' && window.bhgmDebug?.getState) {
+    try {
+      const freshState = window.bhgmDebug.getState();
+      
+      // If we got a valid state, update the narrative portion
+      if (freshState && freshState.narrative) {
+        return {
+          ...originalState,
+          narrative: freshState.narrative
+        };
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('Failed to get fresh state from debug tools:', error);
+      }
+    }
+  }
+  
+  // Fall back to the original state
+  return originalState;
+}
+
+/**
  * Generate an enhanced contextual decision.
  * 
  * This function integrates AI-driven and template-based decision generation,
@@ -108,8 +142,23 @@ export async function generateEnhancedDecision(
     
     isGeneratingDecision = true;
     
+    // IMPORTANT FIX: Always get a fresh narrative state from the game state
+    // This ensures we're not using stale context (fixes issue #210)
+    const freshGameState = getRefreshedGameState(gameState);
+    
+    // Log what we're working with in development
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('Generating decision with narrative history length:', 
+        freshGameState.narrative.narrativeHistory.length);
+      
+      if (freshGameState.narrative.narrativeHistory.length > 0) {
+        console.debug('Latest narrative entry:', 
+          freshGameState.narrative.narrativeHistory[freshGameState.narrative.narrativeHistory.length - 1]);
+      }
+    }
+    
     // Check if the game state is ready for decisions
-    if (!forceGeneration && !isGameStateReadyForDecisions(gameState)) {
+    if (!forceGeneration && !isGameStateReadyForDecisions(freshGameState)) {
       isGeneratingDecision = false;
       return null;
     }
@@ -123,7 +172,7 @@ export async function generateEnhancedDecision(
     }
     
     // Make sure we have a character to work with
-    if (!gameState.character) {
+    if (!freshGameState.character) {
       if (process.env.NODE_ENV !== 'production') {
         console.warn('No character found in gameState, cannot generate decision');
       }
@@ -137,9 +186,9 @@ export async function generateEnhancedDecision(
         // Use AI-only generation
         const service = getContextualDecisionService();
         const decision = await service.generateDecision(
-          gameState.narrative,
-          gameState.character,
-          gameState,
+          freshGameState.narrative,
+          freshGameState.character,
+          freshGameState,
           forceGeneration
         );
         isGeneratingDecision = false;
@@ -149,8 +198,8 @@ export async function generateEnhancedDecision(
       case 'template': {
         // Use template-based generation only
         const decision = generateTemplateDecision(
-          gameState,
-          narrativeContext || gameState.narrative.narrativeContext,
+          freshGameState,
+          narrativeContext || freshGameState.narrative.narrativeContext,
           locationType
         );
         isGeneratingDecision = false;
@@ -166,9 +215,9 @@ export async function generateEnhancedDecision(
           // If force generation is enabled, skip detection check
           if (forceGeneration) {
             const decision = await service.generateDecision(
-              gameState.narrative,
-              gameState.character,
-              gameState,
+              freshGameState.narrative,
+              freshGameState.character,
+              freshGameState,
               true
             );
             isGeneratingDecision = false;
@@ -177,9 +226,9 @@ export async function generateEnhancedDecision(
           
           // Check if we should present a decision
           const detectionResult = service.detectDecisionPoint(
-            gameState.narrative,
-            gameState.character,
-            gameState
+            freshGameState.narrative,
+            freshGameState.character,
+            freshGameState
           );
           
           // Store detection score in debug object for visualization
@@ -194,9 +243,9 @@ export async function generateEnhancedDecision(
           if (detectionResult.shouldPresent) {
             // Generate AI-driven decision
             const aiDecision = await service.generateDecision(
-              gameState.narrative,
-              gameState.character,
-              gameState
+              freshGameState.narrative,
+              freshGameState.character,
+              freshGameState
             );
             
             isGeneratingDecision = false;
@@ -207,18 +256,20 @@ export async function generateEnhancedDecision(
           
           // Fall back to template-based generation
           const templateDecision = generateTemplateDecision(
-            gameState,
-            narrativeContext || gameState.narrative.narrativeContext,
+            freshGameState,
+            narrativeContext || freshGameState.narrative.narrativeContext,
             locationType
           );
           
           isGeneratingDecision = false;
           return templateDecision;
         } catch (error) {
-          console.error('AI generation failed, falling back to templates:', error);
+          if (process.env.NODE_ENV !== 'production') {
+            console.error('AI generation failed, falling back to templates:', error);
+          }
           const fallbackDecision = generateTemplateDecision(
-            gameState,
-            narrativeContext || gameState.narrative.narrativeContext,
+            freshGameState,
+            narrativeContext || freshGameState.narrative.narrativeContext,
             locationType
           );
           isGeneratingDecision = false;
@@ -227,7 +278,9 @@ export async function generateEnhancedDecision(
       }
     }
   } catch (error) {
-    console.error('Error in generateEnhancedDecision:', error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Error in generateEnhancedDecision:', error);
+    }
     isGeneratingDecision = false;
     
     // Last resort fallback: return a simple decision
@@ -275,21 +328,24 @@ export function generateEnhancedContextualDecision(
   narrativeContext?: NarrativeContext,
   locationType?: LocationType
 ): PlayerDecision | null {
+  // Get fresh state first (fix for issue #210)
+  const freshGameState = getRefreshedGameState(gameState);
+  
   // Don't generate decisions for empty game states
-  if (!isGameStateReadyForDecisions(gameState)) {
+  if (!isGameStateReadyForDecisions(freshGameState)) {
     return null;
   }
   
   // First, try the original function to get an immediate result
   const templateDecision = generateTemplateDecision(
-    gameState,
-    narrativeContext || gameState.narrative.narrativeContext,
+    freshGameState,
+    narrativeContext || freshGameState.narrative.narrativeContext,
     locationType
   );
   
   // Start async AI generation in the background only if not already generating
   if (!isGeneratingDecision) {
-    generateEnhancedDecision(gameState, narrativeContext, locationType)
+    generateEnhancedDecision(freshGameState, narrativeContext, locationType)
       .then(decision => {
         if (decision) {
           // Cache the decision for next call
@@ -300,7 +356,9 @@ export function generateEnhancedContextualDecision(
         }
       })
       .catch(error => {
-        console.error('Background AI decision generation failed:', error);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Background AI decision generation failed:', error);
+        }
       });
   }
   
@@ -346,7 +404,7 @@ export function initializeDecisionDebugTools(): void {
       }
     };
     
-    // Extend with decision debug functions - FIXED: Check if bhgmDebug exists
+    // Extend with decision debug functions - already properly typed in global.d.ts
     if (window.bhgmDebug) {
       window.bhgmDebug.decisions = {
         getMode: getDecisionGenerationMode,

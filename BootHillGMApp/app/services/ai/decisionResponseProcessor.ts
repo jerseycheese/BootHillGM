@@ -1,93 +1,105 @@
 /**
  * Decision Response Processor
  * 
- * Processes AI responses into structured decision objects.
- * Handles parsing, validation, and conversion of raw AI output.
+ * This module handles processing and parsing of raw AI-generated decision
+ * responses, converting them into structured PlayerDecision objects.
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { PlayerDecision, DecisionImportance } from '../../types/narrative.types';
-import { LocationType } from '../locationService';
-import { ContextualDecisionServiceConfig, RawDecisionResponse } from './contextualDecision.types';
+import { LocationType } from '../../services/locationService';
+import { PlayerDecision } from '../../types/narrative.types';
+import { RawDecisionResponse, ContextualDecisionServiceConfig } from './contextualDecision.types';
 
 /**
- * Process the AI response into a structured object
+ * Process a raw AI response to extract the decision data
  * 
- * @param responseText Response text from the AI
- * @returns Processed decision object or null if parsing fails
+ * @param responseText Raw text response from AI
+ * @returns Parsed decision response or null if parsing fails
  */
 export function processResponse(responseText: string): RawDecisionResponse | null {
   try {
-    // Remove any markdown code block delimiters
-    const cleanedText = responseText
-      .replace(/```json\s*/g, '')
-      .replace(/```\s*/g, '')
-      .trim();
+    // Extract JSON from response (in case there's additional text)
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    
+    if (!jsonMatch) {
+      console.error('No JSON found in response:', responseText);
+      return null;
+    }
     
     // Parse the JSON
-    return JSON.parse(cleanedText) as RawDecisionResponse;
-  } catch (error) {
-    console.error('Error parsing AI response:', error);
-    // Only log the raw response in development mode
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Raw response:', responseText);
+    const jsonString = jsonMatch[0];
+    const response = JSON.parse(jsonString) as RawDecisionResponse;
+    
+    // Validate required fields
+    if (!response.prompt || !response.options || response.options.length === 0) {
+      console.error('Invalid decision response format:', response);
+      return null;
     }
+    
+    return response;
+  } catch (error) {
+    console.error('Error processing decision response:', error);
+    console.debug('Raw response:', responseText);
     return null;
   }
 }
 
 /**
- * Convert a raw response object to a PlayerDecision
+ * Convert a raw decision response to a structured PlayerDecision
  * 
- * @param response Processed response from AI
- * @param config Service configuration for options limiting
- * @param location Current location
- * @returns PlayerDecision object
+ * @param response Processed AI response object
+ * @param config Service configuration
+ * @param location Optional location context
+ * @returns Structured PlayerDecision object
  */
 export function toPlayerDecision(
   response: RawDecisionResponse,
   config: ContextualDecisionServiceConfig,
   location?: LocationType
 ): PlayerDecision {
-  // Validate importance
-  const validImportance = ['critical', 'significant', 'moderate', 'minor'];
-  const importance: DecisionImportance = 
-    (response.importance as string) && validImportance.includes(response.importance as string)
-      ? response.importance as DecisionImportance
-      : 'moderate';
+  // Generate a unique ID for the decision
+  const decisionId = `decision-${uuidv4()}`;
   
-  // Generate option IDs if missing
-  const options = ((response.options as unknown[]) || []).map(option => ({
-    id: uuidv4(),
-    text: (option as Record<string, unknown>).text as string || 'Option',
-    impact: (option as Record<string, unknown>).impact as string || 'Unknown impact',
-    tags: Array.isArray((option as Record<string, unknown>).tags) 
-      ? (option as Record<string, unknown>).tags as string[] 
-      : []
+  // Limit the number of options based on config
+  const limitedOptions = response.options
+    ? response.options.slice(0, config.maxOptionsPerDecision)
+    : [];
+  
+  // Format options with missing fields
+  const formattedOptions = limitedOptions.map((option, index) => ({
+    id: `option-${index}-${uuidv4()}`,
+    text: option.text || `Option ${index + 1}`,
+    impact: option.impact || 'Impact unknown',
+    tags: option.tags || []
   }));
   
-  // Limit options based on config
-  const limitedOptions = options.slice(0, config.maxOptionsPerDecision);
-  
-  // Ensure we have at least 2 options
-  if (limitedOptions.length < 2) {
-    limitedOptions.push({
-      id: uuidv4(),
-      text: 'Continue forward',
-      impact: 'Proceed with the current course of action.',
-      tags: ['default']
+  // Default to at least two options if none are provided
+  if (formattedOptions.length === 0) {
+    formattedOptions.push({
+      id: `option-0-${uuidv4()}`,
+      text: 'Proceed carefully',
+      impact: 'A cautious approach to the situation.',
+      tags: ['default', 'cautious']
+    });
+    
+    formattedOptions.push({
+      id: `option-1-${uuidv4()}`,
+      text: 'Take decisive action',
+      impact: 'A bold approach that might have significant consequences.',
+      tags: ['default', 'bold']
     });
   }
   
+  // Build the full PlayerDecision object
   return {
-    id: `decision-${uuidv4()}`,
-    prompt: (response.prompt as string) || 'What would you like to do?',
+    id: decisionId,
+    prompt: response.prompt || 'What will you do?',
     timestamp: Date.now(),
     location,
-    options: limitedOptions,
-    context: (response.context as string) || 'Based on narrative context',
-    importance,
-    characters: [],
+    options: formattedOptions,
+    context: response.context || 'A decision point has been reached.',
+    importance: response.importance || 'moderate',
+    characters: [], // No character data available from AI response
     aiGenerated: true
   };
 }

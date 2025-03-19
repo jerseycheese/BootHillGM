@@ -46,6 +46,8 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
   /**
    * Handles the generation and presentation of a contextual decision based on
    * the current game state and selected location type.
+   * 
+   * This function now ensures the most recent narrative context is used for decision generation.
    */
   const handleContextualDecision = useCallback((locationType?: LocationType) => {
     setLoading("contextual-decision");
@@ -53,7 +55,7 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
     
     try {
       // First, notify the user that we're generating a decision
-      narrativeContext.dispatch(addNarrativeHistory("\nGenerating a contextual decision based on the current situation...\n"));
+      narrativeContext.dispatch(addNarrativeHistory("\nGenerating a contextual decision based on current narrative context...\n"));
       
       // Clear any existing decision to prevent conflicts
       narrativeContext.dispatch(clearCurrentDecision());
@@ -65,17 +67,24 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
           // Use the location type parameter or fall back to selected state
           const locationToUse = locationType || selectedLocationType;
           
-          // Generate a contextual decision using the AI-enhanced generator
+          // Make sure we're using the most up-to-date narrative state
+          // This is critical for generating relevant decisions
+          const currentNarrativeState = narrativeContext.state;
+          
+          // Generate a contextual decision using the AI-enhanced generator with current context
           const contextualDecision = await generateEnhancedDecision(
-            gameState,
-            narrativeContext.state.narrativeContext,
+            {
+              ...gameState,
+              narrative: currentNarrativeState // Use the current narrative state
+            },
+            currentNarrativeState.narrativeContext,
             locationToUse,
             true // Force generation
           );
           
           // In case of generation failure
           if (!contextualDecision) {
-            const errorMessage = `Failed to generate a decision for location type: ${locationToUse.type}`;
+            const errorMessage = `Failed to generate a decision for the current narrative context`;
             narrativeContext.dispatch(addNarrativeHistory(`\n${errorMessage}\n`));
             setError(errorMessage);
             setLoading(null);

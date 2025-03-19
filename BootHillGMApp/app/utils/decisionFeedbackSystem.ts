@@ -1,333 +1,145 @@
 /**
  * Decision Feedback System
  * 
- * This module collects and processes feedback about AI-generated decisions
- * to improve the quality of future generations through:
- * 1. Decision quality tracking
- * 2. Player response analysis
- * 3. Feedback-based prompt improvement
+ * This utility enhances AI prompts with feedback from previous decision
+ * generation attempts to improve quality over time. It uses a lightweight
+ * learning approach to guide the AI toward better decisions.
  */
 
-import { PlayerDecision, PlayerDecisionRecord, NarrativeContext } from "../types/narrative.types";
-import { evaluateDecisionQuality } from "./decisionQualityAssessment";
+import { NarrativeContextDebugTools } from '../types/global';
 
-/**
- * Analysis of a player's response to a decision
- */
-interface PlayerResponseAnalysis {
-  decisionId: string;
-  choicePattern: 'first' | 'last' | 'middle' | 'random';
-  responseTime: number; // milliseconds
-  consideredOptions: number; // based on hover events
-  decisionQuality: number; // score from quality assessment
-}
-
-/**
- * Feedback collected about decision quality
- */
-interface DecisionFeedback {
-  // Collection of recent decision quality metrics
-  recentDecisionScores: number[];
-  
-  // Player response patterns
-  playerResponses: PlayerResponseAnalysis[];
-  
-  // Common quality issues identified
-  commonIssues: Map<string, number>;
-  
-  // Success rate of AI-generated decisions 
-  successRate: number;
-  
-  // Last updated timestamp
-  lastUpdated: number;
-}
-
-/**
- * Interface for feedback data structure
- */
-interface FeedbackData {
-  type: string;
-  data: Record<string, unknown>;
-  timestamp: number;
-}
-
-// Global feedback state
-let decisionFeedback: DecisionFeedback = {
-  recentDecisionScores: [],
-  playerResponses: [],
-  commonIssues: new Map(),
-  successRate: 0,
-  lastUpdated: Date.now()
-};
-
-/**
- * Reset the feedback system (typically for testing)
- */
-export function resetFeedbackSystem(): void {
-  decisionFeedback = {
-    recentDecisionScores: [],
-    playerResponses: [],
-    commonIssues: new Map(),
-    successRate: 0,
-    lastUpdated: Date.now()
-  };
-}
-
-/**
- * Process a new decision for quality feedback
- * 
- * @param decision The decision to evaluate
- * @param narrativeContext Current narrative context
- * @returns Quality assessment results
- */
-export function processDecisionQuality(
-  decision: PlayerDecision,
-  narrativeContext?: NarrativeContext
-): { 
-  score: number;
-  suggestions: string[];
-  acceptable: boolean;
-} {
-  // Evaluate the decision quality
-  const evaluation = evaluateDecisionQuality(decision, narrativeContext);
-  
-  // Record the quality score
-  decisionFeedback.recentDecisionScores.push(evaluation.score);
-  
-  // Limit the history to last 20 decisions
-  if (decisionFeedback.recentDecisionScores.length > 20) {
-    decisionFeedback.recentDecisionScores.shift();
+// Cache of recent enhancement patterns
+const enhancementPatterns: Array<{
+  pattern: string;
+  weight: number;
+}> = [
+  {
+    pattern: "Focus on providing distinct options that lead to meaningfully different outcomes.",
+    weight: 1.0
+  },
+  {
+    pattern: "Ensure each option has a clear and specific impact description.",
+    weight: 0.8
+  },
+  {
+    pattern: "Include appropriate tags for each option to improve relevance tracking.",
+    weight: 0.7
+  },
+  {
+    pattern: "Make sure the decision prompt is contextually relevant to recent narrative events.",
+    weight: 0.9
+  },
+  {
+    pattern: "Limit the number of options to 3-4 choices to avoid overwhelming the player.",
+    weight: 0.6
   }
-  
-  // Record any issues identified
-  evaluation.suggestions.forEach(suggestion => {
-    const count = decisionFeedback.commonIssues.get(suggestion) || 0;
-    decisionFeedback.commonIssues.set(suggestion, count + 1);
-  });
-  
-  // Update the success rate
-  const successCount = decisionFeedback.recentDecisionScores.filter(score => score >= 0.7).length;
-  decisionFeedback.successRate = successCount / decisionFeedback.recentDecisionScores.length;
-  
-  // Update timestamp
-  decisionFeedback.lastUpdated = Date.now();
-  
-  return evaluation;
-}
+];
 
 /**
- * Record a player's response to a decision
+ * Initializes the feedback system
  * 
- * @param decisionRecord The decision record with player's choice
- * @param responseData Additional response data like timing
+ * This sets up event listeners and initial state for the feedback system
+ * @returns Boolean indicating if initialization was successful
  */
-export function recordPlayerResponse(
-  decisionRecord: PlayerDecisionRecord,
-  responseData: {
-    responseTime: number;
-    consideredOptions: number;
-  }
-): void {
-  // Find the original decision
-  const originalDecision = findOriginalDecision(decisionRecord.decisionId);
-  if (!originalDecision) return;
+export function initializeFeedbackSystem(): boolean {
+  // Reset weights to initial values
+  resetFeedbackWeights();
   
-  // Determine choice pattern
-  const choicePattern = determineChoicePattern(
-    originalDecision, 
-    decisionRecord.selectedOptionId
-  );
-  
-  // Create response analysis
-  const analysis: PlayerResponseAnalysis = {
-    decisionId: decisionRecord.decisionId,
-    choicePattern,
-    responseTime: responseData.responseTime,
-    consideredOptions: responseData.consideredOptions,
-    decisionQuality: findDecisionQuality(decisionRecord.decisionId) || 0.5
-  };
-  
-  // Add to responses
-  decisionFeedback.playerResponses.push(analysis);
-  
-  // Limit history to last 50 responses
-  if (decisionFeedback.playerResponses.length > 50) {
-    decisionFeedback.playerResponses.shift();
-  }
-  
-  // Update timestamp
-  decisionFeedback.lastUpdated = Date.now();
-}
-
-/**
- * Find a decision's quality score from history
- * 
- * In a real implementation, this would query from a database
- * This is a placeholder implementation
- */
-function findDecisionQuality(_decisionId: string): number | null {
-  // Unused parameter, but needed for function signature
-  // Parameter name prefixed with underscore to indicate intentional non-use
-  return 0.8; // Placeholder value
-}
-
-/**
- * Find original decision from ID
- * 
- * In a real implementation, this would query from a database
- * This is a placeholder implementation
- */
-function findOriginalDecision(_decisionId: string): PlayerDecision | null {
-  // Unused parameter, but needed for function signature
-  // Parameter name prefixed with underscore to indicate intentional non-use
-  return null; // Placeholder
-}
-
-/**
- * Determine the pattern of the player's choice
- * 
- * @param decision The original decision
- * @param selectedOptionId The selected option ID
- * @returns The choice pattern
- */
-function determineChoicePattern(
-  decision: PlayerDecision,
-  selectedOptionId: string
-): 'first' | 'last' | 'middle' | 'random' {
-  const options = decision.options;
-  const selectedIndex = options.findIndex(opt => opt.id === selectedOptionId);
-  
-  if (selectedIndex === 0) return 'first';
-  if (selectedIndex === options.length - 1) return 'last';
-  if (options.length > 2) return 'middle';
-  return 'random';
-}
-
-/**
- * Get current feedback statistics
- * 
- * @returns Object with feedback statistics
- */
-export function getDecisionFeedbackStats(): {
-  averageQuality: number;
-  successRate: number;
-  commonIssues: [string, number][];
-  responsePatterns: {
-    averageResponseTime: number;
-    choiceDistribution: Record<string, number>;
-  };
-} {
-  // Calculate average quality
-  const averageQuality = decisionFeedback.recentDecisionScores.length > 0
-    ? decisionFeedback.recentDecisionScores.reduce((a, b) => a + b, 0) / decisionFeedback.recentDecisionScores.length
-    : 0;
-  
-  // Get top issues
-  const sortedIssues = Array.from(decisionFeedback.commonIssues.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-  
-  // Calculate response patterns
-  const responses = decisionFeedback.playerResponses;
-  const averageResponseTime = responses.length > 0
-    ? responses.reduce((sum, r) => sum + r.responseTime, 0) / responses.length
-    : 0;
-  
-  // Calculate choice distribution
-  const patterns = ['first', 'last', 'middle', 'random'];
-  const choiceDistribution: Record<string, number> = {};
-  
-  patterns.forEach(pattern => {
-    const count = responses.filter(r => r.choicePattern === pattern).length;
-    choiceDistribution[pattern] = responses.length > 0 
-      ? count / responses.length 
-      : 0;
-  });
-  
-  return {
-    averageQuality,
-    successRate: decisionFeedback.successRate,
-    commonIssues: sortedIssues,
-    responsePatterns: {
-      averageResponseTime,
-      choiceDistribution
+  // Add event listener for decision quality feedback if in browser environment
+  if (typeof window !== 'undefined') {
+    try {
+      // Set up feedback listener on window object for debug purposes
+      if (window.bhgmDebug) {
+        // Use the narrativeContext property that already exists and has an index signature
+        if (!window.bhgmDebug.narrativeContext) {
+          window.bhgmDebug.narrativeContext = {
+            showOptimizedContext: () => undefined,
+            testCompression: () => undefined,
+            compareTokenEstimation: () => ({ message: 'Not implemented' }),
+            benchmarkCompressionEfficiency: () => undefined,
+            getOptimalCompression: () => 'medium'
+          };
+        }
+        
+        // Now we can safely add our property to narrativeContext
+        (window.bhgmDebug.narrativeContext as NarrativeContextDebugTools).feedbackSystem = {
+          patterns: getFeedbackPatternWeights(),
+          updateWeights: updateFeedbackWeights,
+          reset: resetFeedbackWeights
+        };
+      }
+      return true;
+    } catch (error) {
+      console.error('Failed to initialize feedback system:', error);
+      return false;
     }
-  };
+  }
+  
+  return false;
 }
 
 /**
- * Publish decision feedback to analytics or storage
- * Marked with underscore to indicate it's intentionally unused currently
- */
-function _publishDecisionFeedback(_feedbackType: string): Promise<void> {
-  // Implementation would go here in a production system
-  return Promise.resolve();
-}
-
-/**
- * Store decision feedback in persistent storage
- * Marked with underscore to indicate it's intentionally unused currently
- */
-function _storeDecisionFeedback(_feedbackData: FeedbackData): Promise<void> {
-  // Implementation would go here in a production system
-  return Promise.resolve();
-}
-
-/**
- * Generate a feedback-enhanced prompt based on collected data
+ * Enhances a decision generation prompt with feedback guidance
  * 
- * This uses the feedback to improve prompts for future decision generation
- * 
- * @param basePrompt The base prompt template
- * @returns Enhanced prompt with feedback-based improvements
+ * @param basePrompt Original decision generation prompt
+ * @returns Enhanced prompt with feedback guidance
  */
 export function generateFeedbackEnhancedPrompt(basePrompt: string): string {
-  const stats = getDecisionFeedbackStats();
+  // Select top 2-3 enhancement patterns based on weight
+  const selectedPatterns = [...enhancementPatterns]
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, Math.floor(Math.random() * 2) + 2); // Random 2-3 patterns
   
-  // Extract common issues to address
-  let issueGuidance = '';
-  if (stats.commonIssues.length > 0) {
-    issueGuidance = `
-IMPORTANT: Avoid these common issues in your decisions:
-${stats.commonIssues.map(([issue]) => `- ${issue}`).join('\n')}
-`;
-  }
+  // Create enhancement section
+  const enhancementSection = selectedPatterns
+    .map(p => `- ${p.pattern}`)
+    .join('\n');
   
-  // Add player response guidance
-  const responseGuidance = `
-Player response patterns:
-- Average response time: ${Math.round(stats.responsePatterns.averageResponseTime / 1000)} seconds
-- Most commonly selected options: ${Object.entries(stats.responsePatterns.choiceDistribution)
-  .sort((a, b) => b[1] - a[1])
-  .map(([pattern, pct]) => `${pattern} (${Math.round(pct * 100)}%)`)
-  .join(', ')}
-
-Create decisions that are engaging and avoid predictable patterns.
-`;
-  
-  // Combine everything
+  // Add enhancement section to prompt
   return `${basePrompt}
 
-${issueGuidance}
-
-${responseGuidance}
-
-Your recent decision quality score is ${Math.round(stats.averageQuality * 100)}%. 
-Aim to create decisions that are relevant to the current narrative context, with diverse, 
-meaningful options that present distinct approaches to the situation.
+Important guidance for high-quality decisions:
+${enhancementSection}
 `;
 }
 
 /**
- * Initialize the feedback system with any persisted data
+ * Updates feedback pattern weights based on decision quality
  * 
- * In a production system, this would load from storage
+ * @param appliedPatterns Patterns that were applied
+ * @param success Whether the decision was successful
  */
-export function initializeFeedbackSystem(): void {
-  // In a real implementation, load saved feedback data
-  // This is a placeholder for the initialization process
+export function updateFeedbackWeights(
+  appliedPatterns: string[],
+  success: boolean
+): void {
+  const weightAdjustment = success ? 0.1 : -0.05;
   
-  if (typeof window !== 'undefined') {
-    console.log('Decision feedback system initialized');
-  }
+  // Update weights for applied patterns
+  enhancementPatterns.forEach(pattern => {
+    if (appliedPatterns.some(p => p === pattern.pattern)) {
+      pattern.weight = Math.max(0.1, Math.min(1.0, pattern.weight + weightAdjustment));
+    }
+  });
+}
+
+/**
+ * Resets feedback weights to default values
+ */
+export function resetFeedbackWeights(): void {
+  enhancementPatterns.forEach(pattern => {
+    pattern.weight = 0.7; // Default weight
+  });
+}
+
+/**
+ * Get current feedback pattern weights for debugging
+ * 
+ * @returns Copy of current enhancement patterns with weights
+ */
+export function getFeedbackPatternWeights(): Array<{
+  pattern: string;
+  weight: number;
+}> {
+  return [...enhancementPatterns];
 }

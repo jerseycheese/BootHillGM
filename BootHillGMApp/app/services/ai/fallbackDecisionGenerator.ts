@@ -1,158 +1,353 @@
 /**
  * Fallback Decision Generator
  * 
- * Generates fallback decisions when AI generation fails or produces low-quality results.
- * Provides a safety net to ensure players always have choices.
+ * This module provides fallback decision generation capabilities when
+ * AI-powered generation fails or is unavailable. It ensures a graceful
+ * degradation path with reasonable templated decisions.
  */
 
-import { v4 as uuidv4 } from 'uuid';
 import { NarrativeState, PlayerDecision } from '../../types/narrative.types';
 import { Character } from '../../types/character';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Generate a fallback decision when AI generation fails
+ * Generates a fallback decision when AI generation fails
  * 
  * @param narrativeState Current narrative state
- * @param _character Player character
- * @returns A simple default decision
+ * @param character Player character
+ * @returns Fallback player decision
  */
 export function generateFallbackDecision(
   narrativeState: NarrativeState,
-  _character: Character
+  character: Character
 ): PlayerDecision {
-  // Character param kept for future implementation
+  // Extract context for situational awareness
+  const locationContext = narrativeState.currentStoryPoint?.locationChange 
+    ? extractLocationName(narrativeState.currentStoryPoint.locationChange)
+    : 'current location';
+
+  const recentNarrative = narrativeState.narrativeHistory.length > 0
+    ? narrativeState.narrativeHistory[narrativeState.narrativeHistory.length - 1]
+    : '';
+
+  // Determine the most appropriate fallback based on context
+  if (isInCombatContext(recentNarrative)) {
+    return generateCombatDecision(character, locationContext);
+  } else if (isInTownContext(locationContext, narrativeState)) {
+    return generateTownDecision(character, locationContext);
+  } else if (isInDialogueContext(recentNarrative)) {
+    return generateDialogueDecision(character);
+  } else if (isInWildernessContext(locationContext, narrativeState)) {
+    return generateWildernessDecision(character);
+  } else {
+    // Generic fallback as last resort
+    return generateGenericDecision(character);
+  }
+}
+
+/**
+ * Check if the narrative context suggests a combat situation
+ */
+function isInCombatContext(narrative: string): boolean {
+  const combatKeywords = [
+    'fight', 'gun', 'shoot', 'attack', 'defend', 'dodge', 
+    'punch', 'hit', 'shot', 'weapon', 'battle', 'duel'
+  ];
+
+  return combatKeywords.some(keyword => 
+    narrative.toLowerCase().includes(keyword)
+  );
+}
+
+/**
+ * Check if the location context suggests being in a town
+ */
+function isInTownContext(location: string, state: NarrativeState): boolean {
+  // Check for direct town indicator
+  if (location.includes('town') || 
+     (state.currentStoryPoint?.locationChange && 
+      typeof state.currentStoryPoint.locationChange !== 'string' &&
+      state.currentStoryPoint.locationChange.type === 'town')) {
+    return true;
+  }
   
+  // Check for town-associated keywords
+  const townKeywords = [
+    'saloon', 'bar', 'sheriff', 'store', 'bank', 'street',
+    'hotel', 'building', 'jail', 'office', 'church'
+  ];
+  
+  const recentNarrative = state.narrativeHistory.slice(-2).join(' ');
+  return townKeywords.some(keyword => 
+    recentNarrative.toLowerCase().includes(keyword)
+  );
+}
+
+/**
+ * Check if the narrative context suggests a dialogue situation
+ */
+function isInDialogueContext(narrative: string): boolean {
+  // Look for quotation marks or dialogue indicators
+  return narrative.includes('"') || 
+         narrative.includes('"') || 
+         narrative.includes("'") || 
+         /\b(said|asked|replied|spoke|talked)\b/i.test(narrative);
+}
+
+/**
+ * Check if the location context suggests being in the wilderness
+ */
+function isInWildernessContext(location: string, state: NarrativeState): boolean {
+  // Check for direct wilderness indicator
+  if (location.includes('wilderness') || 
+     (state.currentStoryPoint?.locationChange && 
+      typeof state.currentStoryPoint.locationChange !== 'string' &&
+      state.currentStoryPoint.locationChange.type === 'wilderness')) {
+    return true;
+  }
+  
+  // Check for wilderness-associated keywords
+  const wildernessKeywords = [
+    'forest', 'mountain', 'river', 'trail', 'desert', 'canyon',
+    'camp', 'wildlife', 'trees', 'rocks', 'ridge'
+  ];
+  
+  const recentNarrative = state.narrativeHistory.slice(-2).join(' ');
+  return wildernessKeywords.some(keyword => 
+    recentNarrative.toLowerCase().includes(keyword)
+  );
+}
+
+/**
+ * Extract a readable location name from location data
+ */
+function extractLocationName(location: unknown): string {
+  if (typeof location === 'string') {
+    return location;
+  }
+  
+  if (location && typeof location === 'object') {
+    const locationObj = location as Record<string, unknown>;
+    
+    if ('type' in locationObj) {
+      const type = locationObj.type as string;
+      
+      if (type === 'town' && 'name' in locationObj) {
+        return `the town of ${locationObj.name}`;
+      }
+      
+      if (type === 'landmark' && 'name' in locationObj) {
+        return `${locationObj.name}`;
+      }
+      
+      return type;
+    }
+  }
+  
+  return 'this location';
+}
+
+/**
+ * Generate a combat-relevant decision
+ */
+function generateCombatDecision(character: Character, location: string): PlayerDecision {
   return {
-    id: `fallback-${uuidv4()}`,
-    prompt: 'What would you like to do?',
+    id: `combat-fallback-${uuidv4()}`,
+    prompt: 'How do you respond to the threat?',
     timestamp: Date.now(),
-    location: narrativeState.currentStoryPoint?.locationChange,
     options: [
       {
-        id: `option1-${uuidv4()}`,
-        text: 'Proceed cautiously',
-        impact: 'Taking a careful approach may reveal more information.',
-        tags: ['cautious']
+        id: `combat-opt1-${uuidv4()}`,
+        text: 'Stand your ground and fight',
+        impact: 'Direct confrontation is risky but might earn respect.',
+        tags: ['brave', 'combat']
       },
       {
-        id: `option2-${uuidv4()}`,
-        text: 'Take immediate action',
-        impact: 'Bold moves can yield faster results but may be riskier.',
-        tags: ['brave']
+        id: `combat-opt2-${uuidv4()}`,
+        text: 'Look for tactical advantage',
+        impact: 'Smart positioning could give you the upper hand.',
+        tags: ['tactical', 'combat']
       },
       {
-        id: `option3-${uuidv4()}`,
-        text: 'Look for another approach',
-        impact: 'There might be a less obvious but advantageous solution.',
-        tags: ['resourceful']
+        id: `combat-opt3-${uuidv4()}`,
+        text: 'Try to de-escalate the situation',
+        impact: 'Avoiding bloodshed might be possible with the right words.',
+        tags: ['peaceful', 'social']
+      },
+      {
+        id: `combat-opt4-${uuidv4()}`,
+        text: 'Create a diversion and escape',
+        impact: 'Live to fight another day, but might be seen as cowardly.',
+        tags: ['cautious', 'evasive']
       }
     ],
-    context: 'Based on the current situation',
-    importance: 'moderate',
-    characters: [],
-    aiGenerated: true
+    context: `Tensions are high in ${location}.`,
+    importance: 'significant',
+    characters: ['Player Character'],
+    aiGenerated: false
   };
 }
 
 /**
- * Generate a themed fallback decision
- * 
- * @param narrativeState Current narrative state 
- * @param theme Theme to apply to the fallback decision
- * @returns Themed fallback decision
+ * Generate a town-specific decision
  */
-export function generateThemedFallbackDecision(
-  narrativeState: NarrativeState,
-  theme: 'combat' | 'exploration' | 'social' = 'exploration'
-): PlayerDecision {
-  // Base decision structure
-  const decision: PlayerDecision = {
-    id: `fallback-${uuidv4()}`,
-    prompt: 'What would you like to do?',
+function generateTownDecision(_character: Character, location: string): PlayerDecision {
+  return {
+    id: `town-fallback-${uuidv4()}`,
+    prompt: `What would you like to do in ${location}?`,
     timestamp: Date.now(),
-    location: narrativeState.currentStoryPoint?.locationChange,
-    options: [],
-    context: 'Based on the current situation',
+    options: [
+      {
+        id: `town-opt1-${uuidv4()}`,
+        text: 'Visit the saloon for information',
+        impact: 'Saloons are good places to hear gossip and find work.',
+        tags: ['town', 'social']
+      },
+      {
+        id: `town-opt2-${uuidv4()}`,
+        text: 'Check in with the sheriff',
+        impact: 'The law might have bounties or need help with local issues.',
+        tags: ['town', 'lawful']
+      },
+      {
+        id: `town-opt3-${uuidv4()}`,
+        text: 'Browse the general store',
+        impact: 'Might find useful supplies or hear news from the shopkeeper.',
+        tags: ['town', 'shopping']
+      },
+      {
+        id: `town-opt4-${uuidv4()}`,
+        text: 'Look for work opportunities',
+        impact: 'There\'s always someone who needs help in a frontier town.',
+        tags: ['town', 'opportunity']
+      }
+    ],
+    context: `You have some time to spend in ${location}.`,
     importance: 'moderate',
-    characters: [],
-    aiGenerated: true
+    characters: ['Player Character'],
+    aiGenerated: false
   };
-  
-  // Apply theme-specific content
-  switch (theme) {
-    case 'combat':
-      decision.prompt = 'How do you want to approach this confrontation?';
-      decision.options = [
-        {
-          id: uuidv4(),
-          text: 'Take a defensive stance',
-          impact: 'You\'ll be better protected but may miss offensive opportunities.',
-          tags: ['defensive', 'cautious']
-        },
-        {
-          id: uuidv4(),
-          text: 'Look for a tactical advantage',
-          impact: 'Finding the right position could give you an edge.',
-          tags: ['tactical', 'smart']
-        },
-        {
-          id: uuidv4(),
-          text: 'Prepare to strike decisively',
-          impact: 'An aggressive approach could end this quickly but leaves you exposed.',
-          tags: ['aggressive', 'brave']
-        }
-      ];
-      break;
-      
-    case 'social':
-      decision.prompt = 'How do you want to handle this conversation?';
-      decision.options = [
-        {
-          id: uuidv4(),
-          text: 'Be diplomatic and measured',
-          impact: 'A careful approach may build trust but could appear weak to some.',
-          tags: ['diplomatic', 'cautious']
-        },
-        {
-          id: uuidv4(),
-          text: 'Be direct and to the point',
-          impact: 'Honesty can be refreshing but might offend more sensitive individuals.',
-          tags: ['direct', 'honest']
-        },
-        {
-          id: uuidv4(),
-          text: 'Use charm and persuasion',
-          impact: 'A silver tongue might get you what you want, but people may question your sincerity.',
-          tags: ['charming', 'persuasive']
-        }
-      ];
-      break;
-      
-    case 'exploration':
-    default:
-      decision.prompt = 'How do you want to explore this area?';
-      decision.options = [
-        {
-          id: uuidv4(),
-          text: 'Take your time and be thorough',
-          impact: 'You might find hidden details but it will take longer.',
-          tags: ['thorough', 'cautious']
-        },
-        {
-          id: uuidv4(),
-          text: 'Focus on what stands out',
-          impact: 'You\'ll cover more ground but might miss subtle details.',
-          tags: ['efficient', 'practical']
-        },
-        {
-          id: uuidv4(),
-          text: 'Look for an unusual approach',
-          impact: 'Thinking outside the box might reveal unique opportunities.',
-          tags: ['creative', 'resourceful']
-        }
-      ];
-      break;
-  }
-  
-  return decision;
+}
+
+/**
+ * Generate a dialogue-relevant decision
+ */
+function generateDialogueDecision(_character: Character): PlayerDecision {
+  return {
+    id: `dialogue-fallback-${uuidv4()}`,
+    prompt: 'How do you respond?',
+    timestamp: Date.now(),
+    options: [
+      {
+        id: `dialogue-opt1-${uuidv4()}`,
+        text: 'Respond honestly',
+        impact: 'Honesty might be appreciated, but could have consequences.',
+        tags: ['honest', 'direct']
+      },
+      {
+        id: `dialogue-opt2-${uuidv4()}`,
+        text: 'Deflect with a question of your own',
+        impact: 'Keep your cards close to your chest for now.',
+        tags: ['cautious', 'evasive']
+      },
+      {
+        id: `dialogue-opt3-${uuidv4()}`,
+        text: 'Tell them what they want to hear',
+        impact: 'May smooth things over now, but could cause problems later.',
+        tags: ['deceptive', 'diplomatic']
+      },
+      {
+        id: `dialogue-opt4-${uuidv4()}`,
+        text: 'Change the subject',
+        impact: 'Avoid the topic entirely, but they might notice your evasion.',
+        tags: ['evasive', 'cautious']
+      }
+    ],
+    context: 'The conversation has reached an important point.',
+    importance: 'moderate',
+    characters: ['Player Character'],
+    aiGenerated: false
+  };
+}
+
+/**
+ * Generate a wilderness-specific decision
+ */
+function generateWildernessDecision(_character: Character): PlayerDecision {
+  return {
+    id: `wilderness-fallback-${uuidv4()}`,
+    prompt: 'What\'s your next move in the wilderness?',
+    timestamp: Date.now(),
+    options: [
+      {
+        id: `wilderness-opt1-${uuidv4()}`,
+        text: 'Continue following the trail',
+        impact: 'The established path is safer but might take longer.',
+        tags: ['wilderness', 'cautious']
+      },
+      {
+        id: `wilderness-opt2-${uuidv4()}`,
+        text: 'Look for signs of danger or opportunity',
+        impact: 'Staying alert might reveal hidden threats or resources.',
+        tags: ['wilderness', 'observant']
+      },
+      {
+        id: `wilderness-opt3-${uuidv4()}`,
+        text: 'Take a shortcut across rougher terrain',
+        impact: 'Riskier but could save time if you navigate successfully.',
+        tags: ['wilderness', 'risky']
+      },
+      {
+        id: `wilderness-opt4-${uuidv4()}`,
+        text: 'Make camp and rest',
+        impact: 'Recover strength but delay progress and possibly attract attention.',
+        tags: ['wilderness', 'cautious']
+      }
+    ],
+    context: 'The wilderness presents both dangers and opportunities.',
+    importance: 'moderate',
+    characters: ['Player Character'],
+    aiGenerated: false
+  };
+}
+
+/**
+ * Generate a generic decision as final fallback
+ */
+function generateGenericDecision(_character: Character): PlayerDecision {
+  return {
+    id: `generic-fallback-${uuidv4()}`,
+    prompt: 'What would you like to do next?',
+    timestamp: Date.now(),
+    options: [
+      {
+        id: `generic-opt1-${uuidv4()}`,
+        text: 'Investigate further',
+        impact: 'Gather more information before committing to a course of action.',
+        tags: ['cautious', 'observant']
+      },
+      {
+        id: `generic-opt2-${uuidv4()}`,
+        text: 'Take decisive action',
+        impact: 'Acting quickly might give you an advantage or prevent problems.',
+        tags: ['brave', 'direct']
+      },
+      {
+        id: `generic-opt3-${uuidv4()}`,
+        text: 'Consider alternatives',
+        impact: 'There may be options you haven\'t considered yet.',
+        tags: ['thoughtful', 'creative']
+      },
+      {
+        id: `generic-opt4-${uuidv4()}`,
+        text: 'Wait and see what develops',
+        impact: 'Sometimes patience is the best approach.',
+        tags: ['patient', 'cautious']
+      }
+    ],
+    context: 'You need to decide your next course of action.',
+    importance: 'moderate',
+    characters: ['Player Character'],
+    aiGenerated: false
+  };
 }

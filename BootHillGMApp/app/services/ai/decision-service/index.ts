@@ -3,6 +3,7 @@
  * 
  * Main entry point for the decision service.
  * Orchestrates the detection, generation, and tracking of game decisions.
+ * Features enhanced context handling for more relevant decisions.
  */
 
 import { DEFAULT_API_CONFIG, DEFAULT_DECISION_THRESHOLD, MAX_OPTIONS_PER_DECISION, MIN_DECISION_INTERVAL } from '../../../constants/decision-service.constants';
@@ -20,6 +21,7 @@ import AIServiceClient from './ai-client';
 
 /**
  * Service for AI-driven contextual decision generation
+ * with enhanced context tracking and refreshing
  */
 export class DecisionService {
   private detector: NarrativeDecisionDetector;
@@ -71,6 +73,8 @@ export class DecisionService {
   
   /**
    * Generates a decision based on the current narrative state
+   * Uses enhanced context extraction and refreshing for more relevant decisions
+   * 
    * @param narrativeState Current narrative state
    * @param character Player character information
    * @returns Promise resolving to a decision response
@@ -82,7 +86,7 @@ export class DecisionService {
     // Update the last decision time
     this.detector.updateLastDecisionTime();
     
-    // Generate the decision
+    // Generate the decision with enhanced context awareness
     return this.generator.generateDecision(narrativeState, character);
   }
   

@@ -63,9 +63,13 @@ export const initializeBrowserDebugTools = (
       },
       currentDecision: null,
       // Define sendCommand function directly here
-      sendCommand: (commandType: string, data?: DebugCommandData) => {
+      sendCommand: (commandType: string, data?: unknown) => {
         try {
-          localStorage.setItem('bhgm_debug_command', JSON.stringify({ type: commandType, ...data }));
+          if (data && typeof data === 'object' && data !== null) {
+            localStorage.setItem('bhgm_debug_command', JSON.stringify({ type: commandType, ...data as object }));
+          } else {
+            localStorage.setItem('bhgm_debug_command', JSON.stringify({ type: commandType, data }));
+          }
         } catch (error) {
           console.error('BHGM Debug: Error sending command via localStorage:', error);
         }
@@ -95,9 +99,13 @@ export const initializeBrowserDebugTools = (
     
     // Only define sendCommand if it doesn't already exist
     if (typeof window.bhgmDebug.sendCommand !== 'function') {
-      window.bhgmDebug.sendCommand = (commandType: string, data?: DebugCommandData) => {
+      window.bhgmDebug.sendCommand = (commandType: string, data?: unknown) => {
         try {
-          localStorage.setItem('bhgm_debug_command', JSON.stringify({ type: commandType, ...data }));
+          if (data && typeof data === 'object' && data !== null) {
+            localStorage.setItem('bhgm_debug_command', JSON.stringify({ type: commandType, ...data as object }));
+          } else {
+            localStorage.setItem('bhgm_debug_command', JSON.stringify({ type: commandType, data }));
+          }
         } catch (error) {
           console.error('BHGM Debug: Error sending command via localStorage:', error);
         }
