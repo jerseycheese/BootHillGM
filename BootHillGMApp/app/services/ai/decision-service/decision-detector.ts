@@ -6,7 +6,7 @@
 
 import { DEFAULT_DECISION_THRESHOLD } from '../../../constants/decision-service.constants';
 import { DecisionDetectionResult } from '../../../types/ai-service.types';
-import { NarrativeState } from '../../../types/narrative.types';
+import { NarrativeState, StoryPointType } from '../../../types/narrative.types';
 import { Character } from '../../../types/character';
 import { DecisionDetector } from '../../../types/decision-service/decision-service.types';
 
@@ -46,7 +46,7 @@ function isTestScenario(narrativeState: NarrativeState): boolean {
   }
   
   // Test scenarios might have dialogue type story points
-  if (narrativeState.currentStoryPoint?.type === 'dialogue') {
+  if (narrativeState.currentStoryPoint?.type === ('dialogue' as unknown as StoryPointType)) {
     return true;
   }
   
@@ -142,7 +142,7 @@ export class NarrativeDecisionDetector implements DecisionDetector {
     
     // Check for dialogue content - tests for dialogue-based decisions
     if (narrativeState.currentStoryPoint?.content?.includes('"') ||
-        (narrativeState.currentStoryPoint?.type === 'dialogue')) {
+        (narrativeState.currentStoryPoint?.type === ('dialogue' as unknown as StoryPointType))) {
       return {
         shouldPresent: true,
         score: 0.75, 

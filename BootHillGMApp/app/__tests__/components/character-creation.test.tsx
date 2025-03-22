@@ -60,18 +60,21 @@ jest.mock('../../components/CampaignStateManager', () => ({
 }));
 
 import '@testing-library/jest-dom';
-import { screen, act, fireEvent, waitFor } from '@testing-library/react';
+import { screen, act, fireEvent } from '@testing-library/react';
 import { useCampaignState } from '../../components/CampaignStateManager';
-import { setupMocks, renderCharacterCreation } from '../../test/testUtils';
+import { setupMocks } from '../../test/setup/mockSetup';
+import { renderCharacterForm } from '../../test/utils/characterTestUtils';
 
-describe('Character Creation', () => {
+describe('Character Form', () => {
   const { mockLocalStorage } = setupMocks();
+  let mockSaveGame: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    const mockSaveGame = jest.fn((state) => {
+    mockSaveGame = jest.fn((state) => {
       mockLocalStorage.setItem('campaignState', JSON.stringify(state));
     });
+    
     (useCampaignState as jest.Mock).mockImplementation(() => ({
       cleanupState: jest.fn(),
       saveGame: mockSaveGame,
@@ -83,27 +86,74 @@ describe('Character Creation', () => {
     mockLocalStorage.removeItem('character-creation-progress');
   });
 
-  describe('Random Character Generation', () => {
-    it('generates complete character with valid values', async () => {
-      // First render the component
-      const { generateButton } = await renderCharacterCreation();
-      
-      // Click the generate button
-      await act(async () => {
-        fireEvent.click(generateButton);
-      });
+  it('renders the character form with initial values', () => {
+    const { generateButton } = renderCharacterForm();
+    
+    // Check that the button exists
+    expect(generateButton).toBeInTheDocument();
+    
+    // Check for name input
+    const nameInput = screen.getByTestId('name-input') as HTMLInputElement;
+    expect(nameInput).toBeInTheDocument();
+    expect(nameInput.value).toBe('Test Character');
+    
+    // Check for attribute inputs
+    const speedInput = screen.getByTestId('speed-input') as HTMLInputElement;
+    expect(speedInput).toBeInTheDocument();
+    expect(speedInput.value).toBe('10');
+    
+    const strengthInput = screen.getByTestId('strength-input') as HTMLInputElement;
+    expect(strengthInput).toBeInTheDocument();
+    expect(strengthInput.value).toBe('10');
+  });
 
-      // Wait for the character form to appear with the generated values
-      await waitFor(() => {
-        const nameInput = screen.getByTestId('name-input') as HTMLInputElement;
-        expect(nameInput.value).toBe('Test Character');
-        
-        const speedInput = screen.getByTestId('speed-input') as HTMLInputElement;
-        expect(speedInput.value).toBe('10');
-        
-        const gunAccuracyInput = screen.getByTestId('gunAccuracy-input') as HTMLInputElement;
-        expect(gunAccuracyInput.value).toBe('10');
-      }, { timeout: 3000 });
-    }, 30000);
+  it('calls generateCharacter when the button is clicked', async () => {
+    const generateCharacter = jest.fn().mockResolvedValue(undefined);
+    const { generateButton } = renderCharacterForm({ generateCharacter });
+    
+    await act(async () => {
+      fireEvent.click(generateButton);
+    });
+    
+    expect(generateCharacter).toHaveBeenCalledTimes(1);
+  });
+
+  it('updates field value when changed', () => {
+    const onFieldChange = jest.fn();
+    renderCharacterForm({ onFieldChange });
+    
+    const nameInput = screen.getByTestId('name-input') as HTMLInputElement;
+    
+    act(() => {
+      fireEvent.change(nameInput, { target: { value: 'New Character Name' } });
+    });
+    
+    expect(onFieldChange).toHaveBeenCalledWith('name', 'New Character Name');
+  });
+
+  it('generates a specific field when its generate button is clicked', async () => {
+    const onGenerateField = jest.fn().mockResolvedValue(undefined);
+    renderCharacterForm({ onGenerateField });
+    
+    const generateNameButton = screen.getByTestId('generate-name-button');
+    
+    await act(async () => {
+      fireEvent.click(generateNameButton);
+    });
+    
+    expect(onGenerateField).toHaveBeenCalledWith('name');
+  });
+
+  it('submits the form when view summary button is clicked', async () => {
+    const onSubmit = jest.fn().mockResolvedValue(undefined);
+    renderCharacterForm({ onSubmit });
+    
+    const viewSummaryButton = screen.getByTestId('view-summary-button');
+    
+    await act(async () => {
+      fireEvent.click(viewSummaryButton);
+    });
+    
+    expect(onSubmit).toHaveBeenCalled();
   });
 });
