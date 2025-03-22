@@ -3,19 +3,19 @@ title: Claude App Development Workflow
 aliases: [Claude App Process, App-Based Development]
 tags: [development, workflow, claude, process, claude-app]
 created: 2025-03-16
-updated: 2025-03-19
+updated: 2025-03-21
 ---
 
 # Claude App Development Workflow
 
 > [!note] 
-> Optimized development workflow using Claude's app interface with MCP tools, designed for test-driven development with a KISS (Keep It Simple, Stupid) mindset.
+> Optimized development workflow using Claude's app interface with MCP tools, designed for test-driven development with a KISS (Keep It Simple, Stupid) mindset and strict scope control.
 
 ## Development Flow
 ```mermaid
 graph TD
     A[Task Analysis - New Chat] -->|MCP: Repo & Docs Analysis| B[Produce Technical Spec]
-    B -->|Save Spec as Artifact| C[Define Tests]
+    B -->|Define Scope Boundaries| C[Define Tests]
     C -->|Write Tests First| D[Implementation Phase]
     D -->|Same Chat: Write Code| E[Build Issues]
     E -->|Fix & Retry| F{Build OK?}
@@ -37,7 +37,7 @@ graph TD
 
 ### 1. Task Analysis (New Chat)
 **Purpose:** Select and plan next most valuable task
-**Output:** Technical specification as artifact
+**Output:** Technical specification as artifact with clear scope boundaries
 
 Start each task with a fresh chat:
 ```
@@ -47,6 +47,12 @@ I need to analyze a task for my BootHillGM project. Please use MCP to:
 3. Help me [select a task from issues OR analyze this specific task: X]
 
 Focus on keeping the solution simple and straightforward (KISS principle).
+
+Important: Define strict scope boundaries in your analysis. I need to know:
+1. Exactly what functionality is included in this task
+2. What is explicitly OUT of scope
+3. What existing patterns must be maintained
+4. What technical approaches are off limits
 ```
 
 **Key MCP Tools:**
@@ -58,6 +64,7 @@ Focus on keeping the solution simple and straightforward (KISS principle).
 - Technical specification as an artifact
 - Implementation steps prioritizing simplicity
 - Files that need to be modified
+- **Explicit scope boundaries and constraints**
 
 ### 2. Define Tests First (Same Chat)
 **Purpose:** Apply TDD principles by defining expected behavior
@@ -65,11 +72,14 @@ Focus on keeping the solution simple and straightforward (KISS principle).
 
 Before writing implementation code:
 ```
-Now that we have the technical spec, let's define the Jest tests first. 
+Now that we have the technical spec with scope boundaries, let's define the Jest tests first. 
 These tests should specify:
-1. The expected behavior of the component
-2. Edge cases to handle
+1. The expected behavior of the component ONLY within the defined scope
+2. Edge cases specifically mentioned in the spec
 3. Only test what's necessary (KISS principle)
+4. Do NOT add tests for features outside the scope boundary
+
+Keep tests focused only on the functionality defined in the spec.
 ```
 
 **Key MCP Tools:**
@@ -80,10 +90,11 @@ These tests should specify:
 - Provide test code as artifacts
 - Focus on the minimum tests needed to verify functionality
 - Include data-testid attributes needed for testing
+- Ensure tests only cover functionality within scope
 
 ### 3. Implementation Phase (Same Chat)
 **Purpose:** Write minimal code to make tests pass
-**Output:** Code artifacts that implement the tests
+**Output:** Code artifacts that implement ONLY specified functionality
 
 After defining tests, proceed to implementation:
 ```
@@ -92,6 +103,13 @@ code that will make these tests pass. Keep the implementation:
 1. Minimal and focused
 2. Easy to understand
 3. Aligned with project patterns
+4. Strictly within the scope boundaries
+
+Do NOT add:
+1. Extra features/enhancements not specified in the scope
+2. "Nice-to-have" improvements
+3. Performance optimizations unless explicitly required
+4. New patterns or approaches not already used in the project
 ```
 
 **Key MCP Tools:**
@@ -102,6 +120,7 @@ code that will make these tests pass. Keep the implementation:
 - Provide implementation code as artifacts
 - Focus on making tests pass with minimal complexity
 - Include only what's needed, avoid premature optimization
+- Stay strictly within defined scope boundaries
 
 ### 4. Build Issues (Same Chat if Possible)
 **Purpose:** Resolve any build errors
@@ -114,13 +133,15 @@ Let's check for potential build issues:
 2. Import/export problems
 3. Missing dependencies
 
-Please help me resolve these with minimal changes.
+Please help me resolve these with minimal changes that maintain the scope boundaries.
+Do NOT introduce new patterns or dependencies when fixing build issues.
 ```
 
 **Iterative Process:**
 - Fix build errors first before proceeding
 - Return to implementation if substantial changes needed
 - Only move forward when build succeeds
+- Ensure fixes respect scope boundaries
 
 ### 5. Jest Tests (Same Chat if Possible)
 **Purpose:** Ensure tests pass
@@ -132,12 +153,16 @@ Now let's run and fix the Jest tests. We need to:
 1. Address any failing tests
 2. Make minimal changes to make tests pass
 3. Avoid introducing unnecessary complexity
+4. Ensure we stay within our defined scope boundaries
+
+Remember not to add functionality or tests for features outside our scope.
 ```
 
 **Iterative Process:**
 - Fix failing tests one by one
 - Return to implementation if substantial changes needed
 - Only move forward when all tests pass
+- Maintain scope boundaries when fixing tests
 
 ### 6. Manual Testing (Same Chat if Possible)
 **Purpose:** Verify user experience
@@ -146,15 +171,19 @@ Now let's run and fix the Jest tests. We need to:
 After tests pass:
 ```
 Now that all tests pass, let's manually test the implementation:
-1. What behavior should I verify?
+1. What behavior should I verify within our scope boundaries?
 2. Are there any UI concerns tests might miss?
 3. How should I test edge cases?
+
+Focus ONLY on testing functionality within our defined scope.
+Do NOT test or suggest enhancements outside the scope.
 ```
 
 **Feedback Loop:**
 - Document issues found during manual testing
 - Return to implementation if issues require code changes
 - Run both build and tests again after changes
+- Keep all fixes within scope boundaries
 
 ### 7. Cleanup & Documentation (Same Chat if Possible)
 **Purpose:** Clean up code and update documentation
@@ -164,16 +193,19 @@ After all testing is successful:
 ```
 Now that implementation is complete and verified, let's:
 1. Clean up the code (remove console.logs, TODOs)
-2. Update documentation
+2. Update documentation ONLY for the implemented functionality
 3. Ensure inline comments explain complex logic
 4. Verify tests still pass after cleanup
+
+Do NOT add documentation for features outside our scope boundary.
+Do NOT suggest future enhancements in the documentation.
 ```
 
 **Key MCP Tools:**
 - `read_file` on existing docs to maintain consistency
 - `search_files` to find places needing docs updates
 
-**Important:** Always run tests again after cleanup to ensure nothing broke.
+**Important:** Always run tests again after cleanup to ensure nothing broke. Maintain strict scope boundaries in documentation.
 
 ### 8. GitHub Issue Management
 **Purpose:** Track work and maintain project backlog
@@ -181,9 +213,11 @@ Now that implementation is complete and verified, let's:
 
 ```
 Let's finalize this feature by:
-1. Creating a summary for the GitHub issue
-2. Drafting any follow-up issues needed
+1. Creating a summary for the GitHub issue that focuses ONLY on what was implemented
+2. Drafting any follow-up issues needed for features intentionally left out of scope
 3. Preparing closing notes for the current issue
+
+Please ensure all summaries reflect what was actually implemented, not what could be enhanced.
 ```
 
 ## KISS Principles for AI-Assisted Development
@@ -195,45 +229,88 @@ Let's finalize this feature by:
 4. **Single Responsibility**: Each component should do one thing well
 5. **Readable Over Clever**: Choose clarity over brevity or performance tricks
 
-### Prompt Patterns for Simple Code
+### Prompt Patterns for Scope Control
 When asking Claude for implementation:
 ```
 Please implement this component with the simplest approach possible:
-- Prefer readability over performance optimization
-- Use standard React patterns over complex solutions
-- Only add complexity where absolutely necessary
-- Explain any non-obvious code choices
+- Implement ONLY the functionality specified in the requirements
+- Do NOT add "nice-to-have" features or enhancements
+- Do NOT introduce new patterns not already used in the project
+- Do NOT suggest improvements outside the scope of this task
+- Keep the implementation focused on exactly what was requested
 ```
 
-## Recognizing the Build-Test-Fix Cycle
+## Recognizing Scope Creep
 
-**Expected Workflow Reality:**
-- You will likely cycle through build errors → test fixes → implementation changes multiple times
-- This is normal and expected in React development
-- Always fix build errors first, then Jest tests, before manual testing
-- After manual testing issues, start the cycle again
-- Only proceed to cleanup when all tests and manual verification pass
+**Common Signs of Scope Creep:**
+- "I've also added X feature which might be useful"
+- "I took the liberty of enhancing Y functionality"
+- "I've refactored this to be more efficient"
+- "I added test coverage for potential edge cases"
+- "I've implemented a more robust solution that handles future needs"
+
+**How to Respond to Scope Creep:**
+- Thank Claude but clarify you want only what was specified
+- Use "scope boundaries" terminology in follow-up requests
+- Specifically request removal of out-of-scope additions
+- Reinforce the importance of minimal, focused implementation
+- Reference your original scope definition
 
 ## Artifact Usage
 
 ### Key Artifacts
-- **Test specifications**: Written before implementation
-- **Component code**: React component implementations
-- **Build error fixes**: Specific changes to resolve build issues
-- **Test fixes**: Code changes to make tests pass
-- **Documentation**: Updates to project docs
+- **Technical specification**: Including explicit scope boundaries
+- **Test specifications**: Limited to in-scope functionality
+- **Component code**: Implementing only what's in scope
+- **Build error fixes**: Minimal changes to resolve specific issues
+- **Test fixes**: Targeted to make existing tests pass
+- **Documentation**: Limited to implemented functionality
 
 ### Best Practices
 - Use separate artifacts for tests and implementation
 - Update artifacts incrementally instead of recreating
 - Start simple, add complexity only when needed
 - Run tests after every significant change
+- Explicitly mark scope boundaries in all artifacts
 
 ## Document Templates
+
+### Technical Specification Artifact
+```markdown
+# Technical Specification for [Feature]
+
+## Scope Definition
+What IS included:
+- [Specific functionality 1]
+- [Specific functionality 2]
+
+What is NOT included:
+- [Out of scope functionality 1]
+- [Out of scope functionality 2]
+
+Technical constraints:
+- Must use [specific approach]
+- Must not introduce [specific pattern/library]
+
+## Component Design
+[Component definition]
+
+## Test Plan
+[Test plan limited to in-scope functionality]
+```
 
 ### Test Specification Artifact
 ```markdown
 # Tests for [Component]
+
+## Scope Boundaries
+These tests ONLY cover:
+- [Specific functionality 1]
+- [Specific functionality 2]
+
+These tests do NOT cover:
+- [Out of scope functionality 1]
+- [Out of scope functionality 2]
 
 ## Unit Tests
 \`\`\`jsx
@@ -260,13 +337,22 @@ describe('[Component]', () => {
 - [ ] Basic rendering
 - [ ] User interactions
 - [ ] Prop variations
-- [ ] Edge cases
-- [ ] Error handling
+- [ ] Specified edge cases
+- [ ] Error handling for defined cases
 ```
 
 ### Implementation Artifact
 ```markdown
 # Implementation for [Component]
+
+## Scope Boundaries
+This implementation includes ONLY:
+- [Specific functionality 1]
+- [Specific functionality 2]
+
+This implementation does NOT include:
+- [Out of scope functionality 1]
+- [Out of scope functionality 2]
 
 ## Component Implementation
 \`\`\`jsx
@@ -290,62 +376,7 @@ export default [Component];
 ## Implementation Notes
 - Follows KISS principle by [explanation]
 - Handles edge cases by [explanation]
-- Areas that might need future optimization: [list]
-```
-
-## TDD Workflow Shell Script
-
-You can use this script to enforce the TDD workflow with KISS principles:
-
-```bash
-#!/bin/bash
-# TDD Workflow for BootHillGM
-
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-echo -e "${BLUE}=== BootHillGM TDD Workflow ===${NC}"
-
-# Step 1: Validate tests exist
-echo -e "\n${YELLOW}STEP 1: Checking for test files...${NC}"
-TEST_FILES=$(find src -name "*.test.tsx" -o -name "*.test.ts")
-
-if [ -z "$TEST_FILES" ]; then
-  echo -e "${RED}No test files found! Write tests first before implementation.${NC}"
-  exit 1
-fi
-
-echo -e "${GREEN}Test files found! Now building...${NC}"
-
-# Step 2: Check for build errors
-echo -e "\n${YELLOW}STEP 2: Checking for build errors...${NC}"
-npm run build
-
-if [ $? -ne 0 ]; then
-  echo -e "\n${RED}Build failed! Fix build errors before continuing.${NC}"
-  exit 1
-fi
-
-echo -e "${GREEN}Build successful! Running tests...${NC}"
-
-# Step 3: Run Jest tests
-echo -e "\n${YELLOW}STEP 3: Running Jest tests...${NC}"
-npm test
-
-if [ $? -ne 0 ]; then
-  echo -e "\n${RED}Tests failed! Fix test issues before manual testing.${NC}"
-  exit 1
-fi
-
-echo -e "${GREEN}All tests passed! Ready for manual testing.${NC}"
-
-# Step 4: Start dev server for manual testing
-echo -e "\n${YELLOW}STEP 4: Starting dev server for manual testing...${NC}"
-echo -e "Press Ctrl+C when done with manual testing."
-npm run dev
+- Stays within scope boundaries by [explanation]
 ```
 
 ## Related Documents

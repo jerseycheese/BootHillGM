@@ -3,13 +3,13 @@ title: Claude App Prompt Templates
 aliases: [App Prompts, Claude Prompt Library]
 tags: [development, workflow, claude, prompt, templates]
 created: 2025-03-16
-updated: 2025-03-16
+updated: 2025-03-21
 ---
 
 # Claude App Prompt Templates
 
 > [!note]
-> Optimized prompt templates for using Claude through the app interface with MCP tools.
+> Optimized prompt templates for using Claude through the app interface with MCP tools, designed to strictly control scope.
 
 ## Analysis & Planning Phase
 
@@ -28,6 +28,12 @@ Please use MCP tools to:
 2. Review the roadmap at `/Users/jackhaas/Projects/BootHillGM/Docs/planning/roadmap.md`
 3. Check project documentation in `/Users/jackhaas/Projects/BootHillGM/Docs`
 4. Check project structure at `/Users/jackhaas/Projects/BootHillGM/BootHillGMApp`
+
+## Scope Constraints
+- Focus only on the current issue without adding enhancements
+- Do not propose architectural changes unless explicitly requested
+- Maintain existing patterns and approaches
+- Don't suggest additional libraries or dependencies
 
 ## Analysis Goals
 Based on this information, please:
@@ -88,6 +94,10 @@ TECHNICAL NOTES
 - [technical detail]
 - [technical detail]
 
+OUT OF SCOPE
+- [feature/enhancement to exclude]
+- [pattern/approach to avoid]
+
 FUTURE TASKS
 - [ ] [future task]
 - [ ] [future task]
@@ -111,12 +121,19 @@ Please use MCP tools to:
 1. Review related files at [specific paths]
 2. Check our existing patterns for similar components
 
+## Scope Constraints
+- Implement ONLY what's specified in the technical spec
+- Do not add extra features, optimizations, or "nice-to-haves"
+- Follow existing patterns exactly, even if you see potential improvements
+- Use only the libraries and dependencies already in use
+- Do not introduce additional state management approaches
+
 ## Implementation Approach
 1. Test-driven development
 2. Incremental implementation
 3. Clean code principles
-4. Error handling
-5. Edge cases
+4. Error handling for specified cases only
+5. Stay within the defined scope boundaries
 
 ## Output Format
 Please provide implementation in this format:
@@ -135,22 +152,67 @@ CODE CHANGES
 ```
 
 VERIFICATION
-- [ ] Unit tests
-- [ ] Integration tests
+- [ ] Unit tests for specified functionality only
+- [ ] Integration tests as defined in spec
 - [ ] Code standards
-- [ ] Error handling
+- [ ] Error handling for defined cases
 
 Please create separate artifacts for:
 1. Types (if substantial)
-2. Tests
-3. Component implementation
-4. Any utility functions
+2. Tests (covering only specified cases)
+3. Component implementation (limited to spec)
+4. Any utility functions needed for implementation
 
 For each implementation step, follow our coding standards:
 - React functional components with hooks
 - Proper TypeScript typing
 - JSDoc comments for functions
-- Error handling for edge cases
+- Error handling for specified edge cases only
+```
+
+## Component-Specific Implementation
+
+```markdown
+# Component Implementation Request
+
+## Context
+I need to implement this specific component:
+
+## Component Definition
+Name: [component name]
+Purpose: [specific purpose]
+Location: [file path]
+
+## Required Functionality
+This component must:
+1. [functionality 1]
+2. [functionality 2]
+3. [functionality 3]
+
+## Technical Requirements
+- Props: [list specific props and types]
+- State: [list specific state variables]
+- Events: [list specific events to handle]
+
+## Scope Boundaries
+This component should NOT:
+- [excluded functionality 1]
+- [excluded functionality 2]
+- [pattern to avoid]
+
+## Existing Patterns
+Please follow these specific patterns:
+- State management: [specific approach]
+- Event handling: [specific approach]
+- Styling: [specific approach]
+
+## Dependencies
+Only use these imports:
+- [specific import 1]
+- [specific import 2]
+
+## Output Format
+Please provide a focused implementation with no additional features beyond what I've specified.
 ```
 
 ## Implementation Summary
@@ -167,6 +229,9 @@ Help me create a summary of the implementation to track what's been done.
 ## Information
 The implementation involved these files:
 [LIST FILES]
+
+## Scope Focus
+Please focus only on what was actually implemented, not on potential enhancements or improvements.
 
 ## Output Format
 Please provide a summary in this format:
@@ -196,6 +261,10 @@ MANUAL TESTING STEPS
 CLEANUP NOTES (console logs to remove, comments to add, etc...)
 - [cleanup task]
 - [cleanup task]
+
+SCOPE BOUNDARIES MAINTAINED
+- [confirm specific constraints were respected]
+- [confirm no extra features were added]
 ```
 
 ## Test Fixes Phase
@@ -212,7 +281,13 @@ I'm working on fixing tests for this implementation:
 [DESCRIBE FAILING TESTS OR WHAT NEEDS TO BE FIXED]
 
 ## Request
-Help me fix these test issues and improve test coverage.
+Help me fix these test issues, focusing only on the existing functionality.
+
+## Scope Boundaries
+- Fix only the failing tests for existing functionality
+- Do not add tests for features not yet implemented
+- Do not suggest component changes that would extend functionality
+- Focus on making current tests pass, not on test coverage gaps
 
 ## Information Access
 Please use MCP tools to:
@@ -223,15 +298,15 @@ Please use MCP tools to:
 ## Test Requirements
 1. Use Jest and React Testing Library
 2. Follow our existing test patterns
-3. Test all key functionality
-4. Handle edge cases
+3. Test only implemented functionality
+4. Fix only the failing tests
 5. Maintain good test isolation
 
 ## Output Format
 Please provide:
 1. Analysis of why tests are failing
 2. Updated test code as an artifact
-3. Any needed component modifications
+3. Only necessary component modifications to make tests pass
 ```
 
 ## Build Issues Phase
@@ -245,7 +320,14 @@ I'm facing build issues with this implementation:
 [PASTE ERROR MESSAGES OR DESCRIBE ISSUES]
 
 ## Request
-Help me diagnose and fix these build problems.
+Help me diagnose and fix these build problems without changing the approach.
+
+## Scope Boundaries
+- Fix only the specific build errors
+- Maintain the current implementation approach
+- Do not introduce new patterns or restructuring
+- Do not add dependencies or alter the build configuration
+- Keep changes minimal and focused on the errors
 
 ## Information Access
 Please use MCP tools to:
@@ -256,8 +338,8 @@ Please use MCP tools to:
 ## Output Format
 Please provide:
 1. Analysis of the build issues
-2. Specific solutions as code artifacts
-3. Any configuration changes needed
+2. Specific, minimal solutions as code artifacts
+3. Only necessary configuration changes
 4. Verification steps
 ```
 
@@ -273,6 +355,13 @@ I've implemented this feature:
 
 ## Request
 Help me review, clean up, and document this implementation.
+
+## Scope Boundaries
+- Focus only on the implemented code
+- Do not suggest refactoring or restructuring
+- Do not propose new features or enhancements
+- Keep documentation aligned with actual implementation
+- Do not modify existing documentation patterns
 
 ## Information Access
 Please use MCP to:
@@ -327,74 +416,6 @@ Issue: #[number]
 ```
 ```
 
-## Cleanup & Documentation Summary
-
-```markdown
-# Cleanup Summary Request
-
-## Context 
-I've completed cleanup and documentation for this feature.
-
-## Request
-Help me create a summary of the cleanup and documentation work.
-
-## Output Format
-Please provide a summary in this format:
-
-CLEANUP & DOCS COMPLETE
-Issue: #[number]
-
-QUALITY CHECK
-- Code Standards: [Pass/Needs Work]
-- Test Coverage: [percentage]
-- Documentation: [Complete/Needs Work]
-
-DOCS UPDATED
-- [file]: [changes]
-- [file]: [changes]
-
-ISSUES
-Closed:
-- #[number]: [summary]
-Created:
-- #[number]: [summary]
-
-FINAL COMMIT
-[commit message]
-```
-
-## GitHub Issue Management
-
-```markdown
-# GitHub Issue Management Request
-
-## Context
-I've completed this feature:
-
-[PASTE IMPLEMENTATION SUMMARY]
-
-## Request
-Help me prepare GitHub issue updates. I only want to create issues if they don't already exist in my issue queue. See /Users/jackhaas/Projects/BootHillGM/Docs/development/issue_templates for formatting.
-
-## Information Access
-Please use MCP to review:
-1. The original issue description if available
-2. Related documentation
-3. Implementation details
-
-## Output Format
-Please create artifacts for:
-1. Issue closure comment with:
-   - Summary of changes
-   - Testing status
-   - Documentation references
-2. Any follow-up issues needed:
-   - Clear title
-   - Detailed description
-   - Suggested labels
-   - Priority assessment
-```
-
 ## Component Refactoring
 
 ```markdown
@@ -409,6 +430,13 @@ I need to refactor this component:
 Path: [file path]
 Target Size: < 300 lines
 
+## Scope Boundaries
+- Maintain exact functionality
+- Do not add features or enhancements
+- Keep the same state management approach
+- Do not introduce new patterns
+- Focus only on reorganizing code, not improving it
+
 ## Size Reduction Strategy
 Priority approaches:
 1. [ ] Extract standalone components
@@ -417,12 +445,11 @@ Priority approaches:
 4. [ ] Relocate utility functions
 
 ## Refactoring Goals
-Priority order (highest impact, lowest risk first):
+Priority order:
 1. [ ] Component extraction
-2. [ ] Type safety improvements
+2. [ ] Type safety maintenance
 3. [ ] File organization
-4. [ ] Performance quick wins
-5. [ ] Test coverage gaps
+4. [ ] Test coverage preservation
 
 ## Information Access
 Please use MCP to:
@@ -432,18 +459,12 @@ Please use MCP to:
 
 ## Requirements
 ### Must Have
-- No breaking changes
-- Maintain existing behavior
+- No behavioral changes
+- Maintain existing functionality
 - Each new file under 300 lines
 - Clear component boundaries
 - Type safety
-- Basic test coverage
-
-### Nice to Have
-- Additional test cases
-- Performance optimizations
-- Enhanced error handling
-- Improved documentation
+- Existing test coverage
 
 ## Risk Assessment
 ### Safe to Split Out
@@ -464,60 +485,7 @@ Please provide:
 1. Analysis of current issues
 2. Refactored component as an artifact
 3. Any necessary test updates
-4. Before/after comparison highlighting improvements
-```
-
-## Refactoring Summary
-
-```markdown
-# Refactoring Summary Request
-
-## Context
-I've completed the refactoring.
-
-## Request
-Help me create a summary of the refactoring work.
-
-## Output Format
-Please provide a summary in this format:
-
-REFACTORING COMPLETE
-Target File: [original file path]
-Issue: #[number]
-
-CHANGES MADE
-Files Modified:
-- [file]: [changes]
-- [file]: [changes]
-
-Files Created:
-- [file]: [purpose]
-- [file]: [purpose]
-
-Files Removed:
-- [file]: [reason]
-
-TEST STATUS
-- Unit Tests: [status]
-- Integration: [status]
-- Coverage: [percentage]
-
-CODE METRICS
-- Original Size: [lines]
-- New Size: [total lines across all new files]
-- Largest File: [file name - lines]
-- Type Safety: [improved/same]
-
-VERIFICATION
-- [ ] No breaking changes
-- [ ] All tests passing
-- [ ] Behavior preserved
-- [ ] Code standards maintained
-- [ ] Documentation updated
-
-NEXT STEPS
-- [suggested follow-up tasks]
-- [areas for future improvement]
+4. Before/after comparison highlighting organization improvements
 ```
 
 ## Bug Fix Request
@@ -531,7 +499,14 @@ I'm experiencing this bug:
 [DESCRIBE BUG WITH STEPS TO REPRODUCE]
 
 ## Request
-Help me diagnose and fix this issue.
+Help me diagnose and fix this specific issue only.
+
+## Scope Boundaries
+- Fix only the described bug
+- Do not add features or enhancements
+- Do not refactor surrounding code
+- Do not modify unrelated functionality
+- Focus only on the minimum changes needed
 
 ## Information Access
 Please use MCP to:
@@ -542,84 +517,55 @@ Please use MCP to:
 ## Output Format
 Please provide:
 1. Root cause analysis
-2. Fix implementation as an artifact
+2. Minimal fix implementation as an artifact
 3. Test updates to prevent regression
-4. Verification steps
+4. Verification steps specific to this bug
 ```
 
-## Continuation Templates
+## Feature-Specific Implementation
 
-### Analysis to Implementation
 ```markdown
-# Continuing Implementation
+# Feature-Specific Implementation Request
 
 ## Context
-We were working on analyzing task #[number] but had to create a new chat due to length limits.
+I need to implement this specific feature:
 
-## Previous Progress
-[PASTE SUMMARY ARTIFACT]
+[DESCRIBE FEATURE]
 
-## Request
-Let's continue with implementation phase based on this analysis.
+## Specific Requirements
+1. [requirement 1]
+2. [requirement 2]
+3. [requirement 3]
 
-## Next Steps
-The next tasks are:
-1. [specific next step]
-2. [following steps]
+## Technical Boundaries
+- Files to modify: [specific files only]
+- State management approach: [specific approach]
+- UI patterns to follow: [specific patterns]
+- Dependencies allowed: [specific dependencies]
 
-Please use MCP tools to re-examine the relevant files, and let's continue implementation.
-```
+## Explicitly Out of Scope
+- [functionality to exclude]
+- [enhancement to avoid]
+- [pattern not to introduce]
+- [optimization not to implement]
 
-### Implementation to Test Fixes
-```markdown
-# Continuing Test Fixes
+## Implementation Constraints
+- Must match existing code style exactly
+- Must use only specified dependencies
+- Must only modify listed files
+- Must implement exactly what's specified, no more
 
-## Context
-We were implementing task #[number] but had to create a new chat due to length limits.
+## Information Access
+Please use MCP to:
+1. Examine the files to be modified
+2. Review similar implementations
+3. Check existing patterns
 
-## Previous Progress
-[PASTE SUMMARY ARTIFACT]
-
-## Request
-Let's continue with test fixes and validation.
-
-## Current Status
-Components implemented:
-- [component 1]
-- [component 2]
-
-Current test issues:
-- [issue 1]
-- [issue 2]
-
-Please use MCP tools to re-examine the test files and component code.
-```
-
-### Test Fixes to Cleanup
-```markdown
-# Continuing with Cleanup
-
-## Context
-We were fixing tests for task #[number] but had to create a new chat due to length limits.
-
-## Previous Progress
-[PASTE SUMMARY ARTIFACT]
-
-## Request
-All tests are now passing, let's continue with cleanup and documentation.
-
-## Current Status
-Implementation complete with all tests passing.
-
-Cleanup needed:
-- [cleanup task 1]
-- [cleanup task 2]
-
-Documentation needed:
-- [doc task 1]
-- [doc task 2]
-
-Please use MCP tools to examine the code and existing documentation.
+## Output Format
+Please provide:
+1. Implementation code that strictly adheres to requirements
+2. Test code for specified functionality only
+3. Verification that implementation meets all constraints
 ```
 
 ## Related Documents

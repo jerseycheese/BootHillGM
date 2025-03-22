@@ -26,36 +26,6 @@ window.bhgmDebug.clearDecision();
 const state = window.bhgmDebug.getGameState();
 ```
 
-## Custom Events System
-
-The game uses a custom events system for cross-component communication:
-
-### Key Events
-
-- `bhgm:decision:ready`: Fired when a new decision is ready to be displayed
-- `bhgm:decision:cleared`: Fired when a decision is cleared
-- `bhgm:decision:made`: Fired when a player makes a decision
-- `bhgm:ui:force-update`: Forces a UI update across components
-- `bhgm:ui:state-changed`: Notifies components of UI state changes
-
-### Event Handling
-
-Our implementation uses browser standard CustomEvent for reliable cross-component communication:
-
-```javascript
-// Listen for a decision event
-listenForCustomEvent(EVENTS.DECISION_READY, (decision) => {
-  // Handle the new decision
-  console.log('Decision ready:', decision);
-});
-
-// Trigger an event
-triggerCustomEvent(EVENTS.DECISION_MADE, {
-  decisionId: 'decision-123',
-  optionId: 'option-456'
-});
-```
-
 ## DevTools UI
 
 The DevTools panel is accessible in development mode and provides a visual interface for:
@@ -138,6 +108,5 @@ With the refactored structure, you can now add new debug UI sections by:
 ## Related Systems
 
 - **Narrative Context**: Powers the decision system and handles state
-- **Event System**: Provides cross-component communication
 - **Location Service**: Manages game locations and their types
 - **Template System**: Provides contextual decision templates
