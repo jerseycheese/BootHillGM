@@ -1,0 +1,130 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DerivedStatDisplay snapshots matches snapshot with basic props 1`] = `
+<div>
+  <div
+    class="stat-container flex flex-col gap-2 bhgm-derived-stat-display"
+    data-testid="derived-stat-display"
+    id="bhgmDerivedStatDisplay"
+  >
+    <div
+      class="stat-label text-sm font-bold"
+    >
+      Hit Points
+    </div>
+    <div
+      class="stat-value text-lg"
+    >
+      24
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DerivedStatDisplay snapshots matches snapshot with description 1`] = `
+<div>
+  <div
+    class="stat-container flex flex-col gap-2 bhgm-derived-stat-display"
+    data-testid="derived-stat-display"
+    id="bhgmDerivedStatDisplay"
+  >
+    <div
+      class="stat-label text-sm font-bold"
+    >
+      Speed
+    </div>
+    <div
+      class="stat-value text-lg"
+    >
+      5
+    </div>
+    <div
+      class="stat-description text-xs italic"
+    >
+      Determines movement range and initiative
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DerivedStatDisplay snapshots matches snapshot with large value 1`] = `
+<div>
+  <div
+    class="stat-container flex flex-col gap-2 bhgm-derived-stat-display"
+    data-testid="derived-stat-display"
+    id="bhgmDerivedStatDisplay"
+  >
+    <div
+      class="stat-label text-sm font-bold"
+    >
+      Damage Potential
+    </div>
+    <div
+      class="stat-value text-lg"
+    >
+      999
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DerivedStatDisplay snapshots matches snapshot with negative value 1`] = `
+<div>
+  <div
+    class="stat-container flex flex-col gap-2 bhgm-derived-stat-display"
+    data-testid="derived-stat-display"
+    id="bhgmDerivedStatDisplay"
+  >
+    <div
+      class="stat-label text-sm font-bold"
+    >
+      Modifier
+    </div>
+    <div
+      class="stat-value text-lg"
+    >
+      -3
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DerivedStatDisplay snapshots matches snapshot with zero value 1`] = `
+<div>
+  <div
+    class="stat-container flex flex-col gap-2 bhgm-derived-stat-display"
+    data-testid="derived-stat-display"
+    id="bhgmDerivedStatDisplay"
+  >
+    <div
+      class="stat-label text-sm font-bold"
+    >
+      Bonus
+    </div>
+    <div
+      class="stat-value text-lg"
+    >
+      0
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DerivedStatDisplay snapshots renders with accessible attributes 1`] = `
+<div
+  class="stat-container flex flex-col gap-2 bhgm-derived-stat-display"
+  data-testid="derived-stat-display"
+  id="bhgmDerivedStatDisplay"
+>
+  <div
+    class="stat-label text-sm font-bold"
+  >
+    Accessibility
+  </div>
+  <div
+    class="stat-value text-lg"
+  >
+    5
+  </div>
+</div>
+`;

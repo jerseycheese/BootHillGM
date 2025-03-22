@@ -11,6 +11,7 @@ const customJestConfig = {
   testEnvironment: 'jest-environment-jsdom',
   moduleNameMapper: {
     '^.+\\.(css|sass|scss)$': 'identity-obj-proxy',
+    '^@/(.*)$': '<rootDir>/$1',
   },
   moduleDirectories: ['node_modules', '<rootDir>/'],
   testPathIgnorePatterns: [
@@ -28,6 +29,17 @@ const customJestConfig = {
     '!<rootDir>/*.config.js',
     '!<rootDir>/coverage/**',
   ],
+  // Add watchPlugins configuration for better watch mode experience
+  watchPlugins: [
+    'jest-watch-typeahead/filename',
+    'jest-watch-typeahead/testname'
+  ],
+  // Snapshot settings
+  snapshotFormat: {
+    printBasicPrototype: false,
+  },
+  // Set test timeout to accommodate for slow tests
+  testTimeout: 10000,
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

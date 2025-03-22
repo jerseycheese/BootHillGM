@@ -1,0 +1,273 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`JournalViewer snapshots matches snapshot with combat entry 1`] = `
+<div>
+  <div
+    class="wireframe-section bhgm-journal-viewer"
+    data-testid="journal-viewer"
+    id="bhgmJournalViewer"
+  >
+    <h2
+      class="wireframe-subtitle mb-2"
+    >
+      Journal
+    </h2>
+    <ul
+      class="overflow-y-auto"
+    >
+      <li
+        class="wireframe-text mb-2"
+      >
+        <strong>
+          03/30/2022
+        </strong>
+        : 
+        Defeated a bandit
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`JournalViewer snapshots matches snapshot with empty entries 1`] = `
+<div>
+  <div
+    class="wireframe-section"
+  >
+    <h2
+      class="wireframe-subtitle mb-2"
+    >
+      Journal
+    </h2>
+    <p>
+      No journal entries yet.
+    </p>
+  </div>
+</div>
+`;
+
+exports[`JournalViewer snapshots matches snapshot with entries in reverse chronological order 1`] = `
+<div>
+  <div
+    class="wireframe-section bhgm-journal-viewer"
+    data-testid="journal-viewer"
+    id="bhgmJournalViewer"
+  >
+    <h2
+      class="wireframe-subtitle mb-2"
+    >
+      Journal
+    </h2>
+    <ul
+      class="overflow-y-auto"
+    >
+      <li
+        class="wireframe-text mb-2"
+      >
+        <strong>
+          03/30/2022
+        </strong>
+        : 
+        The Missing Sheriff: active
+      </li>
+      <li
+        class="wireframe-text mb-2"
+      >
+        <strong>
+          03/30/2022
+        </strong>
+        : 
+        Acquired: Whiskey, Ammunition | Removed: Bandage
+      </li>
+      <li
+        class="wireframe-text mb-2"
+      >
+        <strong>
+          03/30/2022
+        </strong>
+        : 
+        Defeated a bandit
+      </li>
+      <li
+        class="wireframe-text mb-2"
+      >
+        <strong>
+          03/30/2022
+        </strong>
+        : 
+        Arrived at Redemption
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`JournalViewer snapshots matches snapshot with inventory entry 1`] = `
+<div>
+  <div
+    class="wireframe-section bhgm-journal-viewer"
+    data-testid="journal-viewer"
+    id="bhgmJournalViewer"
+  >
+    <h2
+      class="wireframe-subtitle mb-2"
+    >
+      Journal
+    </h2>
+    <ul
+      class="overflow-y-auto"
+    >
+      <li
+        class="wireframe-text mb-2"
+      >
+        <strong>
+          03/30/2022
+        </strong>
+        : 
+        Acquired: Whiskey, Ammunition | Removed: Bandage
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`JournalViewer snapshots matches snapshot with multiple entries of different types 1`] = `
+<div>
+  <div
+    class="wireframe-section bhgm-journal-viewer"
+    data-testid="journal-viewer"
+    id="bhgmJournalViewer"
+  >
+    <h2
+      class="wireframe-subtitle mb-2"
+    >
+      Journal
+    </h2>
+    <ul
+      class="overflow-y-auto"
+    >
+      <li
+        class="wireframe-text mb-2"
+      >
+        <strong>
+          03/30/2022
+        </strong>
+        : 
+        The Missing Sheriff: active
+      </li>
+      <li
+        class="wireframe-text mb-2"
+      >
+        <strong>
+          03/30/2022
+        </strong>
+        : 
+        Acquired: Whiskey, Ammunition | Removed: Bandage
+      </li>
+      <li
+        class="wireframe-text mb-2"
+      >
+        <strong>
+          03/30/2022
+        </strong>
+        : 
+        Defeated a bandit
+      </li>
+      <li
+        class="wireframe-text mb-2"
+      >
+        <strong>
+          03/30/2022
+        </strong>
+        : 
+        Arrived at Redemption
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`JournalViewer snapshots matches snapshot with narrative entry 1`] = `
+<div>
+  <div
+    class="wireframe-section bhgm-journal-viewer"
+    data-testid="journal-viewer"
+    id="bhgmJournalViewer"
+  >
+    <h2
+      class="wireframe-subtitle mb-2"
+    >
+      Journal
+    </h2>
+    <ul
+      class="overflow-y-auto"
+    >
+      <li
+        class="wireframe-text mb-2"
+      >
+        <strong>
+          03/30/2022
+        </strong>
+        : 
+        Arrived at Redemption
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`JournalViewer snapshots matches snapshot with quest entry 1`] = `
+<div>
+  <div
+    class="wireframe-section bhgm-journal-viewer"
+    data-testid="journal-viewer"
+    id="bhgmJournalViewer"
+  >
+    <h2
+      class="wireframe-subtitle mb-2"
+    >
+      Journal
+    </h2>
+    <ul
+      class="overflow-y-auto"
+    >
+      <li
+        class="wireframe-text mb-2"
+      >
+        <strong>
+          03/30/2022
+        </strong>
+        : 
+        The Missing Sheriff: active
+      </li>
+    </ul>
+  </div>
+</div>
+`;
+
+exports[`JournalViewer snapshots renders with accessible attributes 1`] = `
+<div
+  class="wireframe-section bhgm-journal-viewer"
+  data-testid="journal-viewer"
+  id="bhgmJournalViewer"
+>
+  <h2
+    class="wireframe-subtitle mb-2"
+  >
+    Journal
+  </h2>
+  <ul
+    class="overflow-y-auto"
+  >
+    <li
+      class="wireframe-text mb-2"
+    >
+      <strong>
+        03/30/2022
+      </strong>
+      : 
+      Arrived at Redemption
+    </li>
+  </ul>
+</div>
+`;

@@ -1,0 +1,80 @@
+import React from 'react';
+import { render } from '@testing-library/react';
+import JournalViewer from '@/app/components/JournalViewer';
+import { mockJournalEntries, _createMockEntryList } from '@/app/test/fixtures/mockComponents';
+
+// Mock formatDate to ensure consistent snapshots
+const originalDate = global.Date;
+beforeAll(() => {
+  // Mock Date constructor to return a fixed date
+  const mockDate = new Date(1648635000000); // March 30, 2022
+  global.Date = class extends originalDate {
+    constructor(date) {
+      if (date) {
+        return new originalDate(date);
+      }
+      return mockDate;
+    }
+  } as unknown; // Changed from 'any' to 'unknown'
+});
+
+afterAll(() => {
+  global.Date = originalDate;
+});
+
+describe('JournalViewer snapshots', () => {
+  it('matches snapshot with empty entries', () => {
+    const { container } = render(<JournalViewer entries={[]} />);
+    expect(container).toMatchSnapshot();
+  });
+
+  it('matches snapshot with narrative entry', () => {
+    const { container } = render(<JournalViewer entries={[mockJournalEntries.narrative]} />);
+    expect(container).toMatchSnapshot();
+  });
+
+  it('matches snapshot with combat entry', () => {
+    const { container } = render(<JournalViewer entries={[mockJournalEntries.combat]} />);
+    expect(container).toMatchSnapshot();
+  });
+
+  it('matches snapshot with inventory entry', () => {
+    const { container } = render(<JournalViewer entries={[mockJournalEntries.inventory]} />);
+    expect(container).toMatchSnapshot();
+  });
+
+  it('matches snapshot with quest entry', () => {
+    const { container } = render(<JournalViewer entries={[mockJournalEntries.quest]} />);
+    expect(container).toMatchSnapshot();
+  });
+
+  it('matches snapshot with multiple entries of different types', () => {
+    const allEntries = [
+      mockJournalEntries.narrative,
+      mockJournalEntries.combat,
+      mockJournalEntries.inventory,
+      mockJournalEntries.quest,
+    ];
+    const { container } = render(<JournalViewer entries={allEntries} />);
+    expect(container).toMatchSnapshot();
+  });
+
+  it('matches snapshot with entries in reverse chronological order', () => {
+    // Confirm the sort function works by reversing the order
+    const reversedEntries = [
+      mockJournalEntries.quest,
+      mockJournalEntries.inventory,
+      mockJournalEntries.combat,
+      mockJournalEntries.narrative,
+    ];
+    const { container } = render(<JournalViewer entries={reversedEntries} />);
+    expect(container).toMatchSnapshot();
+  });
+
+  it('renders with accessible attributes', () => {
+    const { getByTestId } = render(<JournalViewer entries={[mockJournalEntries.narrative]} />);
+    const journalViewer = getByTestId('journal-viewer');
+    expect(journalViewer).toBeInTheDocument();
+    expect(journalViewer).toMatchSnapshot();
+  });
+});

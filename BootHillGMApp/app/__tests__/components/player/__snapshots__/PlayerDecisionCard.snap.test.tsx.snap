@@ -1,0 +1,733 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PlayerDecisionCard snapshots matches snapshot while generating narrative 1`] = `
+<div>
+  <div
+    class="bhgm-decision-card bhgm-decision-moderate  bhgm-decision-loading"
+    data-testid="player-decision-card"
+  >
+    <div
+      class="bhgm-decision-overlay"
+    >
+      <div
+        class="bhgm-decision-spinner-large"
+      />
+      <p>
+        Generating narrative response...
+      </p>
+    </div>
+    <div
+      class="bhgm-decision-importance-indicator"
+    >
+      <span
+        class="bhgm-decision-importance-label"
+      >
+        moderate
+      </span>
+    </div>
+    <div
+      class="bhgm-decision-prompt"
+    >
+      <h3>
+        Will you help the rancher with his cattle drive?
+      </h3>
+      <p
+        class="bhgm-decision-context"
+      >
+        It would take a few days but could earn you some cash and respect.
+      </p>
+    </div>
+    <div
+      aria-labelledby="decision-options-label"
+      class="bhgm-decision-options-container"
+      role="radiogroup"
+    >
+      <div
+        class="sr-only"
+        id="decision-options-label"
+      >
+        Available options
+      </div>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-1"
+        disabled=""
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Agree to help
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-2"
+        disabled=""
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Decline the offer
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-3"
+        disabled=""
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Negotiate payment
+        </div>
+      </button>
+    </div>
+    <div
+      class="bhgm-decision-action-container"
+    >
+      <button
+        class="bhgm-decision-submit-button"
+        data-testid="decision-submit-button"
+        disabled=""
+      >
+        Generating response...
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PlayerDecisionCard snapshots matches snapshot with critical importance decision 1`] = `
+<div>
+  <div
+    class="bhgm-decision-card bhgm-decision-critical  "
+    data-testid="player-decision-card"
+  >
+    <div
+      class="bhgm-decision-importance-indicator"
+    >
+      <span
+        class="bhgm-decision-importance-label"
+      >
+        critical
+      </span>
+    </div>
+    <div
+      class="bhgm-decision-prompt"
+    >
+      <h3>
+        The outlaw has drawn his gun. What do you do?
+      </h3>
+      <p
+        class="bhgm-decision-context"
+      >
+        The entire saloon has gone silent. This decision could mean life or death.
+      </p>
+    </div>
+    <div
+      aria-labelledby="decision-options-label"
+      class="bhgm-decision-options-container"
+      role="radiogroup"
+    >
+      <div
+        class="sr-only"
+        id="decision-options-label"
+      >
+        Available options
+      </div>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-1"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Draw your gun
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-2"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Try to reason with him
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-3"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Dive for cover
+        </div>
+      </button>
+    </div>
+    <div
+      class="bhgm-decision-action-container"
+    >
+      <button
+        class="bhgm-decision-submit-button"
+        data-testid="decision-submit-button"
+        disabled=""
+      >
+        Confirm Decision
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PlayerDecisionCard snapshots matches snapshot with custom className 1`] = `
+<div>
+  <div
+    class="bhgm-decision-card bhgm-decision-moderate custom-class "
+    data-testid="player-decision-card"
+  >
+    <div
+      class="bhgm-decision-importance-indicator"
+    >
+      <span
+        class="bhgm-decision-importance-label"
+      >
+        moderate
+      </span>
+    </div>
+    <div
+      class="bhgm-decision-prompt"
+    >
+      <h3>
+        Will you help the rancher with his cattle drive?
+      </h3>
+      <p
+        class="bhgm-decision-context"
+      >
+        It would take a few days but could earn you some cash and respect.
+      </p>
+    </div>
+    <div
+      aria-labelledby="decision-options-label"
+      class="bhgm-decision-options-container"
+      role="radiogroup"
+    >
+      <div
+        class="sr-only"
+        id="decision-options-label"
+      >
+        Available options
+      </div>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-1"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Agree to help
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-2"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Decline the offer
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-3"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Negotiate payment
+        </div>
+      </button>
+    </div>
+    <div
+      class="bhgm-decision-action-container"
+    >
+      <button
+        class="bhgm-decision-submit-button"
+        data-testid="decision-submit-button"
+        disabled=""
+      >
+        Confirm Decision
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PlayerDecisionCard snapshots matches snapshot with minor importance decision 1`] = `
+<div>
+  <div
+    class="bhgm-decision-card bhgm-decision-minor  "
+    data-testid="player-decision-card"
+  >
+    <div
+      class="bhgm-decision-importance-indicator"
+    >
+      <span
+        class="bhgm-decision-importance-label"
+      >
+        minor
+      </span>
+    </div>
+    <div
+      class="bhgm-decision-prompt"
+    >
+      <h3>
+        The bartender offers you a whiskey on the house. Accept?
+      </h3>
+      <p
+        class="bhgm-decision-context"
+      >
+        A small gesture of goodwill.
+      </p>
+    </div>
+    <div
+      aria-labelledby="decision-options-label"
+      class="bhgm-decision-options-container"
+      role="radiogroup"
+    >
+      <div
+        class="sr-only"
+        id="decision-options-label"
+      >
+        Available options
+      </div>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-1"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Accept gratefully
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-2"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Decline politely
+        </div>
+      </button>
+    </div>
+    <div
+      class="bhgm-decision-action-container"
+    >
+      <button
+        class="bhgm-decision-submit-button"
+        data-testid="decision-submit-button"
+        disabled=""
+      >
+        Confirm Decision
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PlayerDecisionCard snapshots matches snapshot with moderate importance decision 1`] = `
+<div>
+  <div
+    class="bhgm-decision-card bhgm-decision-moderate  "
+    data-testid="player-decision-card"
+  >
+    <div
+      class="bhgm-decision-importance-indicator"
+    >
+      <span
+        class="bhgm-decision-importance-label"
+      >
+        moderate
+      </span>
+    </div>
+    <div
+      class="bhgm-decision-prompt"
+    >
+      <h3>
+        Will you help the rancher with his cattle drive?
+      </h3>
+      <p
+        class="bhgm-decision-context"
+      >
+        It would take a few days but could earn you some cash and respect.
+      </p>
+    </div>
+    <div
+      aria-labelledby="decision-options-label"
+      class="bhgm-decision-options-container"
+      role="radiogroup"
+    >
+      <div
+        class="sr-only"
+        id="decision-options-label"
+      >
+        Available options
+      </div>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-1"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Agree to help
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-2"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Decline the offer
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-3"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Negotiate payment
+        </div>
+      </button>
+    </div>
+    <div
+      class="bhgm-decision-action-container"
+    >
+      <button
+        class="bhgm-decision-submit-button"
+        data-testid="decision-submit-button"
+        disabled=""
+      >
+        Confirm Decision
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PlayerDecisionCard snapshots matches snapshot with null decision (should not render) 1`] = `<div />`;
+
+exports[`PlayerDecisionCard snapshots matches snapshot with onDecisionMade callback 1`] = `
+<div>
+  <div
+    class="bhgm-decision-card bhgm-decision-moderate  "
+    data-testid="player-decision-card"
+  >
+    <div
+      class="bhgm-decision-importance-indicator"
+    >
+      <span
+        class="bhgm-decision-importance-label"
+      >
+        moderate
+      </span>
+    </div>
+    <div
+      class="bhgm-decision-prompt"
+    >
+      <h3>
+        Will you help the rancher with his cattle drive?
+      </h3>
+      <p
+        class="bhgm-decision-context"
+      >
+        It would take a few days but could earn you some cash and respect.
+      </p>
+    </div>
+    <div
+      aria-labelledby="decision-options-label"
+      class="bhgm-decision-options-container"
+      role="radiogroup"
+    >
+      <div
+        class="sr-only"
+        id="decision-options-label"
+      >
+        Available options
+      </div>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-1"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Agree to help
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-2"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Decline the offer
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-3"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Negotiate payment
+        </div>
+      </button>
+    </div>
+    <div
+      class="bhgm-decision-action-container"
+    >
+      <button
+        class="bhgm-decision-submit-button"
+        data-testid="decision-submit-button"
+        disabled=""
+      >
+        Confirm Decision
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PlayerDecisionCard snapshots matches snapshot with significant importance decision 1`] = `
+<div>
+  <div
+    class="bhgm-decision-card bhgm-decision-significant  "
+    data-testid="player-decision-card"
+  >
+    <div
+      class="bhgm-decision-importance-indicator"
+    >
+      <span
+        class="bhgm-decision-importance-label"
+      >
+        significant
+      </span>
+    </div>
+    <div
+      class="bhgm-decision-prompt"
+    >
+      <h3>
+        The bank manager offers you a loan. Do you accept?
+      </h3>
+      <p
+        class="bhgm-decision-context"
+      >
+        This could determine your financial future in the town.
+      </p>
+    </div>
+    <div
+      aria-labelledby="decision-options-label"
+      class="bhgm-decision-options-container"
+      role="radiogroup"
+    >
+      <div
+        class="sr-only"
+        id="decision-options-label"
+      >
+        Available options
+      </div>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-1"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Accept the loan
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-2"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Decline politely
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-3"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Negotiate better terms
+        </div>
+      </button>
+    </div>
+    <div
+      class="bhgm-decision-action-container"
+    >
+      <button
+        class="bhgm-decision-submit-button"
+        data-testid="decision-submit-button"
+        disabled=""
+      >
+        Confirm Decision
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PlayerDecisionCard snapshots matches snapshot without context 1`] = `
+<div>
+  <div
+    class="bhgm-decision-card bhgm-decision-moderate  "
+    data-testid="player-decision-card"
+  >
+    <div
+      class="bhgm-decision-importance-indicator"
+    >
+      <span
+        class="bhgm-decision-importance-label"
+      >
+        moderate
+      </span>
+    </div>
+    <div
+      class="bhgm-decision-prompt"
+    >
+      <h3>
+        Do you approach the stranger?
+      </h3>
+    </div>
+    <div
+      aria-labelledby="decision-options-label"
+      class="bhgm-decision-options-container"
+      role="radiogroup"
+    >
+      <div
+        class="sr-only"
+        id="decision-options-label"
+      >
+        Available options
+      </div>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-1"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          Yes
+        </div>
+      </button>
+      <button
+        aria-pressed="false"
+        class="bhgm-decision-option-button "
+        data-testid="option-option-2"
+      >
+        <div
+          class="bhgm-decision-option-text"
+        >
+          No
+        </div>
+      </button>
+    </div>
+    <div
+      class="bhgm-decision-action-container"
+    >
+      <button
+        class="bhgm-decision-submit-button"
+        data-testid="decision-submit-button"
+        disabled=""
+      >
+        Confirm Decision
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PlayerDecisionCard snapshots matches snapshot without options 1`] = `
+<div>
+  <div
+    class="bhgm-decision-card bhgm-decision-moderate  "
+    data-testid="player-decision-card"
+  >
+    <div
+      class="bhgm-decision-importance-indicator"
+    >
+      <span
+        class="bhgm-decision-importance-label"
+      >
+        moderate
+      </span>
+    </div>
+    <div
+      class="bhgm-decision-prompt"
+    >
+      <h3>
+        What will you do next?
+      </h3>
+      <p
+        class="bhgm-decision-context"
+      >
+        You stand at a crossroads with many possibilities.
+      </p>
+    </div>
+    <div
+      class="bhgm-decision-no-options"
+      data-testid="no-options-message"
+    >
+      No options available for this decision.
+    </div>
+    <div
+      class="bhgm-decision-action-container"
+    >
+      <button
+        class="bhgm-decision-submit-button"
+        data-testid="decision-submit-button"
+        disabled=""
+      >
+        Confirm Decision
+      </button>
+    </div>
+  </div>
+</div>
+`;

@@ -1,0 +1,174 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StatDisplay snapshots matches snapshot with all props 1`] = `
+<div>
+  <div
+    class="stat-container flex flex-col gap-2 bhgm-stat-display"
+    data-testid="stat-display"
+    id="bhgmStatDisplay"
+  >
+    <div
+      class="stat-label text-sm font-bold"
+    >
+      Luck
+    </div>
+    <div
+      class="stat-value text-lg"
+    >
+      3
+      <span
+        class="stat-max text-sm"
+      >
+        / 
+        7
+      </span>
+    </div>
+    <div
+      class="stat-description text-xs italic"
+    >
+      Influences critical hits and random events
+    </div>
+  </div>
+</div>
+`;
+
+exports[`StatDisplay snapshots matches snapshot with basic props 1`] = `
+<div>
+  <div
+    class="stat-container flex flex-col gap-2 bhgm-stat-display"
+    data-testid="stat-display"
+    id="bhgmStatDisplay"
+  >
+    <div
+      class="stat-label text-sm font-bold"
+    >
+      Strength
+    </div>
+    <div
+      class="stat-value text-lg"
+    >
+      10
+    </div>
+  </div>
+</div>
+`;
+
+exports[`StatDisplay snapshots matches snapshot with description 1`] = `
+<div>
+  <div
+    class="stat-container flex flex-col gap-2 bhgm-stat-display"
+    data-testid="stat-display"
+    id="bhgmStatDisplay"
+  >
+    <div
+      class="stat-label text-sm font-bold"
+    >
+      Dexterity
+    </div>
+    <div
+      class="stat-value text-lg"
+    >
+      6
+    </div>
+    <div
+      class="stat-description text-xs italic"
+    >
+      Affects combat and movement
+    </div>
+  </div>
+</div>
+`;
+
+exports[`StatDisplay snapshots matches snapshot with large values 1`] = `
+<div>
+  <div
+    class="stat-container flex flex-col gap-2 bhgm-stat-display"
+    data-testid="stat-display"
+    id="bhgmStatDisplay"
+  >
+    <div
+      class="stat-label text-sm font-bold"
+    >
+      Damage
+    </div>
+    <div
+      class="stat-value text-lg"
+    >
+      9999
+      <span
+        class="stat-max text-sm"
+      >
+        / 
+        10000
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`StatDisplay snapshots matches snapshot with max value 1`] = `
+<div>
+  <div
+    class="stat-container flex flex-col gap-2 bhgm-stat-display"
+    data-testid="stat-display"
+    id="bhgmStatDisplay"
+  >
+    <div
+      class="stat-label text-sm font-bold"
+    >
+      Health
+    </div>
+    <div
+      class="stat-value text-lg"
+    >
+      8
+      <span
+        class="stat-max text-sm"
+      >
+        / 
+        10
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`StatDisplay snapshots matches snapshot with zero value 1`] = `
+<div>
+  <div
+    class="stat-container flex flex-col gap-2 bhgm-stat-display"
+    data-testid="stat-display"
+    id="bhgmStatDisplay"
+  >
+    <div
+      class="stat-label text-sm font-bold"
+    >
+      Empty Stat
+    </div>
+    <div
+      class="stat-value text-lg"
+    >
+      0
+    </div>
+  </div>
+</div>
+`;
+
+exports[`StatDisplay snapshots renders with accessible attributes 1`] = `
+<div
+  class="stat-container flex flex-col gap-2 bhgm-stat-display"
+  data-testid="stat-display"
+  id="bhgmStatDisplay"
+>
+  <div
+    class="stat-label text-sm font-bold"
+  >
+    Accessibility
+  </div>
+  <div
+    class="stat-value text-lg"
+  >
+    5
+  </div>
+</div>
+`;

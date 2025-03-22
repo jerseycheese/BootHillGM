@@ -1,61 +1,42 @@
+// NOTE: This is a template file - uncomment imports when using
+// import React from 'react';
+// import { render } from '@testing-library/react';
+// import YourComponent from '@/app/components/path/to/YourComponent';
+
 /**
- * Snapshot Test Template
+ * Snapshot test template for React components
  * 
- * Use this template to test component appearance with snapshots:
- * 1. Basic component rendering
- * 2. Component variations with different props
- * 3. Component states (loading, error, success)
+ * Use this template for creating snapshot tests for UI components.
+ * 
+ * Steps to use this template:
+ * 1. Copy this file to your test directory
+ * 2. Rename it to match your component (e.g., YourComponent.snap.test.tsx)
+ * 3. Uncomment the imports and update component path
+ * 4. Update the test cases to match your component's props and states
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React from 'react';
-import { render } from '@testing-library/react';
-// import ComponentName from '@/app/components/ComponentName';
-/* eslint-enable @typescript-eslint/no-unused-vars */
-
-/**
- * Template for a basic snapshot test suite.
- * Replace ComponentName with your actual component.
- */
-describe('ComponentName Snapshots', () => {
-  // Basic snapshot test
-  it('matches snapshot with default props', () => {
-    // const { container } = render(<ComponentName />);
-    // expect(container).toMatchSnapshot();
-  });
-  
-  // Snapshot with specific props
-  it('matches snapshot with custom props', () => {
-    // const props = {
-    //   title: 'Custom Title',
-    //   description: 'Custom description text',
-    //   isActive: true
-    // };
-    // const { container } = render(<ComponentName {...props} />);
-    // expect(container).toMatchSnapshot();
-  });
-  
-  // Snapshot for specific component state
-  it('matches snapshot in loading state', () => {
-    // const { container } = render(<ComponentName isLoading={true} />);
-    // expect(container).toMatchSnapshot();
-  });
-  
-  // Snapshot for error state
-  it('matches snapshot in error state', () => {
-    // const { container } = render(
-    //   <ComponentName 
-    //     error="Something went wrong" 
-    //     isError={true}
-    //   />
-    // );
-    // expect(container).toMatchSnapshot();
-  });
-  
-  // Snapshot for specific UI element
-  it('matches snapshot of a specific element', () => {
-    // const { getByTestId } = render(<ComponentName />);
-    // const element = getByTestId('specific-element');
-    // expect(element).toMatchSnapshot();
-  });
-});
+// Uncomment and update the component name in the describe block
+// describe('YourComponent snapshots', () => {
+//   it('matches snapshot with default props', () => {
+//     const { container } = render(<YourComponent />);
+//     expect(container).toMatchSnapshot();
+//   });
+//
+//   it('matches snapshot with custom props', () => {
+//     const { container } = render(<YourComponent someProp="value" />);
+//     expect(container).toMatchSnapshot();
+//   });
+//
+//   // Test different states and variations
+//   describe('conditional rendering', () => {
+//     it('matches snapshot when condition is true', () => {
+//       const { container } = render(<YourComponent conditionalProp={true} />);
+//       expect(container).toMatchSnapshot();
+//     });
+//
+//     it('matches snapshot when condition is false', () => {
+//       const { container } = render(<YourComponent conditionalProp={false} />);
+//       expect(container).toMatchSnapshot();
+//     });
+//   });
+// });
