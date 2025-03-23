@@ -3,7 +3,7 @@ title: Technical Guides Overview
 aliases: [Technical Guides MOC, Development Guides]
 tags: [moc, technical, guides, development]
 created: 2024-12-28
-updated: 2024-12-28
+updated: 2025-03-22
 ---
 
 # Technical Guides Overview
@@ -23,11 +23,18 @@ This Map of Content (MOC) provides a comprehensive overview of technical guides 
 - Deployment verification
 
 ## Testing
-- [[testing|Testing Guide]] - Comprehensive testing documentation
-- Unit testing
-- Integration testing
-- E2E testing
-- Test coverage requirements
+- [[testing-guide|React Testing Guide]] - Comprehensive guide for testing React components
+- [[component-testing|Component Testing]] - Testing React components of all types
+- [[hook-testing|Hook Testing]] - Testing custom hooks and hook dependencies
+- [[integration-testing|Integration Testing]] - Testing component interactions
+- [[snapshot-testing|Snapshot Testing]] - Visual testing for UI components
+- [[test-organization|Test Organization]] - Folder structure and test organization
+- [[testing-workflow|Testing Workflow]] - Process guide for effective testing practices
+- [[test-configuration|Test Configuration]] - Jest configuration and setup
+- [[testing-overview|Testing Overview]] - High-level testing strategy
+
+## Component Guidelines
+- [[component-naming-convention|Component Naming Convention]] - Standards for component naming
 
 ## Contributing
 - [[contributing|Contributing Guide]] - Contribution guidelines
@@ -49,8 +56,8 @@ graph TD
 | Guide | Primary Use | Required |
 |-------|-------------|-----------|
 | Setup | Initial Dev | Yes |
+| Testing | Component Quality | Yes |
 | Deployment | Production | Yes |
-| Testing | Quality | Yes |
 | Contributing | Collaboration | Yes |
 
 ## Technical Stack
@@ -64,6 +71,7 @@ graph TD
 - VS Code
 - Jest
 - React Testing Library
+- MSW (Mock Service Worker)
 - ESLint
 
 ## Integration Points
