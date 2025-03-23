@@ -1,0 +1,24 @@
+/* Storybook Tailwind integration 
+   Similar to how you'd set up a dedicated Drupal theme stylesheet */
+
+/* Direct Tailwind directives instead of imports */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Core CSS variables from your Next.js app */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+.text-balance {
+  text-wrap: balance;
+}

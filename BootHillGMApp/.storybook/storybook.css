@@ -1,0 +1,25 @@
+/* Storybook-specific styles to ensure UI components display properly */
+
+/* Wireframe button used in CombatControls */
+.wireframe-button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border: 2px solid #4a5568;
+  border-radius: 0.25rem;
+  background-color: transparent;
+  color: #4a5568;
+  font-weight: bold;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.wireframe-button:hover:not(:disabled) {
+  background-color: #4a5568;
+  color: white;
+}
+
+.wireframe-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
