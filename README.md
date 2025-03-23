@@ -2,7 +2,9 @@
 
 BootHillGM is a web application providing an AI-driven Game Master for the Boot Hill tabletop RPG, offering an engaging, user-friendly experience for solo players in the Western genre. Built with Next.js, it's designed to run in modern web browsers.
 
-## Key Features (MVP)
+**Project Status**: Alpha development - Core features implementation in progress
+
+## Key Features
 
 - Boot Hill Character Creation with AI-driven generation
 - AI-powered Game Mastering for Western settings using Gemini 1.5 Pro
@@ -11,19 +13,20 @@ BootHillGM is a web application providing an AI-driven Game Master for the Boot 
 - Boot Hill's percentile dice system for chance-based outcomes
 - Character Sheet View with stat and status displays
 - Inventory Management with item usage and tracking
-- Turn-based combat system with Boot Hill mechanics, including weapon and brawling combat
+- Turn-based combat system with Boot Hill mechanics
 - Strength system implementation with derived stats and modifiers
 - Automatic journal entry system with search and filtering
-- **Player Decision System**: Interactive choice system that presents decisions to the player, records their choices, and integrates seamlessly with the narrative flow
+- Player Decision System with narrative integration
 
 ## Technical Stack
 
-- Platform: Web application using Next.js 14.x with App Router
-- AI Model: Gemini 1.5 Pro API (Google Generative AI)
-- Development Environment: Visual Studio Code, Git for version control
-- User Interface: React with Tailwind CSS for wireframe styling
-- State Management: React Context with useReducer for global state management
-- Data Persistence: localStorage for simple data storage
+- **Frontend**: Next.js 14.x with App Router
+- **AI Integration**: Gemini 1.5 Pro API (Google Generative AI)
+- **Development**: VS Code, ESLint, Prettier
+- **UI**: React with Tailwind CSS
+- **State Management**: React Context with useReducer
+- **Storage**: localStorage for persistence
+- **Testing**: React Testing Library with Jest
 
 ## Getting Started
 
@@ -31,63 +34,41 @@ BootHillGM is a web application providing an AI-driven Game Master for the Boot 
 2. Install Node.js and npm if not already installed
 3. Navigate to the `BootHillGMApp` directory and run: `npm install`
 4. Set up your Gemini API key:
-   - Create a `.env` file in the `BootHillGMApp` directory
-   - Add your API key to this file: `GEMINI_API_KEY=your_api_key_here`
-   - Ensure this file is added to .gitignore to keep your API key secure
-5. To run the app:
-    - `npm run dev`
+   ```
+   # .env.local
+   GEMINI_API_KEY=your_api_key_here
+   ```
+5. Start development server: `npm run dev`
+6. Run tests: `npm test`
 
-## Project Documentation
+## Core Systems
 
-### Docs Folder Structure
+- **AI Integration**: Game Master intelligence, NPC behaviors, and narrative generation
+- **Character System**: Creation, management, and progression
+- **Combat System**: Turn-based mechanics with weapons and modifiers
+- **Journal System**: Automatic narrative recording and organization
+- **Player Decision System**: Interactive choice management with narrative impact
+- **State Management**: Game session persistence and restoration
 
-- [AIGameMasterLogic.md](Docs/ai/game-master-logic.md): Details on the AI Game Master's logic and decision-making processes.
-- [ArchitectureDecisionRecord.md](Docs/architecture/architecture-decisions.md): Record of key architectural decisions made for the project.
-- [ComponentBreakdown.md](Docs/architecture/component-structure.md): Breakdown of the main components of the BootHillGM project.
-- [DevelopmentRoadmap.md](Docs/planning/roadmap.md): Roadmap outlining the development phases and milestones.
-- [GameDesignDocument.md](Docs/meta/game-design.md): Comprehensive game design document.
-- [ProjectOverview.md](Docs/meta/project-overview.md): High-level overview of the BootHillGM project.
-- [RiskAssessment.md](Docs/meta/risk-assessment.md): Assessment of potential risks and mitigation strategies.
-- [TechnicalSpecification.md](Docs/architecture/technical-specification.md): Detailed technical specifications for the project.
-- [UIWireframes.md](Docs/architecture/ui-wireframes.md): User interface wireframes for the app.
+## Development Approach
 
-#### BootHill Folder
+The project follows test-driven development principles using React Testing Library and Jest. The testing workflow includes:
 
-- [Boot Hill v2 Basic Rules.txt](Docs/boot-hill-rules/game-overview.md): Basic rules for Boot Hill version 2.
+- Planning tests that define expected behavior
+- Implementing minimal code to pass tests
+- Refactoring for code quality while maintaining behavior
+- Organization of tests alongside their components
 
-#### Core Systems Folder
-- [AI Integration](Docs/core-systems/ai-integration.md): Details on AI system integration
-- [Character Generation](Docs/core-systems/character-generation.md): Character creation process and rules
-- [Combat System](Docs/core-systems/combat-system.md): Combat mechanics and rules
-- [Journal System](Docs/core-systems/journal-system.md): Journal system functionality and design
-- [Player Decision System](Docs/core-systems/player-decision-system.md): Interactive decision system architecture and implementation
-- [State Management](Docs/core-systems/state-management.md): State management approach and implementation
-- [Strength System](Docs/core-systems/strength-system.md): Strength system mechanics and calculations
-- [Combat Modifiers](Docs/core-systems/combat-modifiers.md): Combat modifiers and their effects
+For more details, see the [testing documentation](Docs/technical-guides/testing-guide.md) and [workflow guide](Docs/development/workflows/testing-workflow.md).
 
-#### Development Workflows
-- [Claude Workflow](Docs/development/workflows/claude-workflow.md): Guidelines for using Claude in development
-- [Project Analysis Prompt Example](Docs/development/workflows/examples/project-analysis-prompt.md): Example prompt for project analysis
+## Documentation
 
-#### Technical Folder
+Documentation is maintained in the `/Docs` directory, organized by:
 
-- [Gemini-API-Integration-Guide.md](Docs/reference/gemini-api-guide.md): Guide for integrating the Gemini API.
-- [Setup Guide](Docs/technical-guides/setup.md): Instructions for setting up the development environment
-- [Dependencies](Docs/technical-guides/dependencies.md): Overview of project dependencies
-- [Environment Configuration](Docs/technical-guides/environment-configuration.md): Guide to configuring environment variables
-- [Testing Guide](Docs/technical-guides/testing.md): Information on testing procedures and tools
-- [Development Workflow](Docs/technical-guides/workflow.md): Best practices for development workflow
+- **Technical Guides**: Setup, configuration, and development practices
+- **Core Systems**: Implementation details for major features
+- **Development Workflows**: Processes and best practices
+- **Architecture**: Design decisions and component structure
+- **Meta**: Project overview and planning documents
 
-## Player Decision System
-
-The BootHillGM Player Decision System enhances gameplay by:
-
-- Presenting contextual decisions to players during narrative flow
-- Providing multiple choice options with potential impact information
-- Recording player choices for future narrative influence
-- Visually distinguishing decisions by importance (critical, significant, moderate, minor)
-- Seamlessly integrating with the narrative display system
-
-Decisions can be triggered based on narrative context, similar to how dialogue choices work in Bioware RPGs. The system is designed to be easily integrated with AI, allowing for dynamic decision generation based on the game state.
-
-See the full [Player Decision System documentation](Docs/core-systems/player-decision-system.md) for technical details.
+The complete documentation structure provides detailed information on all aspects of the project's implementation and design.
