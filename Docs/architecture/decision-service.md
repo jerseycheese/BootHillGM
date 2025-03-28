@@ -104,6 +104,7 @@ The Decision Service integrates with the narrative system through:
 1. The `useNarrativeContext` hook which manages player decisions
 2. The `DecisionContext` which provides decision state to components
 3. The `PlayerDecisionCard` component which displays decisions to the player
+4. Various utility functions for processing decision impacts (see [[../core-systems/player-decision-system#Technical Implementation Notes|Player Decision System]] for details).
 
 ## Related Documentation
 

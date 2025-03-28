@@ -5,10 +5,8 @@ import {
   PlayerDecisionRecordWithImpact
 } from '../types/narrative.types';
 import { createDecisionRecord } from '../utils/decisionUtils';
-import { 
-  createDecisionImpacts,
-  addImpactsToDecisionRecord
-} from '../utils/decisionImpactUtils';
+import { addImpactsToDecisionRecord } from '../utils/decisionImpactUtils';
+import { createDecisionImpacts } from '../utils/decisionImpactGenerator';
 
 // Mock uuid to ensure consistent IDs in tests
 jest.mock('uuid', () => ({

@@ -8,7 +8,7 @@ import {
   DecisionImpact
 } from '../types/narrative.types';
 import { createDecisionRecord } from './decisionUtils';
-import { createDecisionImpacts } from './decisionImpactUtils';
+import { createDecisionImpacts } from './decisionImpactGenerator';
 
 /**
  * Creates a decision record with impact metadata

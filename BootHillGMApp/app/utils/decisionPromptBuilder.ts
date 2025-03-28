@@ -12,7 +12,7 @@ import {
   ImpactState
 } from '../types/narrative.types';
 import { createDecisionHistoryContext } from './decisionRelevanceUtils';
-import { formatImpactsForAIContext } from './decisionImpactUtils';
+import { formatImpactsForAIContext } from './decisionImpactFormatter';
 
 /**
  * Constant for max tokens to allocate to decision history

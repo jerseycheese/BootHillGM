@@ -1,11 +1,11 @@
 import { 
-  createDecisionImpacts,
   addImpactsToDecisionRecord,
   processDecisionImpacts,
   evolveImpactsOverTime,
   reconcileConflictingImpacts,
-  formatImpactsForAIContext
 } from '../utils/decisionImpactUtils';
+import { createDecisionImpacts } from '../utils/decisionImpactGenerator';
+import { formatImpactsForAIContext } from '../utils/decisionImpactFormatter';
 import { 
   PlayerDecision,
   PlayerDecisionOption,

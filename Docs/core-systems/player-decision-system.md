@@ -205,4 +205,5 @@ The Player Decision System integrates with other core systems:
 - CSS Modules are used for component-specific styling
 - TypeScript interfaces ensure type safety throughout the system
 - Jest tests verify correct behavior of all components and functions
+- Utility functions for handling decision impacts (generation, processing, formatting) are located in `app/utils/decisionImpactUtils.ts`, `app/utils/decisionImpactGenerator.ts`, and `app/utils/decisionImpactFormatter.ts`.
 - The system is designed for extensibility with AI-driven enhancements

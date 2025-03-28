@@ -12,7 +12,7 @@ import {
   ScoredContextElement
 } from '../../types/narrative/context.types';
 import { generateContextTags } from '../decisionRelevanceUtils';
-import { formatImpactsForAIContext } from '../decisionImpactUtils';
+import { formatImpactsForAIContext } from '../decisionImpactFormatter';
 import { estimateTokenCount } from './narrativeCompression';
 import { 
   DEFAULT_CONTEXT_OPTIONS, 
