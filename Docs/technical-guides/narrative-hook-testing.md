@@ -332,31 +332,11 @@ export const mockNarrativeState: NarrativeState = {
 
 ## Best Practices
 
-1. **Test each hook in isolation** - Mock dependencies to test the hook logic independently
-2. **Cover edge cases** - Test error handling, empty states, and boundary conditions
-3. **Verify state transitions** - Confirm loading states are set and cleared correctly
-4. **Check event triggering** - Verify custom events are dispatched when expected
-5. **Test performance-sensitive code** - Verify memoization works by checking reference stability
-
-## React Hooks Testing Parallels to Drupal
-
-If you're coming from a Drupal background, here are some helpful parallels:
-
-1. **Hook Testing vs. Plugin Testing**
-   - React hooks are similar to Drupal plugins/services - small, specific units of functionality
-   - Both require isolation in testing with mockable dependencies
-
-2. **Context Providers vs. Service Containers**
-   - React's Context API is similar to Drupal's service container
-   - Both provide dependency injection for components/plugins
-
-3. **Mocking Patterns**
-   - Jest mocks for React hooks are similar to PHPUnit mocks in Drupal
-   - Both use proper dependency injection to make testing easier
-
-4. **Events System**
-   - React's custom events parallel Drupal's event dispatcher
-   - Both need verification in tests that events are properly triggered
+1. **Test each hook in isolation** – Mock dependencies to test the hook logic independently.
+2. **Cover edge cases** – Test error handling, empty states, and boundary conditions.
+3. **Verify state transitions** – Confirm loading states are set and cleared correctly.
+4. **Check event triggering** – Verify custom events are dispatched when expected.
+5. **Test performance-sensitive code** – Verify memoization works by checking reference stability.
 
 ## Setting Up Narrative Tests
 
