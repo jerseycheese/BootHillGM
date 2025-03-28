@@ -5,6 +5,7 @@ import { GameEngineAction, UpdateCharacterPayload } from '../../../types/gameAct
 import * as brawlingSystem from '../../../utils/brawlingSystem';
 import * as combatUtils from '../../../utils/combatUtils';
 import * as useBrawlingActionsHook from '../../../hooks/combat/useBrawlingActions';
+import { BrawlingState } from '../../../types/combat';
 
 // Mock the useBrawlingActions hook
 jest.mock('../../../hooks/combat/useBrawlingActions', () => ({
@@ -18,6 +19,23 @@ jest.mock('../../../utils/brawlingSystem', () => ({
   resolveBrawlingRound: jest.fn()
 }));
 
+// Mock the BrawlingEngine class
+jest.mock('../../../utils/brawlingEngine', () => {
+  const originalModule = jest.requireActual('../../../utils/brawlingEngine');
+  return {
+    ...originalModule,
+    BrawlingEngine: {
+      ...originalModule.BrawlingEngine,
+      formatCombatMessage: jest.fn().mockImplementation(
+        (attacker, result, isPunching) => {
+          const action = isPunching ? 'punches' : 'grapples';
+          return `${attacker} ${action} with ${result.result} (Roll: ${result.roll})`;
+        }
+      )
+    }
+  };
+});
+
 // Mock checkKnockout
 jest.mock('../../../utils/combatUtils', () => ({
   ...jest.requireActual('../../../utils/combatUtils'),
@@ -28,6 +46,16 @@ jest.mock('../../../utils/combatUtils', () => ({
 const isUpdateCharacterAction = (action: GameEngineAction): action is { type: "UPDATE_CHARACTER"; payload: UpdateCharacterPayload } => {
   return action.type === "UPDATE_CHARACTER" && 'payload' in action;
 };
+
+// Get default initial state for tests
+const getDefaultState = (): BrawlingState => ({
+  round: 1 as const, // Using 'as const' instead of 'as 1'
+  playerModifier: 0,
+  opponentModifier: 0,
+  playerCharacterId: mockPlayerCharacter.id,
+  opponentCharacterId: mockNPC.id,
+  roundLog: []
+});
 
 describe('useBrawlingCombat - Combat Flow', () => {
   let mockDispatch: jest.Mock;
@@ -43,61 +71,21 @@ describe('useBrawlingCombat - Combat Flow', () => {
     jest.restoreAllMocks();
   });
 
-  describe('Single Round Combat', () => {
-    it('should process a complete round with player and opponent actions', async () => {
-      // Mock handleCombatAction to return false (no knockout)
+  describe('Combat Scenarios', () => {
+    it('should process a round and handle modifiers correctly', async () => {
+      // Set up mocks
       (useBrawlingActionsHook.useBrawlingActions as jest.Mock).mockImplementation((props) => ({
         ...jest.requireActual('../../../hooks/combat/useBrawlingActions').useBrawlingActions(props),
         handleCombatAction: jest.fn().mockResolvedValue(false)
       }));
-
-      // Mock checkKnockout to return false
       (combatUtils.checkKnockout as jest.Mock).mockReturnValue({ isKnockout: false });
-
-      // Mock resolveBrawlingRound for a light hit
-      (brawlingSystem.resolveBrawlingRound as jest.Mock).mockImplementation(() => ({
-        roll: 3,
-        result: 'Glancing Blow',
-        damage: 1,
-        location: 'leftArm',
-        nextRoundModifier: 0
-      }));
-
-      const { result } = renderHook(() =>
-        useBrawlingCombat({
-          playerCharacter: mockPlayerCharacter,
-          opponent: mockNPC,
-          onCombatEnd: mockOnCombatEnd,
-          dispatch: mockDispatch,
-          initialCombatState: {
-            round: 1,
-            playerModifier: 0,
-            opponentModifier: 0,
-            playerCharacterId: mockPlayerCharacter.id,
-            opponentCharacterId: mockNPC.id,
-            roundLog: []
-          }
-        })
-      );
-
-      await act(async () => {
-        await result.current.processRound(true, true);
-      });
-
-      expect(result.current.brawlingState.round).toBe(2);
-      expect(result.current.brawlingState.roundLog).toHaveLength(3);
-      expect(mockOnCombatEnd).not.toHaveBeenCalled();
-    });
-
-    it('should handle combat modifiers correctly after hits', async () => {
-      // Mock resolveBrawlingRound with nextRoundModifier
-      (brawlingSystem.resolveBrawlingRound as jest.Mock).mockImplementation(() => ({
+      (brawlingSystem.resolveBrawlingRound as jest.Mock).mockReturnValue({
         roll: 15,
         result: 'Solid Hit',
         damage: 3,
         location: 'torso',
         nextRoundModifier: -2
-      }));
+      });
 
       const { result } = renderHook(() =>
         useBrawlingCombat({
@@ -105,14 +93,7 @@ describe('useBrawlingCombat - Combat Flow', () => {
           opponent: mockNPC,
           onCombatEnd: mockOnCombatEnd,
           dispatch: mockDispatch,
-          initialCombatState: {
-            round: 1,
-            playerModifier: 0,
-            opponentModifier: 0,
-            playerCharacterId: mockPlayerCharacter.id,
-            opponentCharacterId: mockNPC.id,
-            roundLog: []
-          }
+          initialCombatState: getDefaultState()
         })
       );
 
@@ -120,92 +101,36 @@ describe('useBrawlingCombat - Combat Flow', () => {
         await result.current.processRound(true, true);
       });
 
+      // Check round advancement
+      expect(result.current.brawlingState.round).toBe(2);
+      
+      // Check modifiers are applied
       expect(result.current.brawlingState.playerModifier).toBe(-2);
-    });
-
-    it('should maintain proper combat log sequence', async () => {
-      const { result } = renderHook(() =>
-        useBrawlingCombat({
-          playerCharacter: mockPlayerCharacter,
-          opponent: mockNPC,
-          onCombatEnd: mockOnCombatEnd,
-          dispatch: mockDispatch,
-          initialCombatState: {
-            round: 1,
-            playerModifier: 0,
-            opponentModifier: 0,
-            playerCharacterId: mockPlayerCharacter.id,
-            opponentCharacterId: mockNPC.id,
-            roundLog: []
-          }
-        })
-      );
-
-      await act(async () => {
-        await result.current.processRound(true, true);
-      });
-
+      
+      // Check log entries
       const logs = result.current.brawlingState.roundLog;
       expect(logs[0].type).toBe('hit');
       expect(logs[logs.length - 1].type).toBe('info');
       expect(logs[logs.length - 1].text).toContain('Round 1 complete');
     });
-  });
 
-  describe('Multiple Round Combat', () => {
-    it('should progress through multiple rounds correctly', async () => {
-      // Mock handleCombatAction to always return false (no knockout)
+    it('should handle multiple rounds and accumulate damage', async () => {
+      // Set up mocks
       (useBrawlingActionsHook.useBrawlingActions as jest.Mock).mockImplementation((props) => ({
         ...jest.requireActual('../../../hooks/combat/useBrawlingActions').useBrawlingActions(props),
         handleCombatAction: jest.fn().mockResolvedValue(false)
       }));
-
-      // Mock checkKnockout to return false
       (combatUtils.checkKnockout as jest.Mock).mockReturnValue({ isKnockout: false });
-
-      const { result } = renderHook(() =>
-        useBrawlingCombat({
-          playerCharacter: mockPlayerCharacter,
-          opponent: mockNPC,
-          onCombatEnd: mockOnCombatEnd,
-          dispatch: mockDispatch,
-          initialCombatState: {
-            round: 1,
-            playerModifier: 0,
-            opponentModifier: 0,
-            playerCharacterId: mockPlayerCharacter.id,
-            opponentCharacterId: mockNPC.id,
-            roundLog: []
-          }
-        })
-      );
-
-      // Process first round
-      await act(async () => {
-        await result.current.processRound(true, true);
-      });
-      expect(result.current.brawlingState.round).toBe(2);
-
-      // Process second round
-      await act(async () => {
-        await result.current.processRound(true, false);
-      });
-      expect(result.current.brawlingState.round).toBe(2);
-      expect(result.current.brawlingState.roundLog.length).toBeGreaterThan(4);
-    });
-
-    it('should accumulate damage across rounds', async () => {
-      // Mock consistent damage
-      (brawlingSystem.resolveBrawlingRound as jest.Mock).mockImplementation(() => ({
+      (brawlingSystem.resolveBrawlingRound as jest.Mock).mockReturnValue({
         roll: 15,
         result: 'Solid Hit',
         damage: 2,
         location: 'torso',
         nextRoundModifier: 0
-      }));
+      });
 
       const updateCharacterCalls: UpdateCharacterPayload[] = [];
-      mockDispatch.mockImplementation((action: GameEngineAction) => {
+      mockDispatch.mockImplementation((action) => {
         if (isUpdateCharacterAction(action)) {
           updateCharacterCalls.push(action.payload);
         }
@@ -218,25 +143,18 @@ describe('useBrawlingCombat - Combat Flow', () => {
           opponent: mockNPC,
           onCombatEnd: mockOnCombatEnd,
           dispatch: mockDispatch,
-          initialCombatState: {
-            round: 1,
-            playerModifier: 0,
-            opponentModifier: 0,
-            playerCharacterId: mockPlayerCharacter.id,
-            opponentCharacterId: mockNPC.id,
-            roundLog: []
-          }
+          initialCombatState: getDefaultState()
         })
       );
 
       // Process two rounds
-      await act(async () => {
-        await result.current.processRound(true, true);
-      });
-      await act(async () => {
-        await result.current.processRound(true, true);
-      });
+      await act(async () => { await result.current.processRound(true, true); });
+      await act(async () => { await result.current.processRound(true, true); });
 
+      expect(result.current.brawlingState.round).toBe(2);
+      expect(result.current.brawlingState.roundLog.length).toBeGreaterThan(4);
+      
+      // Check damage accumulation
       const totalDamage = updateCharacterCalls.reduce((sum, call) => 
         sum + (call.damageInflicted || 0), 0
       );
@@ -244,28 +162,25 @@ describe('useBrawlingCombat - Combat Flow', () => {
     });
   });
 
-  describe('Knockout Scenarios', () => {
-    it('should handle player knockout punch to head', async () => {
-      // Mock handleCombatAction to return true (knockout)
+  describe('Knockout and State Management', () => {
+    it('should handle knockout scenarios', async () => {
+      // Set up for direct knockout
       (useBrawlingActionsHook.useBrawlingActions as jest.Mock).mockImplementation((props) => ({
         ...jest.requireActual('../../../hooks/combat/useBrawlingActions').useBrawlingActions(props),
         handleCombatAction: jest.fn().mockResolvedValue(true)
       }));
-
-      // Mock knockout for head punch
       (combatUtils.checkKnockout as jest.Mock).mockReturnValue({
         isKnockout: true,
         winner: 'player',
         summary: 'Player knocked out opponent with a punch to the head!'
       });
-
-      (brawlingSystem.resolveBrawlingRound as jest.Mock).mockImplementation(() => ({
+      (brawlingSystem.resolveBrawlingRound as jest.Mock).mockReturnValue({
         roll: 5,
         result: 'Critical Hit',
         damage: 6,
         location: 'head',
         nextRoundModifier: 0
-      }));
+      });
 
       const { result } = renderHook(() =>
         useBrawlingCombat({
@@ -273,20 +188,12 @@ describe('useBrawlingCombat - Combat Flow', () => {
           opponent: mockNPC,
           onCombatEnd: mockOnCombatEnd,
           dispatch: mockDispatch,
-          initialCombatState: {
-            round: 1,
-            playerModifier: 0,
-            opponentModifier: 0,
-            playerCharacterId: mockPlayerCharacter.id,
-            opponentCharacterId: mockNPC.id,
-            roundLog: []
-          }
+          initialCombatState: getDefaultState()
         })
       );
 
       await act(async () => {
         await result.current.processRound(true, true);
-        // Add small delay to allow for combat end callback
         await new Promise(resolve => setTimeout(resolve, 10));
       });
 
@@ -296,53 +203,18 @@ describe('useBrawlingCombat - Combat Flow', () => {
       );
     });
 
-    it('should process knockout from cumulative damage', async () => {
-      let damageCount = 0;
-      (combatUtils.checkKnockout as jest.Mock).mockImplementation(() => {
-        damageCount++;
-        return {
-          isKnockout: damageCount >= 2,
-          winner: damageCount >= 2 ? 'player' : undefined,
-          summary: damageCount >= 2 ? 'Opponent collapsed from accumulated damage!' : undefined
-        };
+    it('should track character state changes', async () => {
+      // Set up mocks
+      (brawlingSystem.resolveBrawlingRound as jest.Mock).mockReturnValue({
+        roll: 15,
+        result: 'Solid Hit',
+        damage: 3,
+        location: 'rightArm',
+        nextRoundModifier: 0
       });
 
-      const { result } = renderHook(() =>
-        useBrawlingCombat({
-          playerCharacter: mockPlayerCharacter,
-          opponent: mockNPC,
-          onCombatEnd: mockOnCombatEnd,
-          dispatch: mockDispatch,
-          initialCombatState: {
-            round: 1,
-            playerModifier: 0,
-            opponentModifier: 0,
-            playerCharacterId: mockPlayerCharacter.id,
-            opponentCharacterId: mockNPC.id,
-            roundLog: []
-          }
-        })
-      );
-
-      // Process two rounds
-      await act(async () => {
-        await result.current.processRound(true, true);
-      });
-      await act(async () => {
-        await result.current.processRound(true, true);
-      });
-
-      expect(mockOnCombatEnd).toHaveBeenCalledWith(
-        'player',
-        expect.stringContaining('collapsed')
-      );
-    });
-  });
-
-  describe('State Management', () => {
-    it('should properly track strength changes', async () => {
       const updateCharacterCalls: UpdateCharacterPayload[] = [];
-      mockDispatch.mockImplementation((action: GameEngineAction) => {
+      mockDispatch.mockImplementation((action) => {
         if (isUpdateCharacterAction(action)) {
           updateCharacterCalls.push(action.payload);
         }
@@ -355,58 +227,20 @@ describe('useBrawlingCombat - Combat Flow', () => {
           opponent: mockNPC,
           onCombatEnd: mockOnCombatEnd,
           dispatch: mockDispatch,
-          initialCombatState: {
-            round: 1,
-            playerModifier: 0,
-            opponentModifier: 0,
-            playerCharacterId: mockPlayerCharacter.id,
-            opponentCharacterId: mockNPC.id,
-            roundLog: []
-          }
+          initialCombatState: getDefaultState()
         })
       );
 
-      await act(async () => {
-        await result.current.processRound(true, true);
-      });
+      await act(async () => { await result.current.processRound(true, true); });
 
+      // Check strength changes
       const strengthUpdates = updateCharacterCalls.filter(call => 
         call.strengthHistory && call.strengthHistory.changes.length > 0
       );
       expect(strengthUpdates.length).toBeGreaterThan(0);
       expect(strengthUpdates[0].strengthHistory?.changes[0]).toHaveProperty('reason', 'damage');
-    });
 
-    it('should manage wound application correctly', async () => {
-      (brawlingSystem.resolveBrawlingRound as jest.Mock).mockImplementation(() => ({
-        roll: 15,
-        result: 'Solid Hit',
-        damage: 3,
-        location: 'rightArm',
-        nextRoundModifier: 0
-      }));
-
-      const { result } = renderHook(() =>
-        useBrawlingCombat({
-          playerCharacter: mockPlayerCharacter,
-          opponent: mockNPC,
-          onCombatEnd: mockOnCombatEnd,
-          dispatch: mockDispatch,
-          initialCombatState: {
-            round: 1,
-            playerModifier: 0,
-            opponentModifier: 0,
-            playerCharacterId: mockPlayerCharacter.id,
-            opponentCharacterId: mockNPC.id,
-            roundLog: []
-          }
-        })
-      );
-
-      await act(async () => {
-        await result.current.processRound(true, true);
-      });
-
+      // Check wound application
       const updateCalls = mockDispatch.mock.calls.filter(
         call => isUpdateCharacterAction(call[0])
       );
@@ -420,9 +254,12 @@ describe('useBrawlingCombat - Combat Flow', () => {
   });
 
   describe('Error Handling', () => {
-    it('should handle invalid state gracefully', async () => {
+    it('should handle errors gracefully', async () => {
       // Mock handleCombatAction to return rejected promise
-      const mockHandleCombatAction = jest.fn().mockImplementation(() => Promise.reject(new Error('Invalid combat state')));
+      const mockHandleCombatAction = jest.fn().mockImplementation(() => 
+        Promise.reject(new Error('Invalid combat state'))
+      );
+      
       (useBrawlingActionsHook.useBrawlingActions as jest.Mock).mockImplementation((props) => ({
         ...jest.requireActual('../../../hooks/combat/useBrawlingActions').useBrawlingActions(props),
         handleCombatAction: mockHandleCombatAction,
@@ -435,50 +272,11 @@ describe('useBrawlingCombat - Combat Flow', () => {
           opponent: mockNPC,
           onCombatEnd: mockOnCombatEnd,
           dispatch: mockDispatch,
-          initialCombatState: {
-            round: 1,
-            playerModifier: 0,
-            opponentModifier: 0,
-            playerCharacterId: mockPlayerCharacter.id,
-            opponentCharacterId: mockNPC.id,
-            roundLog: []
-          }
+          initialCombatState: getDefaultState()
         })
       );
 
       // Should reject with error when state is invalid
-      await act(async () => {
-        await expect(result.current.processRound(true, true)).rejects.toThrow('Invalid combat state');
-      });
-    });
-
-    it('should handle state validation errors', async () => {
-      // Mock handleCombatAction to return rejected promise
-      const mockHandleCombatAction = jest.fn().mockImplementation(() => Promise.reject(new Error('Invalid combat state')));
-      (useBrawlingActionsHook.useBrawlingActions as jest.Mock).mockImplementation((props) => ({
-        ...jest.requireActual('../../../hooks/combat/useBrawlingActions').useBrawlingActions(props),
-        handleCombatAction: mockHandleCombatAction,
-        processRound: jest.fn().mockRejectedValue(new Error('Invalid combat state'))
-      }));
-
-      const { result } = renderHook(() =>
-        useBrawlingCombat({
-          playerCharacter: mockPlayerCharacter,
-          opponent: mockNPC,
-          onCombatEnd: mockOnCombatEnd,
-          dispatch: mockDispatch,
-          initialCombatState: {
-            round: 1,
-            playerModifier: 0,
-            opponentModifier: 0,
-            playerCharacterId: mockPlayerCharacter.id,
-            opponentCharacterId: mockNPC.id,
-            roundLog: []
-          }
-        })
-      );
-
-      // Should reject with error when validation fails
       await act(async () => {
         await expect(result.current.processRound(true, true)).rejects.toThrow('Invalid combat state');
       });

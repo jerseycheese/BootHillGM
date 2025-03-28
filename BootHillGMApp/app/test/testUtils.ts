@@ -17,6 +17,7 @@ export * from './utils/renderUtils';
 export * from './utils/userEventUtils';
 export * from './utils/characterTestUtils';
 export * from './utils/stateTestUtils'; // Add state testing utilities
+export * from './utils/combatTestUtils'; // Add combat testing utilities
 
 // 3. Export setup functions from setup directory
 // These handle test environment configuration

@@ -1,4 +1,5 @@
-import { parsePlayerDecision, isValidPlayerDecision } from '../../../services/ai/responseParser';
+import { parsePlayerDecision } from '../../../services/ai/responseParser';
+import { isValidPlayerDecision  } from 'app/services/ai/parsers/playerDecisionParser';
 import { PlayerDecision } from '../../../types/narrative.types';
 import { parseAIResponse } from '../../../services/ai/responseParser';
 import { AIResponse } from '../../../services/ai/types';
