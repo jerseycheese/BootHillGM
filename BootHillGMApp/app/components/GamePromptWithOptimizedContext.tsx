@@ -6,9 +6,10 @@ import { useAIWithOptimizedContext } from '../utils/narrative';
 import { AIRequestResult } from '../types/ai.types';
 import { LocationType } from '../services/locationService';
 import { InventoryItem } from '../types/item.types';
+import { Character } from '../types/character';
 import { v4 as uuidv4 } from 'uuid';
 
-// Define a minimal opponent interface for type safety
+
 interface OpponentCharacter {
   name?: string;
   id?: string;
@@ -29,50 +30,40 @@ export default function GamePromptWithOptimizedContext() {
   const [inputText, setInputText] = useState('');
   const [debugMode, setDebugMode] = useState(false);
   
-  // Handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
     if (!inputText.trim() || isLoading) return;
     
     try {
-      // Clear input
       const userPrompt = inputText;
       setInputText('');
       
-      // Get currently relevant focus tags based on game state
       const focusTags = getFocusTagsFromGameState();
       
-      // Extract inventory items from inventory state if needed
       const inventoryItems = state.inventory && 'items' in state.inventory 
         ? state.inventory.items 
         : (state.inventory as unknown as InventoryItem[] || []);
       
-      // Use focused context for more specific and relevant responses
       const response = await makeAIRequestWithFocus(
         userPrompt,
         inventoryItems,
         focusTags
       );
       
-      // Process the AI response
       handleAIResponse(response);
       
-      // Log optimization stats only in debug mode and development environment
       if (debugMode && process.env.NODE_ENV !== 'production' && response.contextQuality) {
         console.debug('Context optimization stats:', response.contextQuality);
       }
     } catch {
-      // Error is already handled by the hook
-      // No need to do anything here as the error will be displayed from the hook's error state
+      // Error is handled by the hook
     }
   };
   
-  // Extract relevant focus tags from the current game state
   const getFocusTagsFromGameState = () => {
     const tags: string[] = [];
     
-    // Add location tag
     if (state.location) {
       if (typeof state.location === 'string') {
         tags.push(`location:${state.location}`);
@@ -83,26 +74,21 @@ export default function GamePromptWithOptimizedContext() {
       }
     }
     
-    // Get opponent from the character state if it exists there
     const opponent = state.character && 'opponent' in state.character 
       ? state.character.opponent 
       : (state as unknown as { opponent?: OpponentCharacter }).opponent;
     
-    // Add character tags - prioritize the current opponent if in combat
     if (state.isCombatActive && opponent?.name) {
       tags.push(`character:${opponent.name}`);
     }
     
-    // Add narrative context tags
     if (state.narrative?.narrativeContext) {
-      // Add character focus
       if (state.narrative.narrativeContext.characterFocus) {
         state.narrative.narrativeContext.characterFocus.forEach(character => {
           tags.push(`character:${character}`);
         });
       }
       
-      // Add themes
       if (state.narrative.narrativeContext.themes) {
         state.narrative.narrativeContext.themes.forEach(theme => {
           tags.push(`theme:${theme}`);
@@ -113,11 +99,8 @@ export default function GamePromptWithOptimizedContext() {
     return tags;
   };
   
-  // Process AI response (integrate with your existing processing logic)
   const handleAIResponse = (response: AIRequestResult) => {
-    // Update narrative with AI response
     if (response.narrative) {
-      // Create a proper narrative state update instead of passing just the string
       dispatch({ 
         type: 'UPDATE_NARRATIVE', 
         payload: {
@@ -126,9 +109,7 @@ export default function GamePromptWithOptimizedContext() {
       });
     }
     
-    // Process location changes
     if (response.location) {
-      // Convert string location to LocationType if needed
       const locationToSet = typeof response.location === 'string' 
         ? { type: 'unknown', description: response.location } as LocationType 
         : response.location;
@@ -139,7 +120,6 @@ export default function GamePromptWithOptimizedContext() {
       });
     }
     
-    // Process combat initiation
     if (response.combatInitiated) {
       dispatch({ 
         type: 'SET_COMBAT_ACTIVE', 
@@ -147,19 +127,35 @@ export default function GamePromptWithOptimizedContext() {
       });
       
       if (response.opponent) {
+        const characterPayload: Partial<Character> = {
+          id: `npc-${response.opponent.name?.replace(/\s+/g, '-') || uuidv4()}`, 
+          name: response.opponent.name || 'Unknown Opponent',
+          isNPC: true, 
+          isPlayer: false,
+          attributes: {
+            strength: response.opponent.attributes?.strength ?? response.opponent.strength ?? 10,
+            baseStrength: response.opponent.attributes?.baseStrength ?? response.opponent.attributes?.strength ?? response.opponent.strength ?? 10,
+            speed: response.opponent.attributes?.speed ?? 10,
+            gunAccuracy: response.opponent.attributes?.gunAccuracy ?? 10,
+            throwingAccuracy: response.opponent.attributes?.throwingAccuracy ?? 10,
+            bravery: response.opponent.attributes?.bravery ?? 10,
+            experience: response.opponent.attributes?.experience ?? 0,
+          },
+          inventory: { items: [] },
+          wounds: [],
+          isUnconscious: false,
+        };
         dispatch({ 
           type: 'SET_OPPONENT', 
-          payload: response.opponent 
+          payload: characterPayload 
         });
       }
     }
     
-    // Process inventory changes
     if (response.acquiredItems && response.acquiredItems.length > 0) {
       response.acquiredItems.forEach((itemName: string) => {
-        // Create a proper InventoryItem with required fields
         const inventoryItem: InventoryItem = {
-          id: uuidv4(), // Generate a unique ID
+          id: uuidv4(), 
           name: itemName,
           quantity: 1,
           description: `A ${itemName}`,
@@ -182,15 +178,14 @@ export default function GamePromptWithOptimizedContext() {
       });
     }
     
-    // Process journal updates
     if (response.storyProgression) {
       dispatch({
         type: 'UPDATE_JOURNAL',
         payload: {
-          id: uuidv4(), // Add required id field
-          content: response.storyProgression.description,
+          id: uuidv4(), 
+          content: response.storyProgression.description ?? '', 
           timestamp: Date.now(),
-          type: 'narrative', // Changed from 'story' to 'narrative' to match JournalEntryType
+          type: 'narrative', 
           narrativeSummary: response.storyProgression.title || 'Story Development'
         }
       });
@@ -231,7 +226,6 @@ export default function GamePromptWithOptimizedContext() {
           </div>
         )}
         
-        {/* Debug mode toggle - only in development */}
         {process.env.NODE_ENV !== 'production' && (
           <div className="mt-2 flex items-center text-sm text-gray-600">
             <input

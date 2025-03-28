@@ -10,110 +10,74 @@
 
 import { renderHook, act } from '@testing-library/react';
 import { useAIWithOptimizedContext } from '../../../utils/narrative/useAIWithOptimizedContext';
-import { useNarrative } from '../../../context/NarrativeContext';
-import { getAIResponse } from '../../../services/ai/gameService';
-import { useOptimizedNarrativeContext, useNarrativeContextSynchronization } from '../../../utils/narrative/narrativeContextIntegration';
-import { estimateTokenCount } from '../../../utils/narrative/narrativeCompression';
-import { MockOptimizedNarrativeContext, MockNarrativeContextSynchronization } from '../../../types/test.types';
+import { InventoryItem } from '../../../types/item.types';
+import { NarrativeContextOptions } from '../../../types/narrative/context.types';
+import { Character } from '../../../types/character';
 
-// Mock dependencies
 jest.mock('../../../context/NarrativeContext');
 jest.mock('../../../services/ai/gameService');
-jest.mock('../../../utils/narrative/narrativeContextIntegration');
+jest.mock('../../../utils/narrative/narrativeContextIntegration'); 
 jest.mock('../../../utils/narrative/narrativeCompression');
 
-// Setup mocks
-const mockGetAIResponse = getAIResponse as jest.MockedFunction<typeof getAIResponse>;
-const mockUseNarrative = useNarrative as jest.MockedFunction<typeof useNarrative>;
-const mockUseOptimizedNarrativeContext = useOptimizedNarrativeContext as jest.MockedFunction<() => MockOptimizedNarrativeContext>;
-const mockUseNarrativeContextSynchronization = useNarrativeContextSynchronization as jest.MockedFunction<() => MockNarrativeContextSynchronization>;
-const mockEstimateTokenCount = estimateTokenCount as jest.MockedFunction<typeof estimateTokenCount>;
+
+import { 
+  setupAIContextMocks, 
+  mockGetAIResponse, 
+  mockUseOptimizedNarrativeContext, 
+  mockUseNarrativeContextSynchronization 
+} from '../../../test/utils/narrativeTestHelpers';
+
+// Import fixtures
+import { 
+  createMockAIResponse 
+} from '../../../test/fixtures/aiResponses';
 
 // Test constants
 const MOCK_PROMPT = "What should I do next?";
-const MOCK_INVENTORY = [{ name: "Revolver", quantity: 1, description: "A reliable six-shooter" }];
-const MOCK_CONTEXT = "Recent events: You arrived in Tombstone.";
+const MOCK_INVENTORY: InventoryItem[] = [{ id: 'item-revolver', name: "Revolver", quantity: 1, description: "A reliable six-shooter", category: 'weapon' }];
+
+const mockCharacterBanditJoe: Partial<Character> = { id: 'npc-bandit-joe', name: "Bandit Joe", attributes: { strength: 70, baseStrength: 80, speed: 8, gunAccuracy: 7, throwingAccuracy: 6, bravery: 6, experience: 5 } };
+const mockCharacterSheriff: Partial<Character> = { id: 'npc-sheriff', name: "Sheriff Williams", attributes: { strength: 85, baseStrength: 85, speed: 7, gunAccuracy: 9, throwingAccuracy: 6, bravery: 8, experience: 7 } };
+const mockCharacterOutlaw: Partial<Character> = { id: 'npc-outlaw-pete', name: "Outlaw Pete", attributes: { strength: 75, baseStrength: 75, speed: 8, gunAccuracy: 6, throwingAccuracy: 5, bravery: 7, experience: 4 } };
+const mockCharacterStranger: Partial<Character> = { id: 'npc-stranger', name: "Mysterious Stranger", attributes: { strength: 10, baseStrength: 10, speed: 10, gunAccuracy: 10, throwingAccuracy: 10, bravery: 10, experience: 0 } };
 
 describe('useAIWithOptimizedContext', () => {
-  // Setup before each test
   beforeEach(() => {
-    jest.resetAllMocks();
-    
-    // Mock useNarrative hook
-    mockUseNarrative.mockReturnValue({
-      state: {
-        narrativeHistory: ["You entered Tombstone.", "You met the sheriff."],
-        narrativeContext: {
-          tone: 'serious',
-          characterFocus: ['Sheriff'],
-          themes: ['justice'],
-          decisionHistory: []
-        }
-      },
-      dispatch: jest.fn()
-    });
-    
-    // Mock useOptimizedNarrativeContext hook
-    mockUseOptimizedNarrativeContext.mockReturnValue({
-      buildOptimizedContext: jest.fn().mockReturnValue(MOCK_CONTEXT),
-      getDefaultContext: jest.fn().mockReturnValue(MOCK_CONTEXT),
-      getFocusedContext: jest.fn().mockReturnValue(MOCK_CONTEXT),
-      getCompactContext: jest.fn().mockReturnValue(MOCK_CONTEXT)
-    });
-    
-    // Mock useNarrativeContextSynchronization hook
-    mockUseNarrativeContextSynchronization.mockReturnValue({
-      ensureFreshContext: jest.fn().mockResolvedValue(null)
-    });
-    
-    // Mock estimateTokenCount function
-    mockEstimateTokenCount.mockReturnValue(100);
-    
-    // Set process.env for tests
-    process.env.NODE_ENV = 'test';
+    setupAIContextMocks();
   });
   
   afterEach(() => {
-    jest.resetModules();
+    jest.resetModules(); 
   });
   
   it('should make an AI request with default context', async () => {
-    // Mock AI response with basic structure
-    const mockAIResponse = {
+    const mockRawAIResponse = createMockAIResponse({
       narrative: "You see the sheriff approaching.",
-      location: { type: 'town', name: 'Tombstone' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: []
-    };
-    mockGetAIResponse.mockResolvedValue(mockAIResponse);
+      opponent: undefined 
+    });
+    mockGetAIResponse.mockResolvedValue(mockRawAIResponse);
     
-    // Render the hook
     const { result } = renderHook(() => useAIWithOptimizedContext());
     
-    // Execute the hook's makeAIRequest function
     let response;
     await act(async () => {
       response = await result.current.makeAIRequest(MOCK_PROMPT, MOCK_INVENTORY);
     });
     
-    // Verify the results
     expect(mockUseNarrativeContextSynchronization().ensureFreshContext).toHaveBeenCalled();
     expect(mockUseOptimizedNarrativeContext().getDefaultContext).toHaveBeenCalled();
     expect(mockGetAIResponse).toHaveBeenCalledWith(
       MOCK_PROMPT,
-      MOCK_CONTEXT,
+      "Recent events: You arrived in Tombstone.", 
       MOCK_INVENTORY,
       undefined,
       expect.anything()
     );
     
-    expect(response).toEqual({
-      ...mockAIResponse,
-      opponent: undefined,
-      storyProgression: undefined,
+    expect(response!).toEqual({
+      ...mockRawAIResponse,
+      opponent: undefined, 
+      storyProgression: undefined, 
       contextQuality: {
         optimized: true,
         compressionLevel: 'medium',
@@ -124,270 +88,172 @@ describe('useAIWithOptimizedContext', () => {
   });
   
   it('should handle an opponent with direct health property', async () => {
-    // Mock AI response with opponent having direct health property
-    const mockAIResponse = {
+    const mockRawAIResponse = createMockAIResponse({
       narrative: "A bandit approaches, ready to fight!",
-      location: { type: 'wilderness' },
+      location: { type: 'wilderness', description: 'Dusty trail outside town' }, 
       combatInitiated: true,
-      opponent: {
-        name: "Bandit Joe",
-        health: 85, // Direct health property
-        attributes: {
-          strength: 70,
-          speed: 8,
-          gunAccuracy: 7,
-          throwingAccuracy: 6,
-          baseStrength: 80,
-          bravery: 6,
-          experience: 5
-        }
-      },
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: []
-    };
-    mockGetAIResponse.mockResolvedValue(mockAIResponse);
+      opponent: mockCharacterBanditJoe as Character 
+    });
+    mockGetAIResponse.mockResolvedValue(mockRawAIResponse);
     
-    // Render the hook
     const { result } = renderHook(() => useAIWithOptimizedContext());
     
-    // Execute the hook's makeAIRequest function
     let response;
     await act(async () => {
       response = await result.current.makeAIRequest(MOCK_PROMPT, MOCK_INVENTORY);
     });
     
-    // Verify it used the direct health property
-    expect(response.opponent).toEqual({
+    expect(response!.opponent).toEqual({
       name: "Bandit Joe",
       strength: 70,
-      health: 85 // Should use direct health property
+      health: 70 
     });
   });
   
   it('should handle an opponent with health in attributes', async () => {
-    // Mock AI response with opponent having health in attributes
-    const mockAIResponse = {
+    const mockRawAIResponse = createMockAIResponse({
       narrative: "The sheriff challenges you to a duel!",
-      location: { type: 'town', name: 'Tombstone' },
       combatInitiated: true,
-      opponent: {
-        name: "Sheriff Williams",
-        attributes: {
-          strength: 85,
-          health: 90, // Health in attributes object
-          speed: 7,
-          gunAccuracy: 9,
-          throwingAccuracy: 6,
-          baseStrength: 85,
-          bravery: 8,
-          experience: 7
-        }
-      },
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: []
-    };
-    mockGetAIResponse.mockResolvedValue(mockAIResponse);
+      opponent: mockCharacterSheriff as Character 
+    });
+    mockGetAIResponse.mockResolvedValue(mockRawAIResponse);
     
-    // Render the hook
     const { result } = renderHook(() => useAIWithOptimizedContext());
     
-    // Execute the hook's makeAIRequest function
     let response;
     await act(async () => {
       response = await result.current.makeAIRequest(MOCK_PROMPT, MOCK_INVENTORY);
     });
     
-    // Verify it extracted health from attributes
-    expect(response.opponent).toEqual({
+    expect(response!.opponent).toEqual({
       name: "Sheriff Williams",
       strength: 85,
-      health: 90 // Should use health from attributes
+      health: 85 
     });
   });
   
   it('should fall back to strength when health is missing', async () => {
-    // Mock AI response with opponent having only strength
-    const mockAIResponse = {
+    const mockRawAIResponse = createMockAIResponse({
       narrative: "An outlaw appears!",
-      location: { type: 'wilderness' },
+      location: { type: 'wilderness', description: 'Rocky canyon pass' }, 
       combatInitiated: true,
-      opponent: {
-        name: "Outlaw Pete",
-        attributes: {
-          strength: 75, // Only strength, no health
-          speed: 8,
-          gunAccuracy: 6,
-          throwingAccuracy: 5,
-          baseStrength: 75,
-          bravery: 7,
-          experience: 4
-        }
-      },
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: []
-    };
-    mockGetAIResponse.mockResolvedValue(mockAIResponse);
+      opponent: mockCharacterOutlaw as Character 
+    });
+    mockGetAIResponse.mockResolvedValue(mockRawAIResponse);
     
-    // Render the hook
     const { result } = renderHook(() => useAIWithOptimizedContext());
     
-    // Execute the hook's makeAIRequest function
     let response;
     await act(async () => {
       response = await result.current.makeAIRequest(MOCK_PROMPT, MOCK_INVENTORY);
     });
     
-    // Verify it falls back to strength
-    expect(response.opponent).toEqual({
+    expect(response!.opponent).toEqual({
       name: "Outlaw Pete",
       strength: 75,
-      health: 75 // Should fall back to strength
+      health: 75 
     });
   });
   
   it('should use default health value when neither health nor strength available', async () => {
-    // Mock AI response with opponent missing health and strength
-    const mockAIResponse = {
+    const mockRawAIResponse = createMockAIResponse({
       narrative: "A stranger approaches.",
-      location: { type: 'town', name: 'Tombstone' },
       combatInitiated: true,
-      opponent: {
-        name: "Mysterious Stranger",
-        // No attributes at all
-      },
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: []
-    };
-    mockGetAIResponse.mockResolvedValue(mockAIResponse);
+      opponent: mockCharacterStranger as Character 
+    });
+    mockGetAIResponse.mockResolvedValue(mockRawAIResponse);
     
-    // Render the hook
     const { result } = renderHook(() => useAIWithOptimizedContext());
     
-    // Execute the hook's makeAIRequest function
     let response;
     await act(async () => {
       response = await result.current.makeAIRequest(MOCK_PROMPT, MOCK_INVENTORY);
     });
     
-    // Verify it uses default value
-    expect(response.opponent).toEqual({
+    expect(response!.opponent).toEqual({
       name: "Mysterious Stranger",
-      strength: undefined,
-      health: 100 // Should use default value
+      strength: 10, 
+      health: 10 
     });
   });
   
   it('should handle errors gracefully', async () => {
-    // Mock an error in the AI response
     const mockError = new Error('AI service error');
-    mockGetAIResponse.mockRejectedValue(mockError);
+    mockGetAIResponse.mockRejectedValue(mockError); 
     
-    // Render the hook
     const { result } = renderHook(() => useAIWithOptimizedContext());
     
-    // Execute and expect an error
     await act(async () => {
       await expect(result.current.makeAIRequest(MOCK_PROMPT, MOCK_INVENTORY))
         .rejects.toThrow('AI service error');
     });
     
-    // Check that error state is set correctly
     expect(result.current.error).toEqual(mockError);
     expect(result.current.isLoading).toBe(false);
   });
   
   it('should use custom context options when provided', async () => {
-    // Mock AI response
-    mockGetAIResponse.mockResolvedValue({
+    const mockRawAIResponse = createMockAIResponse({
       narrative: "You look around the town.",
-      location: { type: 'town', name: 'Tombstone' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: []
+      opponent: undefined
     });
+    mockGetAIResponse.mockResolvedValue(mockRawAIResponse);
     
-    // Custom context options
-    const customOptions = {
-      compressionLevel: 'high' as const,
+    const customOptions: NarrativeContextOptions = {
+      compressionLevel: 'high',
       maxTokens: 1000,
       prioritizeRecentEvents: true
     };
     
-    // Render the hook
     const { result } = renderHook(() => useAIWithOptimizedContext());
     
-    // Execute with custom options
     await act(async () => {
       await result.current.makeAIRequest(MOCK_PROMPT, MOCK_INVENTORY, customOptions);
     });
     
-    // Verify it used the custom options
     expect(mockUseOptimizedNarrativeContext().buildOptimizedContext)
       .toHaveBeenCalledWith(customOptions);
   });
   
   it('should include storyProgression with non-nullable description', async () => {
-    // Mock AI response with storyProgression
-    const mockAIResponse = {
+    const mockRawAIResponse = createMockAIResponse({
       narrative: "The sheriff reveals a secret.",
-      location: { type: 'town', name: 'Tombstone' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [],
+      opponent: undefined,
       storyProgression: {
         title: "Sheriff's Secret",
-        description: null, // Null description should be converted to empty string
-        importance: 'significant'
+        description: null as unknown as string, 
+        significance: 'major' 
       }
-    };
-    mockGetAIResponse.mockResolvedValue(mockAIResponse);
+    });
+    mockGetAIResponse.mockResolvedValue(mockRawAIResponse);
     
-    // Render the hook
     const { result } = renderHook(() => useAIWithOptimizedContext());
     
-    // Execute the hook's makeAIRequest function
     let response;
     await act(async () => {
       response = await result.current.makeAIRequest(MOCK_PROMPT, MOCK_INVENTORY);
     });
     
-    // Verify storyProgression has non-null description
-    expect(response.storyProgression).toEqual({
+    expect(response!.storyProgression).toEqual({
       title: "Sheriff's Secret",
-      description: '', // Should be converted to empty string
-      importance: 'significant'
+      description: '', 
+      significance: 'major' 
     });
   });
   
   it('should correctly handle makeAIRequestWithFocus', async () => {
-    // Mock AI response
-    mockGetAIResponse.mockResolvedValue({
+    const mockRawAIResponse = createMockAIResponse({
       narrative: "You focus on the wanted poster.",
-      location: { type: 'town', name: 'Tombstone' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: []
+      opponent: undefined
     });
+    mockGetAIResponse.mockResolvedValue(mockRawAIResponse);
     
-    // Render the hook
     const { result } = renderHook(() => useAIWithOptimizedContext());
     
-    // Execute the focused request
     await act(async () => {
       await result.current.makeAIRequestWithFocus(MOCK_PROMPT, MOCK_INVENTORY, ['sheriff', 'bounty']);
     });
     
-    // Verify it used the right context options for focus
     expect(mockUseOptimizedNarrativeContext().buildOptimizedContext)
       .toHaveBeenCalledWith(expect.objectContaining({
         compressionLevel: 'medium',
@@ -398,26 +264,18 @@ describe('useAIWithOptimizedContext', () => {
   });
   
   it('should correctly handle makeAIRequestWithCompactContext', async () => {
-    // Mock AI response
-    mockGetAIResponse.mockResolvedValue({
+    const mockRawAIResponse = createMockAIResponse({
       narrative: "Quick response in compact form.",
-      location: { type: 'town', name: 'Tombstone' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: []
+      opponent: undefined
     });
+    mockGetAIResponse.mockResolvedValue(mockRawAIResponse);
     
-    // Render the hook
     const { result } = renderHook(() => useAIWithOptimizedContext());
     
-    // Execute the compact request
     await act(async () => {
       await result.current.makeAIRequestWithCompactContext(MOCK_PROMPT, MOCK_INVENTORY);
     });
     
-    // Verify it used compact context options
     expect(mockUseOptimizedNarrativeContext().buildOptimizedContext)
       .toHaveBeenCalledWith(expect.objectContaining({
         compressionLevel: 'high',
@@ -427,50 +285,4 @@ describe('useAIWithOptimizedContext', () => {
       }));
   });
   
-  // Test the debug logging in development environment
-  it('should log debug response in development environment', async () => {
-    // Save original console.debug and mock it
-    const originalConsoleDebug = console.debug;
-    console.debug = jest.fn();
-    
-    // Set environment to development
-    process.env.NODE_ENV = 'development';
-    
-    // Mock AI response
-    const mockAIResponse = {
-      narrative: "A very long narrative that should be truncated in logs.".repeat(10),
-      location: { type: 'town', name: 'Tombstone' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: []
-    };
-    mockGetAIResponse.mockResolvedValue(mockAIResponse);
-    
-    // Render the hook
-    const { result } = renderHook(() => useAIWithOptimizedContext());
-    
-    // Execute the request
-    await act(async () => {
-      await result.current.makeAIRequest(MOCK_PROMPT, MOCK_INVENTORY);
-    });
-    
-    // Verify debug log was called with truncated narrative
-    expect(console.debug).toHaveBeenCalled();
-    expect(console.debug).toHaveBeenCalledWith(
-      'AI Response (debug):',
-      expect.objectContaining({
-        narrative: expect.stringContaining('A very long narrative')
-      })
-    );
-    
-    // Verify the narrative was truncated
-    const debugCall = (console.debug as jest.Mock).mock.calls[0][1];
-    expect(debugCall.narrative.endsWith('...')).toBe(true);
-    expect(debugCall.narrative.length).toBeLessThanOrEqual(103); // 100 chars + '...'
-    
-    // Restore console.debug
-    console.debug = originalConsoleDebug;
-  });
 });

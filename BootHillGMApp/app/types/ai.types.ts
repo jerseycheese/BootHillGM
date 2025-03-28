@@ -13,71 +13,71 @@ import { NarrativeContext } from './narrative.types';
  */
 export interface Opponent {
   name: string;
-  strength?: number;
-  health?: number;
-  [key: string]: string | number | boolean | undefined;
+  strength?: number; // Can be directly on opponent or in attributes
+  health?: number;   // Can be directly on opponent or in attributes
+  attributes?: {
+    strength?: number;
+    health?: number;
+    speed?: number;
+    gunAccuracy?: number;
+    throwingAccuracy?: number;
+    baseStrength?: number;
+    bravery?: number;
+    experience?: number;
+    [key: string]: string | number | undefined; 
+  };
 }
 
 /**
- * Result of an AI request with narrative information
+ * Raw response structure expected directly from the getAIResponse service
  */
-export interface AIRequestResult {
-  /**
-   * Narrative text response from the AI
-   */
-  narrative?: string;
-  
-  /**
-   * Location change triggered by the AI response
-   */
-  location?: LocationType | string;
-  
-  /**
-   * Whether combat was initiated by this response
-   */
+export interface AIResponseRaw {
+  narrative: string;
+  location: LocationType;
   combatInitiated?: boolean;
-  
-  /**
-   * Opponent information if combat was initiated
-   */
+  opponent?: Character | null; 
+  acquiredItems: string[];
+  removedItems: string[];
+  suggestedActions: SuggestedAction[];
+  storyProgression?: StoryProgressionData;
+  playerDecision?: PlayerDecision; 
+}
+
+/**
+ * Result returned by the useAIWithOptimizedContext hook, including metadata.
+ * It inherits most properties from AIResponseRaw but overrides 'opponent'
+ * and adds 'contextQuality'.
+ */
+export interface AIRequestResult extends Omit<AIResponseRaw, 'opponent' | 'narrative'> {
   opponent?: Opponent;
-  
-  /**
-   * Items acquired during this interaction
+  narrative?: string; 
+
+  /* Inherited:
+   * location: LocationType;
+   * combatInitiated?: boolean;
+   * acquiredItems: string[]; 
+   * removedItems: string[];
+   * suggestedActions: SuggestedAction[];
+   * storyProgression?: StoryProgressionData;
+   * playerDecision?: PlayerDecision; 
    */
-  acquiredItems?: string[];
-  
-  /**
-   * Items removed during this interaction
-   */
-  removedItems?: string[];
-  
-  /**
-   * Story progression information
-   */
-  storyProgression?: {
-    title?: string;
-    description: string;
-    importance?: 'minor' | 'significant' | 'major';
-  };
-  
-  /**
-   * Context quality metadata for optimization
-   */
+
   contextQuality?: {
     optimized: boolean;
     compressionLevel: string;
     tokensUsed: number;
     buildTimeMs: number;
   };
-  
-  /**
-   * Optional narrative context update
-   */
+
+  acquiredItems: string[]; 
+  removedItems: string[];
+  suggestedActions: SuggestedAction[];
+  storyProgression?: StoryProgressionData; 
+  playerDecision?: PlayerDecision; 
+
   narrativeContext?: NarrativeContext;
-  
-  /**
-   * Additional data returned by AI
-   */
-  [key: string]: string | number | boolean | object | undefined;
 }
+
+import { Character } from './character'; 
+import { SuggestedAction } from './campaign'; 
+import { StoryProgressionData, PlayerDecision } from './narrative.types';
