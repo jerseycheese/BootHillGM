@@ -1,19 +1,19 @@
 import {
   calculateReducedStrength,
 } from '../../utils/strengthCalculation';
-import { CombatParticipant } from '../../types/combat';
+import { Character } from '../../types/character';
 import { Wound } from '../../types/wound';
 
 describe('Strength Calculation', () => {
-  const baseParticipant = {
+  // Create a complete Character that satisfies the Character interface
+  const baseParticipant: Character = {
     id: 'test-char',
     name: 'Test Character',
     isNPC: false,
     isPlayer: true,
     weapon: undefined,
-    strength: 10,
     wounds: [] as Wound[],
-    inventory: [],
+    inventory: { items: [] },
     attributes: {
       baseStrength: 10,
       strength: 10,
@@ -22,6 +22,25 @@ describe('Strength Calculation', () => {
       throwingAccuracy: 5,
       bravery: 5,
       experience: 5,
+    },
+    // Add required properties to fix TypeScript errors
+    minAttributes: {
+      baseStrength: 1,
+      strength: 1,
+      speed: 1,
+      gunAccuracy: 1,
+      throwingAccuracy: 1,
+      bravery: 1,
+      experience: 0,
+    },
+    maxAttributes: {
+      baseStrength: 20,
+      strength: 20,
+      speed: 20,
+      gunAccuracy: 20,
+      throwingAccuracy: 20,
+      bravery: 20,
+      experience: 10,
     },
     isUnconscious: false,
   };
@@ -38,6 +57,7 @@ describe('Strength Calculation', () => {
           location: 'head',
           severity: 'mortal',
           strengthReduction: 15,
+          damage: 15,
           turnReceived: 1,
         },
       ],
@@ -53,8 +73,9 @@ describe('Strength Calculation', () => {
           location: 'head',
           severity: 'serious',
           strengthReduction: 9,
+          damage: 9,
           turnReceived: 1,
-        },
+        }
       ],
     });
     expect(result2).toBe(1);
@@ -64,51 +85,61 @@ describe('Strength Calculation', () => {
     const participant = { ...baseParticipant };
 
     // Test multiple wounds
-    const woundedParticipant: CombatParticipant = {
+    const woundedParticipant: Character = {
       ...participant,
-      isPlayer: true,
       wounds: [
         {
           location: 'head',
           severity: 'light',
           strengthReduction: 2,
+          damage: 2,
           turnReceived: 1,
         },
         {
           location: 'chest',
           severity: 'light',
           strengthReduction: 2,
+          damage: 2,
           turnReceived: 1,
         },
         {
           location: 'leftArm',
           severity: 'light',
           strengthReduction: 2,
+          damage: 2,
           turnReceived: 1,
         },
         {
           location: 'rightLeg',
           severity: 'light',
           strengthReduction: 2,
+          damage: 2,
           turnReceived: 1,
         },
         {
           location: 'abdomen',
           severity: 'light',
           strengthReduction: 2,
+          damage: 2,
           turnReceived: 1,
         },
-      ],
+        {
+          location: 'abdomen',
+          severity: 'light',
+          strengthReduction: 2,
+          damage: 2,
+          turnReceived: 1,
+        }
+      ]
     };
 
     expect(calculateReducedStrength(woundedParticipant)).toBe(1);
   });
 
   test('should handle healing from minimum strength', () => {
-    const weakenedParticipant: CombatParticipant = {
+    const weakenedParticipant: Character = {
       ...baseParticipant,
       isPlayer: true,
-      strength: 1,
       attributes: {
         ...baseParticipant.attributes,
         baseStrength: 1,
@@ -129,28 +160,23 @@ describe('Strength Calculation', () => {
     });
 
     expect(result).toBe(10);
-  });
 
-  // Merged tests from strengthCalculation.test.js
-  test('normal reduction', () => {
-    const participant = { ...baseParticipant };
-    const result = calculateReducedStrength({
+    const resultWithWounds = calculateReducedStrength({
       ...participant,
       wounds: [{
         location: 'head',
         severity: 'light',
         strengthReduction: 2,
+        damage: 2,
         turnReceived: 1
       }]
     });
-    expect(result).toEqual(8);
+    expect(resultWithWounds).toEqual(8);
   });
 
-  test('reduction below zero', () => {
-    const participant = {
-      ...baseParticipant,
-      attributes: { ...baseParticipant.attributes, baseStrength: 10 },
-    };
+  test('should handle mortal wounds', () => {
+    const participant = { ...baseParticipant };
+    
     const result = calculateReducedStrength({
       ...participant,
       isPlayer: true,
@@ -158,17 +184,16 @@ describe('Strength Calculation', () => {
         location: 'head',
         severity: 'mortal',
         strengthReduction: 20,
+        damage: 20,
         turnReceived: 1
       }]
     });
     expect(result).toEqual(1);
   });
 
-  test('large damage values', () => {
-    const participant = {
-      ...baseParticipant,
-      attributes: { ...baseParticipant.attributes, baseStrength: 50 },
-    };
+  test('should handle extreme damage', () => {
+    const participant = { ...baseParticipant };
+    
     const result = calculateReducedStrength({
       ...participant,
       isPlayer: true,
@@ -176,17 +201,16 @@ describe('Strength Calculation', () => {
         location: 'head',
         severity: 'mortal',
         strengthReduction: 1000,
+        damage: 1000,
         turnReceived: 1
       }]
     });
     expect(result).toEqual(1);
   });
 
-  test('reduction to exactly MIN_STRENGTH', () => {
-    const participant = {
-      ...baseParticipant,
-      attributes: { ...baseParticipant.attributes, baseStrength: 10 },
-    };
+  test('should handle serious wounds', () => {
+    const participant = { ...baseParticipant };
+    
     const result = calculateReducedStrength({
       ...participant,
       isPlayer: true,
@@ -194,17 +218,19 @@ describe('Strength Calculation', () => {
         location: 'head',
         severity: 'serious',
         strengthReduction: 9,
+        damage: 9,
         turnReceived: 1
       }]
     });
     expect(result).toEqual(1);
   });
 
-  test('reduction of exactly MAX_STRENGTH', () => {
+  test('should handle high base strength', () => {
     const participant = {
       ...baseParticipant,
-      attributes: { ...baseParticipant.attributes, baseStrength: 100 },
+      attributes: { ...baseParticipant.attributes, baseStrength: 100 }
     };
+    
     const result = calculateReducedStrength({
       ...participant,
       isPlayer: true,
@@ -212,30 +238,19 @@ describe('Strength Calculation', () => {
         location: 'head',
         severity: 'serious',
         strengthReduction: 50,
+        damage: 50,
         turnReceived: 1
       }]
     });
     expect(result).toEqual(50);
   });
 
-  test('zero damage', () => {
+  test('should handle zero or negative damage', () => {
     const participant = {
       ...baseParticipant,
-      attributes: { ...baseParticipant.attributes, baseStrength: 50 },
+      attributes: { ...baseParticipant.attributes, baseStrength: 50 }
     };
-    const result = calculateReducedStrength({
-      ...participant,
-      isPlayer: true,
-      wounds: []
-    });
-    expect(result).toEqual(50);
-  });
-
-  test('negative damage values', () => {
-    const participant = {
-      ...baseParticipant,
-      attributes: { ...baseParticipant.attributes, baseStrength: 50 },
-    };
+    
     const result = calculateReducedStrength({
       ...participant,
       isPlayer: true,
@@ -243,6 +258,7 @@ describe('Strength Calculation', () => {
         location: 'head',
         severity: 'light',
         strengthReduction: -10,
+        damage: -10,
         turnReceived: 1
       }]
     });

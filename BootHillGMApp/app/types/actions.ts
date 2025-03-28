@@ -1,0 +1,84 @@
+/**
+ * Core action types for state management
+ * 
+ * This file combines all domain-specific actions into a unified GameAction type
+ * that is used by all reducers and state management utilities.
+ */
+
+import { CharacterAction } from './actions/characterActions';
+import { CombatAction } from './actions/combatActions';
+import { InventoryAction } from './actions/inventoryActions';
+import { JournalAction } from './actions/journalActions';
+import { NarrativeAction } from './actions/narrativeActions';
+import { UIAction } from './actions/uiActions';
+import { GameState } from './gameState';
+
+/**
+ * Global actions that don't belong to a specific slice
+ */
+export interface SetPlayerAction {
+  type: 'SET_PLAYER';
+  payload: string;
+}
+
+export interface AddNPCAction {
+  type: 'ADD_NPC';
+  payload: string;
+}
+
+export interface SetLocationAction {
+  type: 'SET_LOCATION';
+  payload: unknown; // LocationType
+}
+
+export interface AddQuestAction {
+  type: 'ADD_QUEST';
+  payload: string;
+}
+
+export interface SetGameProgressAction {
+  type: 'SET_GAME_PROGRESS';
+  payload: number;
+}
+
+export interface SetSavedTimestampAction {
+  type: 'SET_SAVED_TIMESTAMP';
+  payload: number;
+}
+
+export interface SetStateAction {
+  type: 'SET_STATE';
+  payload: Partial<GameState>;
+}
+
+export interface NoOpAction {
+  type: 'NO_OP';
+  payload?: undefined;
+}
+
+/**
+ * Union type of all global actions
+ */
+export type GlobalAction =
+  | SetPlayerAction
+  | AddNPCAction
+  | SetLocationAction
+  | AddQuestAction
+  | SetGameProgressAction
+  | SetSavedTimestampAction
+  | SetStateAction
+  | NoOpAction;
+
+/**
+ * Combined action type used throughout the application
+ * 
+ * This union type combines all domain-specific actions and global actions.
+ */
+export type GameAction =
+  | GlobalAction
+  | CharacterAction
+  | CombatAction
+  | InventoryAction
+  | JournalAction
+  | NarrativeAction
+  | UIAction;

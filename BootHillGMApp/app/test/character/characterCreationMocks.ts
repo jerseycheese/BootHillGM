@@ -3,6 +3,8 @@ import { useCampaignState } from '../../components/CampaignStateManager';
 import { Character } from '../../types/character';
 import { createMockCharacter, initialCharacter } from './characterData';
 import { initialNarrativeState } from '../../types/narrative.types';
+import { GameState } from '../../types/gameState';
+import { initialInventoryState, initialJournalState, initialCombatState, initialUIState, initialCharacterState } from '../../types/state';
 
 type CharacterFieldKey = keyof Character['attributes'] | 'name';
 
@@ -13,7 +15,7 @@ const mockCharacterState = {
 
 function useCharacterCreationHandler() {
   const { cleanupState, saveGame } = useCampaignState();
-  
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,26 +32,25 @@ function useCharacterCreationHandler() {
         if (savedData.currentStep === 1) {
           window.localStorage.removeItem('character-creation-progress');
           cleanupState();
-          
-          const gameState = {
-            character: mockCharacter,
-            savedTimestamp: Date.now(),
-            isClient: true,
-            inventory: [],
+
+          const gameState: GameState = {
+            character: initialCharacterState,
+            combat: initialCombatState,
+            inventory: initialInventoryState,
+            journal: initialJournalState,
+            narrative: initialNarrativeState,
+            ui: initialUIState,
             currentPlayer: '',
             npcs: [],
             location: null,
             quests: [],
-            narrative: initialNarrativeState,
             gameProgress: 0,
-            journal: [],
+            savedTimestamp: Date.now(),
+            isClient: true,
+            suggestedActions: [],
+            player: mockCharacter,
             isCombatActive: false,
             opponent: null,
-            suggestedActions: [],
-            // Add the player getter to match the GameState interface
-            get player() {
-              return mockCharacter;
-            }
           };
           saveGame(gameState);
         }
@@ -74,7 +75,7 @@ export const useCharacterCreationMock = () => {
     try {
       const mockCharacter = await createMockCharacter();
       setCharacter(mockCharacter); // Update the character state
-      
+
       // Store in localStorage
       const savedData = {
         character: mockCharacter,
@@ -86,7 +87,7 @@ export const useCharacterCreationMock = () => {
       setIsGeneratingCharacter(false);
     }
   }, []);
-                                                                                                                                               
+
   const handleFieldChange = React.useCallback((field: CharacterFieldKey, value: string | number) => {
     setCharacter(prev => {
       if (field === 'name') {
@@ -106,7 +107,7 @@ export const useCharacterCreationMock = () => {
       };
     });
   }, []);
-                                                                                                                                               
+
   return {
     character,
     showSummary: false,

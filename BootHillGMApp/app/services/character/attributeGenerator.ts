@@ -86,3 +86,5 @@ export function generateRandomAttributes(): Character['attributes'] {
     experience: generateRandomAttribute('experience')
   };
 }
+
+// Benign change to trigger re-analysis

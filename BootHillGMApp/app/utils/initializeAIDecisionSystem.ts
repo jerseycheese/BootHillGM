@@ -78,8 +78,6 @@ export function initializeAIDecisionSystem(): void {
           }
         }
       };
-      
-      console.log('AI Decision System initialized successfully');
     }
   } catch (error) {
     console.error('Failed to initialize AI Decision System:', error);

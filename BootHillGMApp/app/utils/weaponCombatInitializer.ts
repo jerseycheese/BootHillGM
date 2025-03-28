@@ -11,9 +11,30 @@ export const initializeWeaponCombatState = (
   if (initialState) return initialState;
 
   // Find first available weapon in inventory
-  const availableWeapon = playerCharacter.inventory?.find((item: InventoryItem) => 
-    item.category === 'weapon' && item.quantity > 0
-  ) || {
+  // First check if inventory is an array (old format) or an object with items property (new format)
+  const availableWeapon = (() => {
+    // Check if inventory property exists
+    if (!playerCharacter.inventory) {
+      return null;
+    }
+
+    // Check if inventory is in new format
+    if (typeof playerCharacter.inventory === 'object' && 'items' in playerCharacter.inventory && Array.isArray(playerCharacter.inventory.items)) {
+      return playerCharacter.inventory.items.find((item: InventoryItem) => 
+        item.category === 'weapon' && item.quantity > 0
+      );
+    }
+    
+    // Check if inventory is an array (old format)
+    if (Array.isArray(playerCharacter.inventory)) {
+      return playerCharacter.inventory.find((item: InventoryItem) => 
+        item.category === 'weapon' && item.quantity > 0
+      );
+    }
+    
+    // Default fallback
+    return null;
+  })() || {
     id: 'default-colt',
     name: 'Colt Revolver',
     quantity: 1,

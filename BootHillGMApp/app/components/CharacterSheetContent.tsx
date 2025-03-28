@@ -5,6 +5,7 @@ import { useGameInitialization } from '../hooks/useGameInitialization';
 import { useGame } from '../hooks/useGame';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { Wound } from '../types/wound';
+import { Character } from '../types/character';
 import StatDisplay from '../components/StatDisplay';
 import DerivedStatDisplay from '../components/DerivedStatDisplay';
 import useCharacterStats from '../hooks/useCharacterStats';
@@ -48,7 +49,7 @@ export default function CharacterSheetContent() {
           }
         }
       } else if (loadedState?.character) {
-        setCharacter(loadedState.character);
+        setCharacter(loadedState.character as unknown as Character);
       }
     }
   }, [isClient, character, loadGame, saveGame, dispatch, state, setCharacter]);

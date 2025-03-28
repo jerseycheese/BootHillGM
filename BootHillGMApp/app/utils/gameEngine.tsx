@@ -3,6 +3,7 @@ import { InventoryManager } from './inventoryManager';
 import { GameState, initialGameState } from '../types/gameState';
 import { GameEngineAction } from '../types/gameActions';
 import { gameReducer } from '../reducers/index';
+import { InventoryItem } from '../types/item.types';
 
 // Create a context for the game state and dispatch function
 const GameContext = createContext<{
@@ -41,13 +42,13 @@ export function useGameSession() {
 
   // Handle player health change by updating character attributes
   const handlePlayerHealthChange = useCallback((newStrength: number) => {
-    if (!state.character) {
+    if (!state.character || !state.character.player) {
       return;
     }
 
-    // Update only the strength attribute of the character
+    // Update only the strength attribute of the player character
     const updatedAttributes = {
-      ...state.character.attributes,
+      ...state.character.player.attributes,
       strength: newStrength
     };
 
@@ -66,22 +67,26 @@ export function useGameSession() {
 
   // Handle weapon equipping by updating character's equipped weapon
   const handleEquipWeapon = useCallback((itemId: string) => {
-    if (!state.character) {
+    if (!state.character || !state.character.player) {
       return;
     }
-    const item = state.inventory.find(i => i.id === itemId);
+    
+    // Find the item in the inventory items array
+    const item = state.inventory?.items.find((i: InventoryItem) => i.id === itemId);
     if (!item || item.category !== 'weapon') {
       return;
     }
-    InventoryManager.equipWeapon(state.character, item);
+    
+    InventoryManager.equipWeapon(state.character.player, item);
     dispatch({ type: 'EQUIP_WEAPON', payload: itemId });
   }, [state, dispatch]);
 
   // Handle weapon unequipping by clearing character's equipped weapon
   const handleUnequipWeapon = useCallback((itemId: string) => {
-    if (!state.character) {
+    if (!state.character || !state.character.player) {
       return;
     }
+    
     InventoryManager.unequipWeapon();
     dispatch({ type: 'UNEQUIP_WEAPON', payload: itemId });
   }, [state, dispatch]);
@@ -96,8 +101,8 @@ export function useGameSession() {
     dispatch,
     isLoading: false,
     error: null,
-    isCombatActive: state.isCombatActive,
-    opponent: state.opponent,
+    isCombatActive: state.combat?.isActive || false,
+    opponent: state.character?.opponent || null,
     handleUserInput: () => {
       // Implementation here
     },

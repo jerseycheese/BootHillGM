@@ -14,17 +14,38 @@ export function generateMockCharacter(overrides = {}) {
   return {
     id: 'mock-character-1',
     name: 'Mock Character',
-    strength: 10,
-    dexterity: 8,
-    will: 6,
-    health: 20,
-    maxHealth: 20,
-    inventory: [],
-    skills: {
-      shooting: 3,
-      riding: 2,
-      gambling: 1
+    isNPC: false,
+    isPlayer: true,
+    inventory: { items: [] },
+    attributes: {
+      strength: 10,
+      baseStrength: 10,
+      speed: 8,
+      gunAccuracy: 7,
+      throwingAccuracy: 6,
+      bravery: 7,
+      experience: 3
     },
+    minAttributes: {
+      strength: 8,
+      baseStrength: 8,
+      speed: 1,
+      gunAccuracy: 1,
+      throwingAccuracy: 1,
+      bravery: 1,
+      experience: 0
+    },
+    maxAttributes: {
+      strength: 20,
+      baseStrength: 20,
+      speed: 20,
+      gunAccuracy: 20,
+      throwingAccuracy: 20,
+      bravery: 20,
+      experience: 11
+    },
+    wounds: [],
+    isUnconscious: false,
     ...overrides
   };
 }
@@ -39,17 +60,38 @@ export function generateMockOpponent(overrides = {}) {
   return {
     id: 'mock-opponent-1',
     name: 'Mock Opponent',
-    strength: 8,
-    dexterity: 7,
-    will: 5,
-    health: 16,
-    maxHealth: 16,
-    inventory: [],
-    skills: {
-      shooting: 2,
-      riding: 1,
-      brawling: 3
+    isNPC: true,
+    isPlayer: false,
+    inventory: { items: [] },
+    attributes: {
+      strength: 9,
+      baseStrength: 9,
+      speed: 7,
+      gunAccuracy: 6,
+      throwingAccuracy: 5,
+      bravery: 8,
+      experience: 4
     },
+    minAttributes: {
+      strength: 8,
+      baseStrength: 8,
+      speed: 1,
+      gunAccuracy: 1,
+      throwingAccuracy: 1,
+      bravery: 1,
+      experience: 0
+    },
+    maxAttributes: {
+      strength: 20,
+      baseStrength: 20,
+      speed: 20,
+      gunAccuracy: 20,
+      throwingAccuracy: 20,
+      bravery: 20,
+      experience: 11
+    },
+    wounds: [],
+    isUnconscious: false,
     ...overrides
   };
 }

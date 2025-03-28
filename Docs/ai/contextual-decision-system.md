@@ -12,7 +12,7 @@ updated: 2025-03-15
 
 The AI-Driven Contextual Decision System replaces the previous keyword-based approach with a sophisticated contextual analysis that presents meaningful choices to the player when narratively appropriate. The system analyzes game state, narrative context, and player character information to create immersive decision points that enhance the storytelling experience.
 
-Think of it as a "narrative hooks" system similar to Drupal's hooks system, but powered by AI to automatically identify when and how to present decisions based on narrative context.
+Think of it as a "narrative hooks" system powered by AI to automatically identify when and how to present decisions based on narrative context.
 
 Rather than relying on predefined keywords to trigger decisions, the system analyzes narrative flow, character traits, dialogue patterns, and game state to determine when and what decisions to present to the player. This creates a more immersive and natural gameplay experience where decisions feel appropriate to the story context.
 

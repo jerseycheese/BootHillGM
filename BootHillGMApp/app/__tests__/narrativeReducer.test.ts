@@ -22,6 +22,7 @@ import {
 import { initialNarrativeState, StoryPoint, DecisionImportance } from '../types/narrative.types';
 import { GameState } from '../types/gameState';
 import { NarrativeState } from '../types/narrative.types';
+import { ImpactState } from '../types/narrative/context.types';
 
 describe('narrativeReducer', () => {
   // Helper function to get narrative state
@@ -64,6 +65,15 @@ describe('narrativeReducer', () => {
     }
   };
 
+  // Initial impact state
+  const initialImpactState: ImpactState = {
+    reputationImpacts: {},
+    relationshipImpacts: {},
+    worldStateImpacts: {},
+    storyArcImpacts: {},
+    lastUpdated: Date.now()
+  };
+
   // Initial test state
   let initialState: Partial<GameState>;
   
@@ -81,6 +91,7 @@ describe('narrativeReducer', () => {
           pendingDecisions: [],
           decisionHistory: [],
           storyPoints: mockStoryPoints,
+          impactState: initialImpactState,
           narrativeArcs: {
             'arc1': {
               id: 'arc1',

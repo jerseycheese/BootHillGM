@@ -24,23 +24,23 @@ graph TD
     G -.-> A
 ```
 
-## From Drupal to React: Simplicity Mapping
+## From Traditional Architecture to React: Simplicity Mapping
 
-| Drupal Pattern | React Anti-Pattern | KISS React Pattern |
+| Traditional Pattern | React Anti-Pattern | KISS React Pattern |
 |----------------|-------------------|-------------------|
-| Complex theme hooks with too many variables | Components with too many props | Focused components with minimal, well-typed props |
-| Nested preprocess functions | Deeply nested components with prop drilling | Flat component hierarchies with context where needed |
-| Over-engineered Drupal modules | Premature abstraction into utility hooks/components | Start concrete, extract patterns only when they repeat |
-| "Just in case" theme variables | Components that accept unused props | Props that directly map to component needs |
+| Complex component APIs with too many parameters | Components with too many props | Focused components with minimal, well-typed props |
+| Nested processing functions | Deeply nested components with prop drilling | Flat component hierarchies with context where needed |
+| Over-engineered utility modules | Premature abstraction into utility hooks/components | Start concrete, extract patterns only when they repeat |
+| "Just in case" parameters | Components that accept unused props | Props that directly map to component needs |
 | jQuery spaghetti | Imperative DOM manipulations | Declarative state-driven rendering |
 
 ## Principles in Practice
 
 ### 1. Simple Props
-Like Drupal's theme hook variables, props define your component's API:
+Props define your component's API:
 
 ```tsx
-// ❌ Too complex - Drupal equivalent: theme hook with 10+ variables
+// ❌ Too complex - equivalent to a component with 10+ parameters
 interface CharacterCardProps {
   character: Character;
   onSave: (character: Character) => void;
@@ -56,7 +56,7 @@ interface CharacterCardProps {
   // ...and more props
 }
 
-// ✅ KISS approach - Drupal equivalent: focused theme hook
+// ✅ KISS approach - focused component API
 interface CharacterCardProps {
   character: Character;
   onSave: (character: Character) => void;
@@ -66,10 +66,10 @@ interface CharacterCardProps {
 
 ### 2. Simple State
 
-Like Drupal's form state, React state should be minimal:
+React state should be minimal:
 
 ```tsx
-// ❌ Too complex - Drupal equivalent: overly complex form_state
+// ❌ Too complex - overly granular state management
 const CharacterForm = () => {
   const [name, setName] = useState('');
   const [class, setClass] = useState('');
@@ -81,7 +81,7 @@ const CharacterForm = () => {
   // Complex state synchronization logic
 }
 
-// ✅ KISS approach - Drupal equivalent: form_state['values']
+// ✅ KISS approach - consolidated state object
 const CharacterForm = () => {
   const [character, setCharacter] = useState({
     name: '',
@@ -98,10 +98,10 @@ const CharacterForm = () => {
 
 ### 3. Simple JSX
 
-Like Drupal's twig templates, JSX should be readable:
+JSX should be readable:
 
 ```tsx
-// ❌ Too complex - Drupal equivalent: template with too many conditionals
+// ❌ Too complex - template with too many conditionals
 return (
   <div className={classNames(styles.card, { 
     [styles.editing]: isEditing,
@@ -134,7 +134,7 @@ return (
   </div>
 );
 
-// ✅ KISS approach - Drupal equivalent: separate template files 
+// ✅ KISS approach - separate component files 
 // Split into smaller components with clearer responsibility
 return (
   <CharacterCard mode={isEditing ? 'edit' : 'view'}>
@@ -146,10 +146,10 @@ return (
 
 ### 4. Simple Side Effects
 
-Like Drupal's hook architecture, side effects should be focused:
+Side effects should be focused:
 
 ```tsx
-// ❌ Too complex - Drupal equivalent: module with too many hooks
+// ❌ Too complex - module with too many side effects
 useEffect(() => {
   // Load character data
   // Update URL
@@ -160,7 +160,7 @@ useEffect(() => {
   // Check permissions
 }, [characterId, userId]);
 
-// ✅ KISS approach - Drupal equivalent: single-purpose hooks
+// ✅ KISS approach - single-purpose effects
 // Split into multiple, focused effects
 useEffect(() => {
   // Only load character data
@@ -176,10 +176,10 @@ const characterStats = useCharacterStats(character);
 
 ### 5. Simple Testing
 
-Like Drupal's SimpleTest, focus on behavior not implementation:
+Focus on behavior not implementation:
 
 ```tsx
-// ❌ Too complex - Drupal equivalent: brittle tests that test implementation
+// ❌ Too complex - brittle tests that test implementation
 test('character card component', () => {
   const { getByTestId } = render(<CharacterCard character={mockCharacter} />);
   
@@ -195,7 +195,7 @@ test('character card component', () => {
   // And 20 more expectations...
 });
 
-// ✅ KISS approach - Drupal equivalent: testing key behaviors only
+// ✅ KISS approach - testing key behaviors only
 test('displays character name and level', () => {
   const { getByTestId } = render(<CharacterCard character={mockCharacter} />);
   expect(getByTestId('character-name')).toHaveTextContent('Aragorn');
@@ -260,39 +260,39 @@ maintaining the same functionality?
 6. Complex state calculations
 7. "What does this code do?" moments when reviewing
 
-## From Drupal to React: Mental Model Shifts
+## Mental Model Shifts for React
 
-| Drupal Thinking | React KISS Thinking |
+| Traditional Thinking | React KISS Thinking |
 |-----------------|---------------------|
-| "I need to account for every theme variation" | "I'll build for the current use case and refactor when patterns emerge" |
+| "I need to account for every component variation" | "I'll build for the current use case and refactor when patterns emerge" |
 | "Let's add this variable just in case" | "Props should reflect actual usage, not potential future needs" |
 | "I need to build a complex system of templates" | "I'll build focused components and compose them together" |
 | "Performance comes from clever preprocessing" | "Performance comes from minimizing re-renders and focused updates" |
 
 ## React Component Structure Simplified
 
-Much like how you'd organize a Drupal theme with base components, molecules, and organisms, React components can follow a similar hierarchy:
+React components can follow an organized hierarchy:
 
 ```
 src/
 ├── components/
-│   ├── atoms/           // Like Drupal's base components
+│   ├── atoms/           // Base components
 │   │   ├── Button.tsx
 │   │   ├── Input.tsx
 │   │   └── Text.tsx
-│   ├── molecules/       // Like Drupal's composite components
+│   ├── molecules/       // Composite components
 │   │   ├── CharacterStat.tsx
 │   │   ├── SkillRow.tsx
 │   │   └── InventoryItem.tsx
-│   └── organisms/       // Like Drupal's template regions
+│   └── organisms/       // Template regions
 │       ├── CharacterSheet.tsx
 │       ├── CombatTracker.tsx
 │       └── SpellBook.tsx
-├── pages/               // Like Drupal's page templates
+├── pages/               // Page templates
 │   ├── CharacterPage.tsx
 │   ├── CampaignPage.tsx
 │   └── EncounterPage.tsx
-└── hooks/               // Like Drupal's preprocess functions
+└── hooks/               // Custom React hooks
     ├── useCharacter.ts
     ├── useCampaign.ts
     └── useEncounter.ts

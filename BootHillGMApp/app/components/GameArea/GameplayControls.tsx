@@ -6,7 +6,28 @@
 import { CombatSystem } from '../Combat/CombatSystem';
 import InputManager from '../InputManager';
 import type { GameplayControlsProps } from './types';
-import { ensureCombatState } from '../../types/combat';
+import { ensureCombatState, CombatType, LogEntry } from '../../types/combat';
+import { Character } from '../../types/character';
+import { SuggestedAction } from '../../types/campaign';
+
+// Define a strongly-typed extended GameState interface for this component
+interface ExtendedGameState {
+  combatState?: {
+    isActive: boolean;
+    combatType: CombatType;
+    winner: string | null;
+    combatLog: LogEntry[];
+    participants: string[]; // This is a string[] in the extended state
+    rounds: number;
+    brawling?: {
+      playerModifier?: number;
+      opponentModifier?: number;
+      roundLog?: LogEntry[];
+    };
+    [key: string]: unknown;
+  };
+  suggestedActions?: SuggestedAction[];
+}
 
 export function GameplayControls({
   isLoading,
@@ -21,19 +42,37 @@ export function GameplayControls({
     return null;
   }
 
+  // Access the state as extended state to handle combatState access
+  const extendedState = state as unknown as ExtendedGameState;
+
+  // Get the player character from character state (assuming character.player structure)
+  const playerCharacter = 'player' in state.character 
+    ? state.character.player 
+    : state.character as unknown as Character;
+
+  // Make sure we have a non-null playerCharacter before proceeding
+  if (!playerCharacter) {
+    return null;
+  }
+
   // Transform combat state to match CombatSystem's expected format
-  const transformedCombatState = state.combatState
+  const transformedCombatState = extendedState.combatState
     ? ensureCombatState({
-        ...state.combatState,
         isActive: true,
-        brawling: state.combatState.brawling ? { // Check if brawling state exists
+        combatType: extendedState.combatState.combatType,
+        winner: extendedState.combatState.winner,
+        rounds: extendedState.combatState.rounds,
+        // Convert string[] to empty CombatParticipant[] to satisfy type requirements
+        participants: [], 
+        combatLog: extendedState.combatState.combatLog || [],
+        brawling: extendedState.combatState.brawling ? {
           round: 1,
-          playerModifier: state.combatState.brawling.playerModifier ?? 0,
-          opponentModifier: state.combatState.brawling.opponentModifier ?? 0,
-          roundLog: state.combatState.brawling.roundLog ?? [],
-          playerCharacterId: state.character.id,
+          playerModifier: extendedState.combatState.brawling.playerModifier ?? 0,
+          opponentModifier: extendedState.combatState.brawling.opponentModifier ?? 0,
+          roundLog: extendedState.combatState.brawling.roundLog ?? [],
+          playerCharacterId: playerCharacter.id,
           opponentCharacterId: opponent?.id ?? ''
-        } : undefined // Conditionally include brawling state
+        } : undefined
       })
     : undefined;
 
@@ -41,18 +80,28 @@ export function GameplayControls({
     <div className="mt-4 shrink-0">
       {isCombatActive && opponent ? (
         <CombatSystem
-          playerCharacter={state.character}
+          playerCharacter={playerCharacter}
           opponent={opponent}
           onCombatEnd={onCombatEnd}
           dispatch={dispatch}
           initialCombatState={transformedCombatState}
-          currentCombatState={state.combatState ? ensureCombatState(state.combatState) : undefined}
+          currentCombatState={extendedState.combatState 
+            ? ensureCombatState({
+                isActive: extendedState.combatState.isActive,
+                combatType: extendedState.combatState.combatType,
+                winner: extendedState.combatState.winner,
+                rounds: extendedState.combatState.rounds,
+                // Convert string[] to empty CombatParticipant[] to satisfy type requirements
+                participants: [],
+                combatLog: extendedState.combatState.combatLog || []
+              }) 
+            : undefined}
         />
       ) : (
         <InputManager
           onSubmit={onUserInput}
           isLoading={isLoading}
-          suggestedActions={state.suggestedActions}
+          suggestedActions={extendedState.suggestedActions || []}
         />
       )}
     </div>

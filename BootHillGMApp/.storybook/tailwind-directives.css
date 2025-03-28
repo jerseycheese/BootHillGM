@@ -1,5 +1,4 @@
-/* Storybook Tailwind integration 
-   Similar to how you'd set up a dedicated Drupal theme stylesheet */
+/* Storybook Tailwind integration */
 
 /* Direct Tailwind directives instead of imports */
 @tailwind base;

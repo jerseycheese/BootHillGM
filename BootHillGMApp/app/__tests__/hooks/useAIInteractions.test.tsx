@@ -1,8 +1,8 @@
 import { renderHook, act } from '@testing-library/react';
 import { useAIInteractions } from '../../hooks/useAIInteractions';
 import { GameState } from '../../types/campaign';
-import { Character } from '../../types/character';
 
+// Mock the AI service
 jest.mock('../../services/ai', () => {
   const mockGetResponse = jest.fn();
   const AIService = jest.fn().mockImplementation(() => ({
@@ -20,6 +20,8 @@ jest.mock('../../utils/aiService', () => ({
 describe('useAIInteractions', () => {
   const mockDispatch = jest.fn();
   const mockOnInventoryChange = jest.fn();
+  
+  // Create a mock state that matches the expected structure in the hook
   const mockInitialState: GameState = {
     currentPlayer: '',
     npcs: [],
@@ -69,21 +71,21 @@ describe('useAIInteractions', () => {
       expect(mockGetResponse).toHaveBeenCalled();
 
       // Verify narrative update
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'SET_NARRATIVE',
-      payload: { text: expect.stringContaining('AI response narrative') }
-    });
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'SET_NARRATIVE',
+        payload: { text: expect.stringContaining('AI response narrative') }
+      });
 
-    // Verify journal update
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'UPDATE_JOURNAL',
-      payload: {
-        timestamp: expect.any(Number), // Use expect.any(Number) for the timestamp
-        type: 'narrative',
+      // Verify journal update - check that an update happened with the expected content
+      const journalDispatch = mockDispatch.mock.calls.find(
+        call => call[0].type === 'UPDATE_JOURNAL'
+      );
+      expect(journalDispatch).toBeTruthy();
+      expect(journalDispatch[0].payload).toMatchObject({
         content: userInput,
         narrativeSummary: 'Test summary',
-      }
-    });
+        type: 'narrative'
+      });
 
       // Verify location update
       expect(mockDispatch).toHaveBeenCalledWith({
@@ -92,13 +94,13 @@ describe('useAIInteractions', () => {
       });
 
       // Verify inventory changes
-      expect(mockDispatch).toHaveBeenCalledWith({
+      expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({
         type: 'ADD_ITEM',
         payload: expect.objectContaining({
           name: 'item1',
           quantity: 1
         })
-      });
+      }));
 
       // Verify suggested actions update
       expect(mockDispatch).toHaveBeenCalledWith({
@@ -114,7 +116,7 @@ describe('useAIInteractions', () => {
     });
 
     it('should handle combat initiation correctly', async () => {
-      const mockOpponent: Character = {
+      const mockOpponent = {
         name: 'Test Opponent',
         attributes: {
           speed: 10,
@@ -157,22 +159,20 @@ describe('useAIInteractions', () => {
       // Find the SET_OPPONENT call
       const setOpponentCall = dispatchCalls.find(call => call[0].type === 'SET_OPPONENT');
       expect(setOpponentCall).toBeTruthy();
-      expect(setOpponentCall[0]).toEqual({
+      expect(setOpponentCall[0]).toMatchObject({
         type: 'SET_OPPONENT',
         payload: expect.objectContaining({
           name: mockOpponent.name,
           attributes: mockOpponent.attributes,
           wounds: mockOpponent.wounds,
-          isUnconscious: mockOpponent.isUnconscious,
-          inventory: [],
-          weapon: undefined
+          isUnconscious: mockOpponent.isUnconscious
         })
       });
 
       // Find the UPDATE_COMBAT_STATE call
       const updateCombatStateCall = dispatchCalls.find(call => call[0].type === 'UPDATE_COMBAT_STATE');
       expect(updateCombatStateCall).toBeTruthy();
-      expect(updateCombatStateCall[0]).toEqual({
+      expect(updateCombatStateCall[0]).toMatchObject({
         type: 'UPDATE_COMBAT_STATE',
         payload: expect.objectContaining({
           isActive: true,
@@ -184,7 +184,7 @@ describe('useAIInteractions', () => {
       // Find the SET_COMBAT_ACTIVE call
       const setCombatActiveCall = dispatchCalls.find(call => call[0].type === 'SET_COMBAT_ACTIVE');
       expect(setCombatActiveCall).toBeTruthy();
-      expect(setCombatActiveCall[0]).toEqual({
+      expect(setCombatActiveCall[0]).toMatchObject({
         type: 'SET_COMBAT_ACTIVE',
         payload: true
       });

@@ -238,7 +238,7 @@ export function parseAIResponse(text: string): AIResponse | Character {
         },
         wounds: [],
         isUnconscious: false,
-        inventory: [],
+        inventory: { items: [] },
         isNPC: true,
         isPlayer: false
       };
@@ -360,7 +360,7 @@ export function parseAIResponse(text: string): AIResponse | Character {
         },
         wounds: [],
         isUnconscious: false,
-        inventory: [],
+        inventory: { items: [] },
         isNPC: true,
         isPlayer: false
       };

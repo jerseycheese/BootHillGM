@@ -18,6 +18,7 @@ jest.mock('../../services/ai', () => ({
 }));
 
 describe('JournalManager', () => {
+  // Use an empty array for journal entries
   const emptyJournal: JournalEntry[] = [];
 
   beforeEach(() => {
@@ -50,11 +51,13 @@ describe('JournalManager', () => {
     it('should get journal context', () => {
       const journal: JournalEntry[] = [
         {
+          id: 'test-1',
           type: 'narrative',
           timestamp: 1000,
           content: 'Entry 1'
         } as NarrativeJournalEntry,
         {
+          id: 'test-2',
           type: 'narrative',
           timestamp: 2000,
           content: 'Entry 2'
@@ -68,11 +71,13 @@ describe('JournalManager', () => {
     it('should filter journal using legacy function', () => {
       const journal: JournalEntry[] = [
         {
+          id: 'test-1',
           type: 'narrative',
           timestamp: 1000,
           content: 'Test narrative'
         } as NarrativeJournalEntry,
         {
+          id: 'test-2',
           type: 'combat',
           timestamp: 2000,
           content: 'Test combat',
@@ -169,12 +174,14 @@ describe('JournalManager', () => {
     describe('filterJournal', () => {
       const testJournal: JournalEntry[] = [
         {
+          id: 'test-1',
           type: 'narrative',
           timestamp: 1000,
           content: 'Test narrative',
           narrativeSummary: 'Summary'
         } as NarrativeJournalEntry,
         {
+          id: 'test-2',
           type: 'combat',
           timestamp: 2000,
           content: 'Test combat',

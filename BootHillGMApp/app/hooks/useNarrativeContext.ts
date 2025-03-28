@@ -19,6 +19,12 @@ import { EVENTS, triggerCustomEvent } from '../utils/events';
 import { InventoryItem } from '../types/item.types';
 import { createDecisionRecord } from '../utils/decisionUtils';
 import { GameState } from '../types/gameState';
+import { CombatState } from '../types/state';
+import { initialInventoryState } from '../types/state/inventoryState';
+import { initialCharacterState } from '../types/state/characterState';
+import { initialJournalState } from '../types/state/journalState';
+import { initialUIState } from '../types/state/uiState';
+import { Character } from '../types/character';
 
 /**
  * Custom hook for interacting with narrative context and player decisions
@@ -389,59 +395,34 @@ export function useNarrativeContext() {
       // Force AI mode to ensure context awareness
       setDecisionGenerationMode('ai');
       
+      // Create a player reference that satisfies TypeScript
+      const playerRef: Character | null = initialCharacterState.player;
+      const opponentRef: Character | null = null; // Add opponent reference
+      
       // Create a complete GameState object to satisfy the type requirements
       const gameState: GameState = {
         currentPlayer: 'player',
         npcs: [],
         location: null,
-        inventory: [],
+        inventory: initialInventoryState,
         quests: [],
-        character: { 
-          id: 'player',
-          name: 'Player Character',
-          isNPC: false,
-          isPlayer: true,
-          inventory: [],
-          attributes: {
-            speed: 5,
-            gunAccuracy: 5,
-            throwingAccuracy: 5,
-            strength: 5,
-            baseStrength: 5,
-            bravery: 5,
-            experience: 0
-          },
-          minAttributes: {
-            speed: 1,
-            gunAccuracy: 1,
-            throwingAccuracy: 1,
-            strength: 1,
-            baseStrength: 1,
-            bravery: 1,
-            experience: 0
-          },
-          maxAttributes: {
-            speed: 10,
-            gunAccuracy: 10,
-            throwingAccuracy: 10,
-            strength: 10,
-            baseStrength: 10,
-            bravery: 10,
-            experience: 100
-          },
-          wounds: [],
-          isUnconscious: false
-        },
-        narrative: state,
         gameProgress: 0,
-        journal: [],
-        isCombatActive: false,
-        opponent: null,
-        isClient: true,
+        character: initialCharacterState,
+        combat: {} as CombatState,
+        journal: initialJournalState,
+        narrative: state,
+        ui: initialUIState,
         suggestedActions: [],
-        // Add the player getter to satisfy the type requirement
+        isClient: true,
+        // Add getters that use explicit non-nullable references
         get player() {
-          return this.character;
+          return playerRef;
+        },
+        get opponent() {
+          return opponentRef;
+        },
+        get isCombatActive() {
+          return false;
         }
       };
       

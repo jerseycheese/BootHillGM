@@ -7,6 +7,129 @@ import { useCombatManager } from './useCombatManager';
 import { InventoryItem, ItemCategory } from '../types/item.types';
 import { InventoryManager } from '../utils/inventoryManager';
 import { addNarrativeHistory } from '../actions/narrativeActions';
+import { Character } from '../types/character';
+import { CampaignState } from '../types/campaign';
+import { LocationType } from '../services/locationService';
+import { SuggestedAction } from '../types/campaign';
+import { getPlayerFromCharacter, getItemsFromInventory, getEntriesFromJournal } from './selectors/typeGuards';
+import { CharacterState } from '../types/state/characterState';
+import { InventoryState } from '../types/state/inventoryState';
+import { JournalState } from '../types/state/journalState';
+import { NarrativeState } from '../types/narrative.types';
+import { JournalEntry } from '../types/journal';
+import { NarrativeChoice, NarrativeDisplayMode } from '../types/narrative/choice.types';
+
+// Define a type that encompasses both possible state structures
+type StateWithMixedStructure = {
+  currentPlayer?: string;
+  npcs?: string[];
+  character?: Character | CharacterState | { player?: Character; opponent?: Character };
+  location?: LocationType | null;
+  savedTimestamp?: number;
+  gameProgress?: number;
+  journal?: JournalState | JournalEntry[] | { entries?: JournalEntry[] };
+  narrative?: NarrativeState | {
+    currentStoryPoint?: unknown;
+    visitedPoints?: unknown[];
+    availableChoices?: unknown[];
+    narrativeHistory?: unknown[];
+    displayMode?: string;
+  };
+  inventory?: InventoryState | InventoryItem[] | { items?: InventoryItem[] };
+  quests?: string[];
+  combat?: { isActive?: boolean; [key: string]: unknown };
+  opponent?: Character | null;
+  isClient?: boolean;
+  suggestedActions?: SuggestedAction[];
+  combatState?: unknown;
+  [key: string]: unknown;
+};
+
+// Helper function to create a state object compatible with CampaignState
+const createCompatibleState = (state: StateWithMixedStructure, isCombatActive: boolean): CampaignState & { isCombatActive: boolean } => {
+  // Extract opponent from character state if available
+  const opponent = state.character &&
+    typeof state.character === 'object' &&
+    'opponent' in state.character
+      ? (state.character as { opponent?: Character }).opponent
+      : state.opponent || null;
+  
+  // Create a default narrative state that matches NarrativeState interface
+  const defaultNarrativeState: NarrativeState = {
+    currentStoryPoint: null,
+    visitedPoints: [],
+    availableChoices: [],
+    narrativeHistory: [],
+    displayMode: 'standard'
+  };
+  
+  // Process narrative state based on its type
+  let narrativeState = defaultNarrativeState;
+  
+  if (state.narrative) {
+    if (typeof state.narrative === 'string') {
+      // Convert string to basic narrative state
+      narrativeState = {
+        ...defaultNarrativeState,
+        narrativeHistory: [state.narrative]
+      };
+    } else if (typeof state.narrative === 'object') {
+      // Extract properties safely
+      const narrativeObj = state.narrative as Record<string, unknown>;
+      
+      // Create properly typed narrative choices if they exist
+      const availableChoices: NarrativeChoice[] = [];
+      if (Array.isArray(narrativeObj.availableChoices)) {
+        for (const choice of narrativeObj.availableChoices) {
+          if (typeof choice === 'object' && choice !== null) {
+            const choiceObj = choice as Record<string, unknown>;
+            if (typeof choiceObj.id === 'string' && typeof choiceObj.text === 'string') {
+              availableChoices.push({
+                id: choiceObj.id,
+                text: choiceObj.text,
+                leadsTo: typeof choiceObj.leadsTo === 'string' ? choiceObj.leadsTo : 'unknown'
+              });
+            }
+          }
+        }
+      }
+      
+      narrativeState = {
+        currentStoryPoint: null, // We can't safely reconstruct a StoryPoint
+        visitedPoints: Array.isArray(narrativeObj.visitedPoints) ?
+          narrativeObj.visitedPoints.filter(p => typeof p === 'string') as string[] : [],
+        availableChoices,
+        narrativeHistory: Array.isArray(narrativeObj.narrativeHistory) ?
+          narrativeObj.narrativeHistory.filter(h => typeof h === 'string') as string[] : [],
+        displayMode: typeof narrativeObj.displayMode === 'string' ?
+          narrativeObj.displayMode as NarrativeDisplayMode : 'standard'
+      };
+    }
+  }
+  
+  // Create a compatible state object
+  return {
+    currentPlayer: state.currentPlayer || '',
+    npcs: state.npcs || [],
+    character: getPlayerFromCharacter(state.character as (CharacterState | Character | null | undefined)) || null,
+    location: state.location || null,
+    savedTimestamp: state.savedTimestamp,
+    gameProgress: state.gameProgress || 0,
+    journal: getEntriesFromJournal(state.journal as (JournalState | JournalEntry[] | null | undefined)),
+    narrative: narrativeState,
+    inventory: getItemsFromInventory(state.inventory as (InventoryState | InventoryItem[] | null | undefined)),
+    quests: state.quests || [],
+    isCombatActive,
+    opponent: opponent || null,
+    isClient: state.isClient,
+    suggestedActions: state.suggestedActions || [],
+    // Just omit combatState since we're handling isActive separately
+    combatState: undefined,
+    get player() {
+      return this.character;
+    }
+  };
+};
 
 // Parameters for updating the narrative display
 type UpdateNarrativeParams = {
@@ -74,17 +197,18 @@ export const useGameSession = () => {
     setLastAction(input);  // Store the last action
 
     try {
-      const currentJournal = state.journal || [];
-      const currentInventory = state.inventory || [];
+      // Use helper functions to extract the right data structure
+      const journalEntries = getEntriesFromJournal(state.journal);
+      const inventoryItems = getItemsFromInventory(state.inventory);
 
       const response = await getAIResponse(
         input,
-        getJournalContext(currentJournal),
-        currentInventory
+        getJournalContext(journalEntries),
+        inventoryItems
       );
 
       // Update journal with the new action
-      const updatedJournal = await addJournalEntry(currentJournal, input);
+      const updatedJournal = await addJournalEntry(journalEntries, input);
 
       // Update campaign state with new journal
       dispatch({
@@ -123,7 +247,7 @@ export const useGameSession = () => {
 
       if (!isUsingItem && response.removedItems?.length > 0) {
         response.removedItems.forEach((itemName: string) => {
-          const itemToRemove = currentInventory.find(
+          const itemToRemove = inventoryItems.find(
             (item: InventoryItem) => item.name === itemName
           );
           if (itemToRemove) {
@@ -168,18 +292,31 @@ export const useGameSession = () => {
     // Handles using an item from the inventory
     // Updates both the inventory state and narrative display
     const handleUseItem = useCallback(async (itemId: string) => {
-      const item = state.inventory?.find((i: InventoryItem) => i.id === itemId);
+      const inventoryItems = getItemsFromInventory(state.inventory);
+      const item = inventoryItems.find((i: InventoryItem) => i.id === itemId);
+      
       if (!item) {
         setError(`Item not found in inventory: ${itemId}`);
         return;
       }
 
       // Validate item use *before* calling getAIResponse
-      const validationResult = InventoryManager.validateItemUse(item, state.character || undefined, {
-        ...state,
-        narrative: state.narrative || '',
-        isCombatActive: !!state.combatState
-      });
+      const playerCharacter = getPlayerFromCharacter(state.character);
+      const isCombatActive = state.combat && 
+        typeof state.combat === 'object' && 
+        'isActive' in state.combat ? 
+        !!state.combat.isActive : false;
+      
+      // Create a compatible state for the validateItemUse function
+      const stateWithMixedStructure = state as unknown as StateWithMixedStructure;
+      const compatibleState = createCompatibleState(stateWithMixedStructure, isCombatActive);
+      
+      const validationResult = InventoryManager.validateItemUse(
+        item,
+        playerCharacter || undefined,
+        compatibleState
+      );
+      
       if (!validationResult.valid) {
         setError(validationResult.reason || `Cannot use ${item.name}`);
         return;
@@ -191,24 +328,25 @@ export const useGameSession = () => {
 
         // Get the AI response for using this item
         const actionText = `use ${item.name}`;
+        const journalEntries = getEntriesFromJournal(state.journal);
+        
         const response = await getAIResponse(
           actionText,
-          getJournalContext(state.journal || []),
-          state.inventory || []
+          getJournalContext(journalEntries),
+          inventoryItems
         );
 
         // Now dispatch the USE_ITEM action *after* getting the AI response
         dispatch({ type: 'USE_ITEM', payload: itemId });
 
         // Update journal with the new action
-        const updatedJournal = await addJournalEntry(state.journal || [], actionText);
+        const updatedJournal = await addJournalEntry(journalEntries, actionText);
         dispatch({
           type: 'UPDATE_JOURNAL',
           payload: updatedJournal,
         });
 
         // Explicitly update the narrative with the item usage
-        // Note: playerInput is already prefixed with "Player:" in updateNarrative
         updateNarrative({
           text: response.narrative || `You use the ${item.name}.`,
           playerInput: actionText,
@@ -232,9 +370,6 @@ export const useGameSession = () => {
       } catch (error) {
         console.error('Error in handleUseItem:', error);
         setError(`Failed to use ${item.name}. Please try again.`);
-
-        // If there was an error, restore the item quantity (optional)
-        // dispatch({ type: 'UPDATE_ITEM_QUANTITY', payload: { id: itemId, quantity: item.quantity + 1 } });
       } finally {
         setUsingItems(prev => ({ ...prev, [itemId]: false }));
         setIsLoading(false);

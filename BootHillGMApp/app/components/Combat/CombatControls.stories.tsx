@@ -65,7 +65,6 @@ export const Default = {
   args: {
     currentTurn: 'player',
     isProcessing: false,
-    onAttack: () => console.log('Attack button clicked'),
   },
   parameters: {
     backgrounds: {
@@ -86,7 +85,6 @@ export const OpponentTurn = {
   args: {
     currentTurn: 'opponent',
     isProcessing: false,
-    onAttack: () => console.log('Attack button clicked'),
   },
 };
 
@@ -97,7 +95,6 @@ export const Processing = {
   args: {
     currentTurn: 'player',
     isProcessing: true,
-    onAttack: () => console.log('Attack button clicked'),
   },
 };
 
@@ -108,6 +105,5 @@ export const OpponentProcessing = {
   args: {
     currentTurn: 'opponent',
     isProcessing: true,
-    onAttack: () => console.log('Attack button clicked'),
   },
 };

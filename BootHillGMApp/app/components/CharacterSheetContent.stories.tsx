@@ -39,7 +39,6 @@ interface CharacterData {
 }
 
 // Create a simple stub for the CharacterSheetContent component
-// This is similar to how you'd create a themeable component in Drupal
 const CharacterSheetStub = ({ character }: { character?: CharacterData }) => {
   const displayCharacter = character || mockCharacter;
   
@@ -99,8 +98,7 @@ const CharacterSheetStub = ({ character }: { character?: CharacterData }) => {
   );
 };
 
-// Mock character data - this is our placeholder content, just like you'd use 
-// dummy content in a Drupal theme template
+// Mock character data - this is our placeholder content
 const mockCharacter: CharacterData = {
   id: 'mock-character-1',
   name: 'Sheriff Johnson',

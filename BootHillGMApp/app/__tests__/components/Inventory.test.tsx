@@ -2,11 +2,13 @@ import { render, screen } from '@testing-library/react';
 import { Inventory } from '../../components/Inventory';
 import { InventoryItem } from '../../types/item.types';
 import { useGameSession } from '../../hooks/useGameSession';
+import { GameProvider } from '../../hooks/useGame';
 import { CampaignStateContext } from '../../components/CampaignStateManager';
 import {
   createMockCampaignState,
   createMockInventoryItem,
 } from '../../test/utils/inventoryTestUtils';
+import { prepareStateForTesting } from '../../test/utils/stateTestUtils';
 
 jest.mock('../../hooks/useGameSession'); // Mock useGameSession
 
@@ -16,15 +18,30 @@ jest.mock('../../utils/inventoryManager', () => ({
   },
 }));
 
-const mockUseGameSession = {
-  state: createMockCampaignState(),
-  dispatch: jest.fn(),
-  isLoading: false,
-  error: null,
-  setError: jest.fn(),
-  retryLastAction: jest.fn(),
-  handleUseItem: jest.fn(),
-  isUsingItem: jest.fn(),
+// Create adapted mock state with proper compatibility layer
+const createAdaptedMockState = (partialState = {}) => {
+  // Get the original mock state
+  const originalState = createMockCampaignState(partialState);
+  
+  // Apply adapters to make it compatible with the new architecture
+  return prepareStateForTesting(originalState);
+};
+
+// Configure the mock GameSession hook with proper state
+const mockUseGameSession = (overrides = {}) => {
+  const adaptedState = createAdaptedMockState();
+  
+  return {
+    state: adaptedState,
+    dispatch: jest.fn(),
+    isLoading: false,
+    error: null,
+    setError: jest.fn(),
+    retryLastAction: jest.fn(),
+    handleUseItem: jest.fn(),
+    isUsingItem: jest.fn().mockReturnValue(false),
+    ...overrides
+  };
 };
 
 describe('Inventory', () => {
@@ -33,6 +50,7 @@ describe('Inventory', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (useGameSession as jest.Mock).mockReturnValue(mockUseGameSession());
   });
 
   const ERROR_MESSAGES = {
@@ -41,59 +59,78 @@ describe('Inventory', () => {
     cannotUse: 'Cannot use item',
   };
 
-    const renderWithContext = (
-        ui: React.ReactElement,
-        state = createMockCampaignState()
-    ) => {
-        return render(
-            <CampaignStateContext.Provider
-                value={{
-                    state,
-                    dispatch: jest.fn(),
-                    saveGame: mockSaveGame,
-                    loadGame: mockLoadGame,
-                    cleanupState: jest.fn(),
-                }}
-            >
-                {ui}
-            </CampaignStateContext.Provider>
-        );
+  // Render component with GameProvider wrapper
+  const renderWithContext = (
+    ui: React.ReactElement,
+    partialState = {}
+  ) => {
+    // Create state with adapters applied
+    const adaptedState = createAdaptedMockState(partialState);
+    
+    // Create context with both new state shape and legacy properties
+    const contextValue = {
+      state: adaptedState,
+      dispatch: jest.fn(),
+      saveGame: mockSaveGame,
+      loadGame: mockLoadGame,
+      cleanupState: jest.fn(),
+      // Legacy properties from our adapters
+      player: adaptedState.player,
+      opponent: adaptedState.opponent,
+      inventory: adaptedState.inventory,
+      entries: adaptedState.entries,
+      isCombatActive: adaptedState.isCombatActive,
+      narrativeContext: adaptedState.narrativeContext,
     };
+    
+    // Render with both providers
+    return render(
+      <GameProvider initialState={adaptedState}>
+        <CampaignStateContext.Provider value={contextValue}>
+          {ui}
+        </CampaignStateContext.Provider>
+      </GameProvider>
+    );
+  };
 
   test('does not render items with missing properties', () => {
-    const stateWithInvalidItems = createMockCampaignState({
-      inventory: [
-        createMockInventoryItem({
-          id: '1',
-          name: 'Health Potion',
-          quantity: 2,
-        }),
-        createMockInventoryItem({
-          id: '2',
-          quantity: 1,
-          description: 'Invalid item',
-          name: undefined,
-        }), // Missing name
-        createMockInventoryItem({
-          id: undefined,
-          name: 'Sword',
-          quantity: 1,
-          description: 'Invalid item',
-        }), // Missing id
-        createMockInventoryItem({
-          id: '4',
-          name: 'Shield',
-          description: 'Invalid item',
-          quantity: undefined,
-        }), // Missing quantity
-      ] as InventoryItem[],
+    const mockItems = [
+      createMockInventoryItem({
+        id: '1',
+        name: 'Health Potion',
+        quantity: 2,
+      }),
+      createMockInventoryItem({
+        id: '2',
+        quantity: 1,
+        description: 'Invalid item',
+        name: undefined,
+      }), // Missing name
+      createMockInventoryItem({
+        id: undefined,
+        name: 'Sword',
+        quantity: 1,
+        description: 'Invalid item',
+      }), // Missing id
+      createMockInventoryItem({
+        id: '4',
+        name: 'Shield',
+        description: 'Invalid item',
+        quantity: undefined,
+      }), // Missing quantity
+    ] as InventoryItem[];
+    
+    // Update the useGameSession mock with adapted state
+    const adaptedState = createAdaptedMockState({
+      inventory: { items: mockItems }
     });
+    
     (useGameSession as jest.Mock).mockReturnValue({
-      ...mockUseGameSession,
-      state: stateWithInvalidItems
+      ...mockUseGameSession(),
+      state: adaptedState
     });
 
-    renderWithContext(<Inventory />, stateWithInvalidItems);
+    renderWithContext(<Inventory />, { inventory: { items: mockItems } });
 
     expect(screen.getByText(/Health Potion/)).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
@@ -103,106 +140,22 @@ describe('Inventory', () => {
   });
 
   test('handles missing character gracefully', () => {
-      const stateWithoutCharacter = {
-          ...createMockCampaignState(),
-          character: null,
-      };
+    // Create state without a character
+    const adaptedState = createAdaptedMockState({
+      character: null,
+    });
 
-    const mockUseGameSession = {
-      state: stateWithoutCharacter,
-      dispatch: jest.fn(),
-      isLoading: false,
+    const mockSessionWithoutCharacter = {
+      ...mockUseGameSession(),
+      state: adaptedState,
       error: ERROR_MESSAGES.noCharacter,
-      setError: jest.fn(),
-      retryLastAction: jest.fn(),
-      handleUseItem: jest.fn(),
       isUsingItem: jest.fn().mockReturnValue(false),
     };
-    (useGameSession as jest.Mock).mockReturnValue(mockUseGameSession);
+    
+    (useGameSession as jest.Mock).mockReturnValue(mockSessionWithoutCharacter);
 
-    renderWithContext(<Inventory />, stateWithoutCharacter);
+    renderWithContext(<Inventory />, { character: null });
 
     expect(screen.getByTestId('error-display')).toHaveTextContent(ERROR_MESSAGES.noCharacter);
   });
-
-  // TODO: Fix this test. See Issue #152
-  // test('displays and clears error when validation fails', async () => {
-  //   const invalidItem = createMockInventoryItem({ id: 'invalid', name: 'Test Item', quantity: 1 });
-  //   const stateWithInvalidItem = createMockCampaignState({
-  //     inventory: [invalidItem],
-  //   });
-  //
-  //   // Mock validateItemUse *inside* the test case and useGameSession
-  //     let mockError: string | null = null;
-  //     const mockUseGameSession = {
-  //       state: stateWithInvalidItem,
-  //       dispatch: jest.fn(),
-  //       isLoading: false,
-  //       get error() { return mockError; }, // Use a getter for dynamic access
-  //       setError: jest.fn().mockImplementation((newError: string | null) => {
-  //         mockError = newError;
-  //       }),
-  //       retryLastAction: jest.fn(),
-  //       handleUseItem: jest.fn(),
-  //       isUsingItem: jest.fn().mockReturnValue(false),
-  //     };
-  //     (InventoryManager.validateItemUse as jest.Mock).mockReturnValueOnce({
-  //       valid: false,
-  //       reason: 'Test Reason',
-  //     });
-  //   (useGameSession as jest.Mock).mockReturnValue(mockUseGameSession);
-  //
-  //   renderWithContext(<Inventory />, stateWithInvalidItem);
-  //
-  //   const useButton = screen.getByRole('button', { name: /use/i });
-  //
-  //   // Log initial error state
-  //
-  //
-  //   fireEvent.click(useButton);
-  //
-  //   // Log error state after click
-  //
-  //
-  //   await waitFor(() => {
-  //     expect(screen.getByText(/Test Reason/)).toBeInTheDocument();
-  //   });
-  // });
-
-  // TODO: Fix this test. See Issue #152
-  // test('uses default error message when no reason is provided', async () => {
-  //   const invalidItem = createMockInventoryItem({ id: 'invalid', name: 'Test Item', quantity: 1 });
-  //   const stateWithInvalidItem = createMockCampaignState({
-  //     inventory: [invalidItem],
-  //   });
-  //
-  //   let mockError: string | null = null;
-  //   const mockUseGameSession = {
-  //     state: stateWithInvalidItem,
-  //     dispatch: jest.fn(),
-  //     isLoading: false,
-  //     get error() { return mockError; },
-  //     setError: jest.fn().mockImplementation((newError: string | null) => {
-  //       mockError = newError;
-  //     }),
-  //     retryLastAction: jest.fn(),
-  //     handleUseItem: jest.fn(),
-  //     isUsingItem: jest.fn().mockReturnValue(false),
-  //   };
-  //   (useGameSession as jest.Mock).mockReturnValue(mockUseGameSession);
-  //
-  //   // Mock validateItemUse *inside* the test case to return *no* reason
-  //   (InventoryManager.validateItemUse as jest.Mock).mockReturnValueOnce({
-  //     valid: false,
-  //     reason: undefined, // No reason provided
-  //   });
-  //   renderWithContext(<Inventory />, stateWithInvalidItem);
-  //
-  //   const useButton = screen.getByRole('button', { name: /use/i });
-  //   fireEvent.click(useButton);
-  //
-  //   await waitFor(() => {
-  //     expect(screen.getByText(/Cannot use Test Item/)).toBeInTheDocument();
-  //   });
-  // });
 });

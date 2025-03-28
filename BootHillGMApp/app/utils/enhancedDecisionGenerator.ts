@@ -12,6 +12,7 @@ import { createTestDecision } from './testNarrativeWithDecision';
 import { GameState } from '../types/gameState';
 import { LocationType } from '../services/locationService';
 import { PlayerDecision } from '../types/narrative.types';
+import { Character } from '../types/character';
 // Import global type definitions
 import '../types/global.d';
 
@@ -22,13 +23,25 @@ export type DecisionGenerationMode = 'template' | 'ai' | 'hybrid';
 let currentGenerationMode: DecisionGenerationMode = 'hybrid';
 
 /**
+ * Helper function to safely get player character from state
+ * 
+ * @param gameState Current game state
+ * @returns Player character or undefined
+ */
+function getPlayerCharacter(gameState: GameState): Character | undefined {
+  if (!gameState.character || !gameState.character.player) {
+    return undefined;
+  }
+  return gameState.character.player;
+}
+
+/**
  * Set the decision generation mode
  * 
  * @param mode The decision generation mode to use
  */
 export function setDecisionGenerationMode(mode: DecisionGenerationMode): void {
   currentGenerationMode = mode;
-  console.log(`Decision generation mode set to: ${mode}`);
 }
 
 /**
@@ -57,6 +70,9 @@ export async function generateEnhancedDecision(
   forceGeneration: boolean = false
 ): Promise<PlayerDecision | null> {
   try {
+    // Get the player character (if available)
+    const playerCharacter = getPlayerCharacter(gameState);
+    
     switch (currentGenerationMode) {
       case 'ai':
         // Use pure AI-driven generation
@@ -64,7 +80,7 @@ export async function generateEnhancedDecision(
           gameState,
           gameState.narrative.narrativeContext,
           locationType,
-          gameState.character || undefined // Convert null to undefined
+          playerCharacter // Pass the player character or undefined
         );
         
       case 'template':
@@ -82,7 +98,7 @@ export async function generateEnhancedDecision(
           // If force generation is enabled, skip detection check
           if (forceGeneration) {
             // First check if we have a valid character object
-            if (!gameState.character) {
+            if (!playerCharacter) {
               console.error('Cannot generate forced AI decision: No character data available');
               return generateContextualDecision(
                 gameState,
@@ -94,7 +110,7 @@ export async function generateEnhancedDecision(
             const aiService = getAIDecisionService();
             return await aiService.generateDecision(
               gameState.narrative,
-              gameState.character, // Now we're sure this is not null
+              playerCharacter, // Now using the player character
               gameState
             );
           }
@@ -104,7 +120,7 @@ export async function generateEnhancedDecision(
             gameState,
             gameState.narrative.narrativeContext,
             locationType,
-            gameState.character || undefined // Convert null to undefined
+            playerCharacter // Pass the player character or undefined
           );
           
           if (aiDecision) {
@@ -193,7 +209,6 @@ export function enhanceDecisionGenerator() {
     promise.then(decision => {
       if (decision) {
         (window.bhgmDebug as ExtendedDebug).cachedDecision = decision;
-        console.log('AI decision ready for next retrieval:', decision.id);
       }
     }).catch(error => {
       console.error('Error in async decision generation:', error);
@@ -242,6 +257,4 @@ export function initializeDecisionDebugTools() {
       generateDecision: generateEnhancedDecision
     };
   }
-  
-  console.log('Enhanced decision debug tools initialized');
 }

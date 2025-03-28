@@ -27,13 +27,17 @@ BootHillGMApp/
 ├── app/               # Main application code
 │   ├── actions/       # Action creators
 │   ├── components/    # Reusable UI components
+│   │   └── docs/      # Component documentation
 │   ├── context/       # React context providers
+│   │   └── docs/      # State architecture documentation
+│   ├── docs/          # General app documentation
 │   ├── hooks/         # Custom React hooks
 │   ├── reducers/      # Redux-style reducers
 │   ├── services/      # API services and external integrations
 │   ├── styles/        # CSS and styling utilities
 │   ├── types/         # TypeScript type definitions
 │   └── utils/         # Utility functions
+│       └── docs/      # Development tool documentation
 ├── public/            # Static assets
 └── tests/             # Test files
 ```
@@ -48,19 +52,31 @@ BootHillGMApp/
 
 ## Documentation
 
-The comprehensive documentation for this application is maintained in the centralized documentation repository:
+### Application-Specific Documentation
 
-`/Users/jackhaas/Projects/BootHillGM/Docs/`
+Documentation for specific components and implementation details is co-located with the relevant code:
 
-Key documentation sections:
+- **Component Documentation:** `/app/components/docs/`
+  - [Player Decision Card](/app/components/docs/PlayerDecisionCard.md)
 
-- **Core Systems:** `/Docs/core-systems/` - High-level system documentation
-  - [Narrative System](/Docs/core-systems/narrative-system.md)
-  - [Player Decision System](/Docs/core-systems/player-decision-system.md)
+- **State Architecture:** `/app/context/docs/`
+  - [State Architecture V2](/app/context/docs/state-architecture-v2.md)
+  - [Selector Migration Guide](/app/context/docs/selector-migration-guide.md)
+  - [State Architecture Test Patterns](/app/context/docs/state-architecture-test-patterns.md)
 
-- **Architecture:** `/Docs/architecture/` - Technical implementation details
-  - [Narrative Architecture](/Docs/architecture/narrative-architecture.md)
-  - [Decision Service](/Docs/architecture/decision-service.md)
+- **Development Tools:** `/app/utils/docs/`
+  - [Debug Tools](/app/utils/docs/debug-tools.md)
+
+### Project-Level Documentation
+
+Broader documentation about architecture, planning, and systems is maintained in the centralized documentation repository:
+
+- **Project Documentation:** `/Users/jackhaas/Projects/BootHillGM/Docs/`
+  - Core Systems: `/Docs/core-systems/`
+  - Architecture: `/Docs/architecture/`
+  - Planning & Implementation: `/Docs/planning/implementation-plans/`
+    - [Player Decision Impact Implementation](/Users/jackhaas/Projects/BootHillGM/Docs/planning/implementation-plans/player-decision-impact-implementation.md)
+    - [Story Progression System](/Users/jackhaas/Projects/BootHillGM/Docs/planning/implementation-plans/story-progression-system.md)
 
 ## Development Conventions
 

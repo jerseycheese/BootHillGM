@@ -63,7 +63,7 @@ exports[`StatDisplay snapshots matches snapshot with description 1`] = `
     <div
       class="stat-label text-sm font-bold"
     >
-      Dexterity
+      Speed
     </div>
     <div
       class="stat-value text-lg"
@@ -73,7 +73,7 @@ exports[`StatDisplay snapshots matches snapshot with description 1`] = `
     <div
       class="stat-description text-xs italic"
     >
-      Affects combat and movement
+      Affects reaction time and movement
     </div>
   </div>
 </div>

@@ -33,7 +33,7 @@ export const initialCharacter: Character = {
   },
   wounds: [],
   isUnconscious: false,
-  inventory: [],
+  inventory: { items: [] },
   isNPC: false,
   isPlayer: true
 };
@@ -70,7 +70,7 @@ export const defaultCharacter: Character = {
   },
   wounds: [],
   isUnconscious: false,
-  inventory: [],
+  inventory: { items: [] },
   isNPC: false,
   isPlayer: true,
 };
@@ -118,7 +118,7 @@ export function createMockCharacter(overrides: Partial<Character> = {}): Charact
     },
     wounds: [],
     isUnconscious: false,
-    inventory: [],
+    inventory: { items: [] },
     isNPC: false,
     isPlayer: true,
   };

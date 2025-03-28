@@ -1,237 +1,142 @@
-import { journalReducer } from "../../reducers/journal/journalReducer";
-import { GameState } from "../../types/gameState";
-import { GameEngineAction } from "../../types/gameActions";
+/**
+ * Journal Reducer Tests
+ */
 
+import { journalReducer } from '../../reducers/journal/journalReducer';
+import { initialJournalState } from '../../types/state/journalState';
+import { initialState } from '../../types/initialState';
+
+import { journalAdapter } from '../../utils/stateAdapters';
+
+import { adaptStateForTests, migrationAdapter } from '../../utils/stateAdapters';
+import { GameState } from '../../types/gameState';
+import { GameAction } from '../../types/actions';
+
+// Helper function to process state through the reducer and adapter layer
+const processState = (state: Partial<GameState>, action: GameAction) => {
+  // Normalize state format
+  const normalizedState = migrationAdapter.oldToNew(state) as GameState; // Assert as GameState
+  
+  // Apply the reducer - ensure journal exists and is JournalState
+  const journalSlice = normalizedState.journal ? journalReducer(normalizedState.journal, action) : initialJournalState;
+     
+  // Create a state with the new journal slice
+  const stateWithNewJournal: GameState = { // Ensure this conforms to GameState
+    ...initialState, // Start with a full initial state structure
+    ...normalizedState, // Overlay the normalized state
+    journal: journalSlice // Apply the updated journal slice
+  };
+  
+  // Apply adapters to get the final state
+  const adaptedState = adaptStateForTests(stateWithNewJournal);
+     
+  return adaptedState;
+};
 
 describe('journalReducer', () => {
-  const initialState: Partial<GameState> = {
-    journal: []
-  };
-
-  it('should return the initial state when no matching action', () => {
-    const action = { type: 'UNKNOWN_ACTION' } as unknown as GameEngineAction;
-    const result = journalReducer(initialState, action);
-    expect(result).toEqual(initialState);
+  // Base initial state that will be used in tests
+  const createInitialState = () => ({
+    journal: {
+      entries: [
+        { id: '1', title: 'First Entry', content: 'Test content', timestamp: 1615000000000, type: 'narrative' as const } // Added type
+      ]
+    }
   });
 
-  describe('UPDATE_JOURNAL action', () => {
-    it('should add a single journal entry to an empty journal', () => {
-      const entry = {
-        type: 'narrative' as const,
-        timestamp: Date.now(),
-        content: 'Test narrative entry'
-      };
-
-      const action = {
-        type: 'UPDATE_JOURNAL' as const,
-        payload: entry
-      };
-
-      const result = journalReducer(initialState, action);
-      expect(result.journal).toHaveLength(1);
-      expect(result.journal?.[0]).toEqual(entry);
-    });
-
-    it('should add a single journal entry to an existing journal', () => {
-      const existingEntry = {
-        type: 'narrative' as const,
-        timestamp: Date.now() - 1000,
-        content: 'Existing entry'
-      };
-
-      const newEntry = {
-        type: 'combat' as const,
-        timestamp: Date.now(),
-        content: 'New combat entry',
-        combatants: {
-          player: 'Player',
-          opponent: 'Enemy'
-        },
-        outcome: 'victory' as const
-      };
-
-      const stateWithEntry = {
-        journal: [existingEntry]
-      };
-
-      const action = {
-        type: 'UPDATE_JOURNAL' as const,
-        payload: newEntry
-      };
-
-      const result = journalReducer(stateWithEntry, action);
-      expect(result.journal).toHaveLength(2);
-      expect(result.journal?.[0]).toEqual(existingEntry);
-      expect(result.journal?.[1]).toEqual(newEntry);
-    });
-
-    it('should replace the journal with an array of entries', () => {
-      const existingEntry = {
-        type: 'narrative' as const,
-        timestamp: Date.now() - 1000,
-        content: 'Existing entry'
-      };
-
-      const newEntries = [
-        {
-          type: 'narrative' as const,
-          timestamp: Date.now(),
-          content: 'First new entry'
-        },
-        {
-          type: 'inventory' as const,
-          timestamp: Date.now() + 1000,
-          content: 'Second new entry',
-          items: {
-            acquired: ['Pistol'],
-            removed: []
-          }
-        }
-      ];
-
-      const stateWithEntry = {
-        journal: [existingEntry]
-      };
-
-      const action = {
-        type: 'UPDATE_JOURNAL' as const,
-        payload: newEntries
-      };
-
-      const result = journalReducer(stateWithEntry, action);
-      expect(result.journal).toHaveLength(2);
-      expect(result.journal).toEqual(newEntries);
-    });
-
-    it('should handle different types of journal entries', () => {
-      // Test with narrative entry
-      const narrativeEntry = {
-        type: 'narrative' as const,
-        timestamp: Date.now(),
-        content: 'Test narrative'
-      };
-
-      const narrativeAction = {
-        type: 'UPDATE_JOURNAL' as const,
-        payload: narrativeEntry
-      };
-
-      let result = journalReducer(initialState, narrativeAction);
-      expect(result.journal?.[0].type).toBe('narrative');
-
-      // Test with combat entry
-      const combatEntry = {
-        type: 'combat' as const,
-        timestamp: Date.now(),
-        content: 'Test combat',
-        combatants: {
-          player: 'Player',
-          opponent: 'Enemy'
-        },
-        outcome: 'defeat' as const
-      };
-
-      const combatAction = {
-        type: 'UPDATE_JOURNAL' as const,
-        payload: combatEntry
-      };
-
-      result = journalReducer(result, combatAction);
-      expect(result.journal).toHaveLength(2);
-      expect(result.journal?.[1].type).toBe('combat');
-
-      // Test with inventory entry
-      const inventoryEntry = {
-        type: 'inventory' as const,
-        timestamp: Date.now(),
-        content: 'Test inventory',
-        items: {
-          acquired: ['Gun', 'Bullets'],
-          removed: ['Old gun']
-        }
-      };
-
-      const inventoryAction = {
-        type: 'UPDATE_JOURNAL' as const,
-        payload: inventoryEntry
-      };
-
-      result = journalReducer(result, inventoryAction);
-      expect(result.journal).toHaveLength(3);
-      expect(result.journal?.[2].type).toBe('inventory');
-
-      // Test with quest entry
-      const questEntry = {
-        type: 'quest' as const,
-        timestamp: Date.now(),
-        content: 'Test quest',
-        questTitle: 'Main Quest',
-        status: 'started' as const
-      };
-
-      const questAction = {
-        type: 'UPDATE_JOURNAL' as const,
-        payload: questEntry
-      };
-
-      result = journalReducer(result, questAction);
-      expect(result.journal).toHaveLength(4);
-      expect(result.journal?.[3].type).toBe('quest');
-    });
-
-    it('should handle undefined state by using initialJournalState', () => {
-      const entry = {
-        type: 'narrative' as const,
-        timestamp: Date.now(),
-        content: 'Test entry'
-      };
-
-      const action = {
-        type: 'UPDATE_JOURNAL' as const,
-        payload: entry
-      };
-
-      const result = journalReducer(undefined, action);
-      expect(result.journal).toHaveLength(1);
-      expect(result.journal?.[0]).toEqual(entry);
-    });
-
-    it('should handle undefined journal array by creating a new array', () => {
-      const stateWithUndefinedJournal = {} as Partial<GameState>;
-
-      const entry = {
-        type: 'narrative' as const,
-        timestamp: Date.now(),
-        content: 'Test entry'
-      };
-
-      const action = {
-        type: 'UPDATE_JOURNAL' as const,
-        payload: entry
-      };
-
-      const result = journalReducer(stateWithUndefinedJournal, action);
-      expect(result.journal).toHaveLength(1);
-      expect(result.journal?.[0]).toEqual(entry);
-    });
+  test('should access entries as an iterable', () => {
+    const initialState = createInitialState();
+    const processedState = processState(initialState, { type: 'NO_OP' });
+    
+    // Entries should be iterable via the adapter
+    const entriesArray = [...journalAdapter.getEntries(processedState)];
+    
+    expect(entriesArray.length).toBe(1);
+    expect(entriesArray[0].title).toBe('First Entry');
   });
 
-  // Future tests for additional journal actions
-  // describe('CLEAR_JOURNAL action', () => {
-  //   it('should clear all journal entries', () => {
-  //     // Test implementation
-  //   });
-  // });
+  test('should add a journal entry', () => {
+    const initialState = createInitialState();
+    
+    const action = {
+      type: 'journal/ADD_ENTRY',
+      payload: { 
+        id: '2', 
+        title: 'Second Entry', 
+        content: 'More test content', 
+        timestamp: 1615100000000 
+      }
+    } as const;
 
-  // describe('REMOVE_JOURNAL_ENTRY action', () => {
-  //   it('should remove the specified journal entry', () => {
-  //     // Test implementation
-  //   });
-  // });
+    const newState = processState(initialState, action);
 
-  // describe('UPDATE_JOURNAL_ENTRY action', () => {
-  //   it('should update the specified journal entry', () => {
-  //     // Test implementation
-  //   });
-  // });
+    // Check both the new structure and legacy structure
+    expect(newState.journal.entries.length).toBe(2);
+    
+    // Also verify the entries can be accessed directly (backward compatibility)
+    expect(journalAdapter.getEntries(newState).length).toBe(2);
+    expect(journalAdapter.getEntries(newState)[1].title).toBe('Second Entry');
+  });
+
+  test('should remove a journal entry', () => {
+    const initialState = createInitialState();
+    
+    const action = {
+      type: 'journal/REMOVE_ENTRY',
+      payload: { id: '1' }
+    } as const;
+
+    const newState = processState(initialState, action);
+
+    // Check both access patterns
+    expect(newState.journal.entries.length).toBe(0);
+    expect(journalAdapter.getEntries(newState).length).toBe(0);
+  });
+
+  test('should update a journal entry', () => {
+    const initialState = createInitialState();
+    
+    const action = {
+      type: 'journal/UPDATE_ENTRY',
+      payload: { 
+        id: '1', 
+        title: 'Updated Title', 
+        content: 'Updated content' 
+      }
+    } as const;
+
+    const newState = processState(initialState, action);
+
+    // Check the entry was updated
+    expect(journalAdapter.getEntries(newState)[0].title).toBe('Updated Title');
+    expect(journalAdapter.getEntries(newState)[0].content).toBe('Updated content');
+    // Should preserve existing properties
+    expect(journalAdapter.getEntries(newState)[0].timestamp).toBe(1615000000000);
+  });
+
+  // Test with legacy array format for journal
+  test('should handle legacy state format', () => {
+    // Create a state with the old journal format (direct array)
+    const legacyState = {
+      journal: [
+        { id: '1', title: 'Legacy Entry', content: 'Legacy content', timestamp: 1614000000000, type: 'narrative' as const } // Added type
+      ]
+    };
+
+    const action = {
+      type: 'journal/ADD_ENTRY',
+      payload: { 
+        id: '2', 
+        title: 'New Entry', 
+        content: 'New content', 
+        timestamp: 1614100000000 
+      }
+    } as const;
+
+    const newState = processState(legacyState, action);
+
+    // Verify the state was adapted and action processed
+    expect(journalAdapter.getEntries(newState).length).toBe(2);
+    expect(journalAdapter.getEntries(newState)[0].title).toBe('Legacy Entry');
+    expect(journalAdapter.getEntries(newState)[1].title).toBe('New Entry');
+  });
 });

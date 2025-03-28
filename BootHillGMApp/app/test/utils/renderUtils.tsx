@@ -88,7 +88,6 @@ export function renderCharacterComponent(ui: ReactElement, options = {}) {
           id: 'test-character',
           name: 'Test Character',
           strength: 10,
-          dexterity: 8,
           will: 6,
           health: 20,
           maxHealth: 20

@@ -3,10 +3,12 @@ import { Character } from '../types/character';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { DefaultWeapons } from '../data/defaultWeapons';
 import { addCombatJournalEntry } from '../utils/JournalManager';
-import { CombatState, ensureCombatState } from '../types/combat/types';
+import { CombatState as CombatStateFromCombat, ensureCombatState, CombatParticipant, LogEntry, BrawlingState, WeaponCombatState } from '../types/combat';
 import { cleanCharacterName } from '../utils/combatUtils';
 import { useCombatState } from './combat/useCombatState';
 import { useCombatActions } from './combat/useCombatActions';
+import { InventoryItem } from '../types/item.types';
+import { UniversalCombatState } from '../types/combatStateAdapter';
 
 /**
  * Custom hook for managing combat encounters.
@@ -17,7 +19,7 @@ import { useCombatActions } from './combat/useCombatActions';
  * @returns An object containing combat-related state and functions.
  */
 export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (text: string) => void }) => {
-  const { dispatch, state } = useCampaignState();
+  const { dispatch, state, player, opponent, inventory } = useCampaignState();
   const {
     isProcessing,
     setIsProcessing,
@@ -29,18 +31,42 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
   const { handleStrengthChange, executeCombatRound } = useCombatActions();
 
   /**
+   * Safely gets the round count from combat state regardless of structure
+   * This handles both interfaces: CombatState from combat.ts and from state/combatState.ts
+   */
+  const getRoundCount = useCallback((combatState: unknown): number => {
+    if (!combatState) return 0;
+    
+    // Try accessing it as a property using type narrowing
+    if (typeof combatState === 'object' && combatState !== null) {
+      // Check for rounds property (from combat.ts)
+      if ('rounds' in combatState && typeof combatState.rounds === 'number') {
+        return combatState.rounds;
+      }
+      
+      // Check for currentRound property (from state/combatState.ts)
+      if ('currentRound' in combatState && typeof combatState.currentRound === 'number') {
+        return combatState.currentRound;
+      }
+    }
+    
+    // Default to 0 if neither property exists
+    return 0;
+  }, []);
+
+  /**
    * Safely ends combat with state protection.
    * Handles victory/defeat message, journal updates, and state cleanup.
    * Provides error recovery if state updates fail.
    */
-    const handleCombatEnd = useCallback(
+  const handleCombatEnd = useCallback(
     async (winner: 'player' | 'opponent', combatResults: string) => {
       setIsProcessing(true);
 
       try {
         await stateProtection.current.withProtection('combat-end', async () => {
-          const playerName = state.character?.name || 'Player';
-          const opponentName = state.opponent?.name || 'Unknown Opponent';
+          const playerName = player?.name || 'Player';
+          const opponentName = opponent?.name || 'Unknown Opponent';
 
           const cleanPlayerName = cleanCharacterName(playerName);
           const cleanOpponentName = cleanCharacterName(opponentName);
@@ -52,11 +78,10 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           onUpdateNarrative(combatResults);
           onUpdateNarrative(endMessage);
 
-          const currentJournal = state.journal || [];
           dispatch({
             type: 'UPDATE_JOURNAL',
             payload: addCombatJournalEntry(
-              currentJournal,
+              state.journal.entries,
               playerName,
               opponentName,
               winner === 'player' ? 'victory' : 'defeat',
@@ -64,31 +89,43 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
             ),
           });
 
-          const initialPlayerStrength = state.character?.attributes?.strength || 0;
-          const currentPlayerStrength = state.character?.attributes?.strength || 0;
-          const initialOpponentStrength = state.opponent?.attributes?.strength || 0;
-          const currentOpponentStrength = state.opponent?.attributes?.strength || 0;
+          const initialPlayerStrength = player?.attributes?.strength || 0;
+          const currentPlayerStrength = player?.attributes?.strength || 0;
+          const initialOpponentStrength = opponent?.attributes?.strength || 0;
+          const currentOpponentStrength = opponent?.attributes?.strength || 0;
+
+          // Use helper function to get round count safely
+          const roundCount = getRoundCount(state.combat);
 
           const combatSummary = {
             winner,
             results: combatResults,
             stats: {
-              rounds: state.combatState?.rounds || 0,
+              rounds: roundCount,
               damageDealt: Math.max(0, initialOpponentStrength - currentOpponentStrength),
               damageTaken: Math.max(0, initialPlayerStrength - currentPlayerStrength)
             }
           };
 
+          // Create an empty log entries array with proper typing
+          const combatLog: LogEntry[] = [];
+
+          // Using the ensure function to create a valid combat state object
+          const updatedCombatState = ensureCombatState({
+            isActive: true,
+            combatType: null,
+            winner,
+            brawling: undefined,
+            weapon: undefined,
+            summary: combatSummary,
+            participants: [] as CombatParticipant[],
+            rounds: roundCount,
+            combatLog
+          });
+
           dispatch({
             type: 'UPDATE_COMBAT_STATE',
-            payload: ensureCombatState({
-              isActive: true,
-              combatType: null,
-              winner: winner,
-              brawling: undefined,
-              weapon: undefined,
-              summary: combatSummary
-            }),
+            payload: updatedCombatState,
           });
 
           dispatch({ type: 'SET_OPPONENT', payload: {} });
@@ -103,7 +140,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         setIsProcessing(false);
       }
     },
-    [dispatch, state, onUpdateNarrative, stateProtection, setIsProcessing]
+    [dispatch, state, player, opponent, onUpdateNarrative, stateProtection, setIsProcessing, getRoundCount]
   );
 
   /**
@@ -116,13 +153,13 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
   const initiateCombat = useCallback(
     async (
       newOpponent: Character,
-      existingCombatState?: Partial<CombatState>
+      existingCombatState?: UniversalCombatState
     ) => {
       if (isUpdatingRef.current) return;
       isUpdatingRef.current = true;
 
       try {
-        if (!state.character) {
+        if (!player) {
           onUpdateNarrative('No player character available to initiate combat.');
           return;
         }
@@ -132,38 +169,61 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           return;
         }
 
-        const equippedWeaponItem = state.inventory?.find(
-          item => item.category === 'weapon' && item.isEquipped
+        const equippedWeaponItem = inventory.find(
+          (item: InventoryItem) => item.category === 'weapon' && item.isEquipped
         );
         const equippedWeapon = equippedWeaponItem?.weapon || null;
 
         dispatch({ type: 'SET_COMBAT_ACTIVE', payload: true });
         dispatch({ type: 'SET_OPPONENT', payload: newOpponent });
 
+        // Get rounds from the right property - using getRoundCount for a more robust approach
+        const existingRounds = existingCombatState ? getRoundCount(existingCombatState) : 0;
+
+        // Create an empty participants array with proper typing
+        const participants: CombatParticipant[] = [];
+        
+        // Create an empty log entries array with proper typing
+        const combatLog: LogEntry[] = [];
+
+        // Type-safe brawling state
+        const brawlingState: BrawlingState | undefined = existingCombatState?.brawling !== undefined 
+          ? existingCombatState.brawling as BrawlingState 
+          : {
+              playerCharacterId: player.id,
+              opponentCharacterId: newOpponent.id,
+              round: 1 as 1 | 2, // Cast to union type
+              playerModifier: 0,
+              opponentModifier: 0,
+              roundLog: [],
+            };
+
+        // Type-safe weapon state
+        const weaponState: WeaponCombatState | undefined = existingCombatState?.weapon !== undefined 
+          ? existingCombatState.weapon as WeaponCombatState 
+          : {
+              round: 1,
+              playerWeapon: equippedWeapon,
+              opponentWeapon: DefaultWeapons.coltRevolver,
+              currentRange: 10,
+              playerCharacterId: player.id,
+              opponentCharacterId: newOpponent.id,
+              roundLog: [],
+            };
+
         const combatState = ensureCombatState({
           isActive: existingCombatState?.isActive !== undefined ? existingCombatState.isActive : true,
           combatType: existingCombatState?.combatType !== undefined ? existingCombatState.combatType : null,
-          currentTurn: existingCombatState?.currentTurn !== undefined ? existingCombatState.currentTurn : 'player',
-          winner: existingCombatState?.winner !== undefined ? existingCombatState.winner : null,
-          brawling: existingCombatState?.brawling !== undefined ? existingCombatState.brawling : {
-            playerCharacterId: state.character.id,
-            opponentCharacterId: newOpponent.id,
-            round: 1,
-            playerModifier: 0,
-            opponentModifier: 0,
-            roundLog: [],
-          },
-          weapon: existingCombatState?.weapon !== undefined ? existingCombatState.weapon : {
-            round: 1,
-            playerWeapon: equippedWeapon,
-            opponentWeapon: DefaultWeapons.coltRevolver,
-            currentRange: 10,
-            playerCharacterId: state.character.id,
-            opponentCharacterId: newOpponent.id,
-            roundLog: [],
-          },
-          summary: existingCombatState?.summary
-        });
+          currentTurn: existingCombatState?.currentTurn || 'player',
+          winner: existingCombatState?.winner || null,
+          brawling: brawlingState,
+          weapon: weaponState,
+          summary: existingCombatState?.summary,
+          rounds: existingRounds,
+          participants,
+          combatLog
+        }) as CombatStateFromCombat;
+        
         dispatch({
           type: 'UPDATE_COMBAT_STATE',
           payload: combatState,
@@ -177,7 +237,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         isUpdatingRef.current = false;
       }
     },
-    [dispatch, state.character, state.inventory, onUpdateNarrative, isUpdatingRef]
+    [dispatch, player, inventory, onUpdateNarrative, isUpdatingRef, getRoundCount]
   );
 
   /**
@@ -185,7 +245,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
    *
    * @returns The current opponent character or null if not in combat.
    */
-  const getCurrentOpponent = useCallback(() => state.opponent, [state.opponent]);
+  const getCurrentOpponent = useCallback(() => opponent, [opponent]);
 
   return {
     ...state,

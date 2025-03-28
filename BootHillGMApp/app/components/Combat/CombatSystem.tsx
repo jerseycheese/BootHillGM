@@ -135,13 +135,35 @@ export const CombatSystem: React.FC<{
     return uniqueEntries;
   }, [brawlingState?.roundLog, weaponState?.roundLog]);
 
+  // Find equipped weapon safely
+  const findEquippedWeapon = useCallback((character: Character): Weapon | undefined => {
+    if (!character) return undefined;
+    
+    // Handle different inventory formats safely 
+    if (character.inventory) {
+      if (Array.isArray(character.inventory)) {
+        // Direct array format
+        return character.inventory.find(
+          item => item.category === 'weapon' && item.isEquipped
+        ) as Weapon | undefined;
+      } else if (character.inventory.items && Array.isArray(character.inventory.items)) {
+        // Object with items array format
+        return character.inventory.items.find(
+          item => item.category === 'weapon' && item.isEquipped
+        ) as Weapon | undefined;
+      }
+    }
+    
+    // Fallback to character's weapon property if available
+    return character.weapon as Weapon | undefined;
+  }, []);
+
   // Handle combat type selection
   const handleCombatTypeSelect = useCallback((type: CombatType) => {
     setCombatType(type);
     
-    // Find equipped weapon in player's inventory
-    const equippedWeapon = playerCharacter.inventory
-      .find(item => item.category === 'weapon' && item.isEquipped) as Weapon | undefined;
+    // Find equipped weapon in player's inventory using the safe helper
+    const equippedWeapon = findEquippedWeapon(playerCharacter);
     
     // Update combat state with selected combat type and equipped weapon
     dispatch({
@@ -171,7 +193,7 @@ export const CombatSystem: React.FC<{
         } : undefined
       })
     });
-  }, [playerCharacter, opponent, dispatch]);
+  }, [playerCharacter, opponent, dispatch, findEquippedWeapon]);
 
   // Handle brawling actions with proper state validation
   const handleBrawlingAction = useCallback(async (isPunching: boolean) => {

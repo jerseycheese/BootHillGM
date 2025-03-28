@@ -4,8 +4,6 @@ import React from 'react';
  * StoryWrapper component
  * 
  * A wrapper component that provides consistent styling context for stories.
- * This is similar to how you'd wrap Drupal components in theme regions,
- * providing base styling and structure.
  */
 const StoryWrapper = ({ children }) => {
   return (

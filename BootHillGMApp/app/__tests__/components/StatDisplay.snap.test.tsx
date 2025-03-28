@@ -16,9 +16,9 @@ describe('StatDisplay snapshots', () => {
   it('matches snapshot with description', () => {
     const { container } = render(
       <StatDisplay 
-        label="Dexterity" 
+        label="Speed" 
         value={6} 
-        description="Affects combat and movement"
+        description="Affects reaction time and movement"
       />
     );
     expect(container).toMatchSnapshot();

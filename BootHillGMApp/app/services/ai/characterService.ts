@@ -128,7 +128,7 @@ function createCharacterFromData(data: Character): Character {
     },
     wounds: [],
     isUnconscious: false,
-    inventory: [],
+    inventory: { items: [] },
     isNPC: false,
     isPlayer: true
   };
@@ -179,7 +179,7 @@ async function createRandomCharacter(): Promise<Character> {
     },
     wounds: [],
     isUnconscious: false,
-    inventory: [],
+    inventory: { items: [] },
     isNPC: false,
     isPlayer: true
   };

@@ -32,7 +32,6 @@ describe('decisionTemplates', () => {
     
     it('wilderness templates have the correct structure', () => {
       wildernessDecisionTemplates.forEach(template => {
-        console.log('template.locationType:', template.locationType);
         if (typeof template.locationType === 'object' && template.locationType !== null) {
           expect(template.locationType.type).toBe('wilderness');
         } else {

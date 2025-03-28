@@ -112,7 +112,6 @@ describe('Narrative Context Optimization Performance', () => {
         return mockBuildContext(state);
       });
       
-      console.log(`Average time for 10 entries: ${avgTime.toFixed(2)}ms`);
       expect(avgTime).toBeLessThan(15);
     });
     
@@ -123,7 +122,6 @@ describe('Narrative Context Optimization Performance', () => {
         return mockBuildContext(state);
       });
       
-      console.log(`Average time for 100 entries: ${avgTime.toFixed(2)}ms`);
       expect(avgTime).toBeLessThan(50);
     });
     
@@ -135,7 +133,6 @@ describe('Narrative Context Optimization Performance', () => {
         return mockBuildContext(state);
       });
       
-      console.log(`Average time for 1000 entries: ${avgTime.toFixed(2)}ms`);
       expect(avgTime).toBeLessThan(500);
     });
   });
@@ -153,7 +150,6 @@ describe('Narrative Context Optimization Performance', () => {
         });
         
         results[level] = avgTime;
-        console.log(`Average time with ${level} compression: ${avgTime.toFixed(2)}ms`);
       });
       
       // With our predetermined values, high (5) is always greater than none (1)
@@ -174,7 +170,6 @@ describe('Narrative Context Optimization Performance', () => {
           return mockBuildContext(state, { maxTokens: budget });
         });
         
-        console.log(`Average time with ${budget} token budget: ${avgTime.toFixed(2)}ms`);
         expect(avgTime).toBeLessThan(100);
       });
     });

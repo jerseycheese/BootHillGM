@@ -36,7 +36,6 @@ interface CharacterAttributes {
   background: string;
   motivation: string;
   personalityTraits: string[];
-  skills: string[];
   appearance: string;
   relationships: Relationship[];
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Character } from '../../types/character';
 import { CombatType } from '../../types/combat';
-import { useCampaignState } from '../CampaignStateManager';
+import { useInventoryItems } from '../../hooks/stateSelectors';
 
 interface CombatTypeSelectionProps {
   playerCharacter: Character;
@@ -14,17 +14,25 @@ interface CombatTypeSelectionProps {
  * Shows brawling and weapon combat options based on availability.
  */
 export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
+  playerCharacter,
   opponent,
   onSelectType
 }) => {
-  const { state } = useCampaignState();
+  // Use the inventory selector hook for weapons check
+  const inventoryItems = useInventoryItems();
+  
   // Brawling is always available as a combat option
   const canUseBrawling = true;
+  
   // Check if either combatant has weapons available
-  const hasWeaponInInventory = state.inventory?.some(item => item.category === 'weapon');
+  const hasWeaponInInventory = inventoryItems.some(item => item.category === 'weapon');
+  
+  // Check if weapons are directly on the character
+  const playerHasWeapon = Boolean(playerCharacter.weapon);
   const opponentHasWeapon = Boolean(opponent.weapon);
-  const canUseWeapons = hasWeaponInInventory || opponentHasWeapon;
-
+  
+  const canUseWeapons = hasWeaponInInventory || playerHasWeapon || opponentHasWeapon;
+  
   return (
     <div className="combat-type-selection wireframe-section space-y-4">
       <h3 className="text-lg font-bold">Choose Combat Type</h3>

@@ -157,20 +157,6 @@ export function registerNarrativeContextDebugTools(): void {
         }
         
         const result = buildNarrativeContext(state.narrative);
-        console.group('Optimized Narrative Context');
-        console.log(result.formattedContext);
-        console.groupEnd();
-        
-        console.group('Context Optimization Stats');
-        console.table({
-          'Token Estimate': result.tokenEstimate,
-          'Compression Ratio': result.metadata.compressionRatio.toFixed(2),
-          'Build Time (ms)': result.metadata.buildTime.toFixed(2),
-          'Narrative Entries': result.includedElements.historyEntries,
-          'Decisions': result.includedElements.decisions,
-          'Characters': result.includedElements.characters.join(', ')
-        });
-        console.groupEnd();
         
         return result;
       },
@@ -188,15 +174,6 @@ export function registerNarrativeContextDebugTools(): void {
           compressed: compressNarrativeText(text, level),
           originalLength: text.length
         }));
-        
-        console.group('Narrative Compression Test');
-        results.forEach(result => {
-          const ratio = (1 - (result.compressed.length / result.originalLength)).toFixed(2);
-          console.group(`${result.level} compression (${ratio} reduction)`);
-          console.log(result.compressed);
-          console.groupEnd();
-        });
-        console.groupEnd();
         
         return results;
       },

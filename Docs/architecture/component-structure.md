@@ -3,7 +3,7 @@ title: Component Breakdown
 aliases: [Component Structure, Component Architecture, UI Components]
 tags: [architecture, components, mvp, implementation, ui]
 created: 2024-12-28
-updated: 2024-12-28
+updated: 2025-03-23
 ---
 
 # Component Breakdown (MVP Focus)
@@ -14,6 +14,19 @@ This document provides a comprehensive breakdown of the application's component 
 - [[api-integration|API Integration]]
 - [[../core-systems/combat-system|Combat System]]
 - [[../core-systems/journal-system|Journal System]]
+- [Storybook Usage Guide](../../BootHillGMApp/app/docs/storybook-usage.md)
+
+## Component Development
+
+Components are developed using a combination of:
+
+1. **Next.js App Router**: Core framework for routing and rendering
+2. **React**: UI component library
+3. **TypeScript**: Type safety for component props and state
+4. **Tailwind CSS**: Utility-first CSS framework for styling
+5. **Storybook**: Visual component development and testing environment
+
+Key components have Storybook stories for isolated development and testing.
 
 ## Essential Components (MVP)
 
@@ -67,7 +80,7 @@ This document provides a comprehensive breakdown of the application's component 
   - [x] Provides testable interface
 - **Combat UI Components:**
   - [x] CombatStatus: Health display for both combatants
-  - [x] CombatControls: Turn and action management
+  - [x] CombatControls: Turn and action management (with Storybook stories)
   - [x] CombatLog: Scrollable combat history
 - **Current Status:** Implemented with improved architecture with Character references
   - Combat logic extracted to dedicated hook
@@ -124,6 +137,7 @@ This document provides a comprehensive breakdown of the application's component 
 - **CharacterSheet Component:**
   - [x] Displays character information
   - [x] Updates in real-time with state changes
+  - [x] CharacterSheetContent component with Storybook stories
 
 ### Inventory Component
 - **Main Features:**
@@ -146,6 +160,7 @@ This document provides a comprehensive breakdown of the application's component 
   - [x] Implements virtualized scrolling for performance
   - [x] Handles different entry types with type safety
   - [x] Optimized for large journal lists
+  - [x] Component has Storybook stories for visual testing
 - **Implementation Status:** Complete with tests and performance optimization
 
 ### UI Components
@@ -169,11 +184,23 @@ This document provides a comprehensive breakdown of the application's component 
   - [x] Displays location
   - [x] Provides save functionality
 
-### Development Status
+### Visual Testing with Storybook
+- **Core Components with Stories:**
+  - [x] CharacterSheetContent
+  - [x] CombatControls
+  - [x] JournalViewer
+- **Implementation Status:** Complete with basic stories for key components
+- **Storybook Configuration:**
+  - [x] Next.js App Router integration
+  - [x] Tailwind CSS support
+  - [x] TypeScript support
+
+## Development Status
 - [x] Enhanced loading screen implementation
 - [x] Removed unused components
 - [x] Optimized component architecture
 - [x] Improved state management integration
+- [x] Added Storybook for isolated component development
 
 ## Related Documentation
 - [[state-management|State Management Architecture]]
@@ -183,3 +210,4 @@ This document provides a comprehensive breakdown of the application's component 
 - [[../wireframes/ui-wireframes|UI Wireframes]]
 - [[../technical-guides/testing|Testing Guide]]
 - [[../features/_current/narrative-formatting|Narrative Display]]
+- [Storybook Usage Guide](../../BootHillGMApp/app/docs/storybook-usage.md)

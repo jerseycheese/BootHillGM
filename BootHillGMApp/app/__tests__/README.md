@@ -27,7 +27,7 @@ The DevTools components have been refactored from a single large component into 
 
 ## Test Patterns
 
-Our tests follow these patterns (similar to Drupal's PHPUnit approach):
+Our tests follow these patterns:
 
 1. **Setup**: Prepare the test environment and mock dependencies
 2. **Act**: Render components and interact with them
@@ -59,15 +59,6 @@ When adding tests for new components:
 3. Test component rendering and functionality
 4. Test edge cases and error handling
 5. Verify that props are used correctly
-
-## Testing React Components vs. Drupal Twig Templates
-
-If you're familiar with testing Drupal Twig templates and PHP components:
-
-- React Testing Library's `render` is similar to Drupal's `renderRoot`
-- React's mocking system replaces Drupal's service container mocking
-- Component assertions work similarly to PHPUnit assertions
-- React event testing replaces Drupal's JavaScript behaviors testing
 
 ## Future Improvements
 

@@ -51,7 +51,6 @@ export function initializeAIDebugTools(
       const decision = await generateEnhancedDecision(gameState, locationType, true);
       
       if (decision) {
-        console.log('AI-enhanced decision ready:', decision);
         
         // Use setTimeout to allow the UI to update after clearing
         setTimeout(() => {
@@ -77,6 +76,4 @@ export function initializeAIDebugTools(
       mode: window.bhgmDebug?.decisions?.getMode?.() || 'unknown'
     };
   };
-  
-  console.log('AI debug tools initialized');
 }

@@ -140,7 +140,7 @@ export const WeaponCombatControls: React.FC<WeaponCombatControlsProps> = ({
                 },
                 wounds: [],
                 isUnconscious: false,
-                inventory: []
+                inventory: { items: [] } // Correct structure
               }} />
             ) : (
               <p className="text-red-600">No weapon equipped</p>

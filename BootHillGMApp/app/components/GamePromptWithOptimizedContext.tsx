@@ -8,6 +8,12 @@ import { LocationType } from '../services/locationService';
 import { InventoryItem } from '../types/item.types';
 import { v4 as uuidv4 } from 'uuid';
 
+// Define a minimal opponent interface for type safety
+interface OpponentCharacter {
+  name?: string;
+  id?: string;
+}
+
 /**
  * Game prompt component that uses optimized narrative context
  * Drop-in replacement for the standard prompt component
@@ -37,10 +43,15 @@ export default function GamePromptWithOptimizedContext() {
       // Get currently relevant focus tags based on game state
       const focusTags = getFocusTagsFromGameState();
       
+      // Extract inventory items from inventory state if needed
+      const inventoryItems = state.inventory && 'items' in state.inventory 
+        ? state.inventory.items 
+        : (state.inventory as unknown as InventoryItem[] || []);
+      
       // Use focused context for more specific and relevant responses
       const response = await makeAIRequestWithFocus(
         userPrompt,
-        state.inventory || [],
+        inventoryItems,
         focusTags
       );
       
@@ -72,9 +83,14 @@ export default function GamePromptWithOptimizedContext() {
       }
     }
     
+    // Get opponent from the character state if it exists there
+    const opponent = state.character && 'opponent' in state.character 
+      ? state.character.opponent 
+      : (state as unknown as { opponent?: OpponentCharacter }).opponent;
+    
     // Add character tags - prioritize the current opponent if in combat
-    if (state.isCombatActive && state.opponent?.name) {
-      tags.push(`character:${state.opponent.name}`);
+    if (state.isCombatActive && opponent?.name) {
+      tags.push(`character:${opponent.name}`);
     }
     
     // Add narrative context tags
@@ -171,6 +187,7 @@ export default function GamePromptWithOptimizedContext() {
       dispatch({
         type: 'UPDATE_JOURNAL',
         payload: {
+          id: uuidv4(), // Add required id field
           content: response.storyProgression.description,
           timestamp: Date.now(),
           type: 'narrative', // Changed from 'story' to 'narrative' to match JournalEntryType

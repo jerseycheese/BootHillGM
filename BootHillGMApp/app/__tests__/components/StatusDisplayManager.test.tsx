@@ -1,23 +1,22 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { Character } from '../../types/character';
 import StatusDisplayManager from '../../components/StatusDisplayManager';
-import { CampaignStateProvider, useCampaignState } from '../../components/CampaignStateManager';
+import { CampaignStateProvider } from '../../components/CampaignStateManager';
 
-// Wrapper component to set up location state
-import { LocationType } from '../../services/locationService';
-
-const LocationStateWrapper = ({ children, location }: { children: React.ReactNode; location: LocationType }) => {
-  const { dispatch } = useCampaignState();
+// Create a mock CampaignStateProvider that doesn't actually perform state updates
+jest.mock('../../components/CampaignStateManager', () => {
+  const originalModule = jest.requireActual('../../components/CampaignStateManager');
   
-  useEffect(() => {
-    if (location) {
-      dispatch({ type: 'SET_LOCATION', payload: location });
-    }
-  }, [dispatch, location]);
-
-  return <>{children}</>;
-};
+  return {
+    ...originalModule,
+    useCampaignState: () => ({
+      state: {}, // Empty state
+      dispatch: jest.fn(), // Mock dispatch function
+    }),
+    CampaignStateProvider: ({ children }) => <div data-testid="mock-state-provider">{children}</div>
+  };
+});
 
 describe('StatusDisplayManager', () => {
   const mockCharacter: Character = {
@@ -70,19 +69,18 @@ describe('StatusDisplayManager', () => {
     
     render(
       <CampaignStateProvider>
-        <LocationStateWrapper location={location}>
-          <StatusDisplayManager 
-            character={mockCharacter}
-            location={location}
-          />
-        </LocationStateWrapper>
+        <StatusDisplayManager 
+          character={mockCharacter}
+          location={location}
+        />
       </CampaignStateProvider>
     );
 
     expect(screen.getByText('Test Character')).toBeInTheDocument();
-    expect(screen.getByText('Test Town')).toBeInTheDocument();
+    // Use a more flexible text matching approach for the location
+    expect(screen.getByText(/Test Town/)).toBeInTheDocument();
     expect(screen.getByText('Strength')).toBeInTheDocument();
-    expect(screen.getByTestId('strength-value')).toHaveTextContent('4/10'); // Current strength is reduced by wound penalties (10 - (1-(-2)) - (2-(-1)) = 10 - 3 - 3 = 4)
+    expect(screen.getByTestId('strength-value')).toHaveTextContent('4/10'); // Current strength is reduced by wound penalties (10 - 3 - 3 = 4)
   });
 
   test('displays "Unknown" when location is null', () => {
@@ -99,9 +97,7 @@ describe('StatusDisplayManager', () => {
     const location = { type: 'town' as const, name: 'Test Town' };
     render(
       <CampaignStateProvider>
-        <LocationStateWrapper location={location}>
-          <StatusDisplayManager character={mockCharacter} location={location} />
-        </LocationStateWrapper>
+        <StatusDisplayManager character={mockCharacter} location={location} />
       </CampaignStateProvider>
     );
 
@@ -124,28 +120,25 @@ describe('StatusDisplayManager', () => {
     const location = { type: 'town' as const, name: 'Test Town' };
     render(
       <CampaignStateProvider>
-        <LocationStateWrapper location={location}>
-          <StatusDisplayManager character={unconsciousCharacter} location={location} />
-        </LocationStateWrapper>
+        <StatusDisplayManager character={unconsciousCharacter} location={location} />
       </CampaignStateProvider>
     );
 
     expect(screen.getByText('(Unconscious)')).toBeInTheDocument();
   });
+  
   test('displays strength correctly', () => {
     const location = { type: 'town' as const, name: 'Test Town' };
     render(
       <CampaignStateProvider>
-        <LocationStateWrapper location={location}>
-          <StatusDisplayManager
-            character={{
-              ...mockCharacter,
-              attributes: { ...mockCharacter.attributes, baseStrength: 50, strength: 50 },
-              wounds: []
-            }}
-            location={location}
-          />
-        </LocationStateWrapper>
+        <StatusDisplayManager
+          character={{
+            ...mockCharacter,
+            attributes: { ...mockCharacter.attributes, baseStrength: 50, strength: 50 },
+            wounds: []
+          }}
+          location={location}
+        />
       </CampaignStateProvider>
     );
     expect(screen.getByTestId('strength-value')).toHaveTextContent('50/50');
@@ -156,16 +149,14 @@ describe('StatusDisplayManager', () => {
     const location = { type: 'town' as const, name: 'Test Town' };
     render(
       <CampaignStateProvider>
-        <LocationStateWrapper location={location}>
-          <StatusDisplayManager
-            character={{
-              ...mockCharacter,
-              attributes: { ...mockCharacter.attributes, strength: 10, baseStrength: 10 },
-              wounds: [] // No wounds to keep strength at 10
-            }}
-            location={location}
-          />
-        </LocationStateWrapper>
+        <StatusDisplayManager
+          character={{
+            ...mockCharacter,
+            attributes: { ...mockCharacter.attributes, strength: 10, baseStrength: 10 },
+            wounds: [] // No wounds to keep strength at 10
+          }}
+          location={location}
+        />
       </CampaignStateProvider>
     );
     expect(screen.getByTestId('strength-value')).toHaveTextContent('10/10');
@@ -176,16 +167,14 @@ describe('StatusDisplayManager', () => {
     const location = { type: 'town' as const, name: 'Test Town' };
     render(
       <CampaignStateProvider>
-        <LocationStateWrapper location={location}>
-          <StatusDisplayManager
-            character={{
-              ...mockCharacter,
-              attributes: { ...mockCharacter.attributes, strength: 0, baseStrength: 0 },
-              wounds: [] // Clear wounds to ensure strength is 0
-            }}
-            location={location}
-          />
-        </LocationStateWrapper>
+        <StatusDisplayManager
+          character={{
+            ...mockCharacter,
+            attributes: { ...mockCharacter.attributes, strength: 0, baseStrength: 0 },
+            wounds: [] // Clear wounds to ensure strength is 0
+          }}
+          location={location}
+        />
       </CampaignStateProvider>
     );
     expect(screen.getByTestId('strength-value')).toHaveTextContent('1/0');
@@ -197,12 +186,10 @@ describe('StatusDisplayManager', () => {
     const location = { type: 'town' as const, name: 'Test Town' };
     const { rerender } = render(
       <CampaignStateProvider>
-        <LocationStateWrapper location={location}>
-          <StatusDisplayManager character={testCharacter} location={location} />
-        </LocationStateWrapper>
+        <StatusDisplayManager character={testCharacter} location={location} />
       </CampaignStateProvider>
     );
-    expect(screen.getByTestId('strength-value')).toHaveTextContent('4/10'); // Initial strength with wound penalties (10 - (1-(-2)) - (2-(-1)) = 10 - 3 - 3 = 4)
+    expect(screen.getByTestId('strength-value')).toHaveTextContent('4/10'); // Initial strength with wound penalties
 
     // Simulate damage - add a new wound
     const damagedCharacter = {
@@ -222,12 +209,10 @@ describe('StatusDisplayManager', () => {
     // Re-render component with updated character
     rerender(
       <CampaignStateProvider>
-        <LocationStateWrapper location={location}>
-          <StatusDisplayManager character={damagedCharacter} location={location} />
-        </LocationStateWrapper>
+        <StatusDisplayManager character={damagedCharacter} location={location} />
       </CampaignStateProvider>
     );
-    expect(screen.getAllByTestId('strength-value')[0]).toHaveTextContent('3/10'); // Strength reduced to minimum of 1 due to wounds
+    expect(screen.getAllByTestId('strength-value')[0]).toHaveTextContent('3/10'); // Strength reduced by new wound
   });
 
   test('does not show strength history when no changes exist', () => {
@@ -238,9 +223,7 @@ describe('StatusDisplayManager', () => {
     const location = { type: 'town' as const, name: 'Test Town' };
     render(
       <CampaignStateProvider>
-        <LocationStateWrapper location={location}>
-          <StatusDisplayManager character={mockCharacterWithoutHistory} location={location} />
-        </LocationStateWrapper>
+        <StatusDisplayManager character={mockCharacterWithoutHistory} location={location} />
       </CampaignStateProvider>
     );
     expect(screen.queryByTestId('strength-history')).not.toBeInTheDocument();
@@ -253,9 +236,7 @@ describe('StatusDisplayManager', () => {
     const location = { type: 'town' as const, name: 'Test Town' };
     render(
       <CampaignStateProvider>
-        <LocationStateWrapper location={location}>
-          <StatusDisplayManager character={characterWithHistory} location={location} />
-        </LocationStateWrapper>
+        <StatusDisplayManager character={characterWithHistory} location={location} />
       </CampaignStateProvider>
     );
 

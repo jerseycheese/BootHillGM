@@ -14,6 +14,25 @@ import {
   JournalFilter
 } from '../types/journal';
 
+// Generate a UUID for use in tests and environments where crypto.randomUUID() is not available
+function generateUUID(): string {
+  // Simple UUID generation fallback
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+// Use crypto.randomUUID if available, otherwise use our fallback
+const getUUID = (): string => {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return generateUUID();
+  }
+};
+
 // Legacy exports for backward compatibility
 export const addJournalEntry = async (
   journal: JournalEntry[],
@@ -52,9 +71,9 @@ export class JournalManager {
       const cleanedContent = cleanText(content);
       const narrativeSummary = await generateNarrativeSummary(cleanedContent, context ?? '');
       
-
       // Create a new narrative journal entry
       const newEntry: NarrativeJournalEntry = {
+        id: getUUID(), // Use our safe UUID generator
         type: 'narrative',
         timestamp: Date.now(),
         content: cleanedContent,
@@ -62,7 +81,8 @@ export class JournalManager {
       };
       
       return [...journal, newEntry];
-    } catch {
+    } catch (error) {
+      console.error('Error creating narrative entry:', error);
       return journal;
     }
   }
@@ -72,13 +92,14 @@ export class JournalManager {
     playerName: string,
     opponentName: string,
     outcome: CombatJournalEntry['outcome'],
-   summary: string
- ): JournalEntry[] {
+    summary: string
+  ): JournalEntry[] {
     // Clean the summary and remove metadata
     const cleanedSummary = cleanCombatLogEntry(summary);
     
     // Create a new combat journal entry
     const newEntry: CombatJournalEntry = {
+      id: getUUID(), // Use our safe UUID generator
       type: 'combat',
       timestamp: Date.now(),
       content: cleanedSummary,
@@ -105,6 +126,7 @@ export class JournalManager {
 
     // Create a new inventory journal entry
     const newEntry: InventoryJournalEntry = {
+      id: getUUID(), // Use our safe UUID generator
       type: 'inventory',
       timestamp: Date.now(),
       content: cleanText(context),
@@ -167,13 +189,14 @@ export class JournalManager {
     const type = entry.type || 'narrative';
     
     // Create a properly typed entry based on the type
-   switch (type) {
-     case 'narrative':
-       const cleanedContent = cleanText(entry.content);
-       const narrativeSummary = await generateNarrativeSummary(cleanedContent, '');
-       return [...journal, {
-         ...entry,
-         timestamp: timestamp,
+    switch (type) {
+      case 'narrative':
+        const cleanedContent = cleanText(entry.content);
+        const narrativeSummary = await generateNarrativeSummary(cleanedContent, '');
+        return [...journal, {
+          ...entry,
+          id: entry.id || getUUID(),
+          timestamp: timestamp,
           type: 'narrative',
           content: cleanedContent,
           narrativeSummary
@@ -181,24 +204,28 @@ export class JournalManager {
       case 'combat':
         return [...journal, {
           ...entry,
+          id: entry.id || getUUID(),
           timestamp,
           type: 'combat'
         } as CombatJournalEntry];
-     case 'inventory':
+      case 'inventory':
         return [...journal, {
-         ...entry,
-         timestamp: timestamp,
+          ...entry,
+          id: entry.id || getUUID(),
+          timestamp: timestamp,
           type: 'inventory'
         } as InventoryJournalEntry];
-     case 'quest':
-       return [...journal, {
-         ...entry,
-         timestamp: timestamp,
+      case 'quest':
+        return [...journal, {
+          ...entry,
+          id: entry.id || getUUID(),
+          timestamp: timestamp,
           type: 'quest'
         } as JournalEntry];
       default:
         return [...journal, {
           ...entry,
+          id: entry.id || getUUID(),
           timestamp,
           type: 'narrative'
         } as NarrativeJournalEntry];

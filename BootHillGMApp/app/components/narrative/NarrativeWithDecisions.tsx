@@ -50,7 +50,7 @@ const NarrativeWithDecisions: React.FC<NarrativeWithDecisionsProps> = ({
   // Reference to track if component is mounted
   const isMounted = useRef(true);
   
-  // Listen for our custom events (similar to Drupal's behaviors attach)
+  // Listen for our custom events
   useEffect(() => {
     // Handler for when a new decision is ready to be displayed
     const cleanupDecisionReady = listenForCustomEvent<PlayerDecision>(
@@ -98,7 +98,6 @@ const NarrativeWithDecisions: React.FC<NarrativeWithDecisionsProps> = ({
     
     // Handler for traditional storage events (backward compatibility)
     const handleStorageEvent = () => {
-      // This is similar to how Drupal.behaviors works - reattach on DOM changes
       if (isMounted.current) {
         if (hasActiveDecision && currentDecision) {
           setShowDecision(true);
@@ -113,7 +112,7 @@ const NarrativeWithDecisions: React.FC<NarrativeWithDecisionsProps> = ({
     
     window.addEventListener('storage', handleStorageEvent);
     
-    // Cleanup function - similar to Drupal's detach
+    // Cleanup function
     return () => {
       window.removeEventListener('storage', handleStorageEvent);
       cleanupDecisionReady();

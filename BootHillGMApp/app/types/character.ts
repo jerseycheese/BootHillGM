@@ -31,21 +31,21 @@ export interface Character {
   name: string;
 
   /** Character's inventory */
-  inventory: InventoryItem[];
+  inventory: { items: InventoryItem[] }; // Updated to slice structure
 
   /** Core character attributes */
   attributes: {
-    /** Movement and reaction capability (1-10) */
+    /** Movement and reaction capability (1-20) */
     speed: number;
-    /** Accuracy with firearms (1-10) */
+    /** Accuracy with firearms (1-20) */
     gunAccuracy: number;
-    /** Accuracy with thrown weapons (1-10) */
+    /** Accuracy with thrown weapons (1-20) */
     throwingAccuracy: number;
-    /** Current strength after wound penalties (1-10) */
+    /** Current strength after wound penalties (8-20) */
     strength: number;
     /** Maximum/starting strength value (8-20) */
     baseStrength: number;
-    /** Courage under fire (1-10) */
+    /** Courage under fire (1-20) */
     bravery: number;
     /** Combat experience (0-11) */
     experience: number;

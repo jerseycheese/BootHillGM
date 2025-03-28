@@ -6,9 +6,10 @@ import { generateCharacterSummary, generateCompleteCharacter } from '../services
 import { generateName } from '../services/ai/nameGenerator';
 import { useCampaignState } from '../components/CampaignStateManager';
 import { Character } from "../types/character";
-import { initialGameState } from '../types/gameState';
+import { GameState, initialGameState } from '../types/gameState';
 import { initialNarrativeState } from '../types/narrative.types';
 import { getStartingInventory } from "../utils/startingInventory";
+import { CharacterState } from '../types/state/characterState';
 
 // Storage key for character creation progress
 const STORAGE_KEY = "character-creation-progress";
@@ -18,7 +19,7 @@ export const initialCharacter: Character = {
   isPlayer: true,
   id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   name: "",
-  inventory: [],
+  inventory: { items: [] },
   attributes: {
     speed: 1,
     gunAccuracy: 1,
@@ -26,7 +27,7 @@ export const initialCharacter: Character = {
     strength: 8,
     baseStrength: 8,
     bravery: 1,
-    experience: 0,
+    experience: 0
   },
   minAttributes: {
     speed: 1,
@@ -35,7 +36,7 @@ export const initialCharacter: Character = {
     strength: 8,
     baseStrength: 8,
     bravery: 1,
-    experience: 0,
+    experience: 0
   },
   maxAttributes: {
     speed: 20,
@@ -44,7 +45,7 @@ export const initialCharacter: Character = {
     strength: 20,
     baseStrength: 20,
     bravery: 20,
-    experience: 11,
+    experience: 11
   },
   wounds: [],
   isUnconscious: false,
@@ -67,10 +68,10 @@ export function useCharacterCreation() {
     const saved = localStorage.getItem(STORAGE_KEY);
 
     // Prioritize character from campaign state if available and valid
-    if (campaignState?.character) {
+    if (campaignState?.character?.player) {
       return {
         ...initialCharacter,
-        ...campaignState.character,
+        ...campaignState.character.player,
       };
     }
 
@@ -190,16 +191,28 @@ export function useCharacterCreation() {
           // Complete character creation
           cleanupState();
           const startingInventory = getStartingInventory();
-          const gameState = {
+          
+          // Create proper character state structure
+          const characterState: CharacterState = {
+            player: character,
+            opponent: null
+          };
+          
+          // Create game state with proper structure
+          const gameState: GameState = {
             ...initialGameState,
-            character,
-            inventory: startingInventory,
+            character: characterState,
+            inventory: {
+              ...initialGameState.inventory,
+              items: startingInventory
+            },
             isClient: true,
             currentPlayer: character.id,
             npcs: [],
             location: null,
             narrative: initialNarrativeState,
           };
+          
           saveGame(gameState);
           router.push("/game-session");
         }

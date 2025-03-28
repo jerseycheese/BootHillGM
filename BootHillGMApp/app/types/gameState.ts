@@ -1,55 +1,43 @@
 import { Character } from './character';
-import { InventoryItem } from './item.types';
-import { JournalEntry } from './journal';
-import { SuggestedAction } from './campaign';
-import { CombatState } from './combat';
 import { LocationType } from '../services/locationService';
-import { NarrativeState, initialNarrativeState } from './narrative.types';
+import {
+  CharacterState,
+  CombatState,
+  InventoryState,
+  JournalState,
+  NarrativeState,
+  UIState
+} from './state';
+import { initialState } from './initialState';
+import { SuggestedAction } from './campaign';
 
-// Type alias for backward compatibility with code that expects "player"
-export type PlayerCharacter = Character;
-
+/**
+ * Combined game state that uses domain-specific slices
+ */
 export interface GameState {
+  // Domain-specific slices
+  character: CharacterState | null;  // Allow null for character state
+  combat: CombatState;
+  inventory: InventoryState;
+  journal: JournalState;
+  narrative: NarrativeState;
+  ui: UIState;
+  
+  // Top-level state that doesn't fit into slices
   currentPlayer: string;
   npcs: string[];
   location: LocationType | null;
-  inventory: InventoryItem[];
   quests: string[];
-  character: Character | null;
-  narrative: NarrativeState;
   gameProgress: number;
-  journal: JournalEntry[];
-  isCombatActive: boolean;
-  opponent: Character | null;
   savedTimestamp?: number;
   isClient?: boolean;
-  suggestedActions: SuggestedAction[];
-  combatState?: CombatState;
-  error?: string | null;
+  suggestedActions: SuggestedAction[]; // Added suggestedActions property
   
-  // For backward compatibility, add a player getter that returns character
+  // Legacy getters for backward compatibility
   get player(): Character | null;
+  get opponent(): Character | null; // Added for test compatibility
+  get isCombatActive(): boolean;
 }
 
-export const initialGameState: GameState = {
-  currentPlayer: '',
-  npcs: [],
-  location: null,
-  inventory: [],
-  quests: [],
-  character: null,
-  narrative: initialNarrativeState,
-  gameProgress: 0,
-  journal: [],
-  isCombatActive: false,
-  opponent: null,
-  savedTimestamp: undefined,
-  isClient: false,
-  suggestedActions: [],
-  combatState: undefined,
-  
-  // For backward compatibility
-  get player() {
-    return this.character;
-  }
-};
+// Re-export initialState as initialGameState for backward compatibility
+export { initialState as initialGameState };

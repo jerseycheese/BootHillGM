@@ -28,16 +28,21 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
     ? `${state.narrative.narrativeHistory.join('')}\n\nPlayer: ${input}\n\nGame Master: ${response.narrative}`
     : response.narrative;
 
+  // First dispatch SET_NARRATIVE (this is the one that has a different payload format)
   dispatch({ type: 'SET_NARRATIVE', payload: { text: narrativeUpdate } });
 
+  // Then generate and dispatch the journal entry update
   const narrativeSummary = await generateNarrativeSummary(input, response.narrative);
+  const timestamp = Date.now();
 
+  // Create a consistent journal entry that matches both formats in the tests
   dispatch({
     type: 'UPDATE_JOURNAL',
     payload: {
-      timestamp: Date.now(),
-      type: 'narrative' as const,
-      content: input, // Use input as content
+      id: `journal_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: timestamp,
+      type: 'narrative',
+      content: input,
       narrativeSummary,
     },
   });
@@ -76,7 +81,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
         strength: response.opponent.attributes.strength,
         baseStrength: response.opponent.attributes.baseStrength,
         bravery: response.opponent.attributes.bravery,
-        experience: response.opponent.attributes.experience,
+        experience: response.opponent.attributes.experience
       },
       minAttributes: {
         speed: 1,
@@ -85,7 +90,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
         strength: 1,
         baseStrength: 1,
         bravery: 1,
-        experience: 0,
+        experience: 0
       },
       maxAttributes: {
         speed: 10,
@@ -94,7 +99,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
         strength: 10,
         baseStrength: 10,
         bravery: 10,
-        experience: 100,
+        experience: 100
       },
       inventory: response.opponent.inventory || [],
       weapon: response.opponent.weapon

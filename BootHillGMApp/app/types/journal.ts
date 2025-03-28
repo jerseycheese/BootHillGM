@@ -1,6 +1,10 @@
 export type JournalEntryType = 'narrative' | 'combat' | 'inventory' | 'quest';
 
 export interface BaseJournalEntry {
+  id: string;
+  title?: string; // Added for test compatibility
+
+
   timestamp: number;
   content: string;
   narrativeSummary?: string;

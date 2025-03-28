@@ -15,7 +15,7 @@ import { ExtendedGameState, AIDecisionServiceConfig } from '../types/aiDecisionT
  * @param narrativeState Current narrative state
  * @param character Player character data
  * @param config Service configuration
- * @param lastDecisionTime Timestamp of the last decision
+ * @param lastDecisionTime Timestamp of the last decision (optional, defaults to 0)
  * @param gameState Current game state (optional)
  * @returns Detection result with score and reasoning
  */
@@ -23,7 +23,7 @@ export function detectDecisionPoint(
   narrativeState: NarrativeState,
   character: Character,
   config: AIDecisionServiceConfig,
-  lastDecisionTime: number,
+  lastDecisionTime: number = 0,
   gameState?: ExtendedGameState
 ): DecisionDetectionResult {
   // Don't present decisions too frequently
@@ -104,7 +104,7 @@ export function calculateDecisionScore(
   // If we have a game state, check for additional factors
   if (gameState) {
     // Increase score during downtime (not in combat)
-    if (!gameState.combat?.active) {
+    if (!gameState.combat?.active && !gameState.combat?.isActive) {
       score += 0.1;
     }
     

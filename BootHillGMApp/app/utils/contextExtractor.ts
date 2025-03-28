@@ -65,8 +65,8 @@ export function extractComprehensiveContext(
   }
   
   // Extract character context
-  if (gameState.character) {
-    result.characterContext = formatCharacterContext(gameState.character);
+  if (gameState.character && gameState.character.player) {
+    result.characterContext = formatCharacterContext(gameState.character.player);
   }
   
   // Extract world context

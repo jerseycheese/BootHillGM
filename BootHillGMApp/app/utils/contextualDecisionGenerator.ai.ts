@@ -49,9 +49,8 @@ export async function generateAIContextualDecision(
     // Get the AI decision service
     const aiService = getAIDecisionService();
     
-    // If no character data is provided, use the character from game state
-    console.log('gameState:', gameState, 'character:', character);
-    const playerCharacter = character || gameState.character;
+    // If no character data is provided, use the player character from game state
+    const playerCharacter = character || (gameState.character?.player || null);
     
     if (!playerCharacter) {
       console.error('Cannot generate AI decision: No player character data available');
@@ -67,7 +66,6 @@ export async function generateAIContextualDecision(
     
     // If we shouldn't present a decision, return null
     if (!detectionResult.shouldPresent) {
-      console.log(`Decision detection score: ${detectionResult.score} - ${detectionResult.reason}`);
       return null;
     }
     
@@ -79,13 +77,11 @@ export async function generateAIContextualDecision(
         gameState
       );
       
-      console.log('Successfully generated AI decision', aiDecision.id);
       return aiDecision;
     } catch (error) {
       console.error('Error generating AI decision:', error);
       
       // Fall back to template-based generation
-      console.log('Falling back to template-based decision generation');
       return generateTemplateDecision(gameState, narrativeContext, locationType);
     }
   } catch (error) {
@@ -124,7 +120,6 @@ export function generateEnhancedContextualDecision(
         if (aiDecision) {
           // If AI generation was successful, store it for next retrieval
           // This approach avoids the async nature disrupting the existing flow
-          console.log('AI decision generated and will be used for next request');
           
           // Use the centralized type for bhgmDebug
           if (window.bhgmDebug) {

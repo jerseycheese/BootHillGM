@@ -1,25 +1,45 @@
 import { GameState } from './gameState';
-import { initialNarrativeState } from './narrative.types';
+import {
+  initialCharacterState,
+  initialCombatState,
+  initialInventoryState,
+  initialJournalState,
+  initialNarrativeState,
+  initialUIState
+} from './state';
 
+/**
+ * Initial state for the entire game
+ */
 export const initialState: GameState = {
+  // Domain-specific slices with their own initial states
+  character: initialCharacterState,
+  combat: initialCombatState,
+  inventory: initialInventoryState,
+  journal: initialJournalState,
+  narrative: initialNarrativeState,
+  ui: initialUIState,
+  
+  // Top-level state initialization
   currentPlayer: '',
   npcs: [],
   location: null,
-  inventory: [],
   quests: [],
-  character: null,
-  narrative: initialNarrativeState,
   gameProgress: 0,
-  journal: [],
-  opponent: null,
-  isCombatActive: false,
-  combatState: undefined,
   savedTimestamp: 0,
   isClient: false,
-  suggestedActions: [],
+  suggestedActions: [], // Added missing required property
   
-  // Add player getter that returns the character property
+  // Legacy getters for backward compatibility
   get player() {
-    return this.character;
+    return this.character?.player ?? null;
+  },
+  
+  get opponent() {
+    return this.character?.opponent ?? null;
+  },
+  
+  get isCombatActive() {
+    return this.combat.isActive;
   }
 };

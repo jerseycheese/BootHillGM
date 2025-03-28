@@ -29,6 +29,8 @@ import {
 import { DecisionDetector } from './decisionDetector';
 import { processResponse, toPlayerDecision } from './decisionResponseProcessor';
 import { generateFallbackDecision } from './fallbackDecisionGenerator';
+import { extendGameStateForContextual } from './utils/stateExtender';
+import { hasNarrativeState } from './utils/stateTypeGuards';
 
 /**
  * Service for AI-driven contextual decision generation
@@ -71,7 +73,19 @@ export class ContextualDecisionService {
     character: Character,
     gameState?: GameState
   ): DecisionDetectionResult {
-    return this.detector.detectDecisionPoint(narrativeState, character, gameState);
+    // Use the contextual-specific extender with type safety
+    const extendedState = extendGameStateForContextual(gameState);
+    
+    // Cast the extended state to the expected type in contextualDecision.types.ts
+    const compatibleExtendedState = {
+      ...extendedState,
+      combat: {
+        ...extendedState.combat,
+        active: extendedState.combat.isActive // Add the 'active' property expected by the detector
+      }
+    };
+    
+    return this.detector.detectDecisionPoint(narrativeState, character, compatibleExtendedState);
   }
   
   /**
@@ -172,13 +186,13 @@ export class ContextualDecisionService {
    * 
    * @param narrativeState Current narrative state
    * @param character Player character
-   * @param _gameState Optional game state for additional context
+   * @param gameState Optional game state for additional context
    * @returns Formatted prompt string
    */
   private buildDecisionPrompt(
     narrativeState: NarrativeState,
     character: Character,
-    _gameState?: GameState
+    gameState?: GameState
   ): string {
     // Extract recent narrative content
     let narrativeContext = '';
@@ -191,7 +205,7 @@ export class ContextualDecisionService {
       narrativeContext = recentHistory.join('\n\n');
     }
     
-    // Extract location information
+    // Extract location information with safe type checking
     const location = narrativeState.currentStoryPoint?.locationChange 
       ? narrativeState.currentStoryPoint.locationChange
       : { type: 'unknown' as const };
@@ -210,10 +224,22 @@ export class ContextualDecisionService {
       `Prompt: ${decision.prompt}\nChoice: ${decision.choice}\nOutcome: ${decision.outcome}`
     )).join('\n\n');
     
-    // Add decision history context if available
+    // Add decision history context if available with proper type checking
     const decisionsContext = narrativeState.narrativeContext
       ? buildComprehensiveContextExtension(narrativeState.narrativeContext)
       : '';
+    
+    // Merge in game state context if available
+    let gameStateContext = '';
+    if (gameState && hasNarrativeState(gameState)) {
+      const extendedState = extendGameStateForContextual(gameState);
+      // Highlight important game state elements
+      gameStateContext = `
+Current player status: ${extendedState.combat.isActive ? 'In Combat' : 'Exploring'}
+Location: ${extendedState.location?.type || 'Unknown'}
+Game progress: ${extendedState.gameProgress}%
+`;
+    }
     
     // Combine into a single prompt
     return `
@@ -238,6 +264,7 @@ ${location.type === 'town' && 'name' in location ? `Town: ${location.name}` : ''
 ${location.type === 'landmark' && 'name' in location ? `Landmark: ${location.name}` : ''}
 ${location.type === 'wilderness' && 'description' in location ? `Description: ${location.description}` : ''}
 
+${gameStateContext}
 ${previousDecisions ? `Previous decisions:\n${previousDecisions}` : ''}
 ${decisionsContext}
 

@@ -95,7 +95,7 @@ export interface NPC extends Character {
     isNPC: true;
     isPlayer: false;
     weapon?: Weapon;
-    inventory: InventoryItem[];
+    inventory: { items: InventoryItem[] };
     attributes: {
         speed: number;
         gunAccuracy: number;

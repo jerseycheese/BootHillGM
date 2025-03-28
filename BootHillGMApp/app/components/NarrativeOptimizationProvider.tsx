@@ -137,11 +137,6 @@ export default function NarrativeOptimizationProvider({
             }
             
             const history = state.narrative.narrativeHistory;
-            console.group('Narrative History Analysis');
-            console.log(`Total entries: ${history.length}`);
-            console.log(`Average entry length: ${Math.round(history.join(' ').length / history.length)} chars`);
-            console.log(`Last 3 entries:`, history.slice(-3));
-            console.groupEnd();
             
             return {
               totalEntries: history.length,

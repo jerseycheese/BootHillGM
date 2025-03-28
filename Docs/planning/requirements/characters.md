@@ -17,12 +17,11 @@ This document outlines the technical requirements and specifications for the Boo
 1. Attribute Generation
     -   Base attribute calculation
     -   Modifier application
-    -   Skill allocation
     -   Background generation
 2. Character Management
     -   State persistence
     -   Inventory tracking
-    -   Skill progression
+    -   Attribute progression
     -   Relationship tracking
 3. Character Integration
     -   Combat integration
@@ -45,7 +44,6 @@ This document outlines the technical requirements and specifications for the Boo
 ```typescript
 interface CharacterState {
   attributes: CharacterAttributes;
-  skills: CharacterSkills;
   inventory: InventoryState;
   status: CharacterStatus;
   relationships: CharacterRelationships;
@@ -103,7 +101,6 @@ interface CharacterAttributes {
 -   Attribute validation
     -   Speed, Gun Accuracy, Throwing Accuracy, Bravery: 1-10
     -   Base Strength: 8-20
--   Skill constraints
 -   Equipment restrictions
 -   State consistency
 

@@ -4,6 +4,7 @@ import { CombatSystem } from '../../components/Combat/CombatSystem';
 import { Character } from '../../types/character';
 import * as combatUtils from '../../utils/combatUtils';
 import { CampaignStateProvider } from '../../components/CampaignStateManager';
+import { GameProvider } from '../../hooks/useGame';
 import { WEAPON_STATS } from '../../types/combat';
 
 // Mock combat utils
@@ -39,8 +40,11 @@ describe('CombatSystem', () => {
     },
     wounds: [],
     isUnconscious: false,
-    inventory: [],
+    inventory: {
+      items: []
+    },
     isNPC: false,
+    isPlayer: true,
     weapon: {
       id: 'test-weapon',
       name: 'Colt Revolver',
@@ -64,7 +68,9 @@ describe('CombatSystem', () => {
     },
     wounds: [],
     isUnconscious: false,
-    inventory: [],
+    inventory: {
+      items: []
+    },
     isNPC: true,
     weapon: {
       id: 'opponent-weapon',
@@ -77,21 +83,45 @@ describe('CombatSystem', () => {
 
   // Mock campaign state with character and weapon
   const mockCampaignState = JSON.parse(JSON.stringify({
-    character: mockPlayer,
-    inventory: [{
-      id: 'test-weapon',
-      name: 'Test Weapon',
-      category: 'weapon',
-      quantity: 1
-    }],
-    journal: [],
-    isCombatActive: false,
-    opponent: null,
-    combatState: {
+    character: {
+      player: mockPlayer,
+      opponent: null
+    },
+    inventory: {
+      items: [{
+        id: 'test-weapon',
+        name: 'Test Weapon',
+        category: 'weapon',
+        quantity: 1
+      }]
+    },
+    journal: {
+      entries: []
+    },
+    combat: {
       isActive: false,
+      rounds: 0,
+      playerTurn: true,
       combatType: null,
-      winner: null,
-      combatLog: []
+      combatLog: [],
+      playerCharacterId: '',
+      opponentCharacterId: '',
+      roundStartTime: 0,
+      modifiers: { player: 0, opponent: 0 },
+      currentTurn: null
+    },
+    ui: {
+      isLoading: false,
+      modalOpen: null,
+      notifications: []
+    },
+    narrative: {
+      currentStoryPoint: null,
+      visitedPoints: [],
+      availableChoices: [],
+      narrativeHistory: [],
+      displayMode: 'standard',
+      error: null
     },
     savedTimestamp: Date.now()
   }));
@@ -107,13 +137,15 @@ describe('CombatSystem', () => {
   const renderCombatSystem = (props: Partial<Parameters<typeof CombatSystem>[0]> = {}) => {
     return render(
       <CampaignStateProvider>
-        <CombatSystem
-          playerCharacter={mockPlayer}
-          opponent={mockOpponent}
-          onCombatEnd={mockOnCombatEnd}
-          dispatch={mockDispatch}
-          {...props}
-        />
+        <GameProvider>
+          <CombatSystem
+            playerCharacter={mockPlayer}
+            opponent={mockOpponent}
+            onCombatEnd={mockOnCombatEnd}
+            dispatch={mockDispatch}
+            {...props}
+          />
+        </GameProvider>
       </CampaignStateProvider>
     );
   };
@@ -228,8 +260,11 @@ describe('CombatSystem', () => {
     // Mock empty inventory state
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify({
       ...mockCampaignState,
-      inventory: [], // Empty inventory
-      character: noWeaponsPlayer
+      inventory: { items: [] }, // Empty inventory
+      character: {
+        player: noWeaponsPlayer,
+        opponent: null
+      }
     }));
 
     renderCombatSystem({
@@ -260,12 +295,14 @@ describe('CombatSystem', () => {
 
     render(
       <CampaignStateProvider>
-        <CombatSystem
-          playerCharacter={characterWithWeapon}
-          opponent={mockOpponent}
-          onCombatEnd={mockOnCombatEnd}
-          dispatch={mockDispatch}
-        />
+        <GameProvider>
+          <CombatSystem
+            playerCharacter={characterWithWeapon}
+            opponent={mockOpponent}
+            onCombatEnd={mockOnCombatEnd}
+            dispatch={mockDispatch}
+          />
+        </GameProvider>
       </CampaignStateProvider>
     );
 
@@ -311,13 +348,15 @@ describe('CombatSystem', () => {
     
   //   render(
   //     <CampaignStateProvider>
-  //       <CombatSystem
-  //         playerCharacter={mockPlayer}
-  //         opponent={mockOpponent}
-  //         onCombatEnd={mockOnCombatEnd}
-  //         dispatch={mockDispatch}
-  //         initialCombatState={mockWeaponState}
-  //       />
+  //       <GameProvider>
+  //         <CombatSystem
+  //           playerCharacter={mockPlayer}
+  //           opponent={mockOpponent}
+  //           onCombatEnd={mockOnCombatEnd}
+  //           dispatch={mockDispatch}
+  //           initialCombatState={mockWeaponState}
+  //         />
+  //       </GameProvider>
   //     </CampaignStateProvider>
   //   );
 

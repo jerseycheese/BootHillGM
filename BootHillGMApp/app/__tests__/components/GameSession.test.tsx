@@ -7,8 +7,15 @@ import * as GameInitializationHook from '../../hooks/useGameInitialization';
 import * as GameSessionHook from '../../hooks/useGameSession';
 import { GameSessionProps } from '../../components/GameArea/types';
 import { NarrativeProvider } from '../../context/NarrativeContext';
+import { CharacterState } from '../../types/state/characterState';
+import { InventoryState } from '../../types/state/inventoryState';
+import { JournalState } from '../../types/state/journalState';
+import { CombatState } from '../../types/state/combatState';
+import { UIState } from '../../types/state/uiState';
+import { NarrativeState } from '../../types/narrative.types';
 
 const mockCharacter: Character = {
+  id: 'test-character-id',
   name: 'Test Character',
   attributes: {
     speed: 5,
@@ -21,23 +28,75 @@ const mockCharacter: Character = {
   },
   wounds: [],
   isUnconscious: false,
-  inventory: []
+  inventory: [],
+  isNPC: false,
+  isPlayer: true
 };
 
+// Create proper state slices
+const mockCharacterState: CharacterState = {
+  player: mockCharacter,
+  opponent: null
+};
+
+const mockInventoryState: InventoryState = {
+  items: []
+};
+
+const mockJournalState: JournalState = {
+  entries: []
+};
+
+const mockCombatState: CombatState = {
+  isActive: false,
+  combatType: 'brawling',
+  rounds: 0,
+  currentTurn: null,
+  playerTurn: true,
+  playerCharacterId: 'test-character-id',
+  opponentCharacterId: '',
+  combatLog: [],
+  roundStartTime: 0,
+  modifiers: {
+    player: 0,
+    opponent: 0
+  }
+};
+
+const mockNarrativeState: NarrativeState = {
+  currentStoryPoint: null,
+  visitedPoints: [],
+  availableChoices: [],
+  narrativeHistory: [],
+  displayMode: 'standard'
+};
+
+const mockUIState: UIState = {
+  isLoading: false,
+  modalOpen: null,
+  notifications: []
+};
+
+// Create the complete slice-based game state
 const mockGameState = {
   currentPlayer: 'Test Player',
   npcs: [],
-  character: mockCharacter,
-  location: 'Test Location',
+  character: mockCharacterState,
+  location: null,
   gameProgress: 0,
-  journal: [],
-  narrative: '',
-  inventory: [],
+  journal: mockJournalState,
+  narrative: mockNarrativeState,
+  inventory: mockInventoryState,
   quests: [],
-  isCombatActive: false,
-  opponent: null,
+  combat: mockCombatState,
+  ui: mockUIState,
+  savedTimestamp: Date.now(),
   isClient: true,
-  savedTimestamp: Date.now()
+  suggestedActions: [],
+  // Add getters for backward compatibility
+  get player() { return this.character?.player ?? null; },
+  get opponent() { return this.character?.opponent ?? null; },
+  get isCombatActive() { return this.combat?.isActive ?? false; }
 };
 
 const mockGameSession = {
@@ -45,20 +104,27 @@ const mockGameSession = {
   isLoading: false,
   error: null,
   isCombatActive: false,
+  player: mockCharacter,
   opponent: null,
   handleUserInput: jest.fn(),
   retryLastAction: jest.fn(),
   handleCombatEnd: jest.fn(),
+  handleStrengthChange: jest.fn(),
   handlePlayerHealthChange: jest.fn(),
   handleUseItem: jest.fn(),
   initiateCombat: jest.fn(),
-  getCurrentOpponent: jest.fn(),
+  getCurrentOpponent: jest.fn().mockReturnValue(null),
+  executeCombatRound: jest.fn(),
   dispatch: jest.fn()
 };
 
 // Mock the hooks
 jest.mock('../../hooks/useGameInitialization');
 jest.mock('../../hooks/useGameSession');
+jest.mock('../../hooks/useCombatStateRestoration', () => ({
+  useCombatStateRestoration: jest.fn(),
+  adaptHealthChangeHandler: jest.fn().mockImplementation((fn) => fn)
+}));
 
 // Mock the components that use narrative context
 jest.mock('../../components/Debug/DevToolsPanel', () => ({
@@ -128,6 +194,7 @@ describe('GameSession', () => {
     renderGameSession();
     
     // Check for main components
+    expect(screen.getByTestId('game-container')).toBeInTheDocument();
     expect(screen.getByTestId('main-game-area')).toBeInTheDocument();
     expect(screen.getByTestId('side-panel')).toBeInTheDocument();
     expect(screen.getByTestId('narrative-display')).toBeInTheDocument();
@@ -139,9 +206,17 @@ describe('GameSession', () => {
       isClient: true
     });
 
+    renderGameSession();
+    expect(screen.getByText(/Loading session/i)).toBeInTheDocument();
+  });
+
+  it('renders loading state when character is null', () => {
     (GameSessionHook.useGameSession as jest.Mock).mockReturnValue({
       ...mockGameSession,
-      state: null
+      state: {
+        ...mockGameState,
+        character: null
+      }
     });
 
     renderGameSession();
@@ -150,6 +225,7 @@ describe('GameSession', () => {
 
   it('renders combat system when combat is active', () => {
     const enemyCharacter: Character = {
+      id: 'enemy-id',
       name: 'Enemy',
       attributes: {
         speed: 5,
@@ -162,18 +238,27 @@ describe('GameSession', () => {
       },
       wounds: [],
       isUnconscious: false,
-      inventory: []
+      inventory: [],
+      isNPC: true,
+      isPlayer: false
     };
 
     (GameSessionHook.useGameSession as jest.Mock).mockReturnValue({
       ...mockGameSession,
       state: {
         ...mockGameState,
-        isCombatActive: true,
-        opponent: enemyCharacter
+        combat: {
+          ...mockCombatState,
+          isActive: true
+        },
+        character: {
+          player: mockCharacter,
+          opponent: enemyCharacter
+        }
       },
       isCombatActive: true,
-      opponent: enemyCharacter
+      opponent: enemyCharacter,
+      getCurrentOpponent: jest.fn().mockReturnValue(enemyCharacter)
     });
 
     renderGameSession();

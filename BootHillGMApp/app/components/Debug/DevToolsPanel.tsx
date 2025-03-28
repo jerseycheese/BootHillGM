@@ -6,6 +6,10 @@ import { initializeBrowserDebugTools, updateDebugCurrentDecision } from "../../u
 import { EVENTS, triggerCustomEvent } from "../../utils/events";
 import { DevToolsPanelProps } from "../../types/debug.types";
 import { LocationType } from "../../services/locationService";
+import { GameState } from '../../types/gameState';
+import { NarrativeState } from '../../types/narrative.types'; // Import NarrativeState
+import { initialCombatState } from '../../types/state/combatState'; // Import initialCombatState
+import { initialUIState } from '../../types/state/uiState'; // Import initialUIState
 
 // Import extracted components
 import GameControlSection from "./GameControlSection";
@@ -21,10 +25,54 @@ import {
   generateEnhancedDecision 
 } from '../../utils/contextualDecisionGenerator.enhanced';
 import { clearCurrentDecision, addNarrativeHistory } from "../../actions/narrativeActions";
+import { isSliceBasedState } from "../../utils/typeGuards";
+
+/**
+ * Creates a GameState object that satisfies the requirements for decision generation
+ * by ensuring all required properties exist
+ */
+function createDecisionGameState(baseState: unknown, narrativeState: unknown): GameState {
+  // Log the types of baseState and narrativeState for debugging
+  console.log('Type of baseState:', typeof baseState);
+  console.log('Type of narrativeState:', typeof narrativeState);
+
+  // Create a base state object with correctly typed initial slices
+  const safeState: Partial<GameState> = {
+    combat: initialCombatState, // Use initialCombatState
+    ui: initialUIState,       // Use initialUIState
+    // Include narrative state from narrative context, cast to correct type
+    narrative: narrativeState as NarrativeState
+  };
+
+  // If the base state is already in the slice format, merge it
+  if (isSliceBasedState(baseState)) {
+    // Create a complete GameState by merging with defaults for any missing properties
+    const mergedState = {
+      ...safeState,
+      ...baseState,
+      // Ensure required properties are not undefined
+      character: baseState.character ?? null,
+      narrative: (baseState.narrative ?? safeState.narrative) as NarrativeState
+    };
+    
+    return mergedState as GameState;
+  }
+
+  // Otherwise, convert legacy format to slice format
+  const legacyState = {
+    ...safeState,
+    // Copy other properties from the base state
+    ...(baseState as object),
+    // Ensure character is explicitly null if undefined
+    character: null
+  };
+  
+  return legacyState as GameState;
+}
 
 /**
  * DevTools panel for game debugging and testing.
- * Provides functionality to reset the game state, initialize test combat scenarios,
+ * Provides functionality to reset the game state, initialize test combat scenarios,a
  * test decision flows, and view game state.
  */
 const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) => {
@@ -71,12 +119,12 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
           // This is critical for generating relevant decisions
           const currentNarrativeState = narrativeContext.state;
           
+          // Create a properly structured game state for decision generation
+          const decisionGameState = createDecisionGameState(gameState, currentNarrativeState);
+          
           // Generate a contextual decision using the AI-enhanced generator with current context
           const contextualDecision = await generateEnhancedDecision(
-            {
-              ...gameState,
-              narrative: currentNarrativeState // Use the current narrative state
-            },
+            decisionGameState,
             currentNarrativeState.narrativeContext,
             locationToUse,
             true // Force generation
@@ -162,7 +210,7 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
     if (typeof window === 'undefined') return;
 
     initializeBrowserDebugTools(
-      () => gameState,
+      () => createDecisionGameState(gameState, narrativeContext.state),
       (locationType?: LocationType) => handleContextualDecision(locationType),
       () => handleClearDecision()
     );
@@ -181,7 +229,7 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
         console.error('Failed to trigger AI decision:', error);
       }
     };
-  }, [gameState, handleClearDecision, handleContextualDecision]);
+  }, [gameState, handleClearDecision, handleContextualDecision, narrativeContext.state]);
 
   // Update the debug namespace with current decision
   useEffect(() => {

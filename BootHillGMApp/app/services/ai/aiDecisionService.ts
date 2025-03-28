@@ -16,6 +16,7 @@ import { DecisionDetectionResult } from '../../types/ai-service.types';
 import { NarrativeState, PlayerDecision } from '../../types/narrative.types';
 import { Character } from '../../types/character';
 import { GameState } from '../../types/gameState';
+import { initialState } from '../../types/initialState';
 
 // Import constants
 import { 
@@ -39,6 +40,8 @@ import {
   aiResponseToPlayerDecision, 
   generateFallbackDecision 
 } from './utils/aiDecisionGenerator';
+import { extendGameState } from './utils/stateExtender';
+import { hasNarrativeState } from './utils/stateTypeGuards';
 
 // Import API client
 import { callAIService } from './clients/aiServiceClient';
@@ -114,12 +117,19 @@ export class AIDecisionService {
     character: Character,
     gameState?: GameState
   ): DecisionDetectionResult {
+    // Handle empty gameState by creating a properly typed default one
+    const defaultGameState = gameState || initialState;
+    
+    // Extend the game state using our utility with type safety
+    const extendedState = extendGameState(defaultGameState);
+    
+    // Call the detector with the correct parameters
     return detectDecisionPoint(
       narrativeState, 
       character, 
       this.config, 
       this.lastDecisionTime, 
-      gameState
+      extendedState
     );
   }
   
@@ -146,8 +156,38 @@ export class AIDecisionService {
         return generateFallbackDecision(narrativeState, character, gameState);
       }
       
-      // Build decision prompt
-      const prompt = buildDecisionPrompt(narrativeState, character, this.decisionsHistory, gameState);
+      // Enhance the game state context if available
+      let enhancedGameState = gameState;
+      if (gameState) {
+        // Use type guard to safely check and enhance the state
+        if (hasNarrativeState(gameState) && gameState.narrative?.narrativeContext) {
+          // Create an extended state with properly typed narrative context
+          enhancedGameState = {
+            ...gameState,
+            narrative: {
+              ...gameState.narrative,
+              // Enhance context with more detailed information if needed
+              narrativeContext: {
+                ...gameState.narrative.narrativeContext,
+                // Store lastDecisionTime in the impactState.lastUpdated field
+                impactState: {
+                  ...(gameState.narrative.narrativeContext?.impactState || {
+                    reputationImpacts: {},
+                    relationshipImpacts: {},
+                    worldStateImpacts: {},
+                    storyArcImpacts: {},
+                    lastUpdated: 0
+                  }),
+                  lastUpdated: this.lastDecisionTime
+                }
+              }
+            }
+          };
+        }
+      }
+      
+      // Build decision prompt with enhanced state
+      const prompt = buildDecisionPrompt(narrativeState, character, this.decisionsHistory, enhancedGameState);
       
       // Call the AI service
       const aiResponse = await callAIService(prompt, this.config, this.rateLimitData);
@@ -179,14 +219,20 @@ export class AIDecisionService {
     optionId: string,
     outcome: string
   ): void {
-    // Find the original decision prompt (in a real implementation, this would be cached)
-    const prompt = "Decision prompt"; // Placeholder
+    // Validate inputs
+    if (!decisionId || !optionId) {
+      console.warn('Invalid decision recording: missing IDs');
+      return;
+    }
     
-    // Add to history
+    // Find the original decision prompt (in a real implementation, this would be cached)
+    const prompt = `Decision #${decisionId}`; // Placeholder
+    
+    // Add to history with type safety
     this.decisionsHistory.push({
       prompt,
       choice: optionId,
-      outcome,
+      outcome: outcome || 'Unknown outcome',
       timestamp: Date.now()
     });
     
@@ -195,6 +241,42 @@ export class AIDecisionService {
       this.decisionsHistory.shift();
     }
   }
+  
+  /**
+   * Get decision history for testing purposes
+   * @returns Copy of the decisions history array
+   */
+  public getDecisionHistoryForTesting(): DecisionHistoryEntry[] {
+    return [...this.decisionsHistory];
+  }
+  
+  /**
+   * Reset service state (useful for testing)
+   */
+  public reset(): void {
+    this.lastDecisionTime = 0;
+    this.decisionsHistory = [];
+    this.rateLimitData = {
+      remaining: 100,
+      resetTime: 0
+    };
+  }
+}
+
+// Singleton instance
+let aiDecisionServiceInstance: AIDecisionService | null = null;
+
+/**
+ * Get the singleton instance of the AI decision service
+ * @param config Optional configuration to override defaults
+ * @returns AIDecisionService instance
+ */
+export function getAIDecisionService(config?: Partial<AIDecisionServiceConfig>): AIDecisionService {
+  if (!aiDecisionServiceInstance) {
+    aiDecisionServiceInstance = new AIDecisionService(config);
+  }
+  
+  return aiDecisionServiceInstance;
 }
 
 export default AIDecisionService;

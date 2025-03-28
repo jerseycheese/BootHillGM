@@ -41,12 +41,18 @@ export interface DecisionDetectionResult {
 }
 
 /**
- * Extended GameState with predicted properties we use for decision scoring
+ * Extended GameState with additional properties for decision scoring
  * This interface represents the expected game state structure used by the decision service
  */
-export interface ExtendedGameState extends GameState {
-  combat?: {
+export interface ExtendedGameState extends Omit<GameState, 'combat'> {
+  // Override combat property with our extended version that includes 'active'
+  combat: {
+    // Include all properties from CombatState
+    isActive: boolean;
+    // Add additional property needed for decision service
     active: boolean;
+    // Include all other properties from CombatState
+    [key: string]: unknown;
   };
   activeEvent?: boolean;
 }

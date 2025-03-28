@@ -51,7 +51,7 @@ graph TD
 ## Workflow Breakdown
 
 ### 1. Planning: Define Tests First
-Like Drupal's hook_requirements(), clearly define what "done" means before coding:
+Clearly define what "done" means before coding:
 ```javascript
 // Example of writing tests first
 test('Character sheet displays correct health value', () => {
@@ -61,7 +61,7 @@ test('Character sheet displays correct health value', () => {
 ```
 
 ### 2. Implementation: Minimal Viable Component
-Similar to Drupal's theme hooks, implement just enough to meet the requirements:
+Implement just enough to meet the requirements:
 ```jsx
 // Minimal implementation to pass the test
 const CharacterSheet = ({ health, maxHealth }) => (
@@ -70,9 +70,9 @@ const CharacterSheet = ({ health, maxHealth }) => (
 ```
 
 ### 3. Build → Test → Fix Loop
-- **Fix build errors first** (like fixing PHP syntax errors in Drupal)
-- **Run and fix Jest tests** (like SimpleTest in Drupal)
-- **Manually test implementation** (like checking theme rendering)
+- **Fix build errors first** (like fixing syntax errors)
+- **Run and fix Jest tests** (like running unit tests)
+- **Manually test implementation** (like checking component rendering)
 - Repeat until all pass
 
 ### 4. Documentation & Cleanup
@@ -107,16 +107,16 @@ I have these build errors or failing tests:
 Help me fix them with minimal changes to maintain simplicity.
 ```
 
-## Mapping to Your Drupal Experience
+## Testing Concepts in React
 
-| Drupal Concept | React Equivalent | Workflow Stage |
+| Traditional Concept | React Equivalent | Workflow Stage |
 |----------------|------------------|----------------|
-| hook_requirements() | Jest test expectations | Planning |
-| theme_hook() | React component props interface | Planning |
-| theme() implementation | React component function | Implementation |
-| drupal_set_message() | console.log (temp during dev) | Implementation |
-| SimpleTest | Jest component tests | Testing |
-| Browser testing | Manual React testing | Verification |
+| Requirements specification | Jest test expectations | Planning |
+| Component API design | React component props interface | Planning |
+| Component implementation | React component function | Implementation |
+| Debug logging | console.log (temp during dev) | Implementation |
+| Unit testing | Jest component tests | Testing |
+| Integration testing | Manual React testing | Verification |
 
 ## Related Docs
 - [[claude-app-workflow|Claude App Workflow]]

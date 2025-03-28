@@ -33,10 +33,6 @@ export const triggerCustomEvent = <T>(eventName: string, detail?: T): void => {
     
     window.dispatchEvent(event);
     
-    // Only log in development mode
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`BHGM Event: ${eventName}`, detail || '');
-    }
   } catch (error) {
     console.error(`Failed to trigger event ${eventName}:`, error);
   }

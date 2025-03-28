@@ -1,6 +1,10 @@
 import { GameEngineAction } from "../types/gameActions";
 import { Character } from "../types/character";
 import { initialNarrativeState } from "../types/narrative.types";
+import { CharacterState } from "../types/state/characterState";
+import { InventoryState } from "../types/state/inventoryState";
+import { JournalState } from "../types/state/journalState";
+import { CombatState } from "../types/state/combatState";
 
 /**
  * Initializes a test combat scenario with a default opponent.
@@ -43,29 +47,39 @@ export const initializeTestCombat = (): GameEngineAction => {
     isUnconscious: false,
     isNPC: true,
     isPlayer: false,
-    inventory: [],
+    inventory: { items: [] },
+  };
+
+  // Create a combat state object using the correct interface
+  const combatState: CombatState = {
+    rounds: 0,
+    combatType: "brawling",
+    isActive: true,
+    // Adding required properties from CombatState interface
+    playerTurn: true,
+    playerCharacterId: "", // Will be filled in by gameReducer
+    opponentCharacterId: "test_opponent",
+    combatLog: [],
+    roundStartTime: Date.now(),
+    modifiers: {
+      player: 0,
+      opponent: 0
+    },
+    currentTurn: null
+  };
+
+  // Create a character state with player and opponent
+  const characterState: CharacterState = {
+    player: null, // Will be set by existing player in state
+    opponent: testOpponent
   };
 
   return {
     type: "SET_STATE",
     payload: {
-      opponent: testOpponent,
-      isCombatActive: true,
-      combatState: {
-        rounds: 0,
-        combatType: "brawling",
-        isActive: true,
-        winner: null,
-        participants: [],
-        brawling: {
-          round: 1,
-          playerModifier: 0,
-          opponentModifier: 0,
-          playerCharacterId: "", // Will be filled in by gameReducer
-          opponentCharacterId: "test_opponent",
-          roundLog: [],
-        },
-      },
+      // Use the domain-specific slices
+      character: characterState,
+      combat: combatState,
       isClient: true,
     },
   };
@@ -94,7 +108,7 @@ export const createBaseCharacter = (id: string, name: string): Character => {
     isPlayer: true,
     id,
     name,
-    inventory: [],
+    inventory: { items: [] },
     attributes: {
       speed: minAttributes.speed,
       gunAccuracy: minAttributes.gunAccuracy,
@@ -126,17 +140,54 @@ export const createBaseCharacter = (id: string, name: string): Character => {
  * @returns {GameEngineAction} - The action to reset the game state.
  */
 export const resetGame = (): GameEngineAction => {
+  // Create test character
+  const testCharacter = createBaseCharacter('test_character', 'Test Character');
+  
+  // Create character state
+  const characterState: CharacterState = {
+    player: testCharacter,
+    opponent: null
+  };
+  
+  // Create inventory state
+  const inventoryState: InventoryState = {
+    items: []
+  };
+  
+  // Create journal state
+  const journalState: JournalState = {
+    entries: []
+  };
+  
+  // Create empty combat state with all required properties
+  const combatState: CombatState = {
+    rounds: 0,
+    combatType: 'brawling',
+    isActive: false,
+    playerTurn: true,
+    playerCharacterId: '',
+    opponentCharacterId: '',
+    combatLog: [],
+    roundStartTime: 0,
+    modifiers: {
+      player: 0,
+      opponent: 0
+    },
+    currentTurn: null
+  };
+
   return {
     type: "SET_STATE",
     payload: {
-      character: createBaseCharacter('test_character', 'Test Character'),
-      inventory: [],
-      journal: [],
+      // Use domain-specific state slices
+      character: characterState,
+      inventory: inventoryState,
+      journal: journalState,
       narrative: initialNarrativeState,
+      combat: combatState,
+      
+      // Top-level properties
       location: null,
-      isCombatActive: false,
-      combatState: undefined,
-      opponent: null,
       gameProgress: 0,
       npcs: [],
       quests: [],

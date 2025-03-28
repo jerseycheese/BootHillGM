@@ -27,7 +27,7 @@ export const renderCharacterForm = (props = {}): RenderResult & {
         strength: 10,
         baseStrength: 10,
         bravery: 10,
-        experience: 5,
+        experience: 5
       },
       minAttributes: {
         speed: 1,
@@ -36,7 +36,7 @@ export const renderCharacterForm = (props = {}): RenderResult & {
         strength: 8,
         baseStrength: 8,
         bravery: 1,
-        experience: 0,
+        experience: 0
       },
       maxAttributes: {
         speed: 20,
@@ -45,13 +45,15 @@ export const renderCharacterForm = (props = {}): RenderResult & {
         strength: 20,
         baseStrength: 20,
         bravery: 20,
-        experience: 11,
+        experience: 11
       },
       wounds: [],
       isUnconscious: false,
       isNPC: false,
       isPlayer: true,
-      inventory: [],
+      inventory: {
+        items: []
+      },
     },
     isGeneratingField: false,
     error: undefined,

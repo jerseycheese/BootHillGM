@@ -76,6 +76,7 @@ export const initialNarrativeState: NarrativeState = {
   availableChoices: [],
   narrativeHistory: [],
   displayMode: 'standard',
+  narrativeContext: undefined, // Initialize narrativeContext to undefined
   error: null
 };
 

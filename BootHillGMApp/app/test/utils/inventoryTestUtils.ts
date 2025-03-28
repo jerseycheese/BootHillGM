@@ -70,7 +70,7 @@ const defaultMockCharacter: Character = {
   },
   wounds: [],
   isUnconscious: false,
-  inventory: [],
+  inventory: { items: [] },
   strengthHistory: { changes: [], baseStrength: 10 },
   isNPC: false,
   isPlayer: true,

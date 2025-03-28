@@ -34,7 +34,7 @@ export const mockPlayerCharacter: Character = {
   },
   wounds: [],
   isUnconscious: false,
-  inventory: []
+  inventory: { items: [] }
 }
 
 export const mockNPC: Character = {
@@ -71,5 +71,5 @@ export const mockNPC: Character = {
   },
   wounds: [],
   isUnconscious: false,
-  inventory: []
+  inventory: { items: [] },
 }

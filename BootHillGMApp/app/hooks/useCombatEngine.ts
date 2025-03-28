@@ -1,3 +1,4 @@
+import { calculateCombatDamage } from '../utils/combatRules';
 /**
  * Custom hook that manages the core combat logic for Boot Hill RPG combat.
  * Separates combat state management and calculations from UI rendering.
@@ -90,11 +91,11 @@ export const useCombatEngine = ({
     const critical = isCritical(roll);
 
 
-    if (hit) {
-      const damage = 10; // Placeholder for calculateCombatDamage
-      const weaponName = attacker.weapon || 'Unarmed';
-      const message = `${cleanCharacterName(attacker.name)} hit ${cleanCharacterName(defender.name)} with ${weaponName} for ${damage} damage! [Roll: ${roll}/${hitChance}]`;
-
+    
+        if (hit) {
+          const damage = calculateCombatDamage(attacker); // Calculate damage
+          const weaponName = attacker.weapon?.name || 'Unarmed';
+          const message = `${cleanCharacterName(attacker.name)} hit ${cleanCharacterName(defender.name)} with ${weaponName} for ${damage} damage! [Roll: ${roll}/${hitChance}]`;
       addToCombatLog(message, critical ? 'critical' : 'hit');
 
       if (isPlayer) {

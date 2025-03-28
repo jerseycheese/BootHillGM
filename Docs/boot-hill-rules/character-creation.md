@@ -140,7 +140,7 @@ For equipment details, see [[equipment|Equipment Rules]] and [[weapons-chart|Wea
 
 ### Base Numbers
 - Calculate combat base numbers
-- Determine skill modifiers
+- Determine attribute modifiers
 - Set initial status values
 
 For calculation details, see [[base-numbers|Base Numbers Calculation]].
@@ -162,7 +162,9 @@ interface Character {
     gunAccuracy: number;
     throwingAccuracy: number;
     strength: number;
-    brawling: number;
+    baseStrength: number;
+    bravery: number;
+    experience: number;
   };
   derived: {
     hitPoints: number;

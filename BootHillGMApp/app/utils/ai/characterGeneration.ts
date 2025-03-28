@@ -95,7 +95,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
       },
       wounds: [],
       isUnconscious: false,
-      inventory: [] as InventoryItem[]
+      inventory: { items: [] as InventoryItem[] }
     };
     
     // Validate that all character attributes are present and are valid numbers
@@ -154,7 +154,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
       },
       wounds: [],
       isUnconscious: false,
-      inventory: [] as InventoryItem[]
+      inventory: { items: [] as InventoryItem[] }
     };
     }
 }

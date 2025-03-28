@@ -17,6 +17,7 @@ import { LocationType } from '../services/locationService';
 import { v4 as uuidv4 } from 'uuid';
 // Import the global declarations
 import '../types/global.d';
+import { Character } from '../types/character';
 
 // Decision generation modes
 export type DecisionGenerationMode = 'template' | 'ai' | 'hybrid';
@@ -68,13 +69,18 @@ function isGameStateReadyForDecisions(gameState: GameState): boolean {
     return false;
   }
   
+  // Must have player character
+  if (!gameState.character.player) {
+    return false;
+  }
+  
   // Must have some narrative history
   if (gameState.narrative.narrativeHistory.length < 2) {
     return false;
   }
   
   // Must not be in combat
-  if (gameState.combatState?.isActive) {
+  if (gameState.combat?.isActive) {
     return false;
   }
   
@@ -112,6 +118,58 @@ function getRefreshedGameState(originalState: GameState): GameState {
   
   // Fall back to the original state
   return originalState;
+}
+
+/**
+ * Safely get the player character, ensuring it's not null
+ * This is a helper to handle the Character | null type
+ * 
+ * @param gameState - Current game state
+ * @returns Player character or a default character if none exists
+ */
+function getSafePlayerCharacter(gameState: GameState): Character {
+  if (!gameState.character || !gameState.character.player) {
+    // Return a minimally valid Character to satisfy the type system
+    // This should rarely happen since we check isGameStateReadyForDecisions first
+    return {
+      id: 'default-player',
+      name: 'Player',
+      isNPC: false,
+      isPlayer: true,
+      inventory: { items: [] },
+      attributes: {
+        speed: 10,
+        gunAccuracy: 10,
+        throwingAccuracy: 10,
+        strength: 10,
+        baseStrength: 10,
+        bravery: 10,
+        experience: 0
+      },
+      minAttributes: {
+        speed: 1,
+        gunAccuracy: 1,
+        throwingAccuracy: 1,
+        strength: 8,
+        baseStrength: 8,
+        bravery: 1,
+        experience: 0
+      },
+      maxAttributes: {
+        speed: 20,
+        gunAccuracy: 20,
+        throwingAccuracy: 20,
+        strength: 20,
+        baseStrength: 20,
+        bravery: 20,
+        experience: 11
+      },
+      wounds: [],
+      isUnconscious: false
+    };
+  }
+  
+  return gameState.character.player;
 }
 
 /**
@@ -171,23 +229,17 @@ export async function generateEnhancedDecision(
       return decision;
     }
     
-    // Make sure we have a character to work with
-    if (!freshGameState.character) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('No character found in gameState, cannot generate decision');
-      }
-      isGeneratingDecision = false;
-      return null;
-    }
-    
     // Generate decision based on the selected mode
     switch (currentGenerationMode) {
       case 'ai': {
         // Use AI-only generation
         const service = getContextualDecisionService();
+        // Get a safe player character that's guaranteed not to be null
+        const playerCharacter = getSafePlayerCharacter(freshGameState);
+        
         const decision = await service.generateDecision(
           freshGameState.narrative,
-          freshGameState.character,
+          playerCharacter, // Now we're passing a non-null Character
           freshGameState,
           forceGeneration
         );
@@ -211,12 +263,14 @@ export async function generateEnhancedDecision(
         // Try AI generation first
         try {
           const service = getContextualDecisionService();
+          // Get a safe player character that's guaranteed not to be null
+          const playerCharacter = getSafePlayerCharacter(freshGameState);
           
           // If force generation is enabled, skip detection check
           if (forceGeneration) {
             const decision = await service.generateDecision(
               freshGameState.narrative,
-              freshGameState.character,
+              playerCharacter, // Now we're passing a non-null Character
               freshGameState,
               true
             );
@@ -227,7 +281,7 @@ export async function generateEnhancedDecision(
           // Check if we should present a decision
           const detectionResult = service.detectDecisionPoint(
             freshGameState.narrative,
-            freshGameState.character,
+            playerCharacter, // Now we're passing a non-null Character
             freshGameState
           );
           
@@ -244,7 +298,7 @@ export async function generateEnhancedDecision(
             // Generate AI-driven decision
             const aiDecision = await service.generateDecision(
               freshGameState.narrative,
-              freshGameState.character,
+              playerCharacter, // Now we're passing a non-null Character
               freshGameState
             );
             

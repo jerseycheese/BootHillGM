@@ -113,14 +113,6 @@ export const initializeBrowserDebugTools = (
     }
   }
 
-  // Log initialization only in development
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('BHGM Debug Tools initialized. Available commands:');
-    console.log('- bhgmDebug.triggerDecision(locationType)');
-    console.log('- bhgmDebug.clearDecision()');
-    console.log('- bhgmDebug.listLocations()');
-    console.log('- bhgmDebug.getState()');
-  }
 
   // Listen for cross-component messages using storage events
   window.addEventListener('storage', (event) => {
