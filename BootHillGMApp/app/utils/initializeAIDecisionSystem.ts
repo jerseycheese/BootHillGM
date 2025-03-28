@@ -6,9 +6,8 @@
  */
 
 import { getContextualDecisionService } from '../services/ai/contextualDecisionService';
-import { initializeDecisionDebugTools } from './contextualDecisionGenerator.enhanced';
+import { initializeDecisionDebugTools } from './decisionDebug';
 import { initializeFeedbackSystem } from './decisionFeedbackSystem';
-// Import evaluateDecisionQuality properly instead of using require
 import { evaluateDecisionQuality } from './decisionQualityAssessment';
 
 /**

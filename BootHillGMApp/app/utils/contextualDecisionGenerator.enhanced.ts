@@ -17,7 +17,13 @@ import { LocationType } from '../services/locationService';
 import { v4 as uuidv4 } from 'uuid';
 // Import the global declarations
 import '../types/global.d';
-import { Character } from '../types/character';
+// import { Character } from '../types/character'; // Removed unused import
+import { 
+  isGameStateReadyForDecisions, 
+  getRefreshedGameState, 
+  getSafePlayerCharacter 
+} from './decisionGeneratorHelpers';
+// import { initializeDecisionDebugTools } from './decisionDebug'; // Removed unused import
 
 // Decision generation modes
 export type DecisionGenerationMode = 'template' | 'ai' | 'hybrid';
@@ -52,124 +58,6 @@ export function setDecisionGenerationMode(mode: DecisionGenerationMode): void {
  */
 export function getDecisionGenerationMode(): DecisionGenerationMode {
   return currentGenerationMode;
-}
-
-/**
- * Check if the game state is ready for decisions.
- * 
- * This function validates that all required game state elements
- * are present and in the appropriate state for decision generation.
- * 
- * @param gameState - Current game state
- * @returns True if the game state is ready, false otherwise
- */
-function isGameStateReadyForDecisions(gameState: GameState): boolean {
-  // Must have a character
-  if (!gameState.character) {
-    return false;
-  }
-  
-  // Must have player character
-  if (!gameState.character.player) {
-    return false;
-  }
-  
-  // Must have some narrative history
-  if (gameState.narrative.narrativeHistory.length < 2) {
-    return false;
-  }
-  
-  // Must not be in combat
-  if (gameState.combat?.isActive) {
-    return false;
-  }
-  
-  return true;
-}
-
-/**
- * Get the latest game state from debug tools if available
- * 
- * This helper ensures we always work with the most up-to-date state
- * when generating decisions, fixing the stale context issue (#210)
- * 
- * @param originalState - The state initially passed to the function
- * @returns The most up-to-date game state available
- */
-function getRefreshedGameState(originalState: GameState): GameState {
-  // In browser environment, try to get fresh state from debug tools
-  if (typeof window !== 'undefined' && window.bhgmDebug?.getState) {
-    try {
-      const freshState = window.bhgmDebug.getState();
-      
-      // If we got a valid state, update the narrative portion
-      if (freshState && freshState.narrative) {
-        return {
-          ...originalState,
-          narrative: freshState.narrative
-        };
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('Failed to get fresh state from debug tools:', error);
-      }
-    }
-  }
-  
-  // Fall back to the original state
-  return originalState;
-}
-
-/**
- * Safely get the player character, ensuring it's not null
- * This is a helper to handle the Character | null type
- * 
- * @param gameState - Current game state
- * @returns Player character or a default character if none exists
- */
-function getSafePlayerCharacter(gameState: GameState): Character {
-  if (!gameState.character || !gameState.character.player) {
-    // Return a minimally valid Character to satisfy the type system
-    // This should rarely happen since we check isGameStateReadyForDecisions first
-    return {
-      id: 'default-player',
-      name: 'Player',
-      isNPC: false,
-      isPlayer: true,
-      inventory: { items: [] },
-      attributes: {
-        speed: 10,
-        gunAccuracy: 10,
-        throwingAccuracy: 10,
-        strength: 10,
-        baseStrength: 10,
-        bravery: 10,
-        experience: 0
-      },
-      minAttributes: {
-        speed: 1,
-        gunAccuracy: 1,
-        throwingAccuracy: 1,
-        strength: 8,
-        baseStrength: 8,
-        bravery: 1,
-        experience: 0
-      },
-      maxAttributes: {
-        speed: 20,
-        gunAccuracy: 20,
-        throwingAccuracy: 20,
-        strength: 20,
-        baseStrength: 20,
-        bravery: 20,
-        experience: 11
-      },
-      wounds: [],
-      isUnconscious: false
-    };
-  }
-  
-  return gameState.character.player;
 }
 
 /**
@@ -418,61 +306,4 @@ export function generateEnhancedContextualDecision(
   
   // Return the template decision for now
   return templateDecision;
-}
-
-/**
- * Initialize the decision system with the browser's global namespace
- * to enable debug capabilities.
- * 
- * This function sets up debug tools in the window.bhgmDebug namespace
- * to allow for controlling and monitoring the decision system from
- * the browser console or DevTools interface.
- */
-export function initializeDecisionDebugTools(): void {
-  if (typeof window !== 'undefined') {
-    // Create the debug namespace if it doesn't exist
-    window.bhgmDebug = window.bhgmDebug || {
-      // Required properties from debug interface
-      version: '1.0.0',
-      triggerDecision: (locationType?: LocationType) => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.debug('Decision triggered', locationType);
-        }
-      },
-      clearDecision: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.debug('Decision cleared');
-        }
-      },
-      listLocations: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.debug('Listing locations');
-        }
-        return [];
-      },
-      // Debug command handler
-      sendCommand: (commandType: string, data?: unknown) => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.debug(`Debug command: ${commandType}`, data);
-        }
-      }
-    };
-    
-    // Extend with decision debug functions - already properly typed in global.d.ts
-    if (window.bhgmDebug) {
-      window.bhgmDebug.decisions = {
-        getMode: getDecisionGenerationMode,
-        setMode: setDecisionGenerationMode,
-        generateDecision: generateEnhancedDecision,
-        pendingDecision: null,
-        service: getContextualDecisionService(),
-        lastDetectionScore: 0,
-        isGenerating: () => isGeneratingDecision
-      };
-    }
-    
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug('Decision debug tools initialized');
-    }
-  }
 }

@@ -20,10 +20,8 @@ import AIDecisionControls from './AIDecisionControls';
 import GameStateDisplay from "./GameStateDisplay";
 
 // Import decision-related utilities
-import { 
-  initializeDecisionDebugTools,
-  generateEnhancedDecision 
-} from '../../utils/contextualDecisionGenerator.enhanced';
+import { generateEnhancedDecision } from '../../utils/contextualDecisionGenerator.enhanced';
+import { initializeDecisionDebugTools } from '../../utils/decisionDebug';
 import { clearCurrentDecision, addNarrativeHistory } from "../../actions/narrativeActions";
 import { isSliceBasedState } from "../../utils/typeGuards";
 
@@ -32,10 +30,6 @@ import { isSliceBasedState } from "../../utils/typeGuards";
  * by ensuring all required properties exist
  */
 function createDecisionGameState(baseState: unknown, narrativeState: unknown): GameState {
-  // Log the types of baseState and narrativeState for debugging
-  console.log('Type of baseState:', typeof baseState);
-  console.log('Type of narrativeState:', typeof narrativeState);
-
   // Create a base state object with correctly typed initial slices
   const safeState: Partial<GameState> = {
     combat: initialCombatState, // Use initialCombatState
