@@ -3,7 +3,7 @@ title: State Management System
 aliases: []
 tags: [documentation]
 created: 2024-01-04
-updated: 2024-02-23
+updated: 2025-03-28
 ---
 
 # State Management System
@@ -34,6 +34,43 @@ interface GameState {
   settings: SettingsState;
   game: GameState; // Top level gameReducer state.
 }
+```
+
+#### CampaignStateProvider
+Manages campaign-specific state with persistence, cleanup, and restoration capabilities. The component has been refactored into smaller, more maintainable parts:
+
+- **Main Component**: Orchestrates state management hooks (`/app/components/CampaignStateManager.tsx`)
+- **Context**: Provides access to campaign state (`/app/hooks/useCampaignStateContext.ts`)
+- **Persistence Hook**: Handles state saving and loading (`/app/hooks/useCampaignStatePersistence.ts`) 
+- **Cleanup Hook**: Manages state reset functionality (`/app/hooks/useStateCleanup.ts`)
+- **Auto-Save Hook**: Monitors state for important changes (`/app/hooks/useAutoSave.ts`)
+- **Unload Handler**: Ensures state is saved on page close (`/app/hooks/useBeforeUnloadHandler.ts`)
+
+Usage:
+```tsx
+import { useCampaignState } from '../components/CampaignStateManager';
+
+const MyComponent = () => {
+  const { state, dispatch, player, inventory } = useCampaignState();
+  
+  // Access state directly
+  const characterName = state.character?.player?.name;
+  
+  // Access through legacy getters
+  const playerHealth = player?.attributes?.health;
+  
+  // Dispatch actions to update state
+  const handleAction = () => {
+    dispatch({ 
+      type: 'UPDATE_CHARACTER', 
+      payload: { /* update data */ } 
+    });
+  };
+  
+  return (
+    // Component JSX
+  );
+};
 ```
 
 ### State Architecture
@@ -354,3 +391,4 @@ The `narrativeReducer` is integrated into the main `combinedReducer` in `app/red
 - 2025-02-23: Added Location State documentation
 - 2025-02-23: Added Brawling Combat State Management documentation
 - 2025-03-07: Added Narrative State documentation
+- 2025-03-28: Added refactored CampaignStateManager documentation
