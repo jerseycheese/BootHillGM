@@ -1,193 +1,125 @@
-# Narrative Context Optimization System
+# Narrative Context Builder
 
-This module provides intelligent optimization of narrative context for AI requests, improving response quality while reducing token usage.
+The Narrative Context Builder is a utility for creating optimized AI prompts with intelligent content filtering, prioritization, and compression techniques.
 
 ## Overview
 
-The Narrative Context Optimization system performs several key functions:
+This module creates structured, token-efficient narrative context by:
 
-1. **Content Prioritization**: Identifies the most relevant narrative elements for the current context
-2. **Adaptive Compression**: Applies appropriate compression based on content size
-3. **Token Budget Management**: Allocates tokens to different content types based on importance
-4. **Context Synchronization**: Ensures narrative state is fresh before AI requests
+1. Compressing narrative history based on configurable parameters
+2. Extracting and prioritizing relevant decisions 
+3. Allocating tokens based on content importance
+4. Building structured context with appropriate sections
 
-## Core Components
+## File Structure
 
-### 🧠 Context Builder (`narrativeContextBuilder.ts`)
+This module is organized into the following files:
 
-The brain of the system. Extracts, prioritizes, and structures narrative elements:
+| File | Purpose |
+|------|---------|
+| `narrativeContextBuilder.ts` | Main context building orchestrator |
+| `narrativeContextDefaults.ts` | Default configuration values |
+| `narrativeContextProcessors.ts` | Compression and extraction utilities |
+| `narrativeContextPrioritization.ts` | Element prioritization logic |
+| `narrativeContextFormatters.ts` | Text formatting utilities |
+| `narrativeContextScoring.ts` | Relevance scoring algorithms | 
+| `narrativeContextTokens.ts` | Token allocation and budget management |
+| `narrativeContextTypes.ts` | Internal type definitions |
+| `index.ts` | Public API exports |
+
+## Usage
 
 ```typescript
-import { buildNarrativeContext } from './narrativeContextBuilder';
+import { buildNarrativeContext } from '../utils/narrative';
+import { NarrativeState } from '../types/narrative.types';
 
+// Get the current narrative state from your application
+const narrativeState: NarrativeState = getCurrentState();
+
+// Build optimized context
 const optimizedContext = buildNarrativeContext(narrativeState, {
+  maxHistoryEntries: 10, 
   compressionLevel: 'medium',
-  maxTokens: 2000,
-  prioritizeRecentEvents: true
+  maxTokens: 2000
+});
+
+// Use the formatted context with your AI service
+const aiResponse = await aiService.getResponse({
+  prompt: userPrompt,
+  context: optimizedContext.formattedContext
 });
 ```
 
-### 🗜️ Compression Utilities (`narrativeCompression.ts`)
+## Configuration Options
 
-Handles intelligent compression of narrative text:
-
-```typescript
-import { compressNarrativeText, estimateTokenCount } from './narrativeCompression';
-
-const compressed = compressNarrativeText(longText, 'medium');
-const tokenCount = estimateTokenCount(compressed);
-```
-
-### 🔄 Context Integration (`narrativeContextIntegration.ts`)
-
-Provides hooks and utilities for integrating optimized context:
+The context builder accepts these configuration options:
 
 ```typescript
-import { useOptimizedNarrativeContext, useNarrativeContextSynchronization } from './narrativeContextIntegration';
-
-// In your component
-const { getDefaultContext, getFocusedContext } = useOptimizedNarrativeContext();
-const { ensureFreshContext } = useNarrativeContextSynchronization();
-```
-
-### 🤖 AI Integration (`useAIWithOptimizedContext.ts`)
-
-Main hook for making AI requests with optimized context:
-
-```typescript
-import { useAIWithOptimizedContext } from './useAIWithOptimizedContext';
-
-// In your component
-const { makeAIRequest, isLoading, error } = useAIWithOptimizedContext();
-
-// Make an AI request
-const handleAction = async (prompt) => {
-  try {
-    const response = await makeAIRequest(prompt, inventory);
-    // Handle response...
-  } catch (error) {
-    // Handle error...
+const options = {
+  // Maximum history entries to include
+  maxHistoryEntries: 10,
+  
+  // Maximum decisions to include
+  maxDecisionHistory: 5,
+  
+  // Compression level for narrative text
+  compressionLevel: 'medium', // 'none' | 'low' | 'medium' | 'high'
+  
+  // Minimum relevance score (0-10) for inclusion
+  relevanceThreshold: 5,
+  
+  // Boost recent content
+  prioritizeRecentEvents: true,
+  
+  // Include specific context sections
+  includeWorldState: true,
+  includeCharacterRelationships: true,
+  
+  // Token budget and allocation
+  maxTokens: 2000,
+  tokenAllocation: {
+    narrativeHistory: 40, // percentages
+    decisionHistory: 30,
+    worldState: 15,
+    relationships: 10,
+    storyContext: 5
   }
 };
 ```
 
-## Usage Examples
+## Context Structure
 
-### Basic Usage
+The generated context follows this structure:
 
-```tsx
-import { useAIWithOptimizedContext } from '../utils/narrative/useAIWithOptimizedContext';
+```
+## Story Progression
+[Current story points and arcs]
 
-function AIPromptComponent() {
-  const { makeAIRequest, isLoading } = useAIWithOptimizedContext();
-  const [prompt, setPrompt] = useState('');
-  const [response, setResponse] = useState('');
-  
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const result = await makeAIRequest(prompt, inventory);
-      setResponse(result.narrative);
-    } catch (error) {
-      console.error('AI request failed:', error);
-    }
-  };
-  
-  return (
-    <form onSubmit={handleSubmit}>
-      <input 
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        placeholder="What do you want to do?"
-      />
-      <button type="submit" disabled={isLoading}>
-        {isLoading ? 'Thinking...' : 'Submit'}
-      </button>
-      {response && (
-        <div className="narrative">
-          {response}
-        </div>
-      )}
-    </form>
-  );
-}
+## World State
+[Current world state and impacts]
+
+## Narrative History
+[Compressed narrative history entries]
+
+## Decisions
+[Relevant player decisions]
+
+## Character Relationships
+[Character relationship information]
+
+## Guidance
+[AI guidance instructions]
 ```
 
-### Focused Context for Specific Scenarios
+## Testing
 
-```tsx
-import { useAIWithOptimizedContext } from '../utils/narrative/useAIWithOptimizedContext';
-
-function CharacterInteractionPrompt({ characterName }) {
-  const { makeAIRequestWithFocus } = useAIWithOptimizedContext();
-  
-  const handleInteract = async (action) => {
-    // Focus context on this character and relevant themes
-    const result = await makeAIRequestWithFocus(
-      `I want to ${action} with ${characterName}`,
-      inventory,
-      [characterName, 'interaction', 'dialogue']
-    );
-    
-    // Handle response...
-  };
-  
-  // Component JSX...
-}
+Unit tests for the narrative context builder are located in:
+```
+/app/__tests__/utils/narrative/narrativeContextBuilder.test.ts
 ```
 
-### Limited Context for Quick Responses
+## Performance Considerations
 
-```tsx
-import { useAIWithOptimizedContext } from '../utils/narrative/useAIWithOptimizedContext';
-
-function QuickActionPrompt() {
-  const { makeAIRequestWithCompactContext } = useAIWithOptimizedContext();
-  
-  const handleQuickAction = async (action) => {
-    // Use compact context for faster, token-efficient responses
-    const result = await makeAIRequestWithCompactContext(
-      `I ${action}`,
-      inventory
-    );
-    
-    // Handle response...
-  };
-  
-  // Component JSX...
-}
-```
-
-## Error Handling
-
-The system includes built-in error handling:
-
-```tsx
-import { useAIWithOptimizedContext } from '../utils/narrative/useAIWithOptimizedContext';
-
-function AIPromptWithErrorHandling() {
-  const { makeAIRequest, isLoading, error } = useAIWithOptimizedContext();
-  
-  // Component logic...
-  
-  return (
-    <div>
-      {/* Form elements... */}
-      
-      {error && (
-        <div className="error-message">
-          Error: {error.message}
-        </div>
-      )}
-    </div>
-  );
-}
-```
-
-## Further Documentation
-
-For more detailed information, see:
-
-- [Narrative Context Optimization Architecture](/Docs/architecture/narrative-optimization.md)
-- [Stale Context Fix](/Docs/issues/issue-210-fix.md)
-- [Narrative System Overview](/Docs/core-systems/narrative-system.md)
+- For longer narratives, consider using `maxHistoryEntries` and higher compression
+- Token allocation can be adjusted based on the importance of different content types
+- The `buildNarrativeContext` function returns metadata with performance metrics

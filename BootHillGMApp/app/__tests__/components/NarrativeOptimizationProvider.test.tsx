@@ -16,6 +16,9 @@ jest.mock('../../../app/utils/narrative', () => ({
   registerNarrativeContextDebugTools: jest.fn()
 }));
 
+// Mock process.env to avoid readonly property error
+const originalEnv = process.env;
+
 // Mock console methods
 const originalConsoleInfo = console.info;
 
@@ -26,11 +29,17 @@ describe('NarrativeOptimizationProvider', () => {
     
     // Mock console methods
     console.info = jest.fn();
+    
+    // Reset process.env
+    process.env = { ...originalEnv };
   });
   
   afterAll(() => {
     // Restore console methods
     console.info = originalConsoleInfo;
+    
+    // Restore process.env
+    process.env = originalEnv;
   });
   
   it('should render children', () => {
@@ -54,11 +63,8 @@ describe('NarrativeOptimizationProvider', () => {
   });
   
   it('should register debug tools in development mode', () => {
-    // Save original NODE_ENV
-    const originalNodeEnv = process.env.NODE_ENV;
-    
-    // Set to development
-    process.env.NODE_ENV = 'development';
+    // Mock NODE_ENV as development without direct assignment
+    jest.replaceProperty(process.env, 'NODE_ENV', 'development');
     
     render(
       <NarrativeOptimizationProvider>
@@ -68,17 +74,11 @@ describe('NarrativeOptimizationProvider', () => {
     
     // Debug tools should be registered
     expect(registerNarrativeContextDebugTools).toHaveBeenCalledTimes(1);
-    
-    // Restore NODE_ENV
-    process.env.NODE_ENV = originalNodeEnv;
   });
   
   it('should not register debug tools in production mode', () => {
-    // Save original NODE_ENV
-    const originalNodeEnv = process.env.NODE_ENV;
-    
-    // Set to production
-    process.env.NODE_ENV = 'production';
+    // Mock NODE_ENV as production without direct assignment
+    jest.replaceProperty(process.env, 'NODE_ENV', 'production');
     
     render(
       <NarrativeOptimizationProvider>
@@ -88,9 +88,6 @@ describe('NarrativeOptimizationProvider', () => {
     
     // Debug tools should not be registered
     expect(registerNarrativeContextDebugTools).not.toHaveBeenCalled();
-    
-    // Restore NODE_ENV
-    process.env.NODE_ENV = originalNodeEnv;
   });
   
   it('should log initialization message', () => {
