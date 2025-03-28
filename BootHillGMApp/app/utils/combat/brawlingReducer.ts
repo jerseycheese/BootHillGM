@@ -34,13 +34,14 @@ export function brawlingReducer(state: BrawlingState, action: BrawlingAction): B
     case 'UPDATE_MODIFIERS': {
       return {
         ...state,
-        playerModifier: action.player ?? state.playerModifier,
-        opponentModifier: action.opponent ?? state.opponentModifier
+        playerModifier: action.player !== undefined ? action.player : state.playerModifier,
+        opponentModifier: action.opponent !== undefined ? action.opponent : state.opponentModifier
       };
     }
     
     case 'END_ROUND': {
       // Only advance from round 1 to 2, never back to 1
+      // This matches the expectation in tests where round should be 2 after processing 
       if (state.round === 1) {
         return {
           ...state,
@@ -52,6 +53,15 @@ export function brawlingReducer(state: BrawlingState, action: BrawlingAction): B
     }
 
     case 'END_COMBAT': {
+      // Only add summary log entry if not a duplicate
+      const isDuplicate = state.roundLog.some(
+        entry => entry.text === action.summary && entry.type === 'info'
+      );
+      
+      if (isDuplicate) {
+        return state;
+      }
+
       return {
         ...state,
         roundLog: [
