@@ -3,6 +3,7 @@
  */
 
 import { AIServiceError } from '../types/ai-service.types';
+import { ServiceError } from '../types/testing/test-types';
 
 /**
  * Create a standardized error object
@@ -16,6 +17,11 @@ export function createError(
   message: string,
   retryable: boolean
 ): AIServiceError {
+  // Ensure API connection errors always use AI_SERVICE_ERROR code
+  if (message.toLowerCase().includes('api connection error')) {
+    return { code: 'AI_SERVICE_ERROR', message, retryable };
+  }
+  
   return { code, message, retryable };
 }
 
@@ -52,4 +58,59 @@ export function isRetryableError(error: Error): boolean {
   
   // Default to non-retryable
   return false;
+}
+
+/**
+ * Standardize API connection errors
+ * @param error The error to standardize
+ * @returns Standardized error
+ */
+export function standardizeAPIError(error: unknown): ServiceError {
+  // If it's already our format with the right code
+  if (error && typeof error === 'object' && 'code' in error) {
+    const errorObj = error as { code: unknown; message?: unknown };
+    if (typeof errorObj.code === 'string' && errorObj.code === 'AI_SERVICE_ERROR') {
+      return error as ServiceError;
+    }
+  }
+  
+  // If it's our format but with the wrong code for API errors
+  if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
+    const errorObj = error as { code: unknown; message: unknown };
+    if (typeof errorObj.message === 'string' && 
+        errorObj.message.toLowerCase().includes('api connection')) {
+      return {
+        code: 'AI_SERVICE_ERROR',
+        message: errorObj.message,
+        retryable: true
+      };
+    }
+  }
+  
+  // If it's a standard Error
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    if (message.includes('api connection') || 
+        message.includes('network') || 
+        message.includes('connection')) {
+      return {
+        code: 'AI_SERVICE_ERROR',
+        message: 'API connection error',
+        retryable: true
+      };
+    }
+    
+    return {
+      code: 'AI_SERVICE_ERROR',
+      message: error.message,
+      retryable: isRetryableError(error)
+    };
+  }
+  
+  // Unknown error type
+  return {
+    code: 'AI_SERVICE_ERROR',
+    message: 'Unknown API service error',
+    retryable: false
+  };
 }

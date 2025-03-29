@@ -9,12 +9,10 @@ export { default as AIService } from './aiService';
 
 // Decision Service
 export { default as DecisionService } from './decision-service';
-export { 
-  NarrativeDecisionDetector,
-  AIDecisionGenerator,
-  DecisionHistoryService,
-  AIServiceClient
-} from './decision-service';
+export { default as AIDecisionGenerator } from './decision-service/decision-generator';
+export { default as NarrativeDecisionDetector } from './decision-service/narrative-decision-detector';
+export { default as DecisionHistoryService } from './decision-service/decision-history-service';
+export { default as AIServiceClient } from './decision-service/ai-service-client';
 
 // Summary Generation
 export { generateCharacterSummary } from './summaryGenerator';

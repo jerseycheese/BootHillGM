@@ -6,7 +6,7 @@
 
 import { InventoryItem } from '../../types/item.types';
 import { AIResponse } from './types';
-import { DecisionService } from './decision-service';
+import DecisionService from './decision-service';
 import { parsePlayerDecision } from './responseParser';
 
 /**

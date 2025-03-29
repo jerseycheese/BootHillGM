@@ -1,8 +1,9 @@
-import { AIDecisionGenerator } from '../decision-generator';
-import { NarrativeState } from '../../../../types/narrative.types';
+import { AIDecisionGenerator } from '../index';
+import { NarrativeState, NarrativeDisplayMode } from '../../../../types/narrative.types';
 import { Character } from '../../../../types/character';
 import { DecisionResponse, DecisionPrompt } from '../../../../types/ai-service.types';
 import { DecisionHistoryManager, AIClient } from '../../../../types/decision-service/decision-service.types';
+import { LocationType } from '../../../../services/locationService';
 
 // Mock the dependencies
 const mockAIClient: jest.Mocked<AIClient> = {
@@ -23,16 +24,19 @@ const mockHistoryManager: jest.Mocked<DecisionHistoryManager> = {
   recordDecision: jest.fn()
 };
 
-// Sample narrative state for testing
+// Sample narrative state for testing with all required properties
 const createMockNarrativeState = (override?: Partial<NarrativeState>): NarrativeState => ({
   currentStoryPoint: {
     id: 'story-point-1',
+    title: 'Arrival in Town', // Add title property
     content: 'You find yourself in the middle of a dusty street.',
     type: 'narrative',
-    locationChange: 'TOWN_STREET'
+    locationChange: 'TOWN_STREET' as unknown as LocationType // Proper type casting
   },
+  // Required properties for NarrativeState
   visitedPoints: ['intro', 'town-entrance'],
   availableChoices: [],
+  displayMode: 'standard' as NarrativeDisplayMode,
   narrativeHistory: [
     'You arrived in town on a dusty afternoon.',
     'The sheriff eyed you suspiciously as you walked down the main street.',
@@ -40,7 +44,6 @@ const createMockNarrativeState = (override?: Partial<NarrativeState>): Narrative
     'You decided to head to the saloon for information.',
     'The bartender greeted you with a nod.'
   ],
-  displayMode: 'standard',
   narrativeContext: {
     tone: 'serious',
     characterFocus: ['Sheriff', 'Bartender', 'Mysterious Stranger'],
@@ -71,6 +74,7 @@ const createMockNarrativeState = (override?: Partial<NarrativeState>): Narrative
       lastUpdated: Date.now() - 5000
     },
     narrativeBranches: {},
+    pendingDecisions: [], // Add missing property
     decisionHistory: [
       {
         decisionId: 'decision-1',
@@ -95,19 +99,45 @@ const createMockNarrativeState = (override?: Partial<NarrativeState>): Narrative
   ...override
 });
 
-// Sample character for testing
+// Sample character for testing with all required attributes
 const mockCharacter: Character = {
   id: 'player-1',
   name: 'Buck Wilde',
   isNPC: false,
+  isPlayer: true,
+  inventory: { items: [] },
   attributes: {
     bravery: 8,
     speed: 6,
-    gunAccuracy: 9
-  }
+    gunAccuracy: 9,
+    throwingAccuracy: 5,
+    strength: 7,
+    baseStrength: 7, 
+    experience: 0
+  },
+  minAttributes: {
+    bravery: 0,
+    speed: 0,
+    gunAccuracy: 0,
+    throwingAccuracy: 0,
+    strength: 0,
+    baseStrength: 0,
+    experience: 0
+  },
+  maxAttributes: {
+    bravery: 10,
+    speed: 10,
+    gunAccuracy: 10,
+    throwingAccuracy: 10,
+    strength: 10,
+    baseStrength: 10,
+    experience: 10
+  },
+  wounds: [],
+  isUnconscious: false
 };
 
-// Mock AI response
+// Mock AI response with proper pacing type
 const mockResponse: DecisionResponse = {
   decisionId: 'decision-123',
   prompt: 'How do you proceed?',
@@ -133,7 +163,7 @@ const mockResponse: DecisionResponse = {
   metadata: {
     narrativeImpact: 'Sets approach to investigation',
     themeAlignment: 'Classic western mystery',
-    pacing: 'medium',
+    pacing: 'medium', // Using one of the defined pacing values
     importance: 'significant'
   }
 };
@@ -188,7 +218,7 @@ describe('AIDecisionGenerator - Enhanced Context', () => {
       // Check that relationships were extracted
       expect(prompt.characterInfo.relationships).toHaveProperty('Sheriff');
       expect(prompt.characterInfo.relationships).toHaveProperty('Bartender');
-      // Fix: Use toContainEqual for string matching
+      // Use toContain for string matching
       expect(prompt.characterInfo.relationships.Sheriff).toContain('unfriendly');
       expect(prompt.characterInfo.relationships.Bartender).toContain('friendly');
     });
@@ -202,9 +232,9 @@ describe('AIDecisionGenerator - Enhanced Context', () => {
       
       // Check that recent events include more entries and proper formatting
       expect(prompt.gameState.recentEvents.length).toBeGreaterThanOrEqual(5);
-      // Fix: Use toContainEqual for array testing
-      expect(prompt.gameState.recentEvents).toContainEqual('You decided to head to the saloon for information.');
-      expect(prompt.gameState.recentEvents).toContainEqual('The bartender greeted you with a nod.');
+      // Use toContain for array testing
+      expect(prompt.gameState.recentEvents).toContain('You decided to head to the saloon for information.');
+      expect(prompt.gameState.recentEvents).toContain('The bartender greeted you with a nod.');
     });
 
     it('should include decision history with additional context', async () => {
