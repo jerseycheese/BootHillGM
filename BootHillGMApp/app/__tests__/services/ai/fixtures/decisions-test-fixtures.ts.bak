@@ -1,0 +1,162 @@
+/**
+ * Test fixtures specific to decision context refresh tests
+ */
+import { createTestGameState, createMockApiResponse } from '../../../../test/fixtures/aiDecisionResponses';
+import DecisionService from '../../../../services/ai/decision-service';
+
+/**
+ * Create a decision service instance configured for testing
+ * @returns A configured DecisionService instance
+ */
+export const createTestDecisionService = (): DecisionService => {
+  return new DecisionService({
+    minDecisionInterval: 0, // No delay for testing
+    relevanceThreshold: 0.3,
+    apiConfig: {
+      apiKey: 'test-key',
+      endpoint: 'https://test-endpoint.com',
+      modelName: 'test-model',
+      maxRetries: 1,
+      timeout: 1000,
+      rateLimit: 10
+    }
+  });
+};
+
+/**
+ * Create a mock API response for the sheriff scenario
+ * @returns A sheriff-specific mock API response
+ */
+export const createSheriffResponse = (): unknown => {
+  return {
+    choices: [
+      {
+        message: {
+          content: JSON.stringify({
+            decisionId: 'sheriff-decision',
+            prompt: 'How do you approach the sheriff?',
+            options: [
+              {
+                id: 'option-sheriff-1',
+                text: 'Tip your hat respectfully and introduce yourself',
+                confidence: 0.9,
+                traits: ['respectful'],
+                potentialOutcomes: ['Gain respect', 'Learn information'],
+                impact: 'Respectful approach'
+              },
+              {
+                id: 'option-sheriff-2',
+                text: 'Keep your distance and observe',
+                confidence: 0.7,
+                traits: ['cautious'],
+                potentialOutcomes: ['Stay unnoticed', 'Learn behavior'],
+                impact: 'Cautious approach'
+              }
+            ],
+            relevanceScore: 0.8,
+            metadata: {
+              narrativeImpact: 'Sets tone with law enforcement',
+              themeAlignment: 'Classic western lawman encounter',
+              pacing: 'medium',
+              importance: 'significant'
+            }
+          })
+        }
+      }
+    ]
+  };
+};
+
+/**
+ * Create a mock API response for the bartender scenario
+ * @returns A bartender-specific mock API response
+ */
+export const createBartenderResponse = (): unknown => {
+  return {
+    choices: [
+      {
+        message: {
+          content: JSON.stringify({
+            decisionId: 'bartender-decision',
+            prompt: 'What do you say to the bartender?',
+            options: [
+              {
+                id: 'option-bartender-1',
+                text: 'Order a whiskey and introduce yourself',
+                confidence: 0.9,
+                traits: ['friendly', 'direct'],
+                potentialOutcomes: ['Establish rapport', 'Get information'],
+                impact: 'Make a connection with the bartender'
+              },
+              {
+                id: 'option-bartender-2',
+                text: 'Ask discreetly about the sheriff',
+                confidence: 0.8,
+                traits: ['cautious', 'strategic'],
+                potentialOutcomes: ['Learn about local politics', 'Stay low profile'],
+                impact: 'Gain information without drawing attention'
+              }
+            ],
+            relevanceScore: 0.85,
+            metadata: {
+              narrativeImpact: 'Establishes relationship with key information source',
+              themeAlignment: 'Classic western information gathering',
+              pacing: 'medium',
+              importance: 'significant'
+            }
+          })
+        }
+      }
+    ]
+  };
+};
+
+/**
+ * Create a generic mock API response
+ * @param decisionId Optional custom decision ID
+ * @returns A generic mock API response
+ */
+export const createGenericResponse = (decisionId: string = 'test-decision-' + Date.now()): unknown => {
+  return {
+    choices: [
+      {
+        message: {
+          content: JSON.stringify({
+            decisionId,
+            prompt: 'What do you want to do?',
+            options: [
+              {
+                id: 'option-1',
+                text: 'Enter the saloon confidently',
+                confidence: 0.9,
+                traits: ['brave', 'direct'],
+                potentialOutcomes: ['Establish presence', 'Might attract attention'],
+                impact: 'Make a strong first impression'
+              },
+              {
+                id: 'option-2',
+                text: 'Peer through the window first',
+                confidence: 0.8,
+                traits: ['cautious', 'observant'],
+                potentialOutcomes: ['Gather information', 'Stay unnoticed'],
+                impact: 'Learn about the environment before engaging'
+              }
+            ],
+            relevanceScore: 0.85,
+            metadata: {
+              narrativeImpact: 'Sets the tone for town interactions',
+              themeAlignment: 'Classic western standoff tension',
+              pacing: 'medium',
+              importance: 'significant'
+            }
+          })
+        }
+      }
+    ]
+  };
+};
+
+/**
+ * Re-export needed fixtures from the main fixtures file
+ */
+export { createTestGameState, createMockApiResponse };
