@@ -1,19 +1,20 @@
 import React, { createContext, useContext, useReducer, ReactNode, Dispatch, useCallback } from 'react';
 import { InventoryManager } from './inventoryManager';
-import { GameState, initialGameState } from '../types/gameState';
+import { initialGameState } from '../types/gameState';
+import { ExtendedGameState } from '../types/extendedState';
 import { GameEngineAction } from '../types/gameActions';
 import { gameReducer } from '../reducers/index';
 import { InventoryItem } from '../types/item.types';
 
 // Create a context for the game state and dispatch function
 const GameContext = createContext<{
-  state: GameState;
+  state: ExtendedGameState;
   dispatch: Dispatch<GameEngineAction>;
 } | undefined>(undefined);
 
 // Provider component to wrap the app and provide game state and dispatch function
 export function GameProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(gameReducer, initialGameState);
+  const [state, dispatch] = useReducer(gameReducer, initialGameState as ExtendedGameState);
   return (
     <GameContext.Provider value={{ state, dispatch }}>
       {children}

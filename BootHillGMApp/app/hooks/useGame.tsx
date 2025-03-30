@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, ReactNode, useMemo, Dispatch } from 'react';
 import { gameReducer } from '../reducers/index';
-import { GameState } from '../types/gameState';
+import { ExtendedGameState } from '../types/extendedState';
 import { GameAction } from '../types/actions';
 import { GameEngineAction } from '../types/gameActions';
 import { initialState } from '../types/initialState';
@@ -42,7 +42,7 @@ type FlexibleDispatch = (action: GameAction | GameEngineAction) => void;
 
 export interface GameContextProps {
   // State and dispatch
-  state: GameState;
+  state: ExtendedGameState;
   dispatch: FlexibleDispatch;
   
   // Legacy properties for backward compatibility
@@ -74,12 +74,12 @@ export function GameProvider({
   initialState: customInitialState
 }: { 
   children: ReactNode,
-  initialState?: Partial<GameState>
+  initialState?: Partial<ExtendedGameState>
 }): JSX.Element {
   // Set up reducer with initial state, merging custom state if provided
   const mergedInitialState = customInitialState 
-    ? { ...initialState, ...customInitialState }
-    : initialState;
+    ? { ...initialState, ...customInitialState } as ExtendedGameState
+    : initialState as ExtendedGameState;
     
   const [state, originalDispatch] = useReducer(gameReducer, mergedInitialState);
   
@@ -87,7 +87,7 @@ export function GameProvider({
   const dispatch: FlexibleDispatch = createCompatibleDispatch(originalDispatch as Dispatch<GameAction>);
   
   // Apply adapters to state for backward compatibility
-  const adaptedState = adaptStateForTests(state);
+  const adaptedState = adaptStateForTests(state) as ExtendedGameState;
   
   // Create context value with both new state and legacy properties
   // Using useMemo to prevent unnecessary re-renders

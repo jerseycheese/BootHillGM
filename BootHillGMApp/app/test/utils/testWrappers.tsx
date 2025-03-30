@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { GameProvider } from '../../hooks/useGame';
-import { GameState } from '../../types/gameState';
+import { ExtendedGameState } from '../../types/extendedState';
 import { prepareStateForTesting } from './stateTestUtils';
 
 /**
@@ -11,9 +11,9 @@ import { prepareStateForTesting } from './stateTestUtils';
  * @param initialState Optional initial state to provide
  * @returns A wrapper component for testing
  */
-export const createGameProviderWrapper = (initialState?: Partial<GameState>) => {
+export const createGameProviderWrapper = (initialState?: Partial<ExtendedGameState>) => {
   // Prepare state with adapters if provided
-  const state = initialState ? prepareStateForTesting(initialState as GameState) : undefined;
+  const state = initialState ? prepareStateForTesting(initialState) as ExtendedGameState : undefined;
   
   // Return a wrapper component that includes the GameProvider
   const GameProviderWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -38,7 +38,7 @@ export const createGameProviderWrapper = (initialState?: Partial<GameState>) => 
  */
 export const renderWithGameProvider = (
   ui: React.ReactElement, 
-  initialState?: Partial<GameState>,
+  initialState?: Partial<ExtendedGameState>,
   options?: Omit<RenderOptions, 'wrapper'>
 ) => {
   const Wrapper = createGameProviderWrapper(initialState);

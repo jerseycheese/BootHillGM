@@ -1,26 +1,30 @@
 /**
  * Narrative Reducer
  * 
- * This file contains the reducer function for handling narrative state updates.
- * It processes all narrative-related actions and ensures immutable state updates.
+ * This file contains the main reducer function for handling narrative state updates.
+ * It delegates specialized functionality to sub-reducers.
  */
 
 import {
   NarrativeAction,
   NarrativeState,
   initialNarrativeState,
-  // Commented out to avoid unused import error
-  /* NarrativeErrorInfo */
 } from '../types/narrative.types';
 import { GameState } from '../types/gameState';
 
 // Import helper functions
 import {
-  defaultNarrativeContext,
   validateStoryPoint,
   validateChoice,
   updateAvailableChoices
 } from '../utils/narrativeHelpers';
+
+// Import specialized reducers
+import {
+  handleArcActions,
+  handleBranchActions,
+  handleContextActions
+} from './narrative/narrativeArcReducer';
 
 // Import decision-specific reducer functions
 import {
@@ -31,6 +35,9 @@ import {
   handleUpdateImpactState,
   handleEvolveImpacts
 } from './decisionReducer';
+
+// Import error handling utilities
+import { createNarrativeError } from './narrative/errorHandling';
 
 /**
  * Reducer function to handle narrative-related state updates.
@@ -50,12 +57,9 @@ export function narrativeReducer(
       if (!validateStoryPoint(action.payload, storyPoints)) {
         return {
           ...state,
-          error: {
-            code: 'invalid_navigation',
-            message: `Story point with ID "${action.payload}" does not exist.`,
-            context: { storyPointId: action.payload },
-            timestamp: Date.now()
-          }
+          error: createNarrativeError('invalid_navigation', 
+            `Story point with ID "${action.payload}" does not exist.`,
+            { storyPointId: action.payload })
         };
       }
 
@@ -85,15 +89,12 @@ export function narrativeReducer(
       if (!validateChoice(action.payload, state.availableChoices)) {
         return {
           ...state,
-          error: {
-            code: 'invalid_choice',
-            message: `Choice with ID "${action.payload}" is not available.`,
-            context: { 
+          error: createNarrativeError('invalid_choice',
+            `Choice with ID "${action.payload}" is not available.`,
+            { 
               choiceId: action.payload,
               availableChoices: state.availableChoices.map(c => c.id)
-            },
-            timestamp: Date.now()
-          }
+            })
         };
       }
 
@@ -128,198 +129,17 @@ export function narrativeReducer(
       };
     }
 
-    case 'START_NARRATIVE_ARC': {
-      const arcs = state.narrativeContext?.narrativeArcs || {};
-      const arc = arcs[action.payload];
+    // Delegate arc and branch actions to specialized handler
+    case 'START_NARRATIVE_ARC':
+    case 'COMPLETE_NARRATIVE_ARC':
+      return handleArcActions(state, action);
 
-      if (!arc) {
-        return {
-          ...state,
-          error: {
-            code: 'arc_not_found',
-            message: `Narrative arc with ID "${action.payload}" does not exist.`,
-            context: { arcId: action.payload },
-            timestamp: Date.now()
-          }
-        };
-      }
+    case 'ACTIVATE_BRANCH':
+    case 'COMPLETE_BRANCH':
+      return handleBranchActions(state, action);
 
-      // Mark the arc as active
-      const updatedArcs = {
-        ...arcs,
-        [action.payload]: {
-          ...arc,
-          isActive: true,
-        },
-      };
-
-      const startingBranchId = arc.startingBranch;
-      const branches = state.narrativeContext?.narrativeBranches || {};
-
-      // Always set currentBranchId if startingBranchId is present
-      // Provide default values for required NarrativeContext properties
-      const updatedNarrativeContext = {
-        ...defaultNarrativeContext(),
-        ...(state.narrativeContext || { characterFocus: [] }),
-        characterFocus: state.narrativeContext?.characterFocus ?? [],
-        themes: state.narrativeContext?.themes ?? [],
-        importantEvents: state.narrativeContext?.importantEvents ?? [],
-        narrativeArcs: updatedArcs,
-        currentArcId: action.payload,
-        currentBranchId: startingBranchId ? startingBranchId : undefined,
-      };
-
-      // Only update branches if the branch exists
-      if (startingBranchId && branches[startingBranchId]) {
-        const updatedBranches = {
-          ...branches,
-          [startingBranchId]: {
-            ...branches[startingBranchId],
-            isActive: true,
-          },
-        };
-        updatedNarrativeContext.narrativeBranches = updatedBranches;
-      }
-
-      return {
-        ...state,
-        narrativeContext: updatedNarrativeContext,
-        error: null // Clear any previous errors
-      };
-    }
-
-    case 'COMPLETE_NARRATIVE_ARC': {
-      const arcs = state.narrativeContext?.narrativeArcs || {};
-      const arc = arcs[action.payload];
-
-      if (!arc) {
-        return {
-          ...state,
-          error: {
-            code: 'arc_not_found',
-            message: `Narrative arc with ID "${action.payload}" does not exist.`,
-            context: { arcId: action.payload },
-            timestamp: Date.now()
-          }
-        };
-      }
-
-      // Mark the arc as completed
-      const updatedArcs = {
-        ...arcs,
-        [action.payload]: {
-          ...arc,
-          isCompleted: true,
-        },
-      };
-
-      return {
-        ...state,
-        narrativeContext: {
-          ...defaultNarrativeContext(),
-          ...(state.narrativeContext || {}),
-          narrativeArcs: updatedArcs,
-          characterFocus: state.narrativeContext?.characterFocus ?? [],
-          themes: state.narrativeContext?.themes ?? [],
-          worldContext: state.narrativeContext?.worldContext ?? '',
-          importantEvents: state.narrativeContext?.importantEvents ?? []
-        },
-        error: null // Clear any previous errors
-      };
-    }
-
-    case 'ACTIVATE_BRANCH': {
-      const branches = state.narrativeContext?.narrativeBranches || {};
-      const branch = branches[action.payload];
-
-      if (!branch) {
-        return {
-          ...state,
-          error: {
-            code: 'branch_not_found',
-            message: `Narrative branch with ID "${action.payload}" does not exist.`,
-            context: { branchId: action.payload },
-            timestamp: Date.now()
-          }
-        };
-      }
-
-      // Mark the branch as active
-      const updatedBranches = {
-        ...branches,
-        [action.payload]: {
-          ...branch,
-          isActive: true,
-        },
-      };
-
-      return {
-        ...state,
-        narrativeContext: {
-          ...defaultNarrativeContext(),
-          ...(state.narrativeContext || {}),
-          narrativeBranches: updatedBranches,
-          currentBranchId: action.payload,
-        },
-        error: null // Clear any previous errors
-      };
-    }
-
-    case 'COMPLETE_BRANCH': {
-      const branches = state.narrativeContext?.narrativeBranches || {};
-      const branch = branches[action.payload];
-
-      if (!branch) {
-        return {
-          ...state,
-          error: {
-            code: 'branch_not_found',
-            message: `Narrative branch with ID "${action.payload}" does not exist.`,
-            context: { branchId: action.payload },
-            timestamp: Date.now()
-          }
-        };
-      }
-
-      // Mark the branch as inactive (completed)
-      const updatedBranches = {
-        ...branches,
-        [action.payload]: {
-          ...branch,
-          isActive: false,
-          isCompleted: true,
-        },
-      };
-
-      return {
-        ...state,
-        narrativeContext: {
-          ...defaultNarrativeContext(),
-          ...(state.narrativeContext || {}),
-          narrativeBranches: updatedBranches,
-          characterFocus: state.narrativeContext?.characterFocus ?? [],
-          themes: state.narrativeContext?.themes ?? [],
-          importantEvents: state.narrativeContext?.importantEvents ?? []
-        },
-        error: null // Clear any previous errors
-      };
-    }
-
-    case 'UPDATE_NARRATIVE_CONTEXT': {
-      const updatedContext = {
-        ...state,
-        narrativeContext: {
-          ...defaultNarrativeContext(),
-          ...(state.narrativeContext || {}),
-          ...action.payload,
-          characterFocus: action.payload.characterFocus ?? state.narrativeContext?.characterFocus ?? [],
-          themes: action.payload.themes ?? state.narrativeContext?.themes ?? [],
-          importantEvents: action.payload.importantEvents ?? state.narrativeContext?.importantEvents ?? []
-        },
-        error: null // Clear any previous errors
-      };
-      return updatedContext;
-    }
+    case 'UPDATE_NARRATIVE_CONTEXT':
+      return handleContextActions(state, action);
 
     case 'RESET_NARRATIVE': {
       return initialNarrativeState;
