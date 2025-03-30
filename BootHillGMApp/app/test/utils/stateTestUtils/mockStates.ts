@@ -1,494 +1,59 @@
 /**
  * Mock state factory functions for testing
+ * Central export point for all mock state functions
  */
-import { GameState } from '../../../types/gameState';
-import { BaseMockState } from './types';
-import { StoryPointType } from '../../../types/narrative/story-point.types';
-import { JournalEntry as AppJournalEntry } from '../../../types/journal';
-
-// Forward declaration to avoid circular dependency
-// This is defined in index.ts but used here
-import { prepareStateForTesting } from './index';
-
-/**
- * Helper function to create a mock state with properly typed getters
- * Similar to React's component factory pattern
- */
-function createMockState(state: BaseMockState): GameState {
-  // Define a function to create getters properly
-  const createGetters = (baseState: BaseMockState) => {
-    // Since we can't add this parameters to getters, we'll use a reference variable
-    // to maintain type safety while still benefiting from TypeScript's checking
-    const self = baseState;
-    
-    return {
-      get player() { 
-        return self.character.player; 
-      },
-      get isCombatActive() { 
-        return self.combat.isActive; 
-      }
-    };
-  };
-  
-  // Create the complete state with getters
-  const completeState = {
-    ...state,
-    ...createGetters(state)
-  };
-  
-  // Finally, adapt the state for testing
-  return prepareStateForTesting(completeState as unknown as GameState);
-}
+import { createMockState } from './stateMockFactory';
+import { createBasicMockState } from './baseMockState';
+import { createCharacterMockState } from './characterMockState';
+import { createCombatMockState } from './combatMockState';
+import { createInventoryMockState } from './inventoryMockState';
+import { createJournalMockState } from './journalMockState';
+import { createNarrativeMockState } from './narrativeMockState';
 
 /**
  * Creates mock state objects for various test scenarios
+ * 
+ * @example
+ * // Create a basic empty state
+ * const emptyState = mockStates.basic();
+ * 
+ * // Create a state with a player character
+ * const characterState = mockStates.withCharacter();
  */
 export const mockStates = {
   /**
    * Basic initial state with adapters applied
+   * @returns {GameState} An empty state with all required properties
    */
-  basic: () => createMockState({
-    character: {
-      player: null,
-      opponent: null
-    },
-    inventory: {
-      items: []
-    },
-    journal: {
-      entries: []
-    },
-    combat: {
-      isActive: false,
-      rounds: 0,
-      playerTurn: true,
-      playerCharacterId: '',
-      opponentCharacterId: '',
-      combatLog: [],
-      roundStartTime: 0,
-      modifiers: { player: 0, opponent: 0 },
-      currentTurn: null,
-      combatType: 'brawling',
-      winner: null,
-      participants: []
-    },
-    narrative: {
-      currentStoryPoint: null,
-      visitedPoints: [],
-      availableChoices: [],
-      narrativeHistory: [],
-      displayMode: 'standard',
-      error: null,
-      narrativeContext: {
-        worldContext: '',
-        characterFocus: [],
-        themes: [],
-        importantEvents: [],
-        storyPoints: {},
-        narrativeArcs: {},
-        impactState: {
-          reputationImpacts: {},
-          relationshipImpacts: {},
-          worldStateImpacts: {},
-          storyArcImpacts: {},
-          lastUpdated: 0
-        },
-        narrativeBranches: {},
-        pendingDecisions: [],
-        decisionHistory: []
-      }
-    },
-    ui: {
-      isLoading: false,
-      modalOpen: null,
-      notifications: []
-    },
-    currentPlayer: '',
-    npcs: [],
-    location: null,
-    quests: [],
-    gameProgress: 0,
-    suggestedActions: []
-  }),
+  basic: () => createMockState(createBasicMockState()),
   
   /**
    * Mock state with player character
+   * @returns {GameState} A state with a configured player character
    */
-  withCharacter: () => createMockState({
-    character: {
-      player: {
-        id: 'player1',
-        name: 'Test Character',
-        attributes: {
-          speed: 5,
-          gunAccuracy: 6,
-          throwingAccuracy: 4,
-          strength: 7,
-          baseStrength: 7,
-          bravery: 5,
-          experience: 3
-        },
-        minAttributes: {
-          speed: 1,
-          gunAccuracy: 1,
-          throwingAccuracy: 1,
-          strength: 1,
-          baseStrength: 1,
-          bravery: 1,
-          experience: 0
-        },
-        maxAttributes: {
-          speed: 20,
-          gunAccuracy: 20,
-          throwingAccuracy: 20,
-          strength: 20,
-          baseStrength: 20,
-          bravery: 20,
-          experience: 10
-        },
-        wounds: [],
-        isUnconscious: false,
-        inventory: { items: [] },
-        isNPC: false,
-        isPlayer: true
-      },
-      opponent: null
-    },
-    currentPlayer: 'player1',
-    npcs: [],
-    location: null,
-    quests: [],
-    gameProgress: 0,
-    suggestedActions: [],
-    inventory: { items: [] },
-    journal: { entries: [] },
-    combat: {
-      isActive: false,
-      rounds: 0,
-      playerTurn: true,
-      playerCharacterId: '',
-      opponentCharacterId: '',
-      combatLog: [],
-      roundStartTime: 0,
-      modifiers: { player: 0, opponent: 0 },
-      currentTurn: null,
-      combatType: 'brawling',
-      winner: null,
-      participants: []
-    },
-    narrative: {
-      currentStoryPoint: null,
-      visitedPoints: [],
-      availableChoices: [],
-      narrativeHistory: [],
-      displayMode: 'standard',
-      error: null
-    },
-    ui: {
-      isLoading: false,
-      modalOpen: null,
-      notifications: []
-    }
-  }),
+  withCharacter: () => createMockState(createCharacterMockState()),
   
   /**
    * Mock state with active combat
+   * @returns {GameState} A state with active combat between player and opponent
    */
-  withCombat: () => createMockState({
-    character: {
-      player: {
-        id: 'player1',
-        name: 'Test Character',
-        attributes: { 
-          speed: 10,
-          gunAccuracy: 10,
-          throwingAccuracy: 10,
-          strength: 7,
-          baseStrength: 7,
-          bravery: 10,
-          experience: 5
-        },
-        minAttributes: {
-          speed: 1,
-          gunAccuracy: 1,
-          throwingAccuracy: 1,
-          strength: 1,
-          baseStrength: 1,
-          bravery: 1,
-          experience: 0
-        },
-        maxAttributes: {
-          speed: 20,
-          gunAccuracy: 20,
-          throwingAccuracy: 20,
-          strength: 20,
-          baseStrength: 20,
-          bravery: 20,
-          experience: 10
-        },
-        wounds: [],
-        isUnconscious: false,
-        inventory: { items: [] },
-        isNPC: false,
-        isPlayer: true
-      },
-      opponent: {
-        id: 'opponent1',
-        name: 'Test Opponent',
-        attributes: {
-          speed: 10,
-          gunAccuracy: 10,
-          throwingAccuracy: 10,
-          strength: 6,
-          baseStrength: 6,
-          bravery: 10,
-          experience: 5
-        },
-        minAttributes: {
-          speed: 1,
-          gunAccuracy: 1,
-          throwingAccuracy: 1,
-          strength: 1,
-          baseStrength: 1,
-          bravery: 1,
-          experience: 0
-        },
-        maxAttributes: {
-          speed: 20,
-          gunAccuracy: 20,
-          throwingAccuracy: 20,
-          strength: 20,
-          baseStrength: 20,
-          bravery: 20,
-          experience: 10
-        },
-        wounds: [],
-        isUnconscious: false,
-        inventory: { items: [] },
-        isNPC: true,
-        isPlayer: false
-      }
-    },
-    combat: {
-      isActive: true,
-      rounds: 1,
-      playerTurn: true,
-      combatType: 'brawling',
-      playerCharacterId: 'player1',
-      opponentCharacterId: 'opponent1',
-      combatLog: [],
-      roundStartTime: Date.now(),
-      modifiers: {
-        player: 0,
-        opponent: 0
-      },
-      currentTurn: 'player',
-      winner: null,
-      participants: []
-    },
-    currentPlayer: 'player1',
-    npcs: ['opponent1'],
-    location: null,
-    quests: [],
-    gameProgress: 0,
-    suggestedActions: [],
-    inventory: { items: [] },
-    journal: { entries: [] },
-    narrative: {
-      currentStoryPoint: null,
-      visitedPoints: [],
-      availableChoices: [],
-      narrativeHistory: [],
-      displayMode: 'standard',
-      error: null
-    },
-    ui: {
-      isLoading: false,
-      modalOpen: null,
-      notifications: []
-    }
-  }),
+  withCombat: () => createMockState(createCombatMockState()),
   
   /**
    * Mock state with inventory items
+   * @returns {GameState} A state with predefined inventory items
    */
-  withInventory: () => createMockState({
-    inventory: {
-      items: [
-        { id: 'item1', name: 'Revolver', category: 'weapon', description: 'A 6-shooter', quantity: 1 },
-        { id: 'item2', name: 'Bandage', category: 'medical', description: 'Heals wounds', quantity: 3 },
-        { id: 'item3', name: 'Canteen', category: 'consumable', description: 'Contains water', quantity: 1 }
-      ]
-    },
-    character: {
-      player: null,
-      opponent: null
-    },
-    combat: {
-      isActive: false,
-      rounds: 0,
-      playerTurn: true,
-      playerCharacterId: '',
-      opponentCharacterId: '',
-      combatLog: [],
-      roundStartTime: 0,
-      modifiers: { player: 0, opponent: 0 },
-      currentTurn: null,
-      combatType: 'brawling',
-      winner: null,
-      participants: []
-    },
-    journal: { entries: [] },
-    narrative: {
-      currentStoryPoint: null,
-      visitedPoints: [],
-      availableChoices: [],
-      narrativeHistory: [],
-      displayMode: 'standard',
-      error: null
-    },
-    ui: {
-      isLoading: false,
-      modalOpen: null,
-      notifications: []
-    },
-    currentPlayer: '',
-    npcs: [],
-    location: null,
-    quests: [],
-    gameProgress: 0,
-    suggestedActions: []
-  }),
+  withInventory: () => createMockState(createInventoryMockState()),
   
   /**
    * Mock state with journal entries
+   * @returns {GameState} A state with sample journal entries
    */
-  withJournal: () => createMockState({
-    journal: {
-      entries: [
-        { 
-          content: 'Test content 1', 
-          timestamp: 1615000000000, 
-          type: 'narrative'
-        },
-        { 
-          content: 'Test content 2', 
-          timestamp: 1615100000000, 
-          type: 'quest',
-          questTitle: 'Test Quest',
-          status: 'started'
-        }
-      ] as AppJournalEntry[]
-    },
-    character: {
-      player: null,
-      opponent: null
-    },
-    combat: {
-      isActive: false,
-      rounds: 0,
-      playerTurn: true,
-      playerCharacterId: '',
-      opponentCharacterId: '',
-      combatLog: [],
-      roundStartTime: 0,
-      modifiers: { player: 0, opponent: 0 },
-      currentTurn: null,
-      combatType: 'brawling',
-      winner: null,
-      participants: []
-    },
-    inventory: { items: [] },
-    narrative: {
-      currentStoryPoint: null,
-      visitedPoints: [],
-      availableChoices: [],
-      narrativeHistory: [],
-      displayMode: 'standard',
-      error: null
-    },
-    ui: {
-      isLoading: false,
-      modalOpen: null,
-      notifications: []
-    },
-    currentPlayer: '',
-    npcs: [],
-    location: null,
-    quests: [],
-    gameProgress: 0,
-    suggestedActions: []
-  }),
+  withJournal: () => createMockState(createJournalMockState()),
   
   /**
    * Mock state with narrative context
+   * @returns {GameState} A state with narrative elements and story points
    */
-  withNarrative: () => createMockState({
-    narrative: {
-      narrativeContext: {
-        worldContext: 'Saloon, Evening, Tense',
-        characterFocus: ['player', 'sheriff'],
-        themes: ['revenge', 'justice'],
-        importantEvents: ['Bank robbery'],
-        storyPoints: {},
-        narrativeArcs: {},
-        impactState: {
-          reputationImpacts: {},
-          relationshipImpacts: {},
-          worldStateImpacts: {},
-          storyArcImpacts: {},
-          lastUpdated: Date.now()
-        },
-        narrativeBranches: {},
-        pendingDecisions: [],
-        decisionHistory: []
-      },
-      currentStoryPoint: {
-        id: 'confrontation',
-        title: 'Confrontation',
-        content: 'A tense standoff',
-        choices: [],
-        type: 'action' as StoryPointType
-      },
-      visitedPoints: [],
-      availableChoices: [],
-      narrativeHistory: [
-        { id: 'dialogue1', speaker: 'NPC', text: 'Hello stranger', timestamp: 1615000000000 }
-      ],
-      displayMode: 'standard',
-      error: null
-    },
-    character: {
-      player: null,
-      opponent: null
-    },
-    combat: {
-      isActive: false,
-      rounds: 0,
-      playerTurn: true,
-      playerCharacterId: '',
-      opponentCharacterId: '',
-      combatLog: [],
-      roundStartTime: 0,
-      modifiers: { player: 0, opponent: 0 },
-      currentTurn: null, 
-      combatType: 'brawling',
-      winner: null,
-      participants: []
-    },
-    inventory: { items: [] },
-    journal: { entries: [] },
-    ui: {
-      isLoading: false,
-      modalOpen: null,
-      notifications: []
-    },
-    currentPlayer: '',
-    npcs: [],
-    location: null,
-    quests: [],
-    gameProgress: 0,
-    suggestedActions: []
-  })
+  withNarrative: () => createMockState(createNarrativeMockState())
 };

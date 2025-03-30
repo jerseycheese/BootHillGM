@@ -3,7 +3,7 @@ title: State Testing Utilities
 aliases: [Test State Utils, State Test Helpers]
 tags: [testing, state-management, utilities, test-helpers]
 created: 2025-03-28
-updated: 2025-03-28
+updated: 2025-03-29
 ---
 
 # State Testing Utilities
@@ -18,11 +18,18 @@ The state testing utilities have been organized into modular components:
 
 ```
 /app/test/utils/stateTestUtils/
-├── adapters.ts       # State conversion and format adaptation
-├── index.ts          # Core utilities and exports
-├── jestMatchers.ts   # Custom Jest matchers
-├── mockStates.ts     # Factory functions for mock states
-└── types.ts          # Type definitions and interfaces
+├── adapters.ts           # State conversion and format adaptation
+├── baseMockState.ts      # Default empty state template
+├── characterMockState.ts # Character-related mock state
+├── combatMockState.ts    # Combat-related mock state
+├── index.ts              # Core utilities and exports
+├── inventoryMockState.ts # Inventory-related mock state
+├── jestMatchers.ts       # Custom Jest matchers
+├── journalMockState.ts   # Journal-related mock state 
+├── mockStates.ts         # Central export for mock states
+├── narrativeMockState.ts # Narrative-related mock state
+├── stateMockFactory.ts   # Factory for creating mock states
+└── types.ts              # Type definitions and interfaces
 ```
 
 ### Entry Point
@@ -88,6 +95,40 @@ mockStates.withNarrative()  // State with narrative context
 ```
 
 Each factory function creates a properly formatted state object with all required properties.
+
+### Creating Custom Mock States
+
+The modular structure makes it easy to create custom mock states:
+
+```typescript
+// Create a custom mock state in a new file
+import { BaseMockState } from './types';
+import { createBasicMockState } from './baseMockState';
+
+export function createCustomMockState(): BaseMockState {
+  const baseState = createBasicMockState();
+  
+  return {
+    ...baseState,
+    // Customize properties as needed
+    currentPlayer: 'custom1',
+    quests: ['quest1', 'quest2'],
+    // Add other customizations
+  };
+}
+
+// Then add it to mockStates.ts
+import { createCustomMockState } from './customMockState';
+
+export const mockStates = {
+  // Existing mock states...
+  
+  /**
+   * Custom mock state for specific testing scenarios
+   */
+  withCustomData: () => createMockState(createCustomMockState())
+};
+```
 
 ## Custom Jest Matchers
 
