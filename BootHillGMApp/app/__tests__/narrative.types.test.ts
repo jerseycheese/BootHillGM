@@ -3,7 +3,8 @@ import {
   initialNarrativeState,
   isStoryPoint,
   isNarrativeChoice,
-  NarrativeChoice
+  NarrativeChoice,
+  initialLoreState
 } from '../types/narrative.types';
 
 describe('Narrative Types', () => {
@@ -12,14 +13,20 @@ describe('Narrative Types', () => {
   });
 
   it('should have correct initialNarrativeState', () => {
-    expect(initialNarrativeState).toEqual({
+    // The initialNarrativeState now includes lore and narrativeContext
+    // Creating the expected state manually with the updated structure
+    const expectedState = {
       currentStoryPoint: null,
       visitedPoints: [],
       availableChoices: [],
       narrativeHistory: [],
       displayMode: 'standard',
-      error: null
-    });
+      narrativeContext: undefined,
+      error: null,
+      lore: initialLoreState
+    };
+    
+    expect(initialNarrativeState).toEqual(expectedState);
   });
 
   describe('Type Guards', () => {

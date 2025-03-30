@@ -9,6 +9,8 @@ import {
   NarrativeAction,
   NarrativeState,
   initialNarrativeState,
+  initialLoreState,
+  LoreAction
 } from '../types/narrative.types';
 import { GameState } from '../types/gameState';
 
@@ -36,6 +38,9 @@ import {
   handleEvolveImpacts
 } from './decisionReducer';
 
+// Import lore reducer
+import { loreReducer } from './loreReducer';
+
 // Import error handling utilities
 import { createNarrativeError } from './narrative/errorHandling';
 
@@ -49,6 +54,31 @@ export function narrativeReducer(
   state: NarrativeState = initialNarrativeState,
   action: NarrativeAction
 ): NarrativeState {
+  // Handle lore-specific actions by delegating to loreReducer
+  if (
+    action.type === 'ADD_LORE_FACT' ||
+    action.type === 'UPDATE_LORE_FACT' ||
+    action.type === 'INVALIDATE_LORE_FACT' ||
+    action.type === 'VALIDATE_LORE_FACT' ||
+    action.type === 'ADD_RELATED_FACTS' ||
+    action.type === 'REMOVE_RELATED_FACTS' ||
+    action.type === 'ADD_FACT_TAGS' ||
+    action.type === 'REMOVE_FACT_TAGS' ||
+    action.type === 'PROCESS_LORE_EXTRACTION'
+  ) {
+    // Initialize lore state if it doesn't exist
+    const loreState = state.lore || initialLoreState;
+    // Update lore state with loreReducer
+    const updatedLoreState = loreReducer(loreState, action as LoreAction);
+    
+    // Return updated state with new lore state
+    return {
+      ...state,
+      lore: updatedLoreState
+    };
+  }
+
+  // Handle other narrative actions
   switch (action.type) {
     case 'NAVIGATE_TO_POINT': {
       // Ensure we have story points available
@@ -142,7 +172,11 @@ export function narrativeReducer(
       return handleContextActions(state, action);
 
     case 'RESET_NARRATIVE': {
-      return initialNarrativeState;
+      return {
+        ...initialNarrativeState,
+        // Preserve lore when resetting narrative
+        lore: state.lore || initialLoreState
+      };
     }
 
     case 'UPDATE_NARRATIVE': {

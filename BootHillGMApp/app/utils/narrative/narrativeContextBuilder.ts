@@ -37,6 +37,8 @@ import {
   allocateTokensToElements, 
   buildStructuredContext 
 } from './narrativeContextTokens';
+// Import lore context builder functionality
+import { buildLoreContextPrompt } from '../loreContextBuilder';
 
 /**
  * Main function to build optimized narrative context for AI
@@ -164,6 +166,33 @@ export function buildNarrativeContext(
       type: 'story_point',
       tokens: estimateTokenCount(storyProgressionContent)
     });
+  }
+  
+  // Add lore elements if available
+  if (state.lore && Object.keys(state.lore.facts).length > 0) {
+    // Allocate approximately 15% of token budget for lore
+    const loreBudget = Math.floor((effectiveOptions.maxTokens || 2000) * 0.15);
+    
+    // Build lore context
+    const loreContent = buildLoreContextPrompt(
+      state.lore,
+      narrativeContext,
+      {
+        tokenBudget: loreBudget,
+        format: 'concise'
+      }
+    );
+    
+    if (loreContent) {
+      contextElements.push({
+        id: 'lore',
+        content: loreContent,
+        relevance: 8.5, // High relevance for lore facts
+        timestamp: Date.now(),
+        type: 'lore',
+        tokens: estimateTokenCount(loreContent)
+      });
+    }
   }
   
   // STEP 4: Prioritize and filter context elements

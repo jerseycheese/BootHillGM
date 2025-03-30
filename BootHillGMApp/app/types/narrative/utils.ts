@@ -9,6 +9,7 @@ import { StoryPoint } from './story-point.types';
 import { NarrativeChoice } from './choice.types';
 import { NarrativeState } from '../narrative.types';
 import { StoryProgressionState } from './progression.types';
+import { initialLoreState } from './lore.types';
 
 /**
  * Type guard to check if an object is a valid StoryPoint
@@ -77,7 +78,8 @@ export const initialNarrativeState: NarrativeState = {
   narrativeHistory: [],
   displayMode: 'standard',
   narrativeContext: undefined, // Initialize narrativeContext to undefined
-  error: null
+  error: null,
+  lore: initialLoreState // Include lore in the initial state
 };
 
 /**

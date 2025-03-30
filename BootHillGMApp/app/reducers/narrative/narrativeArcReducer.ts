@@ -27,14 +27,15 @@ export function handleArcActions(
     { type: 'START_NARRATIVE_ARC' | 'COMPLETE_NARRATIVE_ARC' }>
 ): NarrativeState {
   const arcs = state.narrativeContext?.narrativeArcs || {};
-  const arc = arcs[action.payload];
+  const arcId = action.payload;
+  const arc = arcs[arcId];
 
   if (!arc) {
     return {
       ...state,
       error: createNarrativeError('arc_not_found',
-        `Narrative arc with ID "${action.payload}" does not exist.`,
-        { arcId: action.payload })
+        `Narrative arc with ID "${arcId}" does not exist.`,
+        { arcId })
     };
   }
 
@@ -42,7 +43,7 @@ export function handleArcActions(
     // Mark the arc as active
     const updatedArcs = {
       ...arcs,
-      [action.payload]: {
+      [arcId]: {
         ...arc,
         isActive: true,
       },
@@ -51,7 +52,7 @@ export function handleArcActions(
     const startingBranchId = arc.startingBranch;
     const branches = state.narrativeContext?.narrativeBranches || {};
 
-    // Always set currentBranchId if startingBranchId is present
+    // Always set currentArcId if arcId is present
     // Provide default values for required NarrativeContext properties
     const updatedNarrativeContext = {
       ...DEFAULT_NARRATIVE_CONTEXT,
@@ -60,7 +61,7 @@ export function handleArcActions(
       themes: state.narrativeContext?.themes ?? [],
       importantEvents: state.narrativeContext?.importantEvents ?? [],
       narrativeArcs: updatedArcs,
-      currentArcId: action.payload,
+      currentArcId: arcId,
       currentBranchId: startingBranchId ? startingBranchId : undefined,
     };
 
@@ -86,7 +87,7 @@ export function handleArcActions(
     // Mark the arc as completed
     const updatedArcs = {
       ...arcs,
-      [action.payload]: {
+      [arcId]: {
         ...arc,
         isCompleted: true,
       },
@@ -120,14 +121,15 @@ export function handleBranchActions(
     { type: 'ACTIVATE_BRANCH' | 'COMPLETE_BRANCH' }>
 ): NarrativeState {
   const branches = state.narrativeContext?.narrativeBranches || {};
-  const branch = branches[action.payload];
+  const branchId = action.payload;
+  const branch = branches[branchId];
 
   if (!branch) {
     return {
       ...state,
       error: createNarrativeError('branch_not_found',
-        `Narrative branch with ID "${action.payload}" does not exist.`,
-        { branchId: action.payload })
+        `Narrative branch with ID "${branchId}" does not exist.`,
+        { branchId })
     };
   }
 
@@ -135,7 +137,7 @@ export function handleBranchActions(
     // Mark the branch as active
     const updatedBranches = {
       ...branches,
-      [action.payload]: {
+      [branchId]: {
         ...branch,
         isActive: true,
       },
@@ -147,7 +149,7 @@ export function handleBranchActions(
         ...DEFAULT_NARRATIVE_CONTEXT,
         ...(state.narrativeContext || {}),
         narrativeBranches: updatedBranches,
-        currentBranchId: action.payload,
+        currentBranchId: branchId,
       },
       error: null // Clear any previous errors
     };
@@ -156,7 +158,7 @@ export function handleBranchActions(
     // Mark the branch as inactive (completed)
     const updatedBranches = {
       ...branches,
-      [action.payload]: {
+      [branchId]: {
         ...branch,
         isActive: false,
         isCompleted: true,

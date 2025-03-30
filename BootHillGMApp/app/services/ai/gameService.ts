@@ -8,11 +8,14 @@ import { GenerateContentResult } from '@google/generative-ai';
 import { 
   StoryProgressionData, 
   PlayerDecision, 
-  NarrativeContext 
+  NarrativeContext,
+  LoreStore
 } from '../../types/narrative.types';
 import { buildStoryPointPromptExtension } from '../../utils/storyUtils';
 import { parsePlayerDecision } from './responseParser';
 import { buildComprehensiveContextExtension } from '../../utils/decisionPromptBuilder';
+import { buildLoreExtractionPrompt } from '../../utils/loreExtraction';
+import { buildLoreContextPrompt } from '../../utils/loreContextBuilder';
 
 /**
  * Retrieves a response from the AI Game Master based on player input and game context.
@@ -31,6 +34,7 @@ import { buildComprehensiveContextExtension } from '../../utils/decisionPromptBu
  *                         - currentTags: Tags describing the current game context.
  *                         This context is used to make AI responses more dynamic and relevant
  *                         by incorporating the player's decision history.
+ * @param loreStore - [Optional] A LoreStore object containing facts about the game world
  *
  * @returns A Promise that resolves to an object containing the AI-generated response,
  *          including narrative text, location updates, combat status, items, actions,
@@ -41,7 +45,8 @@ export async function getAIResponse(
   journalContext: string,
   inventory: InventoryItem[],
   storyProgressionContext?: string,
-  narrativeContext?: NarrativeContext
+  narrativeContext?: NarrativeContext,
+  loreStore?: LoreStore
 ): Promise<{
   narrative: string;
   location: LocationType;
@@ -51,7 +56,22 @@ export async function getAIResponse(
   removedItems: string[];
   suggestedActions: SuggestedAction[];
   storyProgression?: StoryProgressionData;
-  playerDecision?: PlayerDecision; 
+  playerDecision?: PlayerDecision;
+  lore?: {
+    newFacts: Array<{
+      category: string;
+      content: string;
+      importance?: number;
+      confidence?: number;
+      tags?: string[];
+    }>;
+    updatedFacts?: Array<{
+      id: string;
+      content: string;
+      importance?: number;
+      confidence?: number;
+    }>;
+  };
 }> {
   try {
     const model = getAIModel();
@@ -98,6 +118,25 @@ export async function getAIResponse(
         characters: ['[Character names involved in this story point]'],
         isMilestone: false, // Whether this is a major milestone in the story
       },
+      lore: {
+        newFacts: [
+          {
+            category: '[character, location, history, item, or concept]',
+            content: '[Factual statement about the world]',
+            importance: 1, // 1-10, how important this fact is
+            confidence: 1, // 1-10, how confident the AI is
+            tags: ['tag1', 'tag2'] // Keywords for this fact
+          }
+        ],
+        updatedFacts: [
+          {
+            id: 'fact-id', // ID of existing fact to update
+            content: '[Updated factual statement]',
+            importance: 1, // 1-10, updated importance
+            confidence: 1 // 1-10, updated confidence
+          }
+        ]
+      }
     };
 
     // Add story progression context to the prompt
@@ -112,6 +151,14 @@ export async function getAIResponse(
     
     // Add the story point prompt extension
     const storyPointPrompt = buildStoryPointPromptExtension();
+    
+    // Add lore extraction prompt
+    const loreExtractionPrompt = buildLoreExtractionPrompt();
+    
+    // Add lore context if available
+    const loreContext = (loreStore && narrativeContext)
+      ? buildLoreContextPrompt(loreStore, narrativeContext)
+      : '';
 
     const fullPrompt = `
       You are an AI Game Master for a Western-themed RPG. Your role is to facilitate an immersive and uncensored gaming experience. Always remember:
@@ -129,6 +176,7 @@ export async function getAIResponse(
       ${journalContext}
       ${storyContext}
       ${decisionsContext}
+      ${loreContext}
 
       Player's current inventory (Do not mention this directly in your response):
       ${inventory.map((item) => `- ${item.name} (x${item.quantity})`).join('\n')}
@@ -159,6 +207,8 @@ export async function getAIResponse(
         - When creating decision options, reference relevant past player decisions to show continuity
       
       ${storyPointPrompt}
+
+      ${loreExtractionPrompt}
     `;
 
     const result = await retryWithExponentialBackoff<GenerateContentResult>(() =>
@@ -244,7 +294,8 @@ export async function getAIResponse(
         removedItems: jsonResponse.removedItems,
         suggestedActions: jsonResponse.suggestedActions,
         storyProgression,
-        playerDecision
+        playerDecision,
+        lore: jsonResponse.lore
       };
     } catch (error) {
       console.error('Error parsing AI response as JSON:', error);

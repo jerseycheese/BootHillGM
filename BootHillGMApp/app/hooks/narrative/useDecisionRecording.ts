@@ -10,6 +10,7 @@ import {
   processDecisionImpacts
 } from '../../actions/narrativeActions';
 import { createDecisionRecord } from '../../utils/decisionUtils';
+import { createDecisionImpacts } from '../../utils/decisionImpactGenerator';
 import { PlayerDecisionRecord } from '../../types/narrative.types';
 import { EVENTS, triggerCustomEvent } from '../../utils/events';
 import { NarrativeContextValue, NarrativeResponse } from './types';
@@ -132,8 +133,11 @@ export function useDecisionRecording(
       // Record the decision through the reducer
       dispatch(recordDecision(decisionId, selectedOptionId, narrativeResponse.narrative));
       
+      // Generate decision impacts
+      const impacts = createDecisionImpacts(decision, selectedOptionId);
+      
       // Process the impacts of this decision
-      dispatch(processDecisionImpacts(decisionId));
+      dispatch(processDecisionImpacts(impacts));
 
       // Force context update to ensure UI updates properly
       triggerCustomEvent(EVENTS.UI_FORCE_UPDATE);

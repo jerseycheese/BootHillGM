@@ -7,6 +7,9 @@
 
 import { LocationType } from '../services/locationService';
 import { NarrativeContext } from './narrative.types';
+import { Character } from './character'; 
+import { SuggestedAction } from './campaign'; 
+import { StoryProgressionData, PlayerDecision } from './narrative.types';
 
 /**
  * Opponent information in an AI response
@@ -44,6 +47,29 @@ export interface AIResponseRaw {
 }
 
 /**
+ * Extended AI Response that includes lore data
+ * This interface is used for extracting lore from AI responses
+ */
+export interface AIResponse extends AIResponseRaw {
+  lore?: {
+    newFacts: Array<{
+      category: string;
+      content: string;
+      importance?: number;
+      confidence?: number;
+      relatedFactIds?: string[];
+      tags?: string[];
+    }>;
+    updatedFacts?: Array<{
+      id: string;
+      content: string;
+      importance?: number;
+      confidence?: number;
+    }>;
+  };
+}
+
+/**
  * Result returned by the useAIWithOptimizedContext hook, including metadata.
  * It inherits most properties from AIResponseRaw but overrides 'opponent'
  * and adds 'contextQuality'.
@@ -77,7 +103,3 @@ export interface AIRequestResult extends Omit<AIResponseRaw, 'opponent' | 'narra
 
   narrativeContext?: NarrativeContext;
 }
-
-import { Character } from './character'; 
-import { SuggestedAction } from './campaign'; 
-import { StoryProgressionData, PlayerDecision } from './narrative.types';

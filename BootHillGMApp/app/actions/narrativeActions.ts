@@ -8,8 +8,9 @@
 import { NarrativeAction } from '../types/narrative/actions.types';
 import { NarrativeDisplayMode } from '../types/narrative/choice.types';
 import { NarrativeContext, ImpactState } from '../types/narrative/context.types';
-import { PlayerDecision } from '../types/narrative/decision.types';
+import { PlayerDecision, PlayerDecisionRecord } from '../types/narrative/decision.types';
 import { NarrativeErrorType } from '../types/narrative/error.types';
+import { DecisionImpact } from '../types/narrative/arc.types';
 
 /**
  * Action creator for navigating to a specific story point.
@@ -134,7 +135,15 @@ export const recordDecision = (
   narrative: string
 ): NarrativeAction => ({
   type: 'RECORD_DECISION',
-  payload: { decisionId, selectedOptionId, narrative },
+  payload: {
+    decisionId,
+    selectedOptionId,
+    narrative,
+    timestamp: Date.now(),
+    impactDescription: '', // Default empty string
+    tags: [], // Default empty array
+    relevanceScore: 5 // Default middle score
+  } as PlayerDecisionRecord,
 });
 
 /**
@@ -150,12 +159,12 @@ export const clearCurrentDecision = (): NarrativeAction => ({
  * This action triggers the calculation of how a decision affects various aspects of the game world,
  * such as reputation, relationships, and story progression.
  * 
- * @param decisionId - ID of the decision to process impacts for.
+ * @param impacts - Array of decision impacts to process
  * @returns Narrative action object with type 'PROCESS_DECISION_IMPACTS'.
  */
-export const processDecisionImpacts = (decisionId: string): NarrativeAction => ({
+export const processDecisionImpacts = (impacts: DecisionImpact[]): NarrativeAction => ({
   type: 'PROCESS_DECISION_IMPACTS',
-  payload: decisionId,
+  payload: impacts,
 });
 
 /**

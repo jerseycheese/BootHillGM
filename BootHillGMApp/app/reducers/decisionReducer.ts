@@ -8,13 +8,15 @@
 import {
   NarrativeState,
   NarrativeAction,
-  PlayerDecisionRecordWithImpact
+  PlayerDecisionRecordWithImpact,
+  DecisionImpact
 } from '../types/narrative.types';
 
 import { createDecisionRecord } from '../utils/decisionUtils';
 import {
   processDecisionImpacts as processImpacts,
-  evolveImpactsOverTime
+  evolveImpactsOverTime,
+  addImpactsToDecisionRecord
 } from '../utils/decisionImpactUtils';
 
 /**
@@ -145,63 +147,72 @@ export const handleProcessDecisionImpacts = (
   state: NarrativeState,
   action: Extract<NarrativeAction, { type: 'PROCESS_DECISION_IMPACTS' }>
 ): NarrativeState => {
-  // Process the impacts of a specific decision and update the impact state
+  // The payload is now an array of DecisionImpact objects rather than a decision ID
+  const impacts: DecisionImpact[] = action.payload;
+
   if (!state.narrativeContext?.impactState) {
     return {
       ...state,
       error: {
         code: 'state_corruption',
         message: 'Impact state is missing or undefined.',
-        context: { decisionId: action.payload },
+        context: { impacts },
         timestamp: Date.now()
       }
     };
   }
 
-  const decisionRecord = state.narrativeContext.decisionHistory.find(
-    record => record.decisionId === action.payload
-  );
+  // Check for narrativeContext again
+  if (!state.narrativeContext) {
+    return {
+      ...state,
+      error: {
+        code: 'state_corruption',
+        message: 'Narrative context is missing or undefined.',
+        context: { impacts },
+        timestamp: Date.now()
+      }
+    };
+  }
 
-  if (!decisionRecord) {
+  // Check if we have decision history
+  if (!state.narrativeContext.decisionHistory || state.narrativeContext.decisionHistory.length === 0) {
     return {
       ...state,
       error: {
         code: 'decision_not_found',
-        message: `Decision record with ID "${action.payload}" not found in history.`,
-        context: { decisionId: action.payload },
-        timestamp: Date.now()
-      }
-    };
-  }
-
-  if (!('impacts' in decisionRecord)) {
-    return {
-      ...state,
-      error: {
-        code: 'validation_failed',
-        message: 'Decision record does not have impact data.',
-        context: { decisionId: action.payload },
+        message: 'No decision records found to process impacts for.',
+        context: { impacts },
         timestamp: Date.now()
       }
     };
   }
 
   try {
+    // Find the latest decision record to add impacts to
+    const latestDecision = state.narrativeContext.decisionHistory[
+      state.narrativeContext.decisionHistory.length - 1
+    ];
+
+    // Add impacts to the latest decision record
+    const decisionWithImpacts = addImpactsToDecisionRecord(latestDecision, impacts);
+
+    // Process the impacts
     const updatedImpactState = processImpacts(
       state.narrativeContext.impactState,
-      decisionRecord as PlayerDecisionRecordWithImpact
+      decisionWithImpacts
     );
+
+    // Update the latest decision in the history with the impacts
+    const updatedHistory = [...state.narrativeContext.decisionHistory];
+    updatedHistory[updatedHistory.length - 1] = decisionWithImpacts;
 
     return {
       ...state,
       narrativeContext: {
         ...state.narrativeContext,
         impactState: updatedImpactState,
-        decisionHistory: state.narrativeContext.decisionHistory.map(
-          record => record.decisionId === action.payload && 'impacts' in record
-            ? { ...record, processedForImpact: true }
-            : record
-        )
+        decisionHistory: updatedHistory
       },
       error: null // Clear any previous errors
     };
@@ -211,7 +222,7 @@ export const handleProcessDecisionImpacts = (
       error: {
         code: 'system_error',
         message: error instanceof Error ? error.message : 'Failed to process decision impacts',
-        context: { decisionId: action.payload },
+        context: { impacts },
         timestamp: Date.now()
       }
     };
@@ -270,6 +281,30 @@ export const handleEvolveImpacts = (
       error: {
         code: 'state_corruption',
         message: 'Impact state is missing or undefined.',
+        timestamp: Date.now()
+      }
+    };
+  }
+
+  // Make sure narrativeContext exists
+  if (!state.narrativeContext) {
+    return {
+      ...state,
+      error: {
+        code: 'state_corruption',
+        message: 'Narrative context is missing or undefined.',
+        timestamp: Date.now()
+      }
+    };
+  }
+
+  // Make sure decisionHistory exists
+  if (!state.narrativeContext.decisionHistory) {
+    return {
+      ...state,
+      error: {
+        code: 'state_corruption',
+        message: 'Decision history is missing or undefined.',
         timestamp: Date.now()
       }
     };

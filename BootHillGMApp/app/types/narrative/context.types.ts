@@ -44,6 +44,17 @@ export interface NarrativeContext {
   activeDecision?: PlayerDecision;
   pendingDecisions: PlayerDecision[];
   decisionHistory: PlayerDecisionRecord[]; // Replaces playerChoices
+
+  // Location information - added to fix type errors
+  location?: {
+    type: 'town' | 'wilderness' | 'landmark';
+    name?: string;
+    description?: string;
+  };
+  
+  // Additional properties used in tests
+  currentTags?: string[];
+  sceneType?: string;
 }
 
 /**
@@ -63,6 +74,7 @@ export interface NarrativeContextOptions {
   prioritizeRecentEvents?: boolean;
   includeWorldState?: boolean;
   includeCharacterRelationships?: boolean;
+  includeLore?: boolean; // New option for lore inclusion
   maxTokens?: number;
   tokenAllocation?: {
     narrativeHistory?: number;
@@ -70,6 +82,7 @@ export interface NarrativeContextOptions {
     worldState?: number;
     relationships?: number;
     storyContext?: number;
+    lore?: number; // New token allocation for lore
   };
 }
 
@@ -81,7 +94,8 @@ export type ContextSection =
   'decision_history' | 
   'character_relationships' | 
   'world_state' | 
-  'story_progression';
+  'story_progression' |
+  'lore'; // New section type for lore
 
 /**
  * Element types for context building
@@ -93,7 +107,8 @@ export type ContextElementType =
   'location' | 
   'event' | 
   'world_state' | 
-  'story_point';
+  'story_point' |
+  'lore'; // New element type for lore
 
 /**
  * Types of content blocks
@@ -105,7 +120,8 @@ export type ContextBlockType =
   'location' | 
   'world_state' | 
   'story_progression' | 
-  'instruction';
+  'instruction' |
+  'lore'; // New block type for lore
 
 /**
  * Interface for narrative content blocks
@@ -164,6 +180,7 @@ export interface BuiltNarrativeContext {
     characters: string[];
     locations: string[];
     recentEvents: string[];
+    loreFacts?: number; // New field for lore facts
   };
   metadata: {
     compressionRatio: number;

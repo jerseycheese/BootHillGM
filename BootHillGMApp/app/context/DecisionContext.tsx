@@ -155,7 +155,11 @@ export const DecisionProvider: React.FC<DecisionProviderProps> = ({
         payload: {
           decisionId: currentDecision.id,
           selectedOptionId: optionId,
-          narrative: `You chose: ${selectedOption.text}` // Basic narrative, would be expanded
+          narrative: `You chose: ${selectedOption.text}`, // Basic narrative, would be expanded
+          timestamp: Date.now(),
+          impactDescription: `Impact of choosing: ${selectedOption.text}`,
+          tags: [],
+          relevanceScore: 1
         }
       });
       

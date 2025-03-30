@@ -22,6 +22,8 @@ export interface TokenAllocation {
   relationships?: number;
   /** Percentage of tokens allocated to story context (0-100) */
   storyContext?: number;
+  /** Percentage of tokens allocated to lore (0-100) */
+  lore?: number;
 }
 
 /**
@@ -59,7 +61,8 @@ export const contextTypeMapping: Record<ContextElementType, ContextBlockType> = 
   'location': 'location',
   'event': 'narrative_history',
   'world_state': 'world_state',
-  'story_point': 'story_progression'
+  'story_point': 'story_progression',
+  'lore': 'lore' // Add lore mapping
 };
 
 /**
@@ -73,5 +76,6 @@ export const blockSectionTitles: Record<ContextBlockType, string> = {
   'location': 'Locations',
   'world_state': 'World State',
   'story_progression': 'Story Progression',
-  'instruction': 'Instructions'
+  'instruction': 'Instructions',
+  'lore': 'Established World Facts' // Add lore title
 };

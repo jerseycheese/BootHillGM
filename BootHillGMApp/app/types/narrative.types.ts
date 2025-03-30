@@ -46,6 +46,16 @@ import {
   initialNarrativeState,
   initialStoryProgressionState
 } from './narrative/utils';
+import {
+  LoreStore,
+  LoreFact,
+  LoreCategory,
+  LoreExtractionResult,
+  LoreAction,
+  initialLoreState,
+  isLoreFact,
+  isValidLoreCategory
+} from './narrative/lore.types';
 
 // Re-export all types for backward compatibility - using 'export type' syntax
 // for type-only exports as required by isolatedModules
@@ -80,12 +90,23 @@ export type { StoryProgressionAction };
 export type { UseNarrativeChoiceResult };
 export type { UseNarrativeProcessorResult };
 
+// New lore types
+export type { LoreStore };
+export type { LoreFact };
+export type { LoreCategory };
+export type { LoreExtractionResult };
+export type { LoreAction };
+
 // Export values (non-types)
 export { 
   isStoryPoint,
   isNarrativeChoice,
   initialNarrativeState,
-  initialStoryProgressionState
+  initialStoryProgressionState,
+  // New lore exports
+  initialLoreState,
+  isLoreFact,
+  isValidLoreCategory
 };
 
 /**
@@ -98,6 +119,7 @@ export {
  * @property displayMode - How the narrative should be presented
  * @property narrativeContext - Additional context for AI generation
  * @property storyProgression - Story progression tracking state
+ * @property lore - Lore management state
  * @property error - Current error state, if any
  */
 export interface NarrativeState {
@@ -110,6 +132,7 @@ export interface NarrativeState {
   selectedChoice?: string;
   storyProgression?: StoryProgressionState;
   currentDecision?: PlayerDecision;
+  lore?: LoreStore; // New property for lore management
   error?: NarrativeErrorInfo | null;
 }
 

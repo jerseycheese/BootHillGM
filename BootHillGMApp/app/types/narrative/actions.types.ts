@@ -8,8 +8,10 @@ import { NarrativeChoice, NarrativeDisplayMode } from './choice.types';
 import { NarrativeErrorInfo } from './error.types';
 import { NarrativeContext, ImpactState } from './context.types';
 import { StoryProgressionPoint } from './progression.types';
-import { PlayerDecision } from './decision.types';
+import { PlayerDecision, PlayerDecisionRecord } from './decision.types';
 import { StoryPoint } from './story-point.types';
+import { DecisionImpact } from './arc.types';
+import { LoreAction } from './lore.types';
 
 /**
  * Internal interface for NarrativeState to avoid circular dependencies
@@ -27,6 +29,9 @@ interface NarrativeStateInternal {
   error?: NarrativeErrorInfo | null;
 }
 
+// For updates to the narrative state
+type NarrativeStateUpdate = Partial<NarrativeStateInternal>;
+
 /**
  * Defines a narrative action type for state management
  */
@@ -41,14 +46,17 @@ export type NarrativeActionType =
   | 'COMPLETE_BRANCH'
   | 'UPDATE_NARRATIVE_CONTEXT'
   | 'RESET_NARRATIVE'
+  | 'UPDATE_NARRATIVE'
   | 'PRESENT_DECISION'         
   | 'RECORD_DECISION'          
   | 'CLEAR_CURRENT_DECISION'
   | 'PROCESS_DECISION_IMPACTS'
   | 'UPDATE_IMPACT_STATE'
   | 'EVOLVE_IMPACTS'
-  | 'NARRATIVE_ERROR'          // New action for error handling
-  | 'CLEAR_ERROR';             // New action for clearing errors
+  | 'NARRATIVE_ERROR'          
+  | 'CLEAR_ERROR'
+  // Lore action types would be added here, but we're using the LoreAction union directly
+  ;
 
 /**
  * Defines the narrative action for the reducer
@@ -67,21 +75,24 @@ export type NarrativeAction =
   | { type: 'COMPLETE_BRANCH'; payload: string }
   
   // General state updates
-  | { type: 'UPDATE_NARRATIVE'; payload: Partial<NarrativeStateInternal> }
+  | { type: 'UPDATE_NARRATIVE'; payload: NarrativeStateUpdate }
   | { type: 'UPDATE_NARRATIVE_CONTEXT'; payload: Partial<NarrativeContext> }
   | { type: 'RESET_NARRATIVE' }
 
   // Decision tracking actions
   | { type: 'PRESENT_DECISION'; payload: PlayerDecision }
-  | { type: 'RECORD_DECISION'; payload: { decisionId: string; selectedOptionId: string; narrative: string } }
+  | { type: 'RECORD_DECISION'; payload: PlayerDecisionRecord }
   | { type: 'CLEAR_CURRENT_DECISION' }
-  | { type: 'PROCESS_DECISION_IMPACTS'; payload: string } // decisionId
+  | { type: 'PROCESS_DECISION_IMPACTS'; payload: DecisionImpact[] }
   | { type: 'UPDATE_IMPACT_STATE'; payload: Partial<ImpactState> }
   | { type: 'EVOLVE_IMPACTS' }
   
   // Error handling actions
   | { type: 'NARRATIVE_ERROR'; payload: NarrativeErrorInfo }
-  | { type: 'CLEAR_ERROR' };
+  | { type: 'CLEAR_ERROR' }
+  
+  // Include lore actions
+  | LoreAction;
 
 /**
  * Defines story progression actions for the reducer

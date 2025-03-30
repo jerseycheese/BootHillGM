@@ -17,6 +17,7 @@ BootHillGM is a web application providing an AI-driven Game Master for the Boot 
 - Strength system implementation with derived stats and modifiers
 - Automatic journal entry system with search and filtering
 - Player Decision System with narrative integration
+- Lore Management System for consistent world facts
 
 ## Technical Stack
 
@@ -49,6 +50,7 @@ BootHillGM is a web application providing an AI-driven Game Master for the Boot 
 - **Journal System**: Automatic narrative recording and organization
 - **Player Decision System**: Interactive choice management with narrative impact
 - **State Management**: Game session persistence and restoration
+- **Lore Management System**: Tracking and maintaining consistent world facts during narrative generation
 
 ## Development Approach
 
@@ -72,3 +74,16 @@ Documentation is maintained in the `/Docs` directory, organized by:
 - **Meta**: Project overview and planning documents
 
 The complete documentation structure provides detailed information on all aspects of the project's implementation and design.
+
+## Recent Updates
+
+### Lore Management System (March 2025)
+
+The newly implemented Lore Management System enhances narrative coherence by:
+
+- Systematically tracking and organizing world facts during gameplay
+- Extracting lore from AI responses with categorization and metadata
+- Intelligently selecting relevant facts for AI context building
+- Preventing fact contradictions in long-running play sessions
+
+For more information, see the [Lore Management System documentation](Docs/core-systems/lore-management-system.md) and [usage guide](Docs/technical-guides/using-lore-system.md).

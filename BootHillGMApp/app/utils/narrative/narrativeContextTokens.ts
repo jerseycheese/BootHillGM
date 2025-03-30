@@ -37,21 +37,23 @@ export function allocateTokensToElements(
   
   // Default allocation if not provided
   const effectiveAllocation = allocation || {
-    narrativeHistory: 40,
-    decisionHistory: 30,
+    narrativeHistory: 35,
+    decisionHistory: 25,
     worldState: 15,
     relationships: 10,
-    storyContext: 5
+    storyContext: 5,
+    lore: 10 // Default allocation for lore
   };
   
   // Calculate token allocations for each block type
   const tokenAllocations: Record<ContextBlockType, number> = {
-    'narrative_history': Math.floor((effectiveAllocation.narrativeHistory || 40) * maxTokens / 100),
-    'decision': Math.floor((effectiveAllocation.decisionHistory || 30) * maxTokens / 100),
+    'narrative_history': Math.floor((effectiveAllocation.narrativeHistory || 35) * maxTokens / 100),
+    'decision': Math.floor((effectiveAllocation.decisionHistory || 25) * maxTokens / 100),
     'world_state': Math.floor((effectiveAllocation.worldState || 15) * maxTokens / 100),
     'character': Math.floor((effectiveAllocation.relationships || 10) * maxTokens / 100),
     'location': Math.floor((effectiveAllocation.worldState || 15) * maxTokens / 100) / 3, // Share with world state
     'story_progression': Math.floor((effectiveAllocation.storyContext || 5) * maxTokens / 100),
+    'lore': Math.floor((effectiveAllocation.lore || 10) * maxTokens / 100), // Allocation for lore
     'instruction': Math.floor(maxTokens * 0.05) // Reserve 5% for instructions
   };
   
@@ -132,6 +134,7 @@ export function getBlockPriority(blockType: ContextBlockType): number {
     case 'story_progression': return 1;
     case 'world_state': return 2;
     case 'narrative_history': return 3;
+    case 'lore': return 2; // High priority for lore (same as world state)
     case 'decision': return 4;
     case 'character': return 5;
     case 'location': return 6;
@@ -184,7 +187,7 @@ export function buildStructuredContext(
   // Add an instruction section at the end
   sectionParts.push(`
 ## Guidance
-Use the above context to maintain narrative coherence in your responses. Reference relevant past decisions and events appropriately. Maintain consistent characterization and world state.
+Use the above context to maintain narrative coherence in your responses. Reference relevant past decisions and events appropriately. Maintain consistent characterization and world state. Respect established facts about the world.
   `.trim());
   
   return sectionParts.join('\n\n');
