@@ -1,41 +1,45 @@
-import { CombatType } from '../combat';
+import { CombatParticipant, CombatType } from "../combat";
 
 /**
- * Combat log entry type
+ * Represents a combat log entry.
  */
 export interface CombatLogEntry {
   text: string;
+  type: 'hit' | 'miss' | 'critical' | 'info' | 'system' | 'action' | 'result';
   timestamp: number;
-  type?: 'action' | 'result' | 'system';
-  data?: Record<string, unknown>;
+  data?: {
+    originalType?: string;
+    [key: string]: unknown;
+  };
 }
 
 /**
- * Combat turn interface
+ * Defines a turn in combat including who is acting and available actions
  */
 export interface CombatTurn {
   playerId: string;
   actions: string[];
-  [key: string]: unknown;
 }
 
 /**
- * Combat state slice that manages all combat-related data
+ * Interface for the combat state.
  */
 export interface CombatState {
+  rounds: number;
   isActive: boolean;
   combatType: CombatType;
-  rounds: number;          // Standard property name aligned with other code
   playerTurn: boolean;
   playerCharacterId: string;
   opponentCharacterId: string;
-  combatLog: CombatLogEntry[];
   roundStartTime: number;
+  combatLog?: CombatLogEntry[];
   modifiers: {
     player: number;
     opponent: number;
   };
-  currentTurn: CombatTurn | null;
+  currentTurn: 'player' | 'opponent' | null;
+  winner?: string | null;
+  participants?: CombatParticipant[];
 }
 
 /**
@@ -43,8 +47,8 @@ export interface CombatState {
  */
 export const initialCombatState: CombatState = {
   isActive: false,
-  combatType: 'brawling',
-  rounds: 0,                // Standardized on rounds instead of currentRound
+  combatType: 'brawling', // Default combat type
+  rounds: 0,
   playerTurn: true,
   playerCharacterId: '',
   opponentCharacterId: '',
@@ -54,5 +58,7 @@ export const initialCombatState: CombatState = {
     player: 0,
     opponent: 0
   },
-  currentTurn: null
+  currentTurn: null,
+  winner: null,
+  participants: []
 };

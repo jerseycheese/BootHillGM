@@ -135,3 +135,13 @@ export class CharacterGenerationError extends Error {
     super('Character generation failed validation');
   }
 }
+
+// Character update payload extends Character but adds damageInflicted
+// and includes index signature for compatibility with characterReducer
+export interface UpdateCharacterPayload extends Omit<Partial<Character>, 'attributes'> {
+  id: string;
+  damageInflicted?: number;
+  attributes?: Partial<Character['attributes']>;
+  wounds?: Wound[];
+  [key: string]: unknown; // Add index signature for string keys
+}

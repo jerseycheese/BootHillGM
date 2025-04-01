@@ -1,7 +1,7 @@
 import React from 'react';
 import { Character } from '../../types/character';
 import { CombatType } from '../../types/combat';
-import { useInventoryItems } from '../../hooks/stateSelectors';
+import { useWeapons } from '../../hooks/selectors/useInventorySelectors';
 
 interface CombatTypeSelectionProps {
   playerCharacter: Character;
@@ -18,30 +18,36 @@ export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
   opponent,
   onSelectType
 }) => {
-  // Use the inventory selector hook for weapons check
-  const inventoryItems = useInventoryItems();
+  // Use the inventory selector hook to check for weapons
+  // The hook now safely handles null/undefined state
+  const weapons = useWeapons();
+  
+  // Extract clean name (remove any metadata)
+  const opponentName = opponent?.name?.split('\n')[0] || 'Opponent';
   
   // Brawling is always available as a combat option
   const canUseBrawling = true;
   
-  // Check if either combatant has weapons available
-  const hasWeaponInInventory = inventoryItems.some(item => item.category === 'weapon');
+  // Check if weapons are available
+  const hasWeaponInInventory = weapons && weapons.length > 0;
   
   // Check if weapons are directly on the character
-  const playerHasWeapon = Boolean(playerCharacter.weapon);
-  const opponentHasWeapon = Boolean(opponent.weapon);
+  const playerHasWeapon = Boolean(playerCharacter?.weapon);
+  const opponentHasWeapon = Boolean(opponent?.weapon);
   
   const canUseWeapons = hasWeaponInInventory || playerHasWeapon || opponentHasWeapon;
   
   return (
     <div className="combat-type-selection wireframe-section space-y-4">
       <h3 className="text-lg font-bold">Choose Combat Type</h3>
+      <h4 className="text-md">Opponent: {opponentName}</h4>
       
       <div className="grid grid-cols-1 gap-4">
         {canUseBrawling && (
           <button
             onClick={() => onSelectType('brawling')}
             className="wireframe-button p-4"
+            data-testid="brawling-button"
           >
             Brawling
             <span className="block text-sm mt-1">
@@ -55,6 +61,7 @@ export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
           className="wireframe-button p-4"
           disabled={!canUseWeapons}
           aria-disabled={!canUseWeapons}
+          data-testid="weapon-button"
         >
           Weapon Combat
           <span className="block text-sm mt-1">
@@ -67,3 +74,5 @@ export const CombatTypeSelection: React.FC<CombatTypeSelectionProps> = ({
     </div>
   );
 };
+
+export default CombatTypeSelection;

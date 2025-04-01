@@ -6,10 +6,8 @@
  */
 
 import { CombatState as LegacyCombatState } from '../types/combat';
-import { CombatState as SliceCombatState } from '../types/state/combatState';
+import { CombatState as SliceCombatState, CombatLogEntry } from '../types/state/combatState';
 import { LogEntry } from '../types/combat';
-import { CombatLogEntry } from '../types/state/combatState';
-import { CombatTurn } from '../types/state/combatState';
 
 /**
  * Convert a LogEntry from the legacy format to a CombatLogEntry in the new format
@@ -28,17 +26,16 @@ export function convertLogEntry(entry: LogEntry): CombatLogEntry {
 /**
  * Map the log entry type from legacy to new format
  */
-function mapLogEntryType(type: 'hit' | 'miss' | 'critical' | 'info'): 'action' | 'result' | 'system' {
-  switch (type) {
-    case 'hit':
-    case 'miss':
-    case 'critical':
-      return 'result';
-    case 'info':
-      return 'system';
-    default:
-      return 'action';
+function mapLogEntryType(
+  type: 'hit' | 'miss' | 'critical' | 'info'
+): 'hit' | 'miss' | 'critical' | 'info' | 'system' | 'action' | 'result' {
+  // Keep the original type if it matches the new format
+  if (type === 'hit' || type === 'miss' || type === 'critical' || type === 'info') {
+    return type;
   }
+  
+  // This should never happen, but provide a fallback
+  return 'info';
 }
 
 /**
@@ -69,14 +66,13 @@ export function legacyToSliceCombatState(legacy?: Partial<LegacyCombatState>): S
     : [];
 
   // Map currentTurn to appropriate format
-  let currentTurn: CombatTurn | null = null;
+  let currentTurn: 'player' | 'opponent' | null = null;
   if (legacy.currentTurn) {
-    if (typeof legacy.currentTurn === 'object') {
-      const turnObj = legacy.currentTurn as Record<string, unknown>;
-      currentTurn = {
-        playerId: String(turnObj.playerId || ''),
-        actions: Array.isArray(turnObj.actions) ? turnObj.actions.map(String) : []
-      };
+    if (typeof legacy.currentTurn === 'string') {
+      currentTurn = legacy.currentTurn as 'player' | 'opponent';
+    } else if (typeof legacy.currentTurn === 'object') {
+      // We'll use the original string type for currentTurn to match the CombatState interface
+      currentTurn = 'player'; // Default to player
     }
   }
 
@@ -130,7 +126,9 @@ export function sliceToLegacyCombatState(slice: SliceCombatState): LegacyCombatS
   const convertedLog: LogEntry[] = Array.isArray(slice.combatLog) 
     ? slice.combatLog.map(entry => ({
         text: entry.text || '',
-        type: (entry.data?.originalType as 'hit' | 'miss' | 'critical' | 'info') || 'info',
+        // Convert back to the legacy LogEntry type
+        type: (entry.data?.originalType as 'hit' | 'miss' | 'critical' | 'info') || 
+              (entry.type === 'system' || entry.type === 'action' || entry.type === 'result' ? 'info' : entry.type),
         timestamp: entry.timestamp || Date.now()
       }))
     : [];

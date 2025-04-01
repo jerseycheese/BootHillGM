@@ -124,13 +124,21 @@ function mapLogType(type: 'hit' | 'miss' | 'critical' | 'info'): 'action' | 'res
 /**
  * Map CombatLogEntry type to LogEntry type
  */
-function mapCombatLogType(type?: 'action' | 'result' | 'system'): 'hit' | 'miss' | 'critical' | 'info' | undefined {
+function mapCombatLogType(type?: 'action' | 'result' | 'system' | 'critical' | 'info' | 'hit' | 'miss'): 'hit' | 'miss' | 'critical' | 'info' | undefined {
   switch (type) {
     case 'action':
       return 'info';
     case 'result':
       return 'hit'; // Default to hit, could be miss but we're simplifying
     case 'system':
+      return 'info';
+    case 'critical':
+      return 'critical';
+    case 'hit':
+      return 'hit';
+    case 'miss':
+      return 'miss';
+    case 'info':
       return 'info';
     default:
       return undefined;

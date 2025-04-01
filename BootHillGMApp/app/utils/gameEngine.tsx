@@ -56,6 +56,7 @@ export function useGameSession() {
     dispatch({
       type: 'UPDATE_CHARACTER',
       payload: {
+        id: state.character.player.id,
         attributes: updatedAttributes
       }
     });

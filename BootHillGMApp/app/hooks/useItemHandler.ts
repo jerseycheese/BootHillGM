@@ -1,13 +1,14 @@
 import { useState, useCallback } from 'react';
 import { InventoryItem } from '../types/item.types';
-import { useCampaignState } from '../components/CampaignStateManager';
+import { useCampaignState } from './useCampaignStateContext';
 import { getAIResponse } from '../services/ai/gameService';
-import { getJournalContext, addJournalEntry } from '../utils/JournalManager';
+import { getJournalContext } from '../utils/JournalManager';
 import { InventoryManager } from '../utils/inventoryManager';
 import { getPlayerFromCharacter, getItemsFromInventory, getEntriesFromJournal } from './selectors/typeGuards';
 import { createCompatibleState } from '../utils/gameStateUtils';
 import { StateWithMixedStructure } from '../types/gameSession.types';
 import { useLocation } from './useLocation';
+import { JournalUpdatePayload } from '../types/gameActions';
 
 /**
  * Hook for handling item interactions within the game session.
@@ -98,12 +99,22 @@ export const useItemHandler = (
 
       // Now dispatch the USE_ITEM action *after* getting the AI response
       dispatch({ type: 'USE_ITEM', payload: itemId });
-
-      // Update journal with the new action
-      const updatedJournal = await addJournalEntry(journalEntries, actionText);
+      
+      // Create a proper JournalUpdatePayload with required fields
+      const journalPayload: JournalUpdatePayload = {
+        id: `item-use-${Date.now()}`, // Generate a unique ID
+        content: `Used ${item.name}`,
+        timestamp: Date.now(),
+        type: 'inventory',
+        items: {
+          acquired: [],
+          removed: [item.name]
+        }
+      };
+      
       dispatch({
         type: 'UPDATE_JOURNAL',
-        payload: updatedJournal,
+        payload: journalPayload
       });
 
       // Explicitly update the narrative with the item usage

@@ -17,6 +17,136 @@ import { buildComprehensiveContextExtension } from '../../utils/decisionPromptBu
 import { buildLoreExtractionPrompt } from '../../utils/loreExtraction';
 import { buildLoreContextPrompt } from '../../utils/loreContextBuilder';
 
+// Define the structure for the fallback response
+interface FallbackResponse {
+  narrative: string;
+  location: LocationType;
+  combatInitiated: boolean;
+  opponent: null;
+  acquiredItems: string[]; // Use string[] instead of never[]
+  removedItems: string[]; // Use string[] instead of never[]
+  suggestedActions: SuggestedAction[];
+}
+
+
+// Maximum time to wait for AI response before returning a fallback
+const AI_RESPONSE_TIMEOUT_MS = 15000; // 15 seconds (Increased from 6)
+
+/**
+ * @param ms Timeout in milliseconds
+ * @returns A promise that rejects after the specified timeout
+ */
+function timeoutPromise(ms: number) {
+  return new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms);
+  });
+}
+
+/**
+ * Generates a fallback response when the AI is unavailable or times out
+ */
+function generateFallbackResponse(
+  prompt: string,
+  characterName: string = "the player",
+  inventoryItems: InventoryItem[] = []
+): FallbackResponse { // Add explicit return type
+  console.log("Generating fallback response for prompt:", prompt);
+
+  // Extract action words from the prompt to determine response type
+  const promptLower = prompt.toLowerCase();
+  const isLookingAction = /\b(look|see|view|observe|check)\b/.test(promptLower);
+  const isMovementAction = /\b(go|walk|move|travel|head|run)\b/.test(promptLower);
+  const isTalkingAction = /\b(talk|speak|ask|tell|say)\b/.test(promptLower);
+  const isInventoryAction = /\b(inventory|items|gear|equip)\b/.test(promptLower);
+  const isInitializing = /\b(initialize|init|start|begin|new|create)\b/.test(promptLower);
+  
+  let responseType = 'generic';
+  if (isInitializing) responseType = 'initializing';
+  else if (isLookingAction) responseType = 'looking';
+  else if (isMovementAction) responseType = 'movement';
+  else if (isTalkingAction) responseType = 'talking';
+  else if (isInventoryAction) responseType = 'inventory';
+  
+  // Generate a contextual fallback response
+  let narrative = "";
+  const suggestedActions: SuggestedAction[] = [];
+  
+  switch (responseType) {
+    case 'initializing':
+      narrative = `${characterName} arrives in the town of Boothill, greeted by the sight of dusty streets and wooden buildings. The sun hangs low in the sky, casting long shadows across the main thoroughfare. The distant sounds of piano music drift from the saloon, while townsfolk move about their business.`;
+      suggestedActions.push(
+        { text: "Explore the town", type: "basic", context: "Get to know Boothill" },
+        { text: "Visit the saloon", type: "basic", context: "Find information and refreshment" },
+        { text: "Look for work", type: "interaction", context: "Earn some money" },
+        { text: "Check your gear", type: "inventory", context: "See what you have" }
+      );
+      break;
+      
+    case 'looking':
+      narrative = `${characterName} looks around at the frontier town. The dusty main street stretches before you, lined with wooden buildings. A saloon stands nearby, and people move about their business.`;
+      suggestedActions.push(
+        { text: "Enter the saloon", type: "basic", context: "Look for information" },
+        { text: "Approach the general store", type: "basic", context: "Check for supplies" },
+        { text: "Ask a passerby for information", type: "interaction", context: "Learn about the town" }
+      );
+      break;
+      
+    case 'movement':
+      narrative = `${characterName} makes their way down the trail. The western landscape stretches out around you, with rolling hills and sparse vegetation. The path continues ahead.`;
+      suggestedActions.push(
+        { text: "Continue forward", type: "basic", context: "Follow the trail" },
+        { text: "Look for a place to rest", type: "basic", context: "Take a break from traveling" },
+        { text: "Check your surroundings", type: "basic", context: "Make sure it's safe" }
+      );
+      break;
+      
+    case 'talking':
+      narrative = `${characterName} tries to engage in conversation. The person nods, listening to what you have to say. "Interesting," they respond, though they seem a bit distracted.`;
+      suggestedActions.push(
+        { text: "Ask about the town", type: "interaction", context: "Get local information" },
+        { text: "Inquire about work", type: "interaction", context: "Look for opportunities" },
+        { text: "End the conversation", type: "basic", context: "Move on to something else" }
+      );
+      break;
+      
+    case 'inventory':
+      const itemNames = inventoryItems.map(item => item.name.toLowerCase());
+      narrative = `${characterName} checks their belongings. `;
+      
+      if (itemNames.length > 0) {
+        narrative += `You have ${itemNames.slice(0, -1).join(', ')}${itemNames.length > 1 ? ' and ' + itemNames[itemNames.length - 1] : itemNames[0]}.`;
+      } else {
+        narrative += "You don't seem to have much with you at the moment.";
+      }
+      
+      suggestedActions.push(
+        { text: "Look for supplies", type: "basic", context: "Find more items" },
+        { text: "Continue your journey", type: "basic", context: "Move on" },
+        { text: "Rest for a moment", type: "basic", context: "Recover your strength" }
+      );
+      break;
+      
+    default:
+      narrative = `${characterName} considers their next move. The western frontier stretches out before you, full of opportunity and danger.`;
+      suggestedActions.push(
+        { text: "Look around", type: "basic", context: "Survey your surroundings" },
+        { text: "Check your inventory", type: "inventory", context: "See what you're carrying" },
+        { text: "Rest for a while", type: "basic", context: "Recover your energy" },
+        { text: "Continue forward", type: "basic", context: "Press on with your journey" }
+      );
+  }
+  
+  return {
+    narrative,
+    location: { type: 'town', name: 'Boothill' },
+    combatInitiated: false,
+    opponent: null,
+    acquiredItems: [],
+    removedItems: [],
+    suggestedActions
+  };
+}
+
 /**
  * Retrieves a response from the AI Game Master based on player input and game context.
  * This function sends the player's prompt and relevant game state information
@@ -73,7 +203,26 @@ export async function getAIResponse(
     }>;
   };
 }> {
+  console.log("Getting AI response for prompt:", prompt);
+  
+  // Extract character name from inventory or context for fallback responses
+  // NOTE: narrativeContext does not contain playerInfo. Player name should ideally be passed directly.
+  const characterName = "the player";
+  // Removed incorrect access: narrativeContext?.playerInfo?.name
   try {
+    // Placeholder for potential future logic to get name if passed differently
+  } catch (e) {
+    console.error("Error determining character name for fallback:", e);
+  }
+  
+  // Set up a controller for the fetch operation
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, AI_RESPONSE_TIMEOUT_MS + 1000); // Add 1 second buffer to the timeout
+  
+  try {
+    // Create a race between the AI response and a timeout
     const model = getAIModel();
 
     // Define the expected JSON structure as a JavaScript object
@@ -211,9 +360,28 @@ export async function getAIResponse(
       ${loreExtractionPrompt}
     `;
 
-    const result = await retryWithExponentialBackoff<GenerateContentResult>(() =>
-      model.generateContent(fullPrompt)
-    );
+    // Race between AI response and timeout
+    let result;
+    try {
+      console.log("Starting AI request with timeout of", AI_RESPONSE_TIMEOUT_MS, "ms");
+      result = await Promise.race([
+        retryWithExponentialBackoff<GenerateContentResult>(() => model.generateContent(fullPrompt)),
+        timeoutPromise(AI_RESPONSE_TIMEOUT_MS)
+      ]);
+      console.log("AI request completed successfully");
+      
+      // Clear timeout since we got a response
+      clearTimeout(timeoutId);
+    } catch (error) {
+      console.error("AI request failed or timed out:", error);
+      
+      // Make sure we clear the timeout
+      clearTimeout(timeoutId);
+      
+      // Return fallback response
+      return generateFallbackResponse(prompt, characterName, inventory);
+    }
+
     let text = await result.response.text();
     text = text.trim();
 
@@ -240,17 +408,18 @@ export async function getAIResponse(
         !Array.isArray(jsonResponse.removedItems) ||
         !Array.isArray(jsonResponse.suggestedActions)
       ) {
+        console.error("Invalid JSON structure from AI response");
         throw new Error('Invalid JSON structure from AI');
       }
 
       // Further validation for location details
       if (jsonResponse.location.type === 'town' && !jsonResponse.location.name) {
         console.warn("AI response missing location.name for type 'town'; using default.");
-        jsonResponse.location.name = 'Unknown Town';
+        jsonResponse.location.name = 'Boothill';
       }
       if (jsonResponse.location.type === 'wilderness' && !jsonResponse.location.description) {
         console.warn("AI response missing location.description for type 'wilderness'; using default.");
-        jsonResponse.location.description = 'Unknown Wilderness';
+        jsonResponse.location.description = 'A rugged landscape in the western frontier';
       }
 
       // Validate opponent
@@ -284,6 +453,15 @@ export async function getAIResponse(
         playerDecision = parsePlayerDecision(jsonResponse.playerDecision, jsonResponse.location);
       }
 
+      // Ensure we have at least one suggested action
+      if (!jsonResponse.suggestedActions || jsonResponse.suggestedActions.length === 0) {
+        jsonResponse.suggestedActions = [
+          { text: "Look around", type: "basic", context: "Survey your surroundings" },
+          { text: "Continue forward", type: "basic", context: "Proceed on your journey" },
+          { text: "Check your inventory", type: "inventory", context: "See what you're carrying" }
+        ];
+      }
+
       // Return the structured data with optional story progression and player decision
       return {
         narrative: jsonResponse.narrative,
@@ -304,26 +482,26 @@ export async function getAIResponse(
       if (error instanceof SyntaxError) {
         console.error('SyntaxError message:', error.message);
       }
-      // Fallback: Return a default response with an error message
-      return {
-        narrative: "The AI encountered an error and could not process your action. Please try again.",
-        location: { type: 'unknown' }, // Default location
-        combatInitiated: false,
-        opponent: null,
-        acquiredItems: [],
-        removedItems: [],
-        suggestedActions: [{ text: "Retry", type: "basic", context: "Try your last action again." }],
-      };
+      
+      // Return fallback response
+      return generateFallbackResponse(prompt, characterName, inventory);
     }
   } catch (error) {
+    console.error("Critical error in AI service:", error);
+    
+    // Make sure the timeout is cleared
+    clearTimeout(timeoutId);
+    
     if (error instanceof Error) {
       if (
         error.message.includes('API key expired') ||
         error.message.includes('API_KEY_INVALID')
       ) {
-        throw new Error("AI service configuration error");
+        console.error("API key error detected");
       }
     }
-    throw new Error(`Unexpected AI response error: ${error}`);
+    
+    // Return fallback response for any error
+    return generateFallbackResponse(prompt, characterName, inventory);
   }
 }

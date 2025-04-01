@@ -1,14 +1,15 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useCampaignState } from '../components/CampaignStateManager';
+import { useCampaignState } from './useCampaignStateContext';
 import { useLocation } from './useLocation';
 import { getAIResponse } from '../services/ai/gameService';
-import { getJournalContext, addJournalEntry } from '../utils/JournalManager';
+import { getJournalContext } from '../utils/JournalManager';
 import { useCombatManager } from './useCombatManager';
 import { InventoryItem, ItemCategory } from '../types/item.types';
 import { getItemsFromInventory, getEntriesFromJournal } from './selectors/typeGuards';
 import { useNarrativeUpdater } from './useNarrativeUpdater';
 import { useItemHandler } from './useItemHandler';
 import { AIGameResponse } from '../types/gameSession.types';
+import { JournalUpdatePayload } from '../types/gameActions';
 
 /**
  * Hook to manage the core game session functionality.
@@ -78,13 +79,19 @@ export const useGameSession = () => {
         inventoryItems
       );
 
-      // Update journal with the new action
-      const updatedJournal = await addJournalEntry(journalEntries, input);
+      // Create a properly structured JournalUpdatePayload object
+      const journalEntry: JournalUpdatePayload = {
+        id: `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: Date.now(),
+        content: input,
+        type: 'narrative',
+        narrativeSummary: 'Player action'
+      };
 
-      // Update campaign state with new journal
+      // Update campaign state with new journal entry
       dispatch({
         type: 'UPDATE_JOURNAL',
-        payload: updatedJournal,
+        payload: journalEntry
       });
 
       if (response.combatInitiated && response.opponent) {

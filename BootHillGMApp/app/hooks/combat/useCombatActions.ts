@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useCampaignState } from '../../components/CampaignStateManager';
+import { useCampaignState } from '../useCampaignStateContext';
 import { resolveCombatRound } from '../../utils/combat/combatResolver';
 import { CombatSituation } from '../../utils/combat/hitModifiers';
 import { Character } from '../../types/character';
@@ -14,8 +14,13 @@ import { Character } from '../../types/character';
  * @returns An object containing the combat action functions.
  */
 export const useCombatActions = () => {
-  // Use the campaign state context which provides direct access to player and opponent
-  const { dispatch, player, opponent } = useCampaignState();
+  // Use the campaign state context
+  const { dispatch, state } = useCampaignState();
+  
+  // Safely extract player from character state and opponent from root state
+  const player = state?.character?.player;
+  // The combat state doesn't have an opponent property - it's in the root state
+  const opponent = state?.opponent || null;
 
   /**
    * Updates a character's strength during combat.
@@ -31,6 +36,7 @@ export const useCombatActions = () => {
         dispatch({
           type: 'UPDATE_CHARACTER',
           payload: {
+            id: player.id, 
             attributes: { ...currentAttributes, strength: Number(newStrength) },
           },
         });

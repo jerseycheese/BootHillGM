@@ -23,6 +23,15 @@ MockGoogleGenerativeAI.mockImplementation((apiKey: string) => {
   } as unknown as GoogleGenerativeAI;
 });
 
+// Define the actual default suggested actions from generateFallbackResponse
+// (Copied from gameService.test.ts for consistency)
+const fallbackPathDefaultActions = [
+  { text: "Look around", type: "basic", context: "Survey your surroundings" },
+  { text: "Check your inventory", type: "inventory", context: "See what you're carrying" },
+  { text: "Rest for a while", type: "basic", context: "Recover your energy" },
+  { text: "Continue forward", type: "basic", context: "Press on with your journey" }
+];
+
 describe('getAIResponse', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -53,9 +62,22 @@ describe('getAIResponse', () => {
   });
 
   it('handles errors gracefully', async () => {
-    mockGenerateContent.mockRejectedValue(new Error('API error'));
+    mockGenerateContent.mockRejectedValue(new Error('API error')); // Use mockRejectedValue to fail all retries
 
-    await expect(getAIResponse('Test prompt', 'Test context', [])).rejects.toThrow('Unexpected AI response error');
+    // Expect the promise to resolve with the fallback response
+    await expect(getAIResponse('Test prompt', 'Test context', [])).resolves.toEqual({
+      narrative: "the player considers their next move. The western frontier stretches out before you, full of opportunity and danger.", // Default generic fallback narrative
+      location: { type: 'town', name: 'Boothill' }, // Default fallback location
+      combatInitiated: false,
+      opponent: null,
+      acquiredItems: [],
+      removedItems: [],
+      suggestedActions: fallbackPathDefaultActions, // Use actual fallback actions
+      // Ensure optional fields are undefined in fallback
+      lore: undefined,
+      playerDecision: undefined,
+      storyProgression: undefined,
+    });
   });
 
   it('parses acquired and removed items correctly', async () => {
@@ -94,16 +116,34 @@ describe('generateCharacterSummary', () => {
         strength: 10,
         baseStrength: 10,
         bravery: 10,
-        experience: 5
-      },
-      wounds: [],
-      isUnconscious: false,
-      inventory: []
-    };
+         experience: 5
+       },
+       minAttributes: { // Added missing property
+         speed: 1,
+         gunAccuracy: 1,
+         throwingAccuracy: 1,
+         strength: 1,
+         baseStrength: 1,
+         bravery: 1,
+         experience: 0
+       },
+       maxAttributes: { // Added missing property
+         speed: 20,
+         gunAccuracy: 20,
+         throwingAccuracy: 20,
+         strength: 20,
+         baseStrength: 20,
+         bravery: 20,
+         experience: 10
+       },
+       wounds: [],
+       isUnconscious: false,
+       inventory: { items: [] } // Corrected structure
+     };
 
     // Reset all mocks before the test
     jest.clearAllMocks();
-    
+
     mockGenerateContent.mockResolvedValue({
       response: {
         text: () => 'AI-generated character summary',

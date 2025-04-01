@@ -1,243 +1,209 @@
 'use client';
 
-import React, { useCallback, useMemo } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useGameInitialization } from "../hooks/useGameInitialization";
 import { useGameSession } from "../hooks/useGameSession";
-import { useCombatStateRestoration, adaptHealthChangeHandler } from "../hooks/useCombatStateRestoration";
+import { useCombatStateRestoration } from "../hooks/useCombatStateRestoration";
+import { useCharacterExtraction } from "../hooks/useCharacterExtraction";
+import { useRecoveryOptions } from "../hooks/useRecoveryOptions";
 import { LoadingScreen } from "./GameArea/LoadingScreen";
 import { MainGameArea } from "./GameArea/MainGameArea";
 import { SidePanel } from "./GameArea/SidePanel";
-import { InventoryManager } from "../utils/inventoryManager";
 import DevToolsPanel from "./Debug/DevToolsPanel";
-import { GameAction, CampaignState } from "../types/campaign";
-import { GameEngineAction } from "../types/gameActions";
-import { Dispatch } from "react";
-import { LocationService } from "../services/locationService";
-import { Character } from "../types/character";
-import { InventoryItem } from "../types/item.types";
-import { CombatState } from "../types/combat";
-import { JournalEntry } from "../types/journal";
-import { CombatInitiator } from "../types/combatStateAdapter";
+import { generateSessionProps } from "../utils/sessionPropsGenerator";
+import { createCombatInitiator } from "../utils/combatInitiatorGenerator";
+import { useCampaignStateAdapter } from "../hooks/useCampaignStateAdapter";
+import { RecoveryOptions } from "./GameArea/RecoveryOptions";
+import { GameSessionType } from "../types/session/gameSession.types";
 
-// Define our extended state interface
-interface ExtendedState {
-  suggestedActions?: unknown[];
-  error?: string;
-}
+// Maximum loading time before showing recovery options
+const MAX_LOADING_TIME = 5000; // 5 seconds
 
-export default function GameSessionContent() {
+export default function GameSessionContent(): JSX.Element {
+  // Component state
+  const [loadingStartTime] = useState(Date.now());
+  const [showRecoveryOptions, setShowRecoveryOptions] = useState(false);
+  const [loadingTime, setLoadingTime] = useState(0);
+  
+  // Refs for tracking state
+  const initialized = useRef(false);
+  const loadingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Core hooks
   const { isInitializing, isClient } = useGameInitialization();
   const gameSession = useGameSession();
-  const { state, dispatch, executeCombatRound, getCurrentOpponent } = gameSession;
+  const { 
+    playerCharacter, 
+    playerCharacterError, 
+    recoveryInProgress,
+    characterRecovered
+  } = useCharacterExtraction(gameSession?.state);
   
-  // Get current opponent
-  const opponent = getCurrentOpponent ? getCurrentOpponent() : null;
+  // Recovery hooks
+  const { handleRecoverGame, handleRestartGame }: {
+    handleRecoverGame: () => void;
+    handleRestartGame: () => void;
+  } = useRecoveryOptions(
+    gameSession?.dispatch, 
+    playerCharacter,
+    recoveryInProgress
+  );
   
-  // Get LocationService singleton instance for parsing locations
-  const locationService = useMemo(() => LocationService.getInstance(), []);
-
-  // Create a dispatch adapter that converts GameAction to GameEngineAction
-  const dispatchAdapter = useMemo<Dispatch<GameAction>>(() => {
-    return (action) => {
-      // Handle any necessary type conversions
-      if (action.type === 'SET_LOCATION' && typeof action.payload === 'string') {
-        // Convert string locations to LocationType using the LocationService
-        const locationObject = locationService.parseLocation(action.payload);
-        
-        // Dispatch with properly typed location object
-        dispatch({
-          type: 'SET_LOCATION',
-          payload: locationObject
-        });
-        return;
+  // State adapters
+  const { dispatchAdapter, campaignState } = useCampaignStateAdapter(
+    gameSession?.dispatch,
+    gameSession?.state,
+    playerCharacter
+  );
+  
+  // Explicitly cast the gameSession to GameSessionType to ensure type compatibility
+  const typedGameSession = gameSession as GameSessionType;
+  
+  // Generate session props and combat initiator
+  const sessionProps = generateSessionProps(typedGameSession, playerCharacter);
+  const combatInitiator = createCombatInitiator(typedGameSession, sessionProps);
+  
+  // Restore combat state if needed
+  useCombatStateRestoration(gameSession?.state || null, combatInitiator);
+  
+  // Set up loading time tracker
+  useEffect(() => {
+    if (isInitializing) {
+      // Start a timer to update loading time every second
+      loadingTimerRef.current = setInterval(() => {
+        setLoadingTime((Date.now() - loadingStartTime) / 1000);
+      }, 1000);
+    } else if (loadingTimerRef.current) {
+      clearInterval(loadingTimerRef.current);
+      loadingTimerRef.current = null;
+    }
+    
+    return () => {
+      if (loadingTimerRef.current) {
+        clearInterval(loadingTimerRef.current);
+        loadingTimerRef.current = null;
       }
-      
-      // For all other actions, pass through
-      dispatch(action as unknown as GameEngineAction);
     };
-  }, [dispatch, locationService]);
-
-  const handleUseItem = useCallback(() => {
-    // Existing implementation
-  }, []);
-
-  const handleEquipWeapon = useCallback((itemId: string) => {
-    if (!state.character) {
-      return;
-    }
-    
-    // Handle different inventory structures
-    const inventoryItems = 'items' in state.inventory 
-      ? state.inventory.items 
-      : (state.inventory as unknown as InventoryItem[]);
-      
-    // Find the item with the matching ID
-    const item = inventoryItems.find((i: InventoryItem) => i.id === itemId);
-    
-    if (!item || item.category !== 'weapon') {
-      return;
-    }
-    
-    // Handle different character structures
-    const playerCharacter = 'player' in state.character
-      ? state.character.player as Character | null
-      : (state.character as unknown as Character);
-      
-    if (!playerCharacter) {
-      return;
-    }
-    
-    InventoryManager.equipWeapon(playerCharacter, item);
-    dispatch({ type: 'EQUIP_WEAPON', payload: itemId });
-  }, [state, dispatch]);
-
-  const handleCombatAction = useCallback(async () => {
-    if (executeCombatRound) {
-      await executeCombatRound();
-    }
-  }, [executeCombatRound]);
-
-  // Get player ID safely from different character structures
-  const getPlayerId = useCallback((): string => {
-    if (!state.character) return 'player';
-    
-    // If character is a Character type with id
-    if ('id' in state.character && typeof state.character.id === 'string') {
-      return state.character.id;
-    }
-    
-    // If character is a CharacterState with player property
-    if ('player' in state.character && state.character.player) {
-      return state.character.player.id;
-    }
-    
-    return 'player';
-  }, [state.character]);
+  }, [isInitializing, loadingStartTime]);
   
-  // Safe accessor for opponent ID
-  const getOpponentId = useCallback((): string => {
-    return opponent?.id || 'opponent';
-  }, [opponent]);
-
-  // Create an adapter for the handlePlayerHealthChange function
-  const adaptedHealthChangeHandler = useMemo(() => {
-    return adaptHealthChangeHandler(
-      gameSession.handleStrengthChange, 
-      getPlayerId(), 
-      getOpponentId()
+  // Add extended loading time detection
+  useEffect(() => {
+    // Skip if we've already initialized or if recovery options are shown
+    if (initialized.current || showRecoveryOptions || !isInitializing) return;
+    
+    const timerId = setTimeout(() => {
+      // Only update state if we're still initializing
+      if (isInitializing) {
+        setShowRecoveryOptions(true);
+      }
+    }, MAX_LOADING_TIME);
+    
+    // Mark as initialized to prevent duplicate timers
+    initialized.current = true;
+    
+    return () => clearTimeout(timerId);
+  }, [isInitializing, showRecoveryOptions]);
+  
+  // Handle character recovery if needed
+  useEffect(() => {
+    if (!playerCharacterError || characterRecovered.current || recoveryInProgress.current) return;
+    
+    const attemptRecovery = async () => {
+      try {
+        if (typeof window !== 'undefined') {
+          const savedCharacter = localStorage.getItem("character-creation-progress");
+          if (savedCharacter) {
+            const parsedData = JSON.parse(savedCharacter);
+            const extractedChar = parsedData.character;
+            
+            if (extractedChar &&
+                typeof extractedChar === 'object' &&
+                'attributes' in extractedChar &&
+                extractedChar.attributes &&
+                typeof extractedChar.attributes === 'object') {
+              
+              characterRecovered.current = true;
+              
+              // Use requestAnimationFrame to defer state updates until after render
+              window.requestAnimationFrame(() => {
+                handleRecoverGame();
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error recovering character:", error);
+      }
+    };
+    
+    attemptRecovery();
+  }, [playerCharacterError, handleRecoverGame, characterRecovered, recoveryInProgress]);
+  
+  // Early exit for loading state
+  if (!isClient || !gameSession || !gameSession.state) {
+    return (
+      <LoadingScreen 
+        type="session" 
+        message={showRecoveryOptions ? "Game is taking longer than expected to load..." : undefined}
+        error={showRecoveryOptions ? "Game initialization may be stuck" : undefined}
+        loadingTime={loadingTime}
+      >
+        {showRecoveryOptions && (
+          <RecoveryOptions 
+            onRecover={handleRecoverGame} 
+            onRestart={handleRestartGame} 
+            isRecovering={recoveryInProgress.current}
+          />
+        )}
+      </LoadingScreen>
     );
-  }, [gameSession.handleStrengthChange, getPlayerId, getOpponentId]);
-
-  // Create a session object with all required props
-  const sessionProps = {
-    ...gameSession,
-    handleEquipWeapon,
-    handleUseItem,
-    handleCombatAction,
-    handlePlayerHealthChange: adaptedHealthChangeHandler,
-    opponent
-  };
-
-  // Create a properly typed combat initiator object
-  const combatInitiator: CombatInitiator = {
-    // Core combat functions
-    initiateCombat: gameSession.initiateCombat,
-    executeCombatRound: gameSession.executeCombatRound || (() => {}),
-    handleCombatAction,
-    handlePlayerHealthChange: adaptedHealthChangeHandler,
-    
-    // Equipment & character management
-    onEquipWeapon: handleEquipWeapon,
-    getCurrentOpponent: gameSession.getCurrentOpponent || (() => null),
-    opponent,
-    
-    // State management
-    isCombatActive: state.isCombatActive || false,
-    dispatch,
-    
-    // Additional properties - using optional chaining to handle properties that may not exist
-    isLoading: gameSession.isLoading || false,
-    error: gameSession.error || null,
-    handleUserInput: gameSession.handleUserInput,
-    retryLastAction: gameSession.retryLastAction,
-    
-    // Optional properties - these might not exist in gameSession
-    handleDebug: undefined,  // Optional property in CombatInitiator
-    handleSave: undefined,   // Optional property in CombatInitiator
-    handleLoad: undefined    // Optional property in CombatInitiator
-  };
-
-  useCombatStateRestoration(state, combatInitiator);
-
-  if (!isClient || !gameSession || !state || !state.character || isInitializing) {
-    return <LoadingScreen type="session" />;
   }
 
-  // Create a type guard for checking if an object is a Character
-  const isCharacter = (obj: unknown): obj is Character => {
-    return obj !== null &&
-      typeof obj === 'object' &&
-      'isNPC' in obj &&
-      'isPlayer' in obj &&
-      'id' in obj &&
-      'name' in obj &&
-      'attributes' in obj;
-  };
-
-  // Extract player character with proper type safety
-  let playerCharacter: Character;
-  try {
-    if ('player' in state.character && state.character.player && isCharacter(state.character.player)) {
-      playerCharacter = state.character.player;
-    } else if (isCharacter(state.character)) {
-      playerCharacter = state.character;
-    } else {
-      throw new Error('Invalid character structure');
-    }
-  } catch (error) {
-    console.error('Failed to extract player character:', error);
-    return <LoadingScreen 
-      type="session" 
-      message="Character data error" 
-      error="Invalid character data structure detected"
-    />;
+  // Return loading screen if still initializing
+  if (isInitializing) {
+    return (
+      <LoadingScreen 
+        type="session" 
+        message={showRecoveryOptions ? "Game is taking longer than expected to load..." : undefined}
+        error={showRecoveryOptions ? "Game initialization may be stuck" : undefined}
+        loadingTime={loadingTime}
+      >
+        {showRecoveryOptions && (
+          <RecoveryOptions 
+            onRecover={handleRecoverGame} 
+            onRestart={handleRestartGame} 
+            isRecovering={recoveryInProgress.current}
+          />
+        )}
+      </LoadingScreen>
+    );
   }
 
-  const extendedState = state as ExtendedState;
+  // Handle character error case
+  if (playerCharacterError && !characterRecovered.current) {
+    return (
+      <LoadingScreen 
+        type="session" 
+        message="Character data unavailable" 
+        error="Character data not found or invalid"
+        loadingTime={loadingTime}
+      >
+        <RecoveryOptions 
+          onRecover={handleRecoverGame} 
+          onRestart={handleRestartGame} 
+          isRecovering={recoveryInProgress.current}
+        />
+      </LoadingScreen>
+    );
+  }
 
-  // Create a CampaignState object for DevToolsPanel
-  const campaignState: CampaignState = {
-    currentPlayer: state.currentPlayer || '',
-    npcs: state.npcs || [],
-    character: playerCharacter,
-    location: state.location,
-    gameProgress: state.gameProgress,
-    journal: state.journal && 'entries' in state.journal 
-      ? state.journal.entries 
-      : (state.journal as unknown as JournalEntry[] || []),
-    narrative: state.narrative,
-    inventory: state.inventory as unknown as InventoryItem[],
-    quests: state.quests || [],
-    isCombatActive: state.isCombatActive,
-    opponent: opponent,
-    isClient: state.isClient,
-    suggestedActions: extendedState.suggestedActions as unknown as [] || [],
-    combatState: state.combat as unknown as CombatState | undefined,
-    error: extendedState.error,
-    
-    // Define the player getter
-    get player() {
-      return this.character;
-    }
-  };
-
+  // Final render with all components
   return (
     <div id="bhgmGameSessionContent" data-testid="game-session-content" className="wireframe-container">
       <div className="grid grid-cols-[1fr_300px] gap-4">
         <MainGameArea id="bhgmMainGameArea" data-testid="main-game-area" {...sessionProps} />
         <SidePanel id="bhgmSidePanel" data-testid="side-panel" {...sessionProps} />
       </div>
-      {/* The wrapper div handles the ID and test attributes */}
       <div id="bhgmDevToolsPanel" data-testid="dev-tools-panel">
         <DevToolsPanel
           gameState={campaignState}

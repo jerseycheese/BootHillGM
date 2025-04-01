@@ -1,4 +1,4 @@
-import { CombatType } from '../combat';
+import { CombatType, CombatState } from '../combat';
 import { CombatLogEntry } from '../state/combatState';
 
 /**
@@ -13,7 +13,9 @@ export type CombatActionType =
   | 'combat/TOGGLE_TURN'
   | 'combat/UPDATE_MODIFIERS'
   | 'combat/RESET_COMBAT'
-  | 'combat/EXECUTE_ACTION';
+  | 'combat/EXECUTE_ACTION'
+  | 'combat/UPDATE_STATE'  // Added this
+  | 'UPDATE_COMBAT_STATE'; // Added this legacy action
 
 /**
  * Combat action interfaces
@@ -71,6 +73,11 @@ export interface ExecuteCombatActionAction {
   };
 }
 
+export interface UpdateCombatStateAction {
+  type: 'combat/UPDATE_STATE' | 'UPDATE_COMBAT_STATE';
+  payload: CombatState;
+}
+
 /**
  * Combined combat actions type
  */
@@ -83,4 +90,5 @@ export type CombatAction =
   | ToggleCombatTurnAction
   | UpdateCombatModifiersAction
   | ResetCombatAction
-  | ExecuteCombatActionAction;
+  | ExecuteCombatActionAction
+  | UpdateCombatStateAction;

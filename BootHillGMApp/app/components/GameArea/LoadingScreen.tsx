@@ -1,3 +1,5 @@
+import React from 'react';
+
 /**
  * LoadingScreen Component
  * 
@@ -11,6 +13,8 @@
  * @param props.onRetry - Optional retry callback for error states
  * @param props.message - Optional custom message override
  * @param props.subMessage - Optional custom sub-message override
+ * @param props.children - Optional content to render below the loading indicator (recovery options, etc.)
+ * @param props.loadingTime - Optional loading time display in seconds
  */
 interface LoadingScreenProps {
   message?: string;
@@ -20,6 +24,8 @@ interface LoadingScreenProps {
   type?: 'session' | 'combat' | 'ai' | 'inventory' | 'general';
   onRetry?: () => void;
   error?: string | null;
+  children?: React.ReactNode;
+  loadingTime?: number;
 }
 
 export function LoadingScreen({ 
@@ -29,7 +35,9 @@ export function LoadingScreen({
   fullscreen = true,
   type = 'general',
   onRetry,
-  error
+  error,
+  children,
+  loadingTime
 }: LoadingScreenProps) {
   const getDefaultMessage = () => {
     switch(type) {
@@ -46,14 +54,34 @@ export function LoadingScreen({
     }
   };
 
-  const defaultSubMessage = error 
-    ? 'An error occurred. Please try again.' 
-    : type === 'session' 
-      ? 'If loading persists, try navigating to another page and back.'
-      : undefined;
+  const getDefaultSubMessage = () => {
+    if (error) {
+      return 'An error occurred. Please try again.';
+    }
+    
+    switch(type) {
+      case 'session':
+        return 'This may take a moment. If loading persists, try recovery options below.';
+      case 'combat':
+        return 'Calculating combat outcomes...';
+      case 'ai':
+        return 'The AI is generating a response...';
+      case 'inventory':
+        return 'Updating your items...';
+      default:
+        return 'Please wait...';
+    }
+  };
 
   const displayMessage = message || getDefaultMessage();
-  const displaySubMessage = subMessage || defaultSubMessage;
+  const displaySubMessage = subMessage || getDefaultSubMessage();
+  
+  // Render loading time if provided
+  const loadingTimeDisplay = loadingTime ? (
+    <div className="text-xs text-gray-400 mt-1">
+      Loading for {loadingTime.toFixed(1)}s
+    </div>
+  ) : null;
 
   return (
     <div 
@@ -79,6 +107,14 @@ export function LoadingScreen({
         <div className="text-sm text-gray-500">{displaySubMessage}</div>
       )}
       
+      {loadingTimeDisplay}
+      
+      {error && (
+        <div className="text-sm text-red-500 mt-2 p-2 bg-red-50 rounded-md border border-red-200">
+          {error}
+        </div>
+      )}
+      
       {error && onRetry && (
         <button 
           onClick={onRetry}
@@ -87,6 +123,13 @@ export function LoadingScreen({
         >
           Retry
         </button>
+      )}
+      
+      {/* Render any children, which may include recovery options */}
+      {children && (
+        <div className="mt-4 w-full max-w-md">
+          {children}
+        </div>
       )}
     </div>
   );

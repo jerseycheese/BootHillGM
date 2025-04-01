@@ -91,6 +91,67 @@ const MyComponent = () => {
 - Middleware
 - State Selectors
 
+### State Format Compatibility & Parallel Models
+
+During the ongoing refactoring of the application's state management, we are temporarily supporting two parallel state models:
+
+1.  **Legacy State Model**: This is the original, flatter state structure where state properties were often directly accessible at the root level (e.g., `state.inventory`).
+2.  **Domain-Specific State Slices**: This is the new, more organized structure where state is divided into domain-specific slices (e.g., `state.inventory.items`).
+
+This approach of supporting \"parallel state models\" is crucial for:
+
+-   **Backward Compatibility**: Ensuring that existing saved games and user data remain compatible with the evolving application.
+-   **Incremental Refactoring**: Allowing for a gradual and less disruptive transition to the new state architecture.
+
+To handle these parallel models, we use **type guards** (see `app/hooks/selectors/typeGuards.ts`). These utility functions safely extract data from the state, regardless of whether it's in the legacy or the new format.
+
+```mermaid
+graph TD
+    subgraph Application State During Transition
+        direction LR
+        LegacyState(\"Legacy State (Flat)\")
+        NewState(\"New State (Domain Slices)\")
+    end
+
+    subgraph Example: Inventory Access
+        direction TB
+        LegacyInv[\"inventory: InventoryItem[]\"]
+        NewInv[\"inventory: { items: InventoryItem[] }\"]
+        TypeGuard[\"getItemsFromInventory() (Type Guard)\"]
+        Component(\"Component/Selector\")
+
+        LegacyInv --> TypeGuard
+        NewInv --> TypeGuard
+        TypeGuard --> Component
+    end
+
+    LegacyState --> LegacyInv
+    NewState --> NewInv
+
+    style LegacyState fill:#f9f,stroke:#333,stroke-width:2px
+    style NewState fill:#ccf,stroke:#333,stroke-width:2px
+#### Inventory State Transition
+
+The inventory state is a prime example of this transition. Initially, the inventory was stored as a simple array directly in the state:
+
+```typescript
+// Legacy format - direct array
+inventory: InventoryItem[]
+```
+
+With the move to domain-specific slices, the inventory state is now structured as an object with an `items` property:
+
+```typescript
+// New format - domain slice with items property
+inventory: {
+  items: InventoryItem[]
+}
+```
+
+The `getItemsFromInventory` type guard in `app/hooks/selectors/typeGuards.ts` is specifically designed to handle both of these formats, allowing components to access inventory items without needing to know the underlying state structure.
+```
+
+For more technical details on state format compatibility and how to work with both formats in your code, please refer to [[../technical-guides/state-compatibility|State Format Compatibility Guide]].
 ### Reducer Structure
 The `gameReducer` has been split into multiple reducers to improve code organization and maintainability. Each reducer is responsible for a specific domain of the game state.
 
@@ -222,14 +283,12 @@ The location state management system handles the current location and history of
 - **`useLocation` Hook:**
   - Manages location state and history.
   - Provides an `updateLocation` function for updating the current location.
-  - Stores location history in `localStorage`.
   - Synchronizes with the global game state.
 
 - **`LocationService`:**
   - Provides utility functions for location management.
   - Parses location strings into structured `LocationType` objects.
   - Validates `LocationType` objects.
-  - Manages location history, enforcing a maximum history length.
 
 - **`LocationType`:**
   - Defines the structure of location data:

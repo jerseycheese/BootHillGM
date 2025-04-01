@@ -189,8 +189,8 @@ export function journalReducer(
   // Use action.type as a string for comparison
   const actionType = action.type as string;
 
-  // UPDATE_JOURNAL
-  if (actionType === 'UPDATE_JOURNAL') {
+  // Handle both UPDATE_JOURNAL and journal/UPDATE_JOURNAL
+  if (actionType === 'UPDATE_JOURNAL' || actionType === 'journal/UPDATE_JOURNAL') {
     if (!hasPayload<unknown>(action)) {
       return safeState;
     }

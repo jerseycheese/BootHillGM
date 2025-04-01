@@ -48,7 +48,11 @@ const ACTION_TYPE_MAP: Record<string, string> = {
   'SET_NARRATIVE_CONTEXT': 'narrative/SET_CONTEXT',
   'NAVIGATE_TO_POINT': 'narrative/NAVIGATE_TO_POINT',
   'SELECT_CHOICE': 'narrative/SELECT_CHOICE',
-  'SET_DISPLAY_MODE': 'narrative/SET_DISPLAY_MODE'
+  'SET_DISPLAY_MODE': 'narrative/SET_DISPLAY_MODE',
+  
+  // Global state actions
+  'SET_GAME_PROGRESS': 'game/SET_PROGRESS',
+  'SET_SUGGESTED_ACTIONS': 'game/SET_SUGGESTED_ACTIONS'
 };
 
 /**
@@ -59,7 +63,14 @@ export function isGameEngineAction(action: GameAction | GameEngineAction): actio
     isNonNullObject(action) && 
     'type' in action && 
     isString(action.type) && 
-    Object.keys(ACTION_TYPE_MAP).includes(action.type)
+    (Object.keys(ACTION_TYPE_MAP).includes(action.type) || 
+     // Add special handling for non-mapped actions that should be recognized
+     action.type === 'UPDATE_COMBAT_STATE' ||
+     action.type === 'UPDATE_JOURNAL' ||
+     action.type === 'UPDATE_CHARACTER' ||
+     action.type === 'SET_NARRATIVE' ||
+     action.type === 'SET_GAME_PROGRESS' ||
+     action.type === 'SET_SUGGESTED_ACTIONS')
   );
 }
 
@@ -115,6 +126,13 @@ export function getDomainFromActionType(actionType: string): string | null {
   if (actionType.includes('JOURNAL')) return 'journal';
   if (actionType.includes('NARRATIVE')) return 'narrative';
   if (actionType.includes('UI')) return 'ui';
+  
+  // Special cases
+  if (actionType === 'UPDATE_JOURNAL') return 'journal';
+  if (actionType === 'UPDATE_CHARACTER') return 'character';
+  if (actionType === 'SET_NARRATIVE') return 'narrative';
+  if (actionType === 'SET_GAME_PROGRESS') return 'game';
+  if (actionType === 'SET_SUGGESTED_ACTIONS') return 'game';
   
   // No specific domain
   return null;

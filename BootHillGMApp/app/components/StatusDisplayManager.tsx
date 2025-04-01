@@ -11,7 +11,6 @@
 import React, { memo } from 'react';
 import { Character } from '../types/character';
 import { getCharacterStrength } from '../utils/strengthSystem';
-import { useLocation } from '../hooks/useLocation';
 import { useCampaignState } from './CampaignStateManager';
 import { LocationType } from '../services/locationService';
 
@@ -152,7 +151,6 @@ interface StatusDisplayManagerProps {
 
 function StatusDisplayManager({ character, location }: StatusDisplayManagerProps) {
     const { dispatch } = useCampaignState();
-    const { locationState } = useLocation();
     const currentStrength = getCharacterStrength(character);
     const maxStrength = character.attributes.baseStrength;
     const displayLocation = location;
@@ -172,7 +170,7 @@ function StatusDisplayManager({ character, location }: StatusDisplayManagerProps
 
     const handleResetStrength = () => {
         dispatch({
-            type: 'UPDATE_CHARACTER',
+            type: 'SET_CHARACTER', // Use SET_CHARACTER as it replaces the whole object
             payload: {
                 ...character,
                 wounds: [],
@@ -203,39 +201,6 @@ function StatusDisplayManager({ character, location }: StatusDisplayManagerProps
               isUnconscious={character.isUnconscious}
               onReset={handleResetStrength}
             />
-
-            {/* Location History */}
-            {locationState.history.length > 0 && (
-              <div className="location-history text-sm" data-testid="location-history">
-                <div className="text-gray-600 font-semibold mb-1">
-                  Location History:
-                </div>
-                <div className="max-h-32 overflow-y-auto">
-                  {locationState.history
-                    .slice()
-                    .reverse()
-                    .map((loc, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between text-xs py-1 border-b border-gray-200 last:border-0"
-                        data-testid={`location-history-${index}`}
-                      >
-                        <span className="text-gray-700">
-                          {loc.type === 'town'
-                            ? loc.name
-                            : loc.type === 'wilderness'
-                            ? loc.description
-                            : loc.type === 'landmark'
-                            ? `${loc.name}${
-                                loc.description ? ` (${loc.description})` : ''
-                              }`
-                            : 'Unknown'}
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
 
             {/* Strength History Section */}
             {character.strengthHistory && character.strengthHistory.changes.length > 0 && (

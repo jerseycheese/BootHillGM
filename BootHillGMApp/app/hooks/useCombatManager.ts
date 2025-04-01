@@ -1,14 +1,14 @@
 import { useCallback } from 'react';
 import { Character } from '../types/character';
-import { useCampaignState } from '../components/CampaignStateManager';
+import { useCampaignState } from './useCampaignStateContext';
 import { DefaultWeapons } from '../data/defaultWeapons';
-import { addCombatJournalEntry } from '../utils/JournalManager';
 import { CombatState as CombatStateFromCombat, ensureCombatState, CombatParticipant, LogEntry, BrawlingState, WeaponCombatState } from '../types/combat';
 import { cleanCharacterName } from '../utils/combatUtils';
 import { useCombatState } from './combat/useCombatState';
 import { useCombatActions } from './combat/useCombatActions';
 import { InventoryItem } from '../types/item.types';
 import { UniversalCombatState } from '../types/combatStateAdapter';
+import { JournalUpdatePayload } from '../types/gameActions';
 
 /**
  * Custom hook for managing combat encounters.
@@ -19,7 +19,13 @@ import { UniversalCombatState } from '../types/combatStateAdapter';
  * @returns An object containing combat-related state and functions.
  */
 export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (text: string) => void }) => {
-  const { dispatch, state, player, opponent, inventory } = useCampaignState();
+  const { dispatch, state } = useCampaignState();
+  
+  // Safely extract player and opponent from state to avoid undefined errors
+  const player = state?.character?.player;
+  // The opponent is stored at the root level, not in the combat state
+  const opponent = state?.opponent || null;
+  
   const {
     isProcessing,
     setIsProcessing,
@@ -78,15 +84,23 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           onUpdateNarrative(combatResults);
           onUpdateNarrative(endMessage);
 
+          // Create a single journal entry with the required JournalUpdatePayload structure
+          const journalEntry: JournalUpdatePayload = {
+            id: `combat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            type: 'combat',
+            content: endMessage,
+            timestamp: Date.now(),
+            narrativeSummary: `Combat between ${cleanPlayerName} and ${cleanOpponentName}`,
+            combatants: {
+              player: playerName,
+              opponent: opponentName
+            },
+            outcome: winner === 'player' ? 'victory' : 'defeat'
+          };
+
           dispatch({
             type: 'UPDATE_JOURNAL',
-            payload: addCombatJournalEntry(
-              state.journal.entries,
-              playerName,
-              opponentName,
-              winner === 'player' ? 'victory' : 'defeat',
-              endMessage
-            ),
+            payload: journalEntry
           });
 
           const initialPlayerStrength = player?.attributes?.strength || 0;
@@ -169,6 +183,9 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           return;
         }
 
+        // Moved inside the useCallback to prevent dependency issues
+        const inventory = state?.inventory?.items || [];
+        
         const equippedWeaponItem = inventory.find(
           (item: InventoryItem) => item.category === 'weapon' && item.isEquipped
         );
@@ -237,7 +254,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         isUpdatingRef.current = false;
       }
     },
-    [dispatch, player, inventory, onUpdateNarrative, isUpdatingRef, getRoundCount]
+    [dispatch, player, state, onUpdateNarrative, isUpdatingRef, getRoundCount]
   );
 
   /**

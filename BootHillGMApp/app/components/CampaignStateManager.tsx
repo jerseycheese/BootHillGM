@@ -17,6 +17,60 @@ import { JournalEntry } from '../types/journal';
 import { NarrativeContext } from '../types/narrative/context.types';
 
 /**
+ * Safe access to browser storage APIs that works with SSR/SSG
+ */
+const isBrowser = typeof window !== 'undefined';
+
+const safeStorage = {
+  local: {
+    getItem: (key: string): string | null => {
+      if (!isBrowser) return null;
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        console.error('Error accessing localStorage:', e);
+        return null;
+      }
+    },
+    setItem: (key: string, value: string): void => {
+      if (!isBrowser) return;
+      try {
+        localStorage.setItem(key, value);
+      } catch (e) {
+        console.error('Error writing to localStorage:', e);
+      }
+    }
+  },
+  session: {
+    getItem: (key: string): string | null => {
+      if (!isBrowser) return null;
+      try {
+        return sessionStorage.getItem(key);
+      } catch (e) {
+        console.error('Error accessing sessionStorage:', e);
+        return null;
+      }
+    },
+    setItem: (key: string, value: string): void => {
+      if (!isBrowser) return;
+      try {
+        sessionStorage.setItem(key, value);
+      } catch (e) {
+        console.error('Error writing to sessionStorage:', e);
+      }
+    },
+    removeItem: (key: string): void => {
+      if (!isBrowser) return;
+      try {
+        sessionStorage.removeItem(key);
+      } catch (e) {
+        console.error('Error removing from sessionStorage:', e);
+      }
+    }
+  }
+};
+
+/**
  * CampaignStateProvider component manages the game state for a campaign session.
  * It combines multiple specialized hooks for state management, persistence, and cleanup.
  * 
@@ -32,13 +86,19 @@ import { NarrativeContext } from '../types/narrative/context.types';
  */
 export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isInitializedRef = useRef(false);
-  const isInitializing = (typeof window !== 'undefined') && Boolean(sessionStorage.getItem('initializing_new_character'));
+  const isInitializing = isBrowser && Boolean(safeStorage.session.getItem('initializing_new_character'));
 
   // Get the saved state from localStorage
   const savedStateJSON = useMemo(() => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('campaignState');
+    return safeStorage.local.getItem('campaignState');
   }, []);
+  
+  // Only log in development mode and in the browser
+  useEffect(() => {
+    if (isBrowser && process.env.NODE_ENV === 'development') {
+      console.log('CampaignStateManager: Reading campaignState from localStorage:', savedStateJSON);
+    }
+  }, [savedStateJSON]);
 
   // Restore the campaign state
   const initialState = useCampaignStateRestoration({ 
@@ -66,9 +126,9 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Handle initialization
   useEffect(() => {
-    if (!isInitializedRef.current && typeof window !== 'undefined') {
+    if (!isInitializedRef.current && isBrowser) {
       if (!isInitializing) {
-        sessionStorage.removeItem('initializing_new_character');
+        safeStorage.session.removeItem('initializing_new_character');
       }
       isInitializedRef.current = true;
     }

@@ -8,7 +8,8 @@ export type JournalActionType =
   | 'journal/REMOVE_ENTRY'
   | 'journal/UPDATE_ENTRY'
   | 'journal/SET_ENTRIES'
-  | 'journal/CLEAR_ENTRIES';
+  | 'journal/CLEAR_ENTRIES'
+  | 'journal/UPDATE_JOURNAL'; // Added this
 
 /**
  * Journal action interfaces
@@ -37,6 +38,12 @@ export interface ClearJournalEntriesAction {
   type: 'journal/CLEAR_ENTRIES';
 }
 
+// Add new interface for UPDATE_JOURNAL 
+export interface UpdateJournalAction {
+  type: 'journal/UPDATE_JOURNAL' | 'UPDATE_JOURNAL';
+  payload: Partial<JournalEntry>;
+}
+
 /**
  * Combined journal actions type
  */
@@ -45,4 +52,5 @@ export type JournalAction =
   | RemoveJournalEntryAction
   | UpdateJournalEntryAction
   | SetJournalEntriesAction
-  | ClearJournalEntriesAction;
+  | ClearJournalEntriesAction
+  | UpdateJournalAction;

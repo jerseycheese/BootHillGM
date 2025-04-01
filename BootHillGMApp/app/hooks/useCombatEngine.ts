@@ -20,7 +20,7 @@ import { calculateCombatDamage } from '../utils/combatRules';
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { debounce } from 'lodash';
 import { Character } from '../types/character';
-import { CombatState } from '../types/combat';
+import { CombatState, ensureCombatState, LogEntry } from '../types/combat';
 import { calculateHitChance, rollD100, isCritical } from '../utils/combatRules';
 import { getCharacterStrength, validateStrengthValue } from '../utils/strengthSystem';
 import { cleanCharacterName } from '../utils/combatUtils';
@@ -198,21 +198,30 @@ export const useCombatEngine = ({
    * Ensures combat state persistence and synchronization with the game engine.
    */
   useEffect(() => {
-    const localCombatState = {
-      playerStrength: playerHealth,
-      opponentStrength: opponentHealth,
+    // Convert local state to proper CombatState format using the ensureCombatState utility
+    const formattedCombatState = ensureCombatState({
+      isActive: true,
+      combatType: 'weapon', // Default type, adjust as needed
+      winner: null,
+      participants: [playerCharacter, opponent],
+      rounds: 1, // Default round, adjust as needed
       currentTurn,
-      combatLog,
-    };
+      combatLog: combatLog.map(entry => ({
+        text: entry.text,
+        type: entry.type,
+        timestamp: entry.timestamp
+      } as LogEntry))
+    });
+
     debouncedDispatch({
       type: 'UPDATE_COMBAT_STATE',
-      payload: localCombatState,
+      payload: formattedCombatState,
     });
 
     return () => {
       debouncedDispatch.cancel();
     };
-  }, [playerHealth, opponentHealth, currentTurn, combatLog, debouncedDispatch]);
+  }, [playerHealth, opponentHealth, currentTurn, combatLog, debouncedDispatch, playerCharacter, opponent]);
 
   return {
     playerHealth,

@@ -1,12 +1,12 @@
 import { Character } from '../../types/character';
 import { CharacterState } from '../../types/state/characterState';
 import { ExtendedGameState } from '../../types/extendedState';
-import { UpdateCharacterPayload } from '../../types/gameActions';
 import { calculateUpdatedStrength } from '../../utils/strengthSystem';
 import { InventoryItem } from '../../types/item.types';
 import { Wound } from '../../types/wound';
 import { Weapon } from '../../types/weapon.types';
 
+/**
 /**
  * Type for inventory in character payload
  */
@@ -14,6 +14,24 @@ export interface CharacterInventory {
   items: InventoryItem[];
 }
 
+/**
+ * Update character payload type
+ */
+export interface UpdateCharacterPayload {
+  id: string;
+  attributes?: {
+    speed?: number;
+    gunAccuracy?: number;
+    throwingAccuracy?: number;
+    strength?: number;
+    baseStrength?: number;
+    bravery?: number;
+    experience?: number;
+  };
+  damageInflicted?: number;
+  wounds?: Wound[];
+  [key: string]: unknown;
+}
 /**
  * Character set payload type
  */

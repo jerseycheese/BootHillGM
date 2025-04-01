@@ -9,12 +9,12 @@ import { StoryProgressionState, NarrativeState, initialNarrativeState } from './
  * Defines the structure of a suggested action in the campaign.
  * 
  * @property text - The description of the action
- * @property type - The type of the action ('basic', 'combat', 'interaction', 'chaotic')
+ * @property type - The type of the action ('basic', 'combat', 'interaction', 'chaotic', 'inventory')
  * @property context - Optional tooltip explanation for the action
  */
 export interface SuggestedAction {
   text: string;
-  type: 'basic' | 'combat' | 'interaction' | 'chaotic';
+  type: 'basic' | 'combat' | 'interaction' | 'chaotic' | 'inventory';
   context?: string;
 }
 

@@ -2,10 +2,19 @@ import { ExtendedGameState } from '../types/extendedState';
 import { Character } from '../types/character';
 import { CharacterState } from '../types/state/characterState';
 import { calculateUpdatedStrength } from '../utils/strengthSystem';
-import { UpdateCharacterPayload } from '../types/gameActions';
+// Removed the invalid import for UpdateCharacterPayload.
 import { Wound } from '../types/wound';
 import { InventoryItem } from '../types/item.types';
 import { Weapon } from '../types/weapon.types';
+
+// Local definition for UpdateCharacterPayload since it is not exported from '../types/gameActions'
+export interface UpdateCharacterPayload {
+  id: string;
+  attributes?: Partial<Character['attributes']>;
+  damageInflicted?: number;
+  wounds?: Wound[];
+  [key: string]: unknown;
+}
 
 /**
  * Type for character payload to avoid 'any'

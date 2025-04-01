@@ -11,7 +11,6 @@ export interface LocationState {
 
 export class LocationService {
   private static instance: LocationService;
-  private maxHistoryLength: number = 5; // Maximum location history
 
   /**
    * Get the singleton instance of LocationService.
@@ -80,19 +79,20 @@ export class LocationService {
   }
 
   /**
-   * Updates the location history with a new location, maintaining a maximum history length.
+   * Updates the location history with a new location.
    * @param history The current location history.
    * @param newLocation The new location to add.
    * @returns The updated location history.
    */
   updateLocationHistory(
-    history: LocationType[],
+    history: LocationType[] = [],
     newLocation: LocationType
   ): LocationType[] {
+    // Keep a maximum of 5 locations in history
+    const MAX_HISTORY = 5;
     const updatedHistory = [...history, newLocation];
-    if (updatedHistory.length > this.maxHistoryLength) {
-      updatedHistory.shift(); // Remove oldest location
-    }
-    return updatedHistory;
+    
+    // Return only the most recent MAX_HISTORY locations
+    return updatedHistory.slice(-MAX_HISTORY);
   }
 }

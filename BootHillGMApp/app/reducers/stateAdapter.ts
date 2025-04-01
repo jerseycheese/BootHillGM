@@ -14,8 +14,10 @@ import { initialNarrativeState } from '../types/narrative.types';
  * Handles the SET_STATE action
  */
 export function handleSetState(state: ExtendedGameState, payload: unknown): ExtendedGameState {
+  // Check if this is a reset operation
+  const isReset = payload && typeof payload === 'object' && 'isReset' in payload && payload.isReset === true;
+  
   // Apply migration adapter to ensure proper state format
-  // Cast payload to correct type expected by migrationAdapter.oldToNew
   const normalizedState = migrationAdapter.oldToNew(payload as GameState | LegacyState);
   
   // Type assertion to help TypeScript understand that normalized state follows our ExtendedGameState structure
@@ -39,23 +41,117 @@ export function handleSetState(state: ExtendedGameState, payload: unknown): Exte
   if (hasNarrative(normalizedState)) {
     // Create a new narrative state with proper typing and ensure all fields are present
     const narrativeData = normalizedState.narrative as Partial<NarrativeState>;
-    newState.narrative = {
-      ...initialNarrativeState, // Start with all required fields
-      ...narrativeData, // Override with provided values
+    
+    // For reset operations, start fresh with initialNarrativeState as the base
+    if (isReset) {
+      // Start with a clean slate from initialNarrativeState
+      newState.narrative = {
+        ...initialNarrativeState
+      };
       
-      // Ensure array properties are properly handled
-      narrativeHistory: Array.isArray(narrativeData.narrativeHistory) 
-        ? [...narrativeData.narrativeHistory] 
-        : initialNarrativeState.narrativeHistory,
+      // Carefully merge narrative data, ensuring array properties are properly handled
+      if (narrativeData) {
+        // Handle required array properties explicitly
+        newState.narrative.narrativeHistory = Array.isArray(narrativeData.narrativeHistory) 
+          ? [...narrativeData.narrativeHistory] 
+          : [];
+          
+        newState.narrative.visitedPoints = Array.isArray(narrativeData.visitedPoints) 
+          ? [...narrativeData.visitedPoints] 
+          : [];
+          
+        newState.narrative.availableChoices = Array.isArray(narrativeData.availableChoices) 
+          ? [...narrativeData.availableChoices] 
+          : [];
+        
+        // Handle currentStoryPoint - this is crucial for the narrative display
+        newState.narrative.currentStoryPoint = narrativeData.currentStoryPoint || null;
+        
+        // Handle other non-array properties
+        newState.narrative.displayMode = narrativeData.displayMode || initialNarrativeState.displayMode;
+        newState.narrative.selectedChoice = narrativeData.selectedChoice;
+        newState.narrative.currentDecision = narrativeData.currentDecision;
+        newState.narrative.error = narrativeData.error || null;
+        
+        // Handle nested objects with care
+        if (narrativeData.narrativeContext) {
+          newState.narrative.narrativeContext = { ...narrativeData.narrativeContext };
+        }
+        
+        if (narrativeData.storyProgression) {
+          newState.narrative.storyProgression = { ...narrativeData.storyProgression };
+        }
+        
+        if (narrativeData.lore) {
+          newState.narrative.lore = { ...narrativeData.lore };
+        }
+      }
+    } else {
+      // For non-reset operations, start with the current narrative state
+      newState.narrative = {
+        ...initialNarrativeState,
+        ...state.narrative
+      };
       
-      visitedPoints: Array.isArray(narrativeData.visitedPoints) 
-        ? [...narrativeData.visitedPoints] 
-        : initialNarrativeState.visitedPoints,
-      
-      availableChoices: Array.isArray(narrativeData.availableChoices) 
-        ? [...narrativeData.availableChoices] 
-        : initialNarrativeState.availableChoices
-    };
+      // Then carefully merge in the narrative data from normalized state
+      if (narrativeData) {
+        // Carefully merge array properties - preserve existing arrays if new ones aren't provided
+        newState.narrative.narrativeHistory = Array.isArray(narrativeData.narrativeHistory) 
+          ? [...narrativeData.narrativeHistory] 
+          : newState.narrative.narrativeHistory || [];
+          
+        newState.narrative.visitedPoints = Array.isArray(narrativeData.visitedPoints) 
+          ? [...narrativeData.visitedPoints] 
+          : newState.narrative.visitedPoints || [];
+          
+        newState.narrative.availableChoices = Array.isArray(narrativeData.availableChoices) 
+          ? [...narrativeData.availableChoices] 
+          : newState.narrative.availableChoices || [];
+        
+        // Update non-array properties if provided
+        if (narrativeData.currentStoryPoint) {
+          newState.narrative.currentStoryPoint = narrativeData.currentStoryPoint;
+        }
+        
+        if (narrativeData.displayMode) {
+          newState.narrative.displayMode = narrativeData.displayMode;
+        }
+        
+        if (narrativeData.selectedChoice !== undefined) {
+          newState.narrative.selectedChoice = narrativeData.selectedChoice;
+        }
+        
+        if (narrativeData.currentDecision) {
+          newState.narrative.currentDecision = narrativeData.currentDecision;
+        }
+        
+        if (narrativeData.error !== undefined) {
+          newState.narrative.error = narrativeData.error;
+        }
+        
+        // Handle nested objects by merging them if provided
+        if (narrativeData.narrativeContext) {
+          newState.narrative.narrativeContext = { 
+            ...newState.narrative.narrativeContext,
+            ...narrativeData.narrativeContext 
+          };
+        }
+        
+        if (narrativeData.storyProgression) {
+          newState.narrative.storyProgression = { 
+            ...newState.narrative.storyProgression,
+            ...narrativeData.storyProgression 
+          };
+        }
+        
+        if (narrativeData.lore) {
+          newState.narrative.lore = { 
+            ...newState.narrative.lore,
+            ...narrativeData.lore 
+          };
+        }
+      }
+    }
   }
   
   // Handle opponent for backward compatibility

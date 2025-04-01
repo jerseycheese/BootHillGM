@@ -35,6 +35,34 @@ interface CombatWeapon {
   [key: string]: unknown;
 }
 
+// Define our simplified combat log entry type that matches the state.ts definition
+interface StateCombatLogEntry {
+  text: string;
+  timestamp: number;
+  type?: 'action' | 'result' | 'system';
+  data?: Record<string, unknown>;
+}
+
+// Helper function to map from CombatLogEntry type to StateCombatLogEntry type
+function mapToStateLogType(type: CombatLogEntry['type']): StateCombatLogEntry['type'] {
+  switch (type) {
+    case 'hit':
+    case 'miss':
+    case 'critical':
+      return 'result';
+    case 'info':
+      return 'system';
+    case 'action':
+      return 'action';
+    case 'system':
+      return 'system';
+    case 'result':
+      return 'result';
+    default:
+      return 'system';
+  }
+}
+
 // Helper function to safely get character
 function getCharacter(state: GameState, characterId: string): CombatCharacter | null {
   if (!hasCharacterState(state)) {
@@ -272,29 +300,36 @@ export const combatSystem = {
           return state;
         }
         
-        // Extract the message text from payload with a fallback
-        const textFromPayload = isString(action.payload.text) ? action.payload.text : 'Combat action';
+        let logEntryType: StateCombatLogEntry['type'] = 'system';
         
-        // Remove both text and timestamp from the payload
-        // Using destructuring with rest operator to create a clean object
-        const { text, timestamp, ...otherPayloadProps } = action.payload;
+        // Handle different input types
+        if (isString(action.payload.type)) {
+          // If it's one of our target types, use it directly
+          if (['action', 'result', 'system'].includes(action.payload.type)) {
+            logEntryType = action.payload.type as StateCombatLogEntry['type'];
+          } else {
+            // Map from CombatLogEntry type to our target type
+            logEntryType = mapToStateLogType(action.payload.type as CombatLogEntry['type']);
+          }
+        }
         
-        // Create the log entry with the correct priority of properties
-        const logEntry: CombatLogEntry = {
-          // First include other payload properties
-          ...otherPayloadProps,
-          // Then add our guaranteed values last to ensure they take precedence
-          text: textFromPayload,
-          timestamp: Date.now()
+        // Create an entry that matches the expected type in state.ts
+        const stateLogEntry: StateCombatLogEntry = {
+          text: isString(action.payload.text) ? action.payload.text : 'Combat action',
+          timestamp: isNumber(action.payload.timestamp) ? action.payload.timestamp : Date.now(),
+          type: logEntryType,
+          data: action.payload.data as Record<string, unknown> || {
+            originalPayload: { ...action.payload }
+          }
         };
-        
+
         return {
           ...state,
           combat: {
             ...state.combat,
             combatLog: [
-              ...state.combat.combatLog,
-              logEntry
+              ...(state.combat.combatLog || []),
+              stateLogEntry
             ]
           }
         };

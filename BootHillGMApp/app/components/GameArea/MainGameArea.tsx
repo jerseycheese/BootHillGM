@@ -19,13 +19,26 @@ export function MainGameArea({
   handleCombatEnd,
   handlePlayerHealthChange,
 }: GameSessionProps) {
+  // Handle null state
+  if (!state || !state.narrative) {
+    return (
+      <div id="bhgmMainGameAreaContainer" data-testid="main-game-area-container" className="h-full flex flex-col overflow-auto bhgm-main-game-area">
+        <div className="wireframe-section flex-1 flex flex-col overflow-auto">
+          <div className="flex-1 p-4">
+            <p>Loading game state...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div id="bhgmMainGameAreaContainer" data-testid="main-game-area-container" className="h-full flex flex-col overflow-auto bhgm-main-game-area">
       <div className="wireframe-section flex-1 flex flex-col overflow-auto">
         <NarrativeWithDecisions
           id="bhgmNarrativeWithDecisions"
           data-testid="narrative-with-decisions"
-          narrative={state.narrative.narrativeHistory.join('\n')}
+          narrative={state.narrative.narrativeHistory?.join('\n') || ''}
           error={error}
           onRetry={retryLastAction}
           className="flex-1"

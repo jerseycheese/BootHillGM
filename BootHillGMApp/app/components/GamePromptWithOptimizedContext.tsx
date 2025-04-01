@@ -7,6 +7,7 @@ import { AIRequestResult } from '../types/ai.types';
 import { LocationType } from '../services/locationService';
 import { InventoryItem } from '../types/item.types';
 import { Character } from '../types/character';
+import { JournalUpdatePayload } from '../types/gameActions';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -179,15 +180,18 @@ export default function GamePromptWithOptimizedContext() {
     }
     
     if (response.storyProgression) {
+      // Create a strongly typed journal entry
+      const journalEntry: JournalUpdatePayload = {
+        id: uuidv4(),
+        content: response.storyProgression.description ?? '', 
+        timestamp: Date.now(),
+        type: 'narrative',
+        narrativeSummary: response.storyProgression.title || 'Story Development'
+      };
+      
       dispatch({
         type: 'UPDATE_JOURNAL',
-        payload: {
-          id: uuidv4(), 
-          content: response.storyProgression.description ?? '', 
-          timestamp: Date.now(),
-          type: 'narrative', 
-          narrativeSummary: response.storyProgression.title || 'Story Development'
-        }
+        payload: journalEntry
       });
     }
   };

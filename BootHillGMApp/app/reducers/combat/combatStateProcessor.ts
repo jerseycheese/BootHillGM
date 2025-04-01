@@ -7,12 +7,14 @@ import { CombatLogEntry, initialCombatState } from '../../types/state/combatStat
 /**
  * Combat update payload type definition
  */
+import { CombatParticipant } from '../../types/combat';
+
 export interface CombatUpdatePayload {
   isActive?: boolean;
   combatType?: CombatType;
-  participants?: unknown[];
+  participants?: CombatParticipant[];
   rounds?: number;
-  combatLog?: CombatLogEntry[];
+  combatLog?: Partial<CombatLogEntry>[];
   brawling?: unknown;
   weapon?: unknown;
   winner?: string | null;
@@ -72,12 +74,18 @@ export function processUpdateCombatState(state: ExtendedGameState, payload: Comb
   
   // Convert any log entries in the payload to the proper format
   const formattedCombatLog = payload?.combatLog?.map((entry) => {
-    // Ensure each entry has the required CombatLogEntry structure
+    // Map the type to a valid CombatLogEntry type
+    const entryType = entry.type || "info";
+    const mappedType: CombatLogEntry["type"] = 
+      ["hit", "miss", "critical", "info", "system", "action", "result"].includes(entryType as string)
+      ? entryType as CombatLogEntry["type"]
+      : "info";
+      
     return {
       text: entry.text || "",
       timestamp: entry.timestamp || Date.now(),
-      type: (entry.type || 'system') as 'action' | 'result' | 'system',
-      data: entry.data || {}
+      type: mappedType,
+      data: entry.data || { originalType: entryType }
     } as CombatLogEntry;
   }) || existingCombat.combatLog;
   
@@ -99,10 +107,16 @@ export function processUpdateCombatState(state: ExtendedGameState, payload: Comb
   
   // For backward compatibility
   if (payload) {
-    // Use type assertion to bridge the gap between different interfaces
+    // Extract payload without combatLog
+    const { combatLog, ...otherPayloadProps } = payload;
+    
+    // Use the already formatted combat log from earlier in the function
+    
+    // Use adaptEnsureCombatState to bridge the gap between different interfaces
     newState.combatState = adaptEnsureCombatState({
       ...(state.combatState || {}),
-      ...(payload as CombatUpdatePayload),
+      ...otherPayloadProps,
+      combatLog: formattedCombatLog,
       isActive: true
     });
   }

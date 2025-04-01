@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useCampaignState } from '../components/CampaignStateManager';
+import { useCampaignState } from './useCampaignStateContext';
 import { addNarrativeHistory } from '../actions/narrativeActions';
 import { UpdateNarrativeParams } from '../types/gameSession.types';
 

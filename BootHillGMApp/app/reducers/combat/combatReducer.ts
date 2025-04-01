@@ -42,9 +42,11 @@ export function combatReducer(
     }
     
     case 'combat/ADD_LOG_ENTRY': {
+      // Fix for combatLog spread operation
+      const currentLog = state.combatLog || [];
       return {
         ...state,
-        combatLog: [...state.combatLog, action.payload]
+        combatLog: [...currentLog, action.payload]
       };
     }
     
@@ -81,6 +83,44 @@ export function combatReducer(
         isActive: true,
         combatType: state.combatType
       };
+    }
+    
+    // Handle UPDATE_COMBAT_STATE with explicit type check
+    case 'UPDATE_COMBAT_STATE':
+    case 'combat/UPDATE_STATE': {
+      // Use the payload as the new combat state, ensuring it has all required properties
+      if (action.type === 'UPDATE_COMBAT_STATE' || action.type === 'combat/UPDATE_STATE') {
+        const newCombatState = action.payload;
+        
+        // Create a properly structured state object from payload
+        // This ensures we're mapping consistently between the two CombatState types
+        return {
+          ...state,
+          isActive: newCombatState.isActive ?? state.isActive,
+          combatType: newCombatState.combatType ?? state.combatType,
+          playerTurn: newCombatState.currentTurn === 'player',
+          roundStartTime: Date.now(),
+          winner: newCombatState.winner ?? state.winner,
+          rounds: newCombatState.rounds ?? state.rounds,
+          
+          // Keep existing playerCharacterId and opponentCharacterId
+          playerCharacterId: state.playerCharacterId,
+          opponentCharacterId: state.opponentCharacterId,
+          
+          // Keep existing modifiers object structure
+          modifiers: state.modifiers,
+          
+          // Update only if provided
+          combatLog: newCombatState.combatLog || state.combatLog || [],
+          
+          // Set currentTurn if provided
+          currentTurn: newCombatState.currentTurn ?? state.currentTurn,
+          
+          // Add participants if provided
+          participants: newCombatState.participants ?? state.participants
+        };
+      }
+      return state;
     }
     
     // Handle SET_STATE for state restoration

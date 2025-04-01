@@ -5,6 +5,7 @@
  * This pattern provides memoized, type-safe access to specific pieces of state.
  */
 import { useMemo } from 'react';
+import { useCampaignState } from './useCampaignStateContext';
 import { useGame } from './useGame';
 import { GameState } from '../types/gameState';
 import { NarrativeContext } from '../types/narrative/context.types';
@@ -144,13 +145,23 @@ export function createStateHook<T>(
   dependencies?: (state: GameState) => unknown[]
 ) {
   return function useStateHook(): T {
-    const { state } = useGame();
+    // Correctly use useCampaignState to access the context
+    const { state } = useCampaignState();
     const deps = dependencies ? dependencies(state) : [];
+    
+    // Log state and dependencies before useMemo
+    // Use a simple identifier for the selector if possible, otherwise just log deps
+    const selectorName = selector.name || 'anonymousSelector';
+    console.log(`[${selectorName}] createStateHook running. State timestamp: ${state?.savedTimestamp}. Dependencies:`, deps);
 
     return useMemo(
-      () => selector(state),
+      () => {
+        // Log when the actual selector logic runs (inside useMemo callback)
+        console.log(`[${selectorName}] useMemo callback executing.`);
+        return selector(state);
+      },
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [state, ...(deps || [])]
+      [state, ...deps] // Revert: Include state object reference AND specific dependencies
     );
   };
 }

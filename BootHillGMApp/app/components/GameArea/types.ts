@@ -18,14 +18,18 @@ export interface GameSessionProps {
   error: string | null;
   isCombatActive: boolean;
   opponent: Character | null;
-  handleUserInput: (input: string) => void;
-  retryLastAction: () => void;
+  handleUserInput?: (input: string) => void;
+  retryLastAction?: () => void;
   handleCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
-  handlePlayerHealthChange: (characterType: 'player' | 'opponent', newStrength: number) => void;
+  handlePlayerHealthChange: (characterType: string, newStrength: number) => void;
   handleUseItem: (itemId: string) => void;
   handleEquipWeapon: (itemId: string) => void;
   id?: string;
   "data-testid"?: string;
+  // Add other expected props with optional markers
+  executeCombatRound?: () => Promise<void>;
+  initiateCombat?: (opponent: Character, combatState?: CombatState) => void;
+  getCurrentOpponent?: () => Character | null;
 }
 
 export interface GameplayControlsProps {
@@ -33,9 +37,9 @@ export interface GameplayControlsProps {
   isCombatActive: boolean;
   opponent: Character | null;
   state: GameState;
-  onUserInput: (input: string) => void;
+  onUserInput?: (input: string) => void;
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
-  onPlayerHealthChange: (characterType: 'player' | 'opponent', newStrength: number) => void;
+  onPlayerHealthChange: (characterType: string, newStrength: number) => void;
   dispatch: React.Dispatch<GameEngineAction>;
   id?: string;
   "data-testid"?: string;

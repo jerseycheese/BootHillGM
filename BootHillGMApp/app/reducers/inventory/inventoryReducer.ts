@@ -4,9 +4,9 @@ import { determineIfWeapon } from '../../utils/ai/aiUtils';
 import { findClosestWeapon } from '../../utils/weaponUtils';
 import { InventoryItem, ItemCategory, ItemRequirements, ItemEffect } from '../../types/item.types';
 import { Weapon } from '../../types/weapon.types';
-import { 
-  isNonNullObject, 
-  isArray, 
+import {
+  isNonNullObject,
+  isArray,
   isString,
   isInventoryItem,
   hasId,
@@ -21,7 +21,7 @@ function ensureValidItem(item: unknown): InventoryItem {
   if (isInventoryItem(item)) {
     return item;
   }
-  
+
   // Create a base item with required properties
   const validItem: InventoryItem = {
     id: safeGet<string>(item, 'id', `item_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`),
@@ -51,29 +51,29 @@ function ensureItemsArray(state: unknown): InventoryState {
   if (!state) {
     return initialInventoryState;
   }
-  
+
   // If state is an array (legacy format), wrap it as items with proper typing
   if (isArray(state)) {
-    return { 
+    return {
       items: state.map(item => ensureValidItem(item))
     };
   }
-  
+
   // If state is an object but state.items is missing or not an array, initialize it
   if (isNonNullObject(state)) {
     const stateObj = state as Record<string, unknown>;
-    
+
     if (!('items' in stateObj) || !isArray(stateObj.items)) {
       return { ...stateObj, items: [] } as InventoryState;
     }
-    
+
     // If state.items exists but needs proper typing
     return {
       ...stateObj,
       items: stateObj.items.map(item => ensureValidItem(item))
     } as InventoryState;
   }
-  
+
   // Return initialized state if we reach here somehow
   return initialInventoryState;
 }
@@ -92,8 +92,8 @@ function createItemFromPayload(payload: unknown): InventoryItem {
       quantity: 1,
       category: 'general'
     };
-  } 
-  
+  }
+
   if (isNonNullObject(payload)) {
     // Extract the basic properties we need
     const item: InventoryItem = {
@@ -142,7 +142,8 @@ export function inventoryReducer(
 ): InventoryState {
   // Make sure we have a valid state structure before any operations
   const safeState = ensureItemsArray(state);
-  
+  // Removed logging
+
   // Use action.type as a string for comparison
   const actionType = action.type as string;
 
@@ -153,11 +154,11 @@ export function inventoryReducer(
     }
 
     const payload = action.payload;
-    const itemId = isString(payload) ? payload : 
+    const itemId = isString(payload) ? payload :
                   isNonNullObject(payload) && 'id' in payload ? String(payload.id) : '';
 
     if (!itemId) {
-      console.warn('ADD_ITEM action missing item ID');
+      console.warn('ADD_ITEM action missing item ID'); // Keep warn
       return safeState;
     }
 
@@ -170,7 +171,7 @@ export function inventoryReducer(
         ...safeState,
         items: safeState.items.map((item) =>
           item.id === itemId
-            ? { 
+            ? {
                 ...item,
                 ...(isNonNullObject(payload) ? payload : {}),
                 quantity: (item.quantity || 1) + (isNonNullObject(payload) && 'quantity' in payload ? Number(payload.quantity) : 1)
@@ -181,7 +182,7 @@ export function inventoryReducer(
     } else {
       // Create a new item
       const newItem = createItemFromPayload(payload);
-      
+
       // Check for weapon based on name
       if (newItem.category !== 'weapon' && newItem.name) {
         const isWeapon = determineIfWeapon(newItem.name);
@@ -194,9 +195,6 @@ export function inventoryReducer(
         }
       }
 
-      // Log the new item for debugging
-      console.log('Adding new item to inventory:', newItem);
-      
       // Return new state with the item added
       return {
         ...safeState,
@@ -231,11 +229,11 @@ export function inventoryReducer(
     }
 
     const payload = action.payload;
-    
+
     if (!isNonNullObject(payload)) {
       return safeState;
     }
-    
+
     const itemId = isString(payload) ? payload : hasId(payload) ? payload.id : '';
 
     if (!itemId) {
@@ -246,11 +244,11 @@ export function inventoryReducer(
       ...safeState,
       items: safeState.items.map(item =>
         item.id === itemId
-          ? { 
-              ...item, 
-              // For non-string payloads, use the quantity field directly 
-              quantity: 'quantity' in payload && typeof payload.quantity === 'number' 
-                ? payload.quantity 
+          ? {
+              ...item,
+              // For non-string payloads, use the quantity field directly
+              quantity: 'quantity' in payload && typeof payload.quantity === 'number'
+                ? payload.quantity
                 : item.quantity
             }
           : item
@@ -282,6 +280,7 @@ export function inventoryReducer(
         return item;
       })
       .filter((item) => item.quantity > 0);
+    // Removed logging
 
     return {
       ...safeState,

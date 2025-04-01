@@ -14,7 +14,7 @@ const mockCharacter: Character = {
   isPlayer: true,
   id: 'test-character',
   name: 'Test Character',
-  inventory: [],
+  inventory: { items: [] },
   attributes: {
     speed: 5,
     gunAccuracy: 5,
@@ -23,6 +23,24 @@ const mockCharacter: Character = {
     baseStrength: 20,
     bravery: 5,
     experience: 0,
+  },
+  minAttributes: {
+    speed: 1,
+    gunAccuracy: 1,
+    throwingAccuracy: 1,
+    strength: 8,
+    baseStrength: 8,
+    bravery: 1,
+    experience: 0,
+  },
+  maxAttributes: {
+    speed: 20,
+    gunAccuracy: 20,
+    throwingAccuracy: 20,
+    strength: 20,
+    baseStrength: 20,
+    bravery: 20,
+    experience: 11,
   },
   wounds: [],
   isUnconscious: false,
@@ -81,75 +99,45 @@ describe('LocationDisplay', () => {
     );
   });
 
-    it('updates location display when useLocation hook updates', () => {
-        const mockUpdateLocation = jest.fn();
-        const initialLocation: LocationType = { type: 'unknown' };
-        (useLocation as jest.Mock).mockReturnValue({
-            locationState: {
-                currentLocation: initialLocation,
-                history: [],
-            },
-            updateLocation: mockUpdateLocation,
-        });
-
-        const { rerender } = render(
-            <CampaignStateProvider>
-                <StatusDisplayManager character={mockCharacter} location={initialLocation} />
-            </CampaignStateProvider>
-        );
-
-        expect(screen.getByTestId('character-location')).toHaveTextContent('Location: Unknown Location');
-
-        const newLocation: LocationType = { type: 'town', name: 'New Town' };
-        act(() => {
-            mockUpdateLocation(newLocation); // Simulate location update
-        });
-
+  it('updates location display when useLocation hook updates', () => {
+      const mockUpdateLocation = jest.fn();
+      const initialLocation: LocationType = { type: 'unknown' };
       (useLocation as jest.Mock).mockReturnValue({
-        locationState: {
-          currentLocation: newLocation,
-          history: [newLocation],
-        },
-        updateLocation: mockUpdateLocation
+          locationState: {
+              currentLocation: initialLocation,
+              history: [],
+          },
+          updateLocation: mockUpdateLocation,
       });
 
-        // Use rerender to update the existing component with new props
-        rerender(
-            <CampaignStateProvider>
-                <StatusDisplayManager character={mockCharacter} location={newLocation} />
-            </CampaignStateProvider>
-        );
+      const { rerender } = render(
+          <CampaignStateProvider>
+              <StatusDisplayManager character={mockCharacter} location={initialLocation} />
+          </CampaignStateProvider>
+      );
 
-      expect(screen.getByTestId('character-location')).toHaveTextContent('Location: New Town');
-    });
+      expect(screen.getByTestId('character-location')).toHaveTextContent('Location: Unknown Location');
 
-  it('displays location history correctly', () => {
-    const history: LocationType[] = [
-      { type: 'town', name: 'Town1' },
-      { type: 'wilderness', description: 'Wilderness1' },
-      { type: 'landmark', name: 'Landmark1', description: 'Description1' },
-    ];
-    const currentLocation: LocationType = { type: 'town', name: 'Current Town' };
+      const newLocation: LocationType = { type: 'town', name: 'New Town' };
+      act(() => {
+          mockUpdateLocation(newLocation); // Simulate location update
+      });
+
     (useLocation as jest.Mock).mockReturnValue({
       locationState: {
-        currentLocation: currentLocation,
-        history: history,
+        currentLocation: newLocation,
+        history: [newLocation],
       },
-      updateLocation: jest.fn(),
+      updateLocation: mockUpdateLocation
     });
 
-    render(
-      <CampaignStateProvider>
-        <StatusDisplayManager character={mockCharacter} location={currentLocation} />
-      </CampaignStateProvider>
-    );
+      // Use rerender to update the existing component with new props
+      rerender(
+          <CampaignStateProvider>
+              <StatusDisplayManager character={mockCharacter} location={newLocation} />
+          </CampaignStateProvider>
+      );
 
-    expect(screen.getByTestId('location-history-0')).toHaveTextContent(
-      'Landmark1 (Description1)'
-    );
-    expect(screen.getByTestId('location-history-1')).toHaveTextContent(
-      'Wilderness1'
-    );
-    expect(screen.getByTestId('location-history-2')).toHaveTextContent('Town1');
+    expect(screen.getByTestId('character-location')).toHaveTextContent('Location: New Town');
   });
 });

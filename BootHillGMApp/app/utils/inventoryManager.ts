@@ -12,7 +12,28 @@ import { LocationType } from '../services/locationService';
 
 // Type guard to check if an object is a LocationType
 function isLocationType(location: unknown): location is LocationType {
-  return typeof location === 'object' && location !== null && 'type' in location && 'name' in location;
+  if (typeof location !== 'object' || location === null) {
+    return false;
+  }
+  const loc = location as Record<string, unknown>;
+  if (typeof loc.type !== 'string') {
+    return false;
+  }
+  // Check for required properties based on type
+  switch (loc.type) {
+    case 'town':
+    case 'landmark':
+      return typeof loc.name === 'string';
+    case 'wilderness':
+      // Wilderness might only have a description, not necessarily a name
+      return typeof loc.description === 'string';
+    case 'unknown':
+      // Unknown type might not have other properties
+      return true;
+    default:
+      // Unrecognized type
+      return false;
+  }
 }
 
 // Type guard for CampaignState

@@ -2,8 +2,7 @@ import { ExtendedGameState } from '../types/extendedState';
 import { InventoryItem } from '../types/item.types';
 import { Wound } from '../types/wound';
 import { LogEntry } from '../types/combat';
-import { CombatState, CombatTurn, CombatLogEntry } from '../types/state/combatState';
-import { convertLogEntry } from './combatAdapter';
+import { CombatTurn, CombatLogEntry } from '../types/state/combatState';
 import { GameEngineAction } from '../types/gameActions';
 import { GameAction } from '../types/actions';
 import { inventoryReducer } from '../reducers/inventory/inventoryReducer';
@@ -73,10 +72,8 @@ export function convertLegacyLogEntry(entry: LogEntry): CombatLogEntry {
   return {
     text: entry.text,
     timestamp: entry.timestamp,
-    // Convert legacy types to new types
-    type: entry.type === 'hit' || entry.type === 'critical' ? 'result' :
-          entry.type === 'miss' ? 'result' :
-          entry.type === 'info' ? 'system' : 'action',
+    // Use type that's compatible with both legacy and new formats
+    type: entry.type,
     // Store original type in data for reference
     data: { originalType: entry.type }
   };
@@ -87,34 +84,59 @@ export function convertLegacyLogEntry(entry: LogEntry): CombatLogEntry {
  * This fixes the type error related to log entry type differences
  */
 export function convertCombatLogEntries(
-  logEntries?: (LogEntry | CombatState['combatLog'][0])[]
+  logEntries: unknown[] = []
 ): CombatLogEntry[] {
-  if (!logEntries || !Array.isArray(logEntries)) {
+  if (!Array.isArray(logEntries)) {
     return [];
   }
 
   return logEntries.map(entry => {
-    // Check if it's already the right type (CombatLogEntry)
-    if ('data' in entry || ('type' in entry && (
-      entry.type === 'action' || 
-      entry.type === 'result' || 
-      entry.type === 'system' || 
-      entry.type === undefined))) {
-      return entry as CombatLogEntry;
+    if (!entry) {
+      // Handle null or undefined entries
+      return {
+        text: '',
+        timestamp: Date.now(),
+        type: 'info',
+        data: { originalType: 'info' }
+      };
     }
     
-    // Otherwise convert from legacy format (LogEntry)
-    if ('type' in entry && (
-      entry.type === 'hit' ||
-      entry.type === 'miss' ||
-      entry.type === 'critical' ||
-      entry.type === 'info')) {
-      return convertLegacyLogEntry(entry as LogEntry);
+    // Check if it's already a CombatLogEntry
+    if (isNonNullObject(entry) && 'text' in entry && 'type' in entry) {
+      const typedEntry = entry as Partial<CombatLogEntry>;
+      // Ensure required fields exist
+      return {
+        text: String(typedEntry.text || ''),
+        timestamp: Number(typedEntry.timestamp || Date.now()),
+        type: validateEntryType(typedEntry.type),
+        data: typedEntry.data || { originalType: typedEntry.type }
+      };
     }
     
-    // Fallback for unknown formats - use a more specific type than 'any'
-    return convertLogEntry(entry as unknown as LogEntry) as CombatLogEntry;
+    // Fallback for unknown formats - use a safe conversion
+    return {
+      text: String(isNonNullObject(entry) && 'text' in entry ? entry.text : ''),
+      timestamp: Date.now(),
+      type: 'info',
+      data: { originalType: 'unknown' }
+    };
   });
+}
+
+/**
+ * Validate entry type to ensure it's a valid CombatLogEntry type
+ */
+function validateEntryType(type: unknown): CombatLogEntry['type'] {
+  const validTypes: CombatLogEntry['type'][] = [
+    'hit', 'miss', 'critical', 'info', 'system', 'action', 'result'
+  ];
+  
+  if (typeof type === 'string' && validTypes.includes(type as CombatLogEntry['type'])) {
+    return type as CombatLogEntry['type'];
+  }
+  
+  // Default to 'info' for invalid types
+  return 'info';
 }
 
 /**
@@ -173,8 +195,8 @@ export function transformCurrentTurn(currentTurn: CurrentTurnInput, state: Exten
 /**
  * Convert CombatTurn object to string value for legacy code
  */
-export function combatTurnToString(turn: CombatTurn | null | undefined): 'player' | 'opponent' | undefined {
-  if (!turn) return undefined;
+export function combatTurnToString(turn: CombatTurn | null | undefined): 'player' | 'opponent' | null | undefined {
+  if (!turn) return null;
   
   // Simple heuristic - if the playerId contains "player", return "player", otherwise "opponent"
   return turn.playerId.toLowerCase().includes('player') ? 'player' : 'opponent';

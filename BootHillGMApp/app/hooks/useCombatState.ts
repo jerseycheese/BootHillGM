@@ -4,9 +4,12 @@
  * This module provides selector hooks for accessing combat state data.
  */
 
-import { CombatState, CombatLogEntry, CombatTurn } from '../types/state/combatState';
+import { CombatState, CombatLogEntry } from '../types/state/combatState';
 import { CombatType } from '../types/combat';
 import { createSelectorHook, createSlicePropertySelector } from './createSelectorHook';
+
+// Define the turn type locally since it's not exported from combatState
+type CombatTurn = 'player' | 'opponent';
 
 /**
  * Hook that returns the entire combat state slice
@@ -52,7 +55,7 @@ export const useIsPlayerTurn = createSlicePropertySelector<CombatState, boolean>
  */
 export const useCombatLog = createSlicePropertySelector<CombatState, CombatLogEntry[]>(
   'combat',
-  (combatState) => combatState.combatLog
+  (combatState) => combatState.combatLog || []
 );
 
 /**
@@ -60,7 +63,7 @@ export const useCombatLog = createSlicePropertySelector<CombatState, CombatLogEn
  */
 export const useCurrentTurn = createSlicePropertySelector<CombatState, CombatTurn | null>(
   'combat',
-  (combatState) => combatState.currentTurn
+  (combatState) => combatState.currentTurn as CombatTurn | null
 );
 
 /**

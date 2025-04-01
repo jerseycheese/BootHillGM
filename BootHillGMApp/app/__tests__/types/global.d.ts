@@ -1,17 +1,11 @@
-// This file extends the global namespace for TypeScript to recognize your test globals
+// TypeScript declaration file
+// This is NOT a test file and should be excluded from Jest runs
 
-export {};
-
+// Define global types for testing environment
 declare global {
-  function getAIResponse(
-    prompt: string, 
-    journalContext: string, 
-    inventory: unknown[], 
-    storyProgressionContext?: string, 
-    narrativeContext?: unknown
-  ): Promise<{
-    narrative: string;
-    location?: Record<string, unknown>;
-    [key: string]: unknown;
-  }>;
+  // Add any global types needed for tests here
 }
+
+// This file needs to be excluded from Jest tests
+// Export an empty object to make TypeScript happy
+export {};

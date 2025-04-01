@@ -15,6 +15,11 @@ export interface LogEntry {
 }
 
 /**
+ * Compatibility alias for LogEntry to support test files
+ */
+export type CombatLogEntry = LogEntry; // Type alias instead of empty interface extension
+
+/**
  * Represents the final summary of a combat encounter
  * Includes the winner, results narrative, and combat statistics
  */

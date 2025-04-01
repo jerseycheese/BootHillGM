@@ -76,6 +76,13 @@ export function GameplayControls({
       })
     : undefined;
 
+  // Create a safe onSubmit handler that won't be undefined
+  const handleUserInput = (input: string) => {
+    if (onUserInput) {
+      onUserInput(input);
+    }
+  };
+
   return (
     <div className="mt-4 shrink-0">
       {isCombatActive && opponent ? (
@@ -99,7 +106,7 @@ export function GameplayControls({
         />
       ) : (
         <InputManager
-          onSubmit={onUserInput}
+          onSubmit={handleUserInput}
           isLoading={isLoading}
           suggestedActions={extendedState.suggestedActions || []}
         />

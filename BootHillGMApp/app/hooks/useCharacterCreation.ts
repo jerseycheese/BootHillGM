@@ -13,6 +13,8 @@ import { CharacterState } from '../types/state/characterState';
 
 // Storage key for character creation progress
 const STORAGE_KEY = "character-creation-progress";
+// Storage key for initial narrative
+const INITIAL_NARRATIVE_KEY = "initial-narrative";
 
 export const initialCharacter: Character = {
   isNPC: false,
@@ -60,34 +62,38 @@ export const initialCharacter: Character = {
  */
 export function useCharacterCreation() {
   const router = useRouter();
-  const { state: campaignState, saveGame, cleanupState } = useCampaignState();
+  const { saveGame, cleanupState } = useCampaignState();
 
-  // Initialize character from campaign state or fallback to initialCharacter
+  // Create a fresh character for the new session
   const [character, setCharacter] = useState<Character>(() => {
-    if (typeof window === 'undefined') return initialCharacter;
-    const saved = localStorage.getItem(STORAGE_KEY);
-
-    // Prioritize character from campaign state if available and valid
-    if (campaignState?.character?.player) {
-      return {
-        ...initialCharacter,
-        ...campaignState.character.player,
-      };
-    }
-
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        return {
-          ...initialCharacter,
-          ...data.character,
-        };
-      } catch {
-        return initialCharacter;
+    // Generate a new character ID and reset to initial character
+    const freshCharacter = {
+      ...initialCharacter,
+      id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    };
+    
+    // If we're on the client side, we can check localStorage
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          // Only use saved data if it's for a character in progress (incomplete)
+          if (!data.character.name) {
+            return {
+              ...freshCharacter,
+              ...data.character,
+            };
+          }
+        } catch {
+          // If parsing fails, use fresh character
+        }
       }
     }
-    return initialCharacter;
-});
+    
+    return freshCharacter;
+  });
 
   const [showSummary, setShowSummary] = useState(false);
   const [isGeneratingField, setIsGeneratingField] = useState(false);
@@ -188,8 +194,21 @@ export function useCharacterCreation() {
           setCharacterSummary(summary);
           setShowSummary(true);
         } else {
-          // Complete character creation
+          // Complete character creation and start a new game
+          
+          // This is a new character, so we want to clean up old game state
           cleanupState();
+          
+          // Clear previous narrative state and reset previous game data
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem(INITIAL_NARRATIVE_KEY);
+            localStorage.removeItem("campaignState");
+            localStorage.removeItem("saved-game-state");
+            
+            // Set a flag to initialize new character
+            sessionStorage.setItem("initializing_new_character", "true");
+          }
+          
           const startingInventory = getStartingInventory();
           
           // Create proper character state structure
@@ -213,7 +232,16 @@ export function useCharacterCreation() {
             narrative: initialNarrativeState,
           };
           
+          // Save the character to localStorage
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            character,
+            lastUpdated: Date.now(),
+          }));
+          
+          // Save the game state
           saveGame(gameState);
+          
+          // Navigate to game session
           router.push("/game-session");
         }
       } catch (error: unknown) {
@@ -230,7 +258,8 @@ export function useCharacterCreation() {
   );
 
   useEffect(() => {
-    if (character.name) {
+    // Save character creation progress to localStorage
+    if (typeof window !== 'undefined') {
       const dataToSave = {
         character,
         lastUpdated: Date.now(),

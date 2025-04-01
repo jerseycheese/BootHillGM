@@ -1,7 +1,8 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { CombatTypeSelection } from '../../../components/Combat/CombatTypeSelection';
+import CombatTypeSelection from '../../../components/Combat/CombatTypeSelection';
 import { Character } from '../../../types/character';
-import { GameProvider } from '../../../hooks/useGame';
+import { TestCampaignStateProvider } from '../../utils/testWrappers';
 
 describe('CombatTypeSelection', () => {
   const mockOnSelectType = jest.fn();
@@ -54,16 +55,15 @@ describe('CombatTypeSelection', () => {
   });
 
   it('displays cleaned opponent name with default weapon', () => {
-    // Create mock state with weapon in inventory
-    const mockState = {
+    // Create initial state with weapon in inventory
+    const initialState = {
       inventory: {
         items: [
-          { id: '1', name: 'Colt Peacemaker', category: 'weapon' }
+          { id: '1', name: 'Colt Peacemaker', category: 'weapon', type: 'weapon' }
         ]
       },
       character: {
-        player: mockPlayer,
-        opponent: null
+        player: mockPlayer
       }
     };
     
@@ -73,82 +73,97 @@ describe('CombatTypeSelection', () => {
       name: 'Rancher\nSUGGESTED_ACTIONS: []'
     };
 
-    // Render with GameProvider and custom state
+    // Render with TestCampaignStateProvider
     render(
-      <GameProvider initialState={mockState}>
+      <TestCampaignStateProvider initialState={initialState}>
         <CombatTypeSelection
           playerCharacter={mockPlayer}
           opponent={opponentWithMetadata}
           onSelectType={mockOnSelectType}
         />
-      </GameProvider>
+      </TestCampaignStateProvider>
     );
 
     // Check that weapon combat option is available
     expect(screen.getByText('Weapon Combat')).toBeInTheDocument();
     expect(screen.getByText('Brawling')).toBeInTheDocument();
+    
+    // Check that the opponent name is cleaned
+    expect(screen.getByText('Opponent: Rancher')).toBeInTheDocument();
   });
 
   it('shows available weapons for both combatants', () => {
-    // Create mock state with weapons
-    const mockState = {
+    // Create initial state with weapons
+    const initialState = {
       inventory: {
         items: [
-          { id: '1', name: 'Colt Peacemaker', category: 'weapon' },
-          { id: '2', name: 'Knife', category: 'weapon' }
+          { id: '1', name: 'Colt Peacemaker', category: 'weapon', type: 'weapon' },
+          { id: '2', name: 'Knife', category: 'weapon', type: 'weapon' }
         ]
       },
       character: {
-        player: mockPlayer,
-        opponent: null
+        player: mockPlayer
       }
     };
 
-    // Render with GameProvider and custom state
+    // Modify player to have a weapon property
+    const playerWithWeapon = {
+      ...mockPlayer,
+      weapon: { name: 'Player Weapon', damage: 5 }
+    };
+
+    // Modify opponent to have a weapon property
+    const opponentWithWeapon = {
+      ...mockOpponent,
+      weapon: { name: 'Shotgun', damage: 8 }
+    };
+
+    // Render with TestCampaignStateProvider
     render(
-      <GameProvider initialState={mockState}>
+      <TestCampaignStateProvider initialState={initialState}>
         <CombatTypeSelection
-          playerCharacter={mockPlayer}
-          opponent={mockOpponent}
+          playerCharacter={playerWithWeapon}
+          opponent={opponentWithWeapon}
           onSelectType={mockOnSelectType}
         />
-      </GameProvider>
+      </TestCampaignStateProvider>
     );
 
     // Check that weapon combat option is available and enabled
     const weaponButton = screen.getByText('Weapon Combat');
     expect(weaponButton).toBeInTheDocument();
-    expect(weaponButton.closest('button')).not.toHaveAttribute('disabled');
+    expect(screen.getByTestId('weapon-button')).not.toBeDisabled();
+    
+    // Check that opponent name is displayed
+    expect(screen.getByText('Opponent: Rancher')).toBeInTheDocument();
   });
   
   it('disables weapon combat option when no weapons available', () => {
-    // Create mock state with NO weapons
-    const mockState = {
+    // Create initial state with NO weapons
+    const initialState = {
       inventory: {
         items: [
-          { id: '1', name: 'Healing Potion', category: 'medical' }
+          { id: '1', name: 'Healing Potion', category: 'medical', type: 'consumable' }
         ]
       },
       character: {
-        player: mockPlayer,
-        opponent: null
+        player: mockPlayer
       }
     };
 
-    // Render with GameProvider and custom state
+    // Render with TestCampaignStateProvider
     render(
-      <GameProvider initialState={mockState}>
+      <TestCampaignStateProvider initialState={initialState}>
         <CombatTypeSelection
           playerCharacter={mockPlayer}
           opponent={mockOpponent}
           onSelectType={mockOnSelectType}
         />
-      </GameProvider>
+      </TestCampaignStateProvider>
     );
 
     // Check that weapon combat option is disabled
-    const weaponButton = screen.getByRole('button', { name: /Weapon Combat/ });
-    expect(weaponButton).toBeDisabled();
+    expect(screen.getByTestId('weapon-button')).toBeDisabled();
     expect(screen.getByText('No weapons available for combat')).toBeInTheDocument();
   });
 });

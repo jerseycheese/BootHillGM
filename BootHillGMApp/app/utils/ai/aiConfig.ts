@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Configuration for the AI model, including safety settings set to BLOCK_NONE
 const AI_CONFIG = {
-  modelName: "gemini-2.0-flash-thinking-exp-01-21",
+  modelName: "gemini-2.0-flash-lite",
   generationConfig: {
     temperature: 0.7,
     topP: 1.0,

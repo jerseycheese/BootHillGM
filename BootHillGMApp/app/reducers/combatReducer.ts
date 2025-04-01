@@ -4,7 +4,6 @@ import { adaptEnsureCombatState, sliceToLegacyCombatState } from '../utils/comba
 import { validateCombatEndState } from '../utils/combatStateValidation';
 import { CombatUpdatePayload } from './gameTypes';
 import { convertCombatLogEntries, transformCurrentTurn, combatTurnToString } from '../utils/gameReducerHelpers';
-import { LogEntry } from '../types/combat';
 
 /**
  * Handles the SET_COMBAT_ACTIVE action
@@ -60,14 +59,22 @@ export function handleUpdateCombatState(state: ExtendedGameState, payload: unkno
   // Handle currentTurn conversion - could be string or CombatTurn object
   const currentTurn = transformCurrentTurn(extractedPayload.currentTurn, state);
   
+  // Convert currentTurn to string for CombatState
+  const currentTurnString = combatTurnToString(currentTurn);
+  
   // Convert combatType if needed
   const combatType = extractedPayload.combatType === null 
     ? undefined 
     : extractedPayload.combatType;
   
-  // Convert combat log entries if needed
-  const combatLog = extractedPayload.combatLog 
-    ? convertCombatLogEntries(extractedPayload.combatLog as (LogEntry | CombatState['combatLog'][0])[])
+  // Convert combat log entries if needed - fixed to avoid array indexing of possibly undefined
+  const combatLogEntries = extractedPayload.combatLog
+    ? extractedPayload.combatLog
+    : undefined;
+  
+  // Safely convert combat log entries with proper type checking
+  const combatLog = combatLogEntries
+    ? convertCombatLogEntries(combatLogEntries)
     : undefined;
   
   // Create clean payload with proper types
@@ -75,7 +82,7 @@ export function handleUpdateCombatState(state: ExtendedGameState, payload: unkno
     ...extractedPayload,
     combatType,
     combatLog,
-    currentTurn
+    currentTurn: currentTurnString
   };
   
   // Update the structured combat state - making sure we adapt it properly
@@ -132,13 +139,16 @@ export function handleSetCombatType(state: ExtendedGameState, payload: 'brawling
   const currentTurnString = state.combatState?.currentTurn as string | undefined;
   const currentTurnObject = transformCurrentTurn(currentTurnString, state);
   
+  // Make sure we convert the CombatTurn object back to a string for the legacy state
+  const mappedCurrentTurn = combatTurnToString(currentTurnObject);
+  
   // For backward compatibility
   const legacyState: Partial<CombatState> = {
     ...(state.combatState || {}),
     combatType: payload,
     isActive: true,
-    // Replace string currentTurn with object for the adapter function
-    currentTurn: currentTurnObject
+    // Use the string version of currentTurn that the CombatState expects
+    currentTurn: mappedCurrentTurn
   };
   
   newState.combatState = adaptEnsureCombatState(legacyState);

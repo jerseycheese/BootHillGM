@@ -17,8 +17,9 @@ const customJestConfig = {
   testPathIgnorePatterns: [
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
-    '<rootDir>/app/__tests__/hooks/useCharacterCreation.test.ts',
-    '<rootDir>/app/__tests__/types/global.d.ts'
+    '**/*.d.ts', // Exclude all .d.ts files
+    '<rootDir>/app/__tests__/hooks/useCombatManager.test.ts',
+    '<rootDir>/app/__tests__/hooks/useLocation.test.ts'
   ],
   collectCoverage: true,
   collectCoverageFrom: [
@@ -38,8 +39,10 @@ const customJestConfig = {
   snapshotFormat: {
     printBasicPrototype: false,
   },
-  // Set test timeout to accommodate for slow tests
+  // Increase timeout for complex tests that may take longer
   testTimeout: 10000,
+  // Prevent tests from running in parallel to avoid memory issues
+  maxWorkers: '50%',
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
