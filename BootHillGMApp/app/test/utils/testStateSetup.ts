@@ -6,32 +6,16 @@
  */
 
 import { GameState } from '../../types/gameState';
-import { prepareStateForTesting } from './stateTestUtils';
+// Removed import of obsolete prepareStateForTesting
 import { GameEngineAction } from '../../types/gameActions';
-import { CharacterState, CombatState, InventoryState, JournalState, NarrativeState } from '../../types/state';
+// Removed unused state slice imports
 
-interface TestState extends GameState { // Extend GameState only
-  player: CharacterState['player'];
-  opponent: CharacterState['opponent'];
-  inventory: InventoryState;
-  entries: JournalState['entries'];
-  isCombatActive: CombatState['isActive'];
-  narrativeContext: NarrativeState['narrativeContext'];
-  combatRounds: CombatState['rounds'];
-  currentTurn: CombatState['currentTurn'];
-}
+// Removed obsolete TestState interface
 
+// Updated MockStateProvider to remove legacy properties
 interface MockStateProvider {
   state: GameState;
-  dispatch: jest.Mock; // Changed to jest.Mock
-  player: TestState['player'];
-  opponent: TestState['opponent'];
-  inventory: TestState['inventory'];
-  entries: TestState['entries'];
-  isCombatActive: TestState['isCombatActive'];
-  narrativeContext: TestState['narrativeContext'];
-  combatRounds: TestState['combatRounds'];
-  currentTurn: TestState['currentTurn'];
+  dispatch: jest.Mock;
 }
 
 /**
@@ -60,23 +44,16 @@ export const createMockStateProvider = (
   dispatch: jest.Mock<GameEngineAction, GameEngineAction[]> = jest.fn() // Changed to jest.Mock
 ): MockStateProvider => { // Changed return type to MockStateProvider
   // Ensure it's in the new format and apply adapters
-  const adaptedState = prepareStateForTesting(initialState as GameState);
-  console.log("Adapted State:", adaptedState); // Added log statement
+  // State preparation is no longer needed
+  const adaptedState = initialState as GameState;
+  // console.log("Initial State:", adaptedState); // Keep log if needed for debugging
 
   // Return a context value that mimics the structure of GameProvider
   return {
     state: adaptedState,
     dispatch,
     
-    // Legacy properties
-    player: (adaptedState as TestState).player, // Cast adaptedState to TestState
-    opponent: (adaptedState as TestState).opponent, // Cast adaptedState to TestState
-    inventory: (adaptedState as TestState).inventory, // Cast adaptedState to TestState
-    entries: (adaptedState as TestState).entries, // Cast adaptedState to TestState
-    isCombatActive: (adaptedState as TestState).isCombatActive, // Cast adaptedState to TestState
-    narrativeContext: (adaptedState as TestState).narrativeContext, // Cast adaptedState to TestState
-    combatRounds: (adaptedState as TestState).combatRounds, // Cast adaptedState to TestState
-    currentTurn: (adaptedState as TestState).currentTurn, // Cast adaptedState to TestState
+    // Removed legacy properties
   };
 };
 
@@ -97,25 +74,18 @@ export const updateMockStateProvider = (
   }
   
   // Merge additional state and apply adapters
-  const updatedState = prepareStateForTesting({
+  // State preparation is no longer needed
+  const updatedState = {
     ...provider.state,
     ...additionalState
-  });
+  } as GameState; // Cast merged state to GameState
   
   // Return updated provider
   return {
     ...provider,
     state: updatedState,
     
-    // Update legacy properties
-    player: (updatedState as TestState).player, // Cast updatedState to TestState
-    opponent: (updatedState as TestState).opponent, // Cast updatedState to TestState
-    inventory: (updatedState as TestState).inventory, // Cast updatedState to TestState
-    entries: (updatedState as TestState).entries, // Cast updatedState to TestState
-    isCombatActive: (updatedState as TestState).isCombatActive, // Cast updatedState to TestState
-    narrativeContext: (updatedState as TestState).narrativeContext, // Cast updatedState to TestState
-    combatRounds: (updatedState as TestState).combatRounds, // Cast updatedState to TestState
-    currentTurn: (updatedState as TestState).currentTurn, // Cast updatedState to TestState
+    // Removed legacy properties
   };
 };
 

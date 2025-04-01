@@ -16,36 +16,39 @@ import { useBrawlingCombat } from '../../hooks/useBrawlingCombat';
 import { useWeaponCombat } from '../../hooks/useWeaponCombat';
 import { GameEngineAction } from '../../types/gameActions';
 import { CombatTypeSelection } from './CombatTypeSelection';
-import { 
-  CombatType, 
-  CombatState, 
-  WeaponCombatAction, 
+import {
+  CombatType,
+  CombatState, // Use older CombatState from types/combat
+  WeaponCombatAction,
   ensureCombatState,
-  CombatSummary 
-} from '../../types/combat';
+  CombatSummary,
+  // Removed unused LogEntry import
+} from '../../types/combat'; // Import from older types/combat
 import { Weapon } from '../../types/weapon.types';
 import { getDefaultWeapon } from '../../utils/weaponUtils';
 import { CombatLog } from './CombatLog';
 
+// Use inline props definition expecting older types
 export const CombatSystem: React.FC<{
   playerCharacter: Character;
   opponent: Character;
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
-  dispatch: React.Dispatch<GameEngineAction>;
-  initialCombatState?: CombatState;
-  currentCombatState?: CombatState;
+  dispatch: React.Dispatch<GameEngineAction>; // Expect GameEngineAction
+  initialCombatState?: CombatState; // Expect older CombatState
+  currentCombatState?: CombatState; // Add back currentCombatState
 }> = ({
   playerCharacter,
   opponent,
   onCombatEnd,
   dispatch,
   initialCombatState,
-  currentCombatState
+  currentCombatState // Add back currentCombatState
 }) => {
 
   // State to track the type of combat (brawling or weapon)
   const [combatType, setCombatType] = useState<CombatType>(null);
   const [combatSummary, setCombatSummary] = useState<CombatSummary | undefined>(
+    // Use older CombatState properties
     currentCombatState?.summary || initialCombatState?.summary
   );
 
@@ -57,11 +60,11 @@ export const CombatSystem: React.FC<{
   }, [initialCombatState]);
 
   // Brawling combat logic and state
-  const { 
-    brawlingState, 
-    isProcessing: isBrawlingProcessing, 
+  const {
+    brawlingState,
+    isProcessing: isBrawlingProcessing,
     isCombatEnded: isBrawlingEnded,
-    processRound 
+    processRound
   } = useBrawlingCombat({
     playerCharacter,
     opponent,
@@ -79,7 +82,8 @@ export const CombatSystem: React.FC<{
       });
       onCombatEnd(winner, summary);
     },
-    dispatch,
+    dispatch, // Pass dispatch directly (should match GameEngineAction now)
+    // Pass older CombatState property
     initialCombatState: initialCombatState?.brawling,
   });
 
@@ -109,13 +113,16 @@ export const CombatSystem: React.FC<{
       });
       onCombatEnd(winner, summary);
     },
-    dispatch,
+    dispatch, // Pass dispatch directly
+    // Pass older CombatState property
     initialState: initialCombatState?.weapon,
+    // Pass older CombatState, use ensureCombatState for default
     combatState: initialCombatState || ensureCombatState(),
   });
 
   // Handle returning to narrative UI
   const handleReturnToNarrative = useCallback(() => {
+    // Use non-namespaced types expected by older logic/GameEngineAction
     dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
     dispatch({ type: 'END_COMBAT' });
   }, [dispatch]);
@@ -128,7 +135,7 @@ export const CombatSystem: React.FC<{
     ].sort((a, b) => a.timestamp - b.timestamp);
 
     // Remove duplicate entries by comparing timestamps only
-    const uniqueEntries = entries.filter((entry, index) => 
+    const uniqueEntries = entries.filter((entry, index) =>
       entries.findIndex(e => e.timestamp === entry.timestamp) === index
     );
 
@@ -138,8 +145,8 @@ export const CombatSystem: React.FC<{
   // Find equipped weapon safely
   const findEquippedWeapon = useCallback((character: Character): Weapon | undefined => {
     if (!character) return undefined;
-    
-    // Handle different inventory formats safely 
+
+    // Handle different inventory formats safely
     if (character.inventory) {
       if (Array.isArray(character.inventory)) {
         // Direct array format
@@ -153,7 +160,7 @@ export const CombatSystem: React.FC<{
         ) as Weapon | undefined;
       }
     }
-    
+
     // Fallback to character's weapon property if available
     return character.weapon as Weapon | undefined;
   }, []);
@@ -161,11 +168,10 @@ export const CombatSystem: React.FC<{
   // Handle combat type selection
   const handleCombatTypeSelect = useCallback((type: CombatType) => {
     setCombatType(type);
-    
-    // Find equipped weapon in player's inventory using the safe helper
+
     const equippedWeapon = findEquippedWeapon(playerCharacter);
-    
-    // Update combat state with selected combat type and equipped weapon
+
+    // Use ensureCombatState and older payload structure
     dispatch({
       type: 'UPDATE_COMBAT_STATE',
       payload: ensureCombatState({
@@ -173,27 +179,14 @@ export const CombatSystem: React.FC<{
         combatType: type,
         currentTurn: 'player',
         winner: null,
-        brawling: type === 'brawling' ? {
-          round: 1 as const,
-          playerModifier: 0,
-          opponentModifier: 0,
-          playerCharacterId: playerCharacter.id,
-          opponentCharacterId: opponent.id,
-          roundLog: []
-        } : undefined,
-        weapon: type === 'weapon' ? {
-          round: 1,
-          playerWeapon: equippedWeapon || null,
-          opponentWeapon: getDefaultWeapon(),
-          currentRange: 10,
-          playerCharacterId: playerCharacter.id,
-          opponentCharacterId: opponent.id,
-          roundLog: [],
-          lastAction: undefined
-        } : undefined
+        brawling: type === 'brawling' ? { round: 1, playerModifier: 0, opponentModifier: 0, playerCharacterId: playerCharacter.id, opponentCharacterId: opponent.id, roundLog: [] } : undefined,
+        weapon: type === 'weapon' ? { round: 1, playerWeapon: equippedWeapon || null, opponentWeapon: getDefaultWeapon(), currentRange: 10, playerCharacterId: playerCharacter.id, opponentCharacterId: opponent.id, roundLog: [], lastAction: undefined } : undefined,
+        rounds: initialCombatState?.rounds ?? 0,
+        combatLog: initialCombatState?.combatLog ?? [],
+        // playerCharacterId and opponentCharacterId might be redundant here
       })
     });
-  }, [playerCharacter, opponent, dispatch, findEquippedWeapon]);
+  }, [playerCharacter, opponent, dispatch, findEquippedWeapon, initialCombatState]);
 
   // Handle brawling actions with proper state validation
   const handleBrawlingAction = useCallback(async (isPunching: boolean) => {
@@ -206,20 +199,22 @@ export const CombatSystem: React.FC<{
   }, [processRound, isBrawlingEnded, opponent.attributes.strength, playerCharacter.attributes.strength]);
 
   // Get current combat state for status display
+  // Revert currentCombatStateForDisplay construction using ensureCombatState
   const currentCombatStateForDisplay: CombatState = useMemo(() => ensureCombatState({
     isActive: !isBrawlingEnded,
     combatType,
     winner: combatSummary?.winner || null,
     brawling: brawlingState,
     weapon: weaponState,
-    currentTurn: 'player',
-    participants: [playerCharacter, opponent],
+    currentTurn: 'player', // Assuming player turn for display
+    participants: [playerCharacter, opponent], // Re-add participants if needed by ensureCombatState
     rounds: brawlingState?.round || weaponState?.round || 0,
-    selection: combatType ? undefined : {
+    selection: combatType ? undefined : { // Add back selection property
       isSelectingType: true,
       availableTypes: ['brawling', 'weapon'] as CombatType[]
     },
-    summary: combatSummary
+    summary: combatSummary,
+    combatLog: combatLogEntries, // Pass memoized log
   }), [
     combatType,
     brawlingState,
@@ -227,7 +222,7 @@ export const CombatSystem: React.FC<{
     playerCharacter,
     opponent,
     isBrawlingEnded,
-    combatSummary
+    combatSummary, combatLogEntries // Revert dependencies
   ]);
 
   return (
@@ -236,9 +231,9 @@ export const CombatSystem: React.FC<{
       <CombatStatus
         playerCharacter={playerCharacter}
         opponent={currentOpponent ? characterToCombatParticipant(currentOpponent, true) : characterToCombatParticipant(opponent, true)}
-        combatState={currentCombatStateForDisplay}
+        combatState={currentCombatStateForDisplay} // Remove cast
       />
-      
+
       {/* Render combat controls based on selected combat type */}
       {!isBrawlingEnded && !combatType && (
         <CombatTypeSelection
@@ -247,7 +242,7 @@ export const CombatSystem: React.FC<{
           onSelectType={handleCombatTypeSelect}
         />
       )}
-      
+
       {!isBrawlingEnded && combatType === 'brawling' && (
         <BrawlingControls
           isProcessing={isBrawlingProcessing}
@@ -256,23 +251,23 @@ export const CombatSystem: React.FC<{
           round={brawlingState?.round || 1}
         />
       )}
-      
+
       {!isBrawlingEnded && combatType === 'weapon' && (
         <WeaponCombatControls
           isProcessing={isWeaponProcessing}
           currentState={weaponState}
           opponent={opponent} // Pass opponent prop
-          onAction={(action: WeaponCombatAction) => processAction(action)}
+          onAction={(action: WeaponCombatAction) => processAction(action)} // Use older action type
           canAim={canAim}
           canFire={canFire}
           canReload={canReload}
         />
       )}
-      
+
       {/* Display unified combat log */}
       <CombatLog
         entries={combatLogEntries}
-        summary={combatSummary}
+        summary={combatSummary} // Remove cast
         isCombatEnded={isBrawlingEnded}
       />
 

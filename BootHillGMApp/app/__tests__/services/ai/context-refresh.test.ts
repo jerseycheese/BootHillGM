@@ -33,7 +33,6 @@ describe('Decision Service - Context Refresh', () => {
 
     // Create separate mock implementations to avoid issues with shared state
     const mockImplementationOne = createRequestInspector((url, options) => {
-      console.log(`[MOCK] First implementation called`);
       
       const requestOptions = options as RequestInit;
       const bodyJson = JSON.parse(requestOptions.body as string);

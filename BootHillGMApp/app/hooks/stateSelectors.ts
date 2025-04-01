@@ -151,13 +151,10 @@ export function createStateHook<T>(
     
     // Log state and dependencies before useMemo
     // Use a simple identifier for the selector if possible, otherwise just log deps
-    const selectorName = selector.name || 'anonymousSelector';
-    console.log(`[${selectorName}] createStateHook running. State timestamp: ${state?.savedTimestamp}. Dependencies:`, deps);
 
     return useMemo(
       () => {
         // Log when the actual selector logic runs (inside useMemo callback)
-        console.log(`[${selectorName}] useMemo callback executing.`);
         return selector(state);
       },
       // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -11,7 +11,7 @@ import { initialInventoryState } from '../../types/state/inventoryState';
 import { initialJournalState } from '../../types/state/journalState';
 import { initialUIState } from '../../types/state/uiState';
 import { CombatState } from '../../types/state';
-import { Character } from '../../types/character';
+// Removed unused import: Character
 
 /**
  * Hook that provides functionality for checking narrative for decision triggers
@@ -139,8 +139,7 @@ export function useDecisionTriggering(
       setDecisionGenerationMode('ai');
       
       // Create a player reference that satisfies TypeScript
-      const playerRef: Character | null = initialCharacterState.player;
-      const opponentRef: Character | null = null; // Add opponent reference
+      // Removed unused refs: playerRef, opponentRef
       
       // Create a complete GameState object to satisfy the type requirements
       const gameState: GameState = {
@@ -157,16 +156,7 @@ export function useDecisionTriggering(
         ui: initialUIState,
         suggestedActions: [],
         isClient: true,
-        // Add getters that use explicit non-nullable references
-        get player() {
-          return playerRef;
-        },
-        get opponent() {
-          return opponentRef;
-        },
-        get isCombatActive() {
-          return false;
-        }
+        // Removed obsolete getters (player, opponent, isCombatActive)
       };
       
       // If additional context was provided, add it to the narrative

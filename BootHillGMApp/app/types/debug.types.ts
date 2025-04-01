@@ -5,7 +5,8 @@
 import { LocationType } from '../services/locationService';
 import type { NarrativeState, NarrativeAction, PlayerDecisionRecord } from './narrative.types';
 import { ReactNode, Dispatch } from 'react';
-import { GameState, GameAction } from '../types/campaign';
+import { GameState } from '../types/gameState'; // Corrected GameState import path
+import { GameAction } from '../types/actions'; // Corrected GameAction import path
 
 /**
  * Error Boundary component types

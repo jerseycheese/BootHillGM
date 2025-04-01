@@ -49,6 +49,8 @@ export interface NarrativeTextPayload {
 
 // Define the main GameEngineAction type using a union
 export type GameEngineAction =
+  | { type: "SET_PLAYER"; payload: string }
+
   | { type: "SET_CHARACTER"; payload: Character }
   | { type: "UPDATE_CHARACTER"; payload: UpdateCharacterPayload }
   | { type: "SET_LOCATION"; payload: LocationType }

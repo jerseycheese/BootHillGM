@@ -1,63 +1,28 @@
 import { createContext, useContext, useReducer, ReactNode, useMemo, Dispatch } from 'react';
-import { gameReducer } from '../reducers/index';
-import { ExtendedGameState } from '../types/extendedState';
+import rootReducer from '../reducers/rootReducer'; // Correct reducer import
+import { GameState } from '../types/gameState'; // Use GameState
 import { GameAction } from '../types/actions';
-import { GameEngineAction } from '../types/gameActions';
+// Removed GameEngineAction import
 import { initialState } from '../types/initialState';
-import { adaptStateForTests, legacyGetters } from '../utils/stateAdapters';
-import { createCompatibleDispatch } from '../types/gameActionsAdapter';
-import { NarrativeContext } from '../types/narrative/context.types';
-import { JournalEntry } from '../types/journal';
-
-// Define interfaces for player, opponent, and other game entities
-interface Character {
-  id: string;
-  name: string;
-  attributes?: Record<string, number>;
-  wounds?: Array<Record<string, unknown>>;
-  inventory?: unknown[];
-  isNPC?: boolean;
-  isPlayer?: boolean;
-  [key: string]: unknown;
-}
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  quantity: number;
-  description: string;
-  category: string;
-  [key: string]: unknown;
-}
-
-
-interface CombatTurn {
-  playerId: string;
-  actions: string[];
-  [key: string]: unknown;
-}
+// Removed adapter imports: adaptStateForTests, legacyGetters, createCompatibleDispatch
+// Removed unused type imports: NarrativeContext, JournalEntry, Character, InventoryItem
+// Removed unused type import: CombatState
+// Removed comments about local interfaces
 
 // Define a more flexible dispatch type
-type FlexibleDispatch = (action: GameAction | GameEngineAction) => void;
-
+// Removed FlexibleDispatch type
+// Simplified context type
 export interface GameContextProps {
-  // State and dispatch
-  state: ExtendedGameState;
-  dispatch: FlexibleDispatch;
-  
-  // Legacy properties for backward compatibility
-  player: Character | null;
-  opponent: Character | null;
-  inventory: InventoryItem[];
-  entries: JournalEntry[];
-  isCombatActive: boolean;
-  narrativeContext: NarrativeContext;
-  combatRounds: number;
-  currentTurn: CombatTurn | null;
+  state: GameState;
+  dispatch: Dispatch<GameAction>;
 }
 
 // Create the context with default values
-export const GameContext = createContext<GameContextProps | undefined>(undefined);
+// Updated default context value
+export const GameContext = createContext<GameContextProps>({
+  state: initialState,
+  dispatch: () => null,
+});
 
 /**
  * GameProvider component that provides game state and dispatch to components
@@ -74,40 +39,25 @@ export function GameProvider({
   initialState: customInitialState
 }: { 
   children: ReactNode,
-  initialState?: Partial<ExtendedGameState>
+  initialState?: Partial<GameState> // Use GameState
 }): JSX.Element {
   // Set up reducer with initial state, merging custom state if provided
-  const mergedInitialState = customInitialState 
-    ? { ...initialState, ...customInitialState } as ExtendedGameState
-    : initialState as ExtendedGameState;
+  const mergedInitialState = customInitialState
+    ? { ...initialState, ...customInitialState } as GameState // Use GameState
+    : initialState as GameState; // Use GameState
     
-  const [state, originalDispatch] = useReducer(gameReducer, mergedInitialState);
+  const [state, dispatch] = useReducer(rootReducer, mergedInitialState); // Use rootReducer and standard dispatch
   
-  // Create compatible dispatch that handles both action types
-  const dispatch: FlexibleDispatch = createCompatibleDispatch(originalDispatch as Dispatch<GameAction>);
-  
-  // Apply adapters to state for backward compatibility
-  const adaptedState = adaptStateForTests(state) as ExtendedGameState;
+  // Remove adapter usage
+  // const adaptedState = adaptStateForTests(state) as ExtendedGameState;
   
   // Create context value with both new state and legacy properties
   // Using useMemo to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
-    // New state management
-    state: adaptedState,
+    // Provide only state and dispatch
+    state: state, // Use the direct state from useReducer
     dispatch,
-    
-    // Legacy direct state access for backward compatibility
-    player: legacyGetters.getPlayer(state) as Character | null,
-    opponent: legacyGetters.getOpponent(state) as Character | null,
-    inventory: legacyGetters.getItems(state) as InventoryItem[],
-    entries: legacyGetters.getEntries(state) as JournalEntry[],
-    isCombatActive: legacyGetters.isCombatActive(state),
-    narrativeContext: legacyGetters.getNarrativeContext(state) as NarrativeContext,
-    
-    // Additional legacy properties
-    combatRounds: state.combat?.rounds || 0,
-    currentTurn: state.combat?.currentTurn as CombatTurn | null || null,
-  }), [state, adaptedState, dispatch]); // Include dispatch in dependency array
+  }), [state, dispatch]); // Update dependencies
 
   return (
     <GameContext.Provider value={contextValue}>

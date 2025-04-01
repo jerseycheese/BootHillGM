@@ -8,8 +8,8 @@
 import { GameState } from '../../../types/gameState';
 import { ExtendedGameState } from '../types/aiDecisionTypes';
 import { Character } from '../../../types/character';
-import { initialCombatState } from '../../../types/state/combatState'; // ADDED IMPORT
-import { initialUIState } from '../../../types/state/uiState'; // ADDED IMPORT
+import { initialCombatState } from '../../../types/state/combatState'; 
+import { initialUIState } from '../../../types/state/uiState'; 
 import { NarrativeState } from '../../../types/narrative.types';
 
 /**
@@ -73,6 +73,7 @@ export function safeExtendGameState(state: unknown): ExtendedGameState {
       availableChoices: [],
       narrativeHistory: [],
       displayMode: 'standard',
+      context: '', // Add required context property
       error: null
     },
     ui: initialUIState, // Use initialUIState for UI slice
@@ -81,10 +82,7 @@ export function safeExtendGameState(state: unknown): ExtendedGameState {
     location: null,
     quests: [],
     gameProgress: 0,
-    suggestedActions: [],
-    player: null, // ADD DUMMY IMPLEMENTATION
-    opponent: null, // Add required opponent property
-    isCombatActive: false // ADD DUMMY IMPLEMENTATION
+    suggestedActions: []
   };
   
   // Return base state if input is invalid

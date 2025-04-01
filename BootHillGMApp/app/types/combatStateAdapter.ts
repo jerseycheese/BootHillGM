@@ -7,7 +7,9 @@
 import { CombatState as CombatStateFromCombat, LogEntry, CombatParticipant, BrawlingState } from './combat';
 import { CombatState as CombatStateFromState, CombatLogEntry } from './state/combatState';
 import { Character } from './character';
-import { GameEngineAction } from './gameActions';
+import { GameAction } from './actions'; // Import GameAction instead
+// Removed unused GameEngineAction import
+import { Dispatch } from 'react'; // Import Dispatch
 
 /**
  * UniversalCombatState combines properties from both CombatState interfaces
@@ -65,7 +67,7 @@ export interface CombatInitiator {
   
   // State management
   isCombatActive: boolean;
-  dispatch: (action: GameEngineAction) => void;
+  dispatch: Dispatch<GameAction>; // Use GameAction
   
   // Additional properties for hooks
   isLoading?: boolean;
@@ -77,7 +79,7 @@ export interface CombatInitiator {
   handleLoad?: () => void;
   
   // Allow for additional unknown properties
-  [key: string]: unknown;
+  // [key: string]: unknown; // Removing index signature if not strictly needed
 }
 
 /**

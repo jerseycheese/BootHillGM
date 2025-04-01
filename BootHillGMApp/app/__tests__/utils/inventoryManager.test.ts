@@ -1,6 +1,12 @@
 import { InventoryManager } from '../../utils/inventoryManager';
 import { Character } from '../../types/character';
-import { GameState } from '../../types/campaign';
+import { GameState } from '../../types/gameState'; // Use correct GameState type
+import { initialCharacterState } from '../../types/state/characterState';
+import { initialCombatState } from '../../types/state/combatState';
+import { initialInventoryState } from '../../types/state/inventoryState';
+import { initialJournalState } from '../../types/state/journalState';
+import { initialNarrativeState } from '../../types/state/narrativeState';
+import { initialUIState } from '../../types/state/uiState';
 import { InventoryItem } from '../../types/item.types';
 import { WEAPONS } from '../../utils/weaponDefinitions';
 
@@ -23,7 +29,7 @@ describe('InventoryManager', () => {
     name: 'Test Character',
     isNPC: false,
     isPlayer: true,
-    inventory: [],
+    inventory: { items: [] }, // Use correct InventoryState structure
     attributes: {
       speed: 5,
       gunAccuracy: 5,
@@ -33,28 +39,56 @@ describe('InventoryManager', () => {
       bravery: 5,
       experience: 0
     },
+    minAttributes: { // Add missing required property
+      speed: 1,
+      gunAccuracy: 1,
+      throwingAccuracy: 1,
+      strength: 1,
+      baseStrength: 1,
+      bravery: 1,
+      experience: 0
+    },
+    maxAttributes: { // Add missing required property
+      speed: 20,
+      gunAccuracy: 20,
+      throwingAccuracy: 20,
+      strength: 20,
+      baseStrength: 20,
+      bravery: 20,
+      experience: 100 // Example max
+    },
     wounds: [],
     isUnconscious: false,
-    equippedWeapon: undefined,
+    // equippedWeapon: undefined, // This is part of CharacterState now, not top-level Character
     strengthHistory: {baseStrength: 10, changes: []}
   };
 
+  // Rebuild mockGameState with the correct slice structure
   const mockGameState: GameState = {
-    currentPlayer: 'Test Player',
+    // Slices
+    character: { // Use CharacterState structure
+      ...initialCharacterState, // Start with initial state
+      player: mockCharacter, // Assign the mock player
+      opponent: null
+    },
+    combat: { // Use CombatState structure
+      ...initialCombatState,
+      isActive: false // Set the relevant property for the test
+    },
+    inventory: initialInventoryState,
+    journal: initialJournalState,
+    narrative: initialNarrativeState,
+    ui: initialUIState,
+
+    // Top-level properties
+    currentPlayer: 'Test Player', // This might be redundant if character.player.id is used
     npcs: [],
-    character: mockCharacter,
     location: { type: 'town', name: 'Test Location' } as LocationType,
-    savedTimestamp: undefined,
-    gameProgress: 0,
-    journal: [],
-    narrative: '',
-    inventory: [],
     quests: [],
-    isCombatActive: false,
-    opponent: null,
+    gameProgress: 0,
+    savedTimestamp: 0, // Use number instead of undefined
     isClient: false,
     suggestedActions: [],
-    combatState: undefined
   };
 
   beforeEach(() => {

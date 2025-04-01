@@ -28,7 +28,8 @@ const mockNarrativeState: NarrativeState = {
     narrativeArcs: { 'justice-frontier': { id: 'justice-frontier', title: 'Justice in the frontier', description: 'An arc about bringing justice.', branches: [], startingBranch: '', isCompleted: false } },
     impactState: { reputationImpacts: {}, relationshipImpacts: {}, worldStateImpacts: {}, storyArcImpacts: {}, lastUpdated: Date.now() },
     narrativeBranches: {}, pendingDecisions: []
-  }
+  },
+  context: "" // Add missing context property
 };
 
 const mockNarrativeContextValue: {

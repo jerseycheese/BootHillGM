@@ -23,7 +23,8 @@ describe('Narrative Types', () => {
       displayMode: 'standard',
       narrativeContext: undefined,
       error: null,
-      lore: initialLoreState
+      lore: initialLoreState,
+      context: "" // Add missing context property from initialNarrativeState
     };
     
     expect(initialNarrativeState).toEqual(expectedState);

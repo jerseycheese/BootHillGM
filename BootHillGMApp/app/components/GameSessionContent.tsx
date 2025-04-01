@@ -44,16 +44,17 @@ export default function GameSessionContent(): JSX.Element {
     handleRecoverGame: () => void;
     handleRestartGame: () => void;
   } = useRecoveryOptions(
-    gameSession?.dispatch, 
-    playerCharacter,
+    gameSession?.dispatch,
+    // Removed playerCharacter argument as it's no longer used by the hook
     recoveryInProgress
   );
   
   // State adapters
-  const { dispatchAdapter, campaignState } = useCampaignStateAdapter(
+  // Removed campaignState from destructuring as it's no longer returned by the adapter
+  // Removed playerCharacter argument as it's no longer used by the adapter hook
+  const { dispatchAdapter } = useCampaignStateAdapter(
     gameSession?.dispatch,
-    gameSession?.state,
-    playerCharacter
+    gameSession?.state
   );
   
   // Explicitly cast the gameSession to GameSessionType to ensure type compatibility
@@ -206,7 +207,8 @@ export default function GameSessionContent(): JSX.Element {
       </div>
       <div id="bhgmDevToolsPanel" data-testid="dev-tools-panel">
         <DevToolsPanel
-          gameState={campaignState}
+          // Pass the current gameSession state directly
+          gameState={gameSession?.state}
           dispatch={dispatchAdapter}
         />
       </div>

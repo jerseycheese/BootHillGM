@@ -50,7 +50,6 @@ function generateFallbackResponse(
   characterName: string = "the player",
   inventoryItems: InventoryItem[] = []
 ): FallbackResponse { // Add explicit return type
-  console.log("Generating fallback response for prompt:", prompt);
 
   // Extract action words from the prompt to determine response type
   const promptLower = prompt.toLowerCase();
@@ -74,38 +73,42 @@ function generateFallbackResponse(
   switch (responseType) {
     case 'initializing':
       narrative = `${characterName} arrives in the town of Boothill, greeted by the sight of dusty streets and wooden buildings. The sun hangs low in the sky, casting long shadows across the main thoroughfare. The distant sounds of piano music drift from the saloon, while townsfolk move about their business.`;
+      // Updated fallback suggestedActions to match SuggestedAction type
       suggestedActions.push(
-        { text: "Explore the town", type: "basic", context: "Get to know Boothill" },
-        { text: "Visit the saloon", type: "basic", context: "Find information and refreshment" },
-        { text: "Look for work", type: "interaction", context: "Earn some money" },
-        { text: "Check your gear", type: "inventory", context: "See what you have" }
+        { id: 'fallback-init-1', title: "Explore the town", description: "Get to know Boothill", type: 'optional' as const },
+        { id: 'fallback-init-2', title: "Visit the saloon", description: "Find information and refreshment", type: 'optional' as const },
+        { id: 'fallback-init-3', title: "Look for work", description: "Earn some money", type: 'optional' as const },
+        { id: 'fallback-init-4', title: "Check your gear", description: "See what you have", type: 'optional' as const }
       );
       break;
       
     case 'looking':
       narrative = `${characterName} looks around at the frontier town. The dusty main street stretches before you, lined with wooden buildings. A saloon stands nearby, and people move about their business.`;
+      // Updated fallback suggestedActions to match SuggestedAction type
       suggestedActions.push(
-        { text: "Enter the saloon", type: "basic", context: "Look for information" },
-        { text: "Approach the general store", type: "basic", context: "Check for supplies" },
-        { text: "Ask a passerby for information", type: "interaction", context: "Learn about the town" }
+        { id: 'fallback-look-1', title: "Enter the saloon", description: "Look for information", type: 'optional' as const },
+        { id: 'fallback-look-2', title: "Approach the general store", description: "Check for supplies", type: 'optional' as const },
+        { id: 'fallback-look-3', title: "Ask a passerby for information", description: "Learn about the town", type: 'optional' as const }
       );
       break;
       
     case 'movement':
       narrative = `${characterName} makes their way down the trail. The western landscape stretches out around you, with rolling hills and sparse vegetation. The path continues ahead.`;
+      // Updated fallback suggestedActions to match SuggestedAction type
       suggestedActions.push(
-        { text: "Continue forward", type: "basic", context: "Follow the trail" },
-        { text: "Look for a place to rest", type: "basic", context: "Take a break from traveling" },
-        { text: "Check your surroundings", type: "basic", context: "Make sure it's safe" }
+        { id: 'fallback-move-1', title: "Continue forward", description: "Follow the trail", type: 'optional' as const },
+        { id: 'fallback-move-2', title: "Look for a place to rest", description: "Take a break from traveling", type: 'optional' as const },
+        { id: 'fallback-move-3', title: "Check your surroundings", description: "Make sure it's safe", type: 'optional' as const }
       );
       break;
       
     case 'talking':
       narrative = `${characterName} tries to engage in conversation. The person nods, listening to what you have to say. "Interesting," they respond, though they seem a bit distracted.`;
+      // Updated fallback suggestedActions to match SuggestedAction type
       suggestedActions.push(
-        { text: "Ask about the town", type: "interaction", context: "Get local information" },
-        { text: "Inquire about work", type: "interaction", context: "Look for opportunities" },
-        { text: "End the conversation", type: "basic", context: "Move on to something else" }
+        { id: 'fallback-talk-1', title: "Ask about the town", description: "Get local information", type: 'optional' as const },
+        { id: 'fallback-talk-2', title: "Inquire about work", description: "Look for opportunities", type: 'optional' as const },
+        { id: 'fallback-talk-3', title: "End the conversation", description: "Move on to something else", type: 'optional' as const }
       );
       break;
       
@@ -119,20 +122,22 @@ function generateFallbackResponse(
         narrative += "You don't seem to have much with you at the moment.";
       }
       
+      // Updated fallback suggestedActions to match SuggestedAction type
       suggestedActions.push(
-        { text: "Look for supplies", type: "basic", context: "Find more items" },
-        { text: "Continue your journey", type: "basic", context: "Move on" },
-        { text: "Rest for a moment", type: "basic", context: "Recover your strength" }
+        { id: 'fallback-inv-1', title: "Look for supplies", description: "Find more items", type: 'optional' as const },
+        { id: 'fallback-inv-2', title: "Continue your journey", description: "Move on", type: 'optional' as const },
+        { id: 'fallback-inv-3', title: "Rest for a moment", description: "Recover your strength", type: 'optional' as const }
       );
       break;
       
     default:
       narrative = `${characterName} considers their next move. The western frontier stretches out before you, full of opportunity and danger.`;
+      // Updated fallback suggestedActions to match SuggestedAction type
       suggestedActions.push(
-        { text: "Look around", type: "basic", context: "Survey your surroundings" },
-        { text: "Check your inventory", type: "inventory", context: "See what you're carrying" },
-        { text: "Rest for a while", type: "basic", context: "Recover your energy" },
-        { text: "Continue forward", type: "basic", context: "Press on with your journey" }
+        { id: 'fallback-gen-1', title: "Look around", description: "Survey your surroundings", type: 'optional' as const },
+        { id: 'fallback-gen-2', title: "Check your inventory", description: "See what you're carrying", type: 'optional' as const },
+        { id: 'fallback-gen-3', title: "Rest for a while", description: "Recover your energy", type: 'optional' as const },
+        { id: 'fallback-gen-4', title: "Continue forward", description: "Press on with your journey", type: 'optional' as const }
       );
   }
   
@@ -203,7 +208,6 @@ export async function getAIResponse(
     }>;
   };
 }> {
-  console.log("Getting AI response for prompt:", prompt);
   
   // Extract character name from inventory or context for fallback responses
   // NOTE: narrativeContext does not contain playerInfo. Player name should ideally be passed directly.
@@ -225,68 +229,8 @@ export async function getAIResponse(
     // Create a race between the AI response and a timeout
     const model = getAIModel();
 
-    // Define the expected JSON structure as a JavaScript object
-    const expectedJsonResponse = {
-      narrative: '[Your response as the Game Master, describing the results of the player\'s action and advancing the story]',
-      location: {
-        type: '[town, wilderness, or landmark]',
-        name: '[Name of the town or landmark, if applicable]',
-        description: '[Description of the wilderness, if applicable]',
-      },
-      combatInitiated: false, // Must be a boolean, not a string
-      opponent: null, // Only include if combatInitiated is true
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [
-        { text: 'action description', type: 'basic, combat, interaction, or chaotic', context: 'tooltip explanation' },
-        { text: 'action description', type: 'basic, combat, interaction, or chaotic', context: 'tooltip explanation' },
-        { text: 'action description', type: 'basic, combat, interaction, or chaotic', context: 'tooltip explanation' },
-        { text: 'action description', type: 'basic, combat, interaction, or chaotic', context: 'tooltip explanation' },
-      ],
-      playerDecision: {
-        prompt: '[Question or situation requiring player decision]',
-        options: [
-          {
-            text: '[Option 1 text]',
-            impact: '[Description of potential impact]',
-            tags: ['optional', 'tags']
-          },
-          {
-            text: '[Option 2 text]',
-            impact: '[Description of potential impact]',
-            tags: ['optional', 'tags']
-          }
-        ],
-        importance: '[critical, significant, moderate, or minor]'
-      },
-      storyProgression: {
-        currentPoint: '[Brief identifier for this story point]',
-        title: '[Brief title for this story beat]',
-        description: '[Concise description of story development]',
-        significance: '[major, minor, background, character, or milestone]',
-        characters: ['[Character names involved in this story point]'],
-        isMilestone: false, // Whether this is a major milestone in the story
-      },
-      lore: {
-        newFacts: [
-          {
-            category: '[character, location, history, item, or concept]',
-            content: '[Factual statement about the world]',
-            importance: 1, // 1-10, how important this fact is
-            confidence: 1, // 1-10, how confident the AI is
-            tags: ['tag1', 'tag2'] // Keywords for this fact
-          }
-        ],
-        updatedFacts: [
-          {
-            id: 'fact-id', // ID of existing fact to update
-            content: '[Updated factual statement]',
-            importance: 1, // 1-10, updated importance
-            confidence: 1 // 1-10, updated confidence
-          }
-        ]
-      }
-    };
+    // Removed unused expectedJsonResponse variable declaration
+    // Restore the try block start (Removing duplicated try)
 
     // Add story progression context to the prompt
     const storyContext = storyProgressionContext 
@@ -334,7 +278,22 @@ export async function getAIResponse(
 
       Respond as the Game Master in JSON format, with the following structure:
 
-      ${JSON.stringify(expectedJsonResponse, null, 2)}
+      // Updated example format for suggestedActions
+      {
+        "narrative": "...",
+        "location": { "...": "..." },
+        "combatInitiated": false,
+        "opponent": null,
+        "acquiredItems": [],
+        "removedItems": [],
+        "suggestedActions": [
+          { "id": "action-id-1", "title": "Action Title 1", "description": "Action Description 1", "type": "optional" },
+          { "id": "action-id-2", "title": "Action Title 2", "description": "Action Description 2", "type": "optional" }
+        ],
+        "playerDecision": null, // or { ... }
+        "storyProgression": null, // or { ... }
+        "lore": null // or { ... }
+      }
 
       Ensure you ALWAYS return valid JSON. Provide all fields, even if they are empty arrays or null. 
       Do NOT include any markdown code block delimiters (\`\`\`json or \`\`\`) in your response. Return ONLY the raw JSON object.
@@ -363,12 +322,10 @@ export async function getAIResponse(
     // Race between AI response and timeout
     let result;
     try {
-      console.log("Starting AI request with timeout of", AI_RESPONSE_TIMEOUT_MS, "ms");
       result = await Promise.race([
         retryWithExponentialBackoff<GenerateContentResult>(() => model.generateContent(fullPrompt)),
         timeoutPromise(AI_RESPONSE_TIMEOUT_MS)
       ]);
-      console.log("AI request completed successfully");
       
       // Clear timeout since we got a response
       clearTimeout(timeoutId);
@@ -389,6 +346,7 @@ export async function getAIResponse(
     text = text.replace(/^\s*```(?:json)?\s*\n?([\s\S]*?)\n?\s*```\s*$/gim, '$1');
     text = text.trim(); // Remove any extra whitespace
 
+    // Restore inner try block for JSON parsing
     try {
       // Attempt to parse the entire response as JSON
       const jsonResponse = JSON.parse(text);
@@ -455,10 +413,11 @@ export async function getAIResponse(
 
       // Ensure we have at least one suggested action
       if (!jsonResponse.suggestedActions || jsonResponse.suggestedActions.length === 0) {
+        // Updated fallback suggestedActions to match SuggestedAction type
         jsonResponse.suggestedActions = [
-          { text: "Look around", type: "basic", context: "Survey your surroundings" },
-          { text: "Continue forward", type: "basic", context: "Proceed on your journey" },
-          { text: "Check your inventory", type: "inventory", context: "See what you're carrying" }
+          { id: 'fallback-ai-1', title: "Look around", description: "Survey your surroundings", type: 'optional' as const },
+          { id: 'fallback-ai-2', title: "Continue forward", description: "Proceed on your journey", type: 'optional' as const },
+          { id: 'fallback-ai-3', title: "Check your inventory", description: "See what you're carrying", type: 'optional' as const }
         ];
       }
 
@@ -475,8 +434,8 @@ export async function getAIResponse(
         playerDecision,
         lore: jsonResponse.lore
       };
+    // Restore closing brace for inner try block
     } catch (error) {
-      console.error('Error parsing AI response as JSON:', error);
       console.error('Raw AI response:', text);
 
       if (error instanceof SyntaxError) {
@@ -485,7 +444,8 @@ export async function getAIResponse(
       
       // Return fallback response
       return generateFallbackResponse(prompt, characterName, inventory);
-    }
+    // Restore the try block end (Removing duplicated catch)
+}
   } catch (error) {
     console.error("Critical error in AI service:", error);
     

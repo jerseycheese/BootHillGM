@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useState, useRef } from "react";
-import { useCampaignState } from "../components/CampaignStateManager";
+import { useGameState } from "../context/GameStateProvider"; // Updated import
 import { initialGameState } from "../types/gameState";
 import { getAIResponse } from "../services/ai/gameService";
 import { StoryPointType, NarrativeDisplayMode, NarrativeState } from "../types/narrative.types";
 import { InventoryState } from "../types/state/inventoryState";
 import { InventoryItem } from "../types/item.types";
 import { GameState } from "../types/gameState";
-import { migrationAdapter } from "../utils/stateAdapters";
+import { GameEngineAction } from '../types/gameActions';
 import { getStartingInventory } from "../utils/startingInventory";
 import { LocationType } from "../services/locationService";
 
+import { useCampaignStatePersistence } from './useCampaignStatePersistence';
 // Helper function to extract items from inventory state or return as-is if it's an array
 const getItemsFromInventory = (inventory: InventoryState | InventoryItem[] | undefined): InventoryItem[] => {
   if (!inventory) return [];
@@ -20,12 +21,6 @@ const getItemsFromInventory = (inventory: InventoryState | InventoryItem[] | und
 // Helper function to create an inventory state from items
 const createInventoryState = (items: InventoryItem[]): InventoryState => {
   return { items };
-};
-
-// Helper function to ensure state is properly formatted for GameState
-const normalizeState = (state: Partial<GameState>): Partial<GameState> => {
-  // Ensure we have a properly structured state with all required properties
-  return migrationAdapter.oldToNew(state) as Partial<GameState>;
 };
 
 // Helper function to create a properly typed location object
@@ -66,7 +61,7 @@ const MAX_INITIALIZATION_TIME = 10000; // 10 seconds
 
 // Hook to handle game session initialization and state management
 export const useGameInitialization = () => {
-  const { state, dispatch, saveGame } = useCampaignState();
+  const { state, dispatch } = useGameState(); // Use correct hook
   const [isInitializing, setIsInitializing] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [initializationAttempts, setInitializationAttempts] = useState(0);
@@ -75,6 +70,8 @@ export const useGameInitialization = () => {
   const lastSavedTimestampRef = useRef<number | undefined>(state?.savedTimestamp);
   const initProcessingRef = useRef(false);
   const hasInitializedRef = useRef(false);
+  // Use the persistence hook to get the saveGame function
+  const { saveGame } = useCampaignStatePersistence(isInitializing, hasInitializedRef, dispatch as React.Dispatch<GameEngineAction>); // Cast dispatch type
   const timeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
   // Handle initial client-side setup and cleanup
@@ -95,7 +92,8 @@ export const useGameInitialization = () => {
   const createEmergencyState = useCallback(() => {
     console.warn("Creating emergency recovery state"); // Keep warn
 
-    return normalizeState({
+    // Removed normalizeState call
+    return {
       ...initialGameState,
       character: {
         player: {
@@ -133,18 +131,19 @@ export const useGameInitialization = () => {
         visitedPoints: ['emergency'],
         narrativeHistory: ["You find yourself in Boothill with a fresh start ahead of you."],
         displayMode: 'standard' as NarrativeDisplayMode,
+        context: "", // Add missing context property
       },
       inventory: createInventoryState(getStartingInventory()),
       location: { type: 'town' as const, name: 'Boothill' },
       savedTimestamp: Date.now(),
       isClient: true,
       suggestedActions: [
-        { text: "Look around", type: 'basic' as const, context: "Get your bearings" },
-        { text: "Find the sheriff", type: 'interaction' as const, context: "Learn about the town" },
-        { text: "Visit the general store", type: 'inventory' as const, context: "Buy supplies" }
+        { id: 'emergency-1', title: "Look around", description: "Get your bearings", type: 'optional' },
+        { id: 'emergency-2', title: "Find the sheriff", description: "Learn about the town", type: 'optional' },
+        { id: 'emergency-3', title: "Visit the general store", description: "Buy supplies", type: 'optional' }
       ]
-    });
-  }, []);
+    } as GameState; // Add closing brace and type assertion
+  }, []); // Removed initialGameState dependency
 
   /**
    * Initializes or restores a game session with AI-generated suggested actions.
@@ -241,7 +240,8 @@ export const useGameInitialization = () => {
               suggestedActions: response.suggestedActions || [],
             };
 
-            return normalizeState(initialState);
+            // Removed normalizeState call
+            return initialState;
           } catch (error) {
             console.error("Error in new character initialization:", error); // Keep error log
 
@@ -276,13 +276,14 @@ export const useGameInitialization = () => {
               savedTimestamp: Date.now(),
               isClient: true,
               suggestedActions: [
-                { text: "Explore the town", type: 'basic' as const, context: "Get to know Boothill" },
-                { text: "Visit the saloon", type: 'basic' as const, context: "Find information and refreshment" },
-                { text: "Look for work", type: 'interaction' as const, context: "Earn some money" }
+                { id: 'fallback-init-1', title: "Explore the town", description: "Get to know Boothill", type: 'optional' },
+                { id: 'fallback-init-2', title: "Visit the saloon", description: "Find information and refreshment", type: 'optional' },
+                { id: 'fallback-init-3', title: "Look for work", description: "Earn some money", type: 'optional' }
               ]
             };
 
-            return normalizeState(fallbackInitialState);
+            // Removed normalizeState call
+            return fallbackInitialState;
           }
         }
 
@@ -305,22 +306,24 @@ export const useGameInitialization = () => {
                 getItemsFromInventory(state.inventory) // Extract items from inventory
               );
 
-              return normalizeState({
+              // Removed normalizeState call
+              return {
                 ...state,
                 suggestedActions: response.suggestedActions || [],
-              });
+              } as GameState; // Add closing brace and type assertion
             } catch (error) {
               console.error("Error generating suggestions for existing state:", error); // Keep error log
 
               // Fallback suggestions
-              return normalizeState({
+              // Removed normalizeState call
+              return {
                 ...state,
                 suggestedActions: [
-                  { text: "Look around", type: 'basic' as const, context: "Survey your surroundings" },
-                  { text: "Continue forward", type: 'basic' as const, context: "Proceed with your journey" },
-                  { text: "Check your inventory", type: 'inventory' as const, context: "See what you're carrying" }
+                  { id: 'fallback-existing-1', title: "Look around", description: "Survey your surroundings", type: 'optional' },
+                  { id: 'fallback-existing-2', title: "Continue forward", description: "Proceed with your journey", type: 'optional' },
+                  { id: 'fallback-existing-3', title: "Check your inventory", description: "See what you're carrying", type: 'optional' }
                 ]
-              });
+              } as GameState; // Add closing brace and type assertion
             }
           }
           return state;
@@ -352,12 +355,14 @@ export const useGameInitialization = () => {
             visitedPoints: [], // We don't know the visited points here
             narrativeHistory: [response.narrative], // Add to history
             displayMode: 'standard' as NarrativeDisplayMode,
+            context: "", // Add missing context property
           };
 
           // Process the location to ensure it has the correct type
           const processedLocation = processLocation(response.location);
 
-          return normalizeState({
+          // Removed normalizeState call
+          return {
             ...state,
             narrative: existingCharacterNarrative,
             location: processedLocation, // Use the processed location with proper type
@@ -365,7 +370,7 @@ export const useGameInitialization = () => {
             savedTimestamp: Date.now(),
             isClient: true,
             suggestedActions: response.suggestedActions || [],
-          });
+          } as GameState; // Add closing brace and type assertion
         } catch (error) {
           console.error("Error initializing existing character state:", error); // Keep error log
 
@@ -384,9 +389,11 @@ export const useGameInitialization = () => {
             visitedPoints: ['resume_fallback'],
             narrativeHistory: [fallbackNarrative],
             displayMode: 'standard' as NarrativeDisplayMode,
+            context: "", // Add missing context property
           };
 
-          return normalizeState({
+          // Removed normalizeState call
+          return {
             ...state,
             narrative: fallbackNarrativeState,
             location: { type: 'town' as const, name: 'Boothill' },
@@ -394,11 +401,11 @@ export const useGameInitialization = () => {
             savedTimestamp: Date.now(),
             isClient: true,
             suggestedActions: [
-              { text: "Look around", type: 'basic' as const, context: "Survey your surroundings" },
-              { text: "Visit the saloon", type: 'basic' as const, context: "Find information and refreshment" },
-              { text: "Check your inventory", type: 'inventory' as const, context: "See what you're carrying" }
+              { id: 'fallback-existing-char-1', title: "Look around", description: "Survey your surroundings", type: 'optional' },
+              { id: 'fallback-existing-char-2', title: "Visit the saloon", description: "Find information and refreshment", type: 'optional' },
+              { id: 'fallback-existing-char-3', title: "Check your inventory", description: "See what you're carrying", type: 'optional' }
             ]
-          });
+          } as GameState; // Add closing brace and type assertion
         }
       } catch (error) {
         // Handle errors gracefully with fallback suggestions
@@ -414,7 +421,9 @@ export const useGameInitialization = () => {
 
             if (lastCharacterJSON) {
               try {
-                characterData = JSON.parse(lastCharacterJSON).character;
+                if (lastCharacterJSON) { // Add null check
+                  characterData = JSON.parse(lastCharacterJSON).character;
+                }
               } catch (e) {
                 console.error("Failed to parse character data:", e); // Keep error log
               }
@@ -461,7 +470,8 @@ export const useGameInitialization = () => {
             }
 
             // Create a basic state with the character
-            return normalizeState({
+            // Removed normalizeState call
+            return {
               ...initialGameState,
               character: {
                 player: characterData,
@@ -480,27 +490,29 @@ export const useGameInitialization = () => {
                 visitedPoints: ['error_recovery'],
                 narrativeHistory: [`You find yourself in a dusty saloon, trying to remember how you got here. The bartender nods as you approach.`],
                 displayMode: 'standard' as NarrativeDisplayMode,
+                context: "", // Add missing context property
               },
               location: { type: 'town' as const, name: 'Recovery Town' },
               savedTimestamp: Date.now(),
               isClient: true,
               suggestedActions: [
-                { text: "Talk to the bartender", type: 'interaction' as const, context: "Ask about the town" },
-                { text: "Order a drink", type: 'basic' as const, context: "Quench your thirst" },
-                { text: "Leave the saloon", type: 'basic' as const, context: "Explore elsewhere" }
+                { id: 'error-recovery-1', title: "Talk to the bartender", description: "Ask about the town", type: 'optional' },
+                { id: 'error-recovery-2', title: "Order a drink", description: "Quench your thirst", type: 'optional' },
+                { id: 'error-recovery-3', title: "Leave the saloon", description: "Explore elsewhere", type: 'optional' }
               ],
-            });
+            } as GameState; // Add closing brace and type assertion
           }
 
           // If we have a character but need suggestions, generate fallback ones
-          return normalizeState({
+          // Removed normalizeState call
+          return {
             ...state,
             suggestedActions: [
-              { text: "Look around", type: 'basic' as const, context: "Survey your surroundings" },
-              { text: "Check your inventory", type: 'inventory' as const, context: "See what you're carrying" },
-              { text: "Ask for directions", type: 'interaction' as const, context: "Find out where to go" }
+              { id: 'final-fallback-1', title: "Look around", description: "Survey your surroundings", type: 'optional' },
+              { id: 'final-fallback-2', title: "Check your inventory", description: "See what you're carrying", type: 'optional' },
+              { id: 'final-fallback-3', title: "Ask for directions", description: "Find out where to go", type: 'optional' }
             ],
-          });
+          } as GameState; // Add closing brace and type assertion
         } catch (finalError) {
           // Last resort fallback
           console.error("Final error recovery attempt failed:", finalError); // Keep error log
@@ -510,7 +522,8 @@ export const useGameInitialization = () => {
         setIsInitializing(false);
       }
     },
-    [state, dispatch, initializationAttempts, createEmergencyState]
+    // Add missing dependencies
+    [state, dispatch, initializationAttempts, setInitializationAttempts, createEmergencyState] // Removed initialGameState dependency
   );
 
   // Add a timeout mechanism to prevent infinite loading
@@ -550,7 +563,8 @@ export const useGameInitialization = () => {
         initProcessingRef.current = false;
       };
     }
-  }, [isInitializing, dispatch, createEmergencyState, saveGame]);
+  // Add missing dependencies
+  }, [isInitializing, dispatch, createEmergencyState, saveGame]); // Removed initialGameState dependency
 
   // Manage game initialization lifecycle
   useEffect(() => {
@@ -608,7 +622,8 @@ export const useGameInitialization = () => {
     };
 
     initGame();
-  }, [isClient, isInitializing, state, dispatch, saveGame, initializeGameSession]);
+  // Add missing dependencies
+  }, [isClient, isInitializing, state, dispatch, saveGame, initializeGameSession, lastSavedTimestampRef, hasInitializedRef, initProcessingRef]);
   // The above dependencies are carefully considered to prevent unnecessary re-renders
 
   return { isInitializing, isClient };

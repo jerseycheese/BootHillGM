@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { migrationAdapter } from '../utils/stateAdapters';
 import { GameState } from '../types/gameState';
 
 /**
@@ -15,7 +14,8 @@ export const useBeforeUnloadHandler = (stateRef: React.MutableRefObject<GameStat
       const currentState = stateRef.current;
       if (currentState?.combat?.isActive) {
         // Ensure state is in the new format before saving
-        const normalizedState = migrationAdapter.oldToNew(currentState);
+        // State is already in the new format, no adaptation needed
+        const normalizedState = currentState;
         
         localStorage.setItem('campaignState', JSON.stringify({
           ...normalizedState,

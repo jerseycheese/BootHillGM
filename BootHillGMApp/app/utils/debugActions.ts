@@ -213,10 +213,11 @@ export const resetGame = (): GameEngineAction => {
     
     // If we still don't have suggested actions, create default ones
     if (!initialSuggestedActions || initialSuggestedActions.length === 0) {
+      // Updated default suggestedActions to match SuggestedAction type
       initialSuggestedActions = [
-        { text: "Look around", type: 'basic', context: "Survey your surroundings" },
-        { text: "Visit the saloon", type: 'basic', context: "Find a drink and information" },
-        { text: "Check your gear", type: 'inventory', context: "Make sure you have everything" }
+        { id: 'reset-default-1', title: "Look around", description: "Survey your surroundings", type: 'optional' as const },
+        { id: 'reset-default-2', title: "Visit the saloon", description: "Find a drink and information", type: 'optional' as const },
+        { id: 'reset-default-3', title: "Check your gear", description: "Make sure you have everything", type: 'optional' as const }
       ];
       
       // Save these for future resets
@@ -260,10 +261,11 @@ export const resetGame = (): GameEngineAction => {
     // Set defaults for all properties in case of error
     initialCharacter = createBaseCharacter(`character_${Date.now()}`, 'Your Character');
     initialNarrativeText = "You find yourself back at the beginning of your adventure in Boothill.";
+    // Updated fallback suggestedActions to match SuggestedAction type
     initialSuggestedActions = [
-      { text: "Look around", type: 'basic', context: "Survey your surroundings" },
-      { text: "Visit the saloon", type: 'basic', context: "Find a drink and information" },
-      { text: "Check your gear", type: 'inventory', context: "Make sure you have everything" }
+      { id: 'reset-fallback-1', title: "Look around", description: "Survey your surroundings", type: 'optional' as const },
+      { id: 'reset-fallback-2', title: "Visit the saloon", description: "Find a drink and information", type: 'optional' as const },
+      { id: 'reset-fallback-3', title: "Check your gear", description: "Make sure you have everything", type: 'optional' as const }
     ];
   }
   

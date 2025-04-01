@@ -57,7 +57,6 @@ export function characterReducer(
   state: CharacterState = initialCharacterState,
   action: GameAction
 ): CharacterState {
-  console.log('characterReducer action:', action, 'currentState:', state);
   switch (action.type) {
     case 'character/SET_CHARACTER': {
       // Ensure we have a valid character

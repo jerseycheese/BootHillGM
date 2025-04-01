@@ -2,7 +2,7 @@
 import React from "react";
 import { GameControlSectionProps } from "../../types/debug.types";
 import { initializeTestCombat, resetGame } from "../../utils/debugActions";
-import { GameAction } from "../../types/campaign";
+import { GameAction } from "../../types/actions"; // Updated import path
 import { GameEngineAction } from "../../types/gameActions";
 
 /**

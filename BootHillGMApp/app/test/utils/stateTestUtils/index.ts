@@ -3,13 +3,8 @@
  * 
  * Helper functions for testing with the new state architecture and adapters.
  */
-import { GameState } from '../../../types/gameState';
-import { GameEngineAction } from '../../../types/gameActions';
-import { adaptStateForTests, migrationAdapter, LegacyState } from '../../../utils/stateAdapters';
-import { InventoryItem } from '../../../types/item.types';
-import { JournalEntry as AppJournalEntry } from '../../../types/journal';
-import { StateReducer } from './types';
-import { convertToAppJournalEntries, adaptInventoryForTesting, adaptJournalForTesting } from './adapters';
+// Removed unused imports: GameState, GameEngineAction, InventoryItem, AppJournalEntry, StateReducer
+// Removed unused imports: convertToAppJournalEntries, adaptInventoryForTesting, adaptJournalForTesting
 
 /**
  * Prepares an initial state for testing with adapters applied
@@ -20,20 +15,7 @@ import { convertToAppJournalEntries, adaptInventoryForTesting, adaptJournalForTe
  * @param state The initial state to prepare
  * @returns The adapted state ready for testing
  */
-export const prepareStateForTesting = (state: Partial<GameState>): GameState => {
-  // Ensure it's in the new format first
-  const normalizedState = migrationAdapter.oldToNew(state as GameState);
-  
-  // Then apply adapters for test compatibility
-  const adaptedState = adaptStateForTests(normalizedState as GameState);
-  
-  // Apply specific adapters for inventory and journal
-  const adaptedWithInventory = adaptInventoryForTesting(adaptedState);
-  const fullyAdapted = adaptJournalForTesting(adaptedWithInventory);
-  
-  return fullyAdapted;
-};
-
+// Removed obsolete function: prepareStateForTesting
 /**
  * Applies a reducer and adapts the resulting state for testing
  * 
@@ -45,141 +27,14 @@ export const prepareStateForTesting = (state: Partial<GameState>): GameState => 
  * @param action The action to dispatch
  * @returns The adapted resulting state
  */
-export const applyReducerForTesting = (
-  reducer: StateReducer,
-  state: Partial<GameState>,
-  action: GameEngineAction
-): Partial<GameState> => {
-  // Special handling for specific reducer tests
-  let inputState = state;
-  
-  // If we're testing inventory reducer specifically
-  if (action.type.includes('inventory/') || action.type.includes('INVENTORY')) {
-    // If the state already has an inventory object with items, use that
-    if (state.inventory && !Array.isArray(state.inventory) && state.inventory.items) {
-      inputState = {
-        ...state,
-        inventory: {
-          ...state.inventory
-        }
-      };
-    }
-    // If legacy array format, convert it
-    else if (Array.isArray(state.inventory)) {
-      inputState = {
-        ...state,
-        inventory: {
-          items: [...state.inventory] as InventoryItem[]
-        }
-      };
-    }
-  }
-  
-  // If we're testing journal reducer specifically
-  if (action.type.includes('journal/') || action.type.includes('JOURNAL')) {
-    // If journal is an array (very old format)
-    if (Array.isArray(state.journal)) {
-      inputState = {
-        ...state,
-        journal: {
-          entries: convertToAppJournalEntries([...state.journal])
-        }
-      };
-      
-      // Also store in legacy format
-      (inputState as unknown as { entries: AppJournalEntry[] }).entries = 
-        convertToAppJournalEntries([...state.journal]);
-    }
-    // If the state has journal object with entries array, use that
-    else if (state.journal && state.journal.entries) {
-      inputState = {
-        ...state,
-        journal: {
-          ...state.journal,
-          entries: [...state.journal.entries]
-        }
-      };
-      
-      // Ensure entries at root level for backward compatibility
-      (inputState as unknown as { entries: AppJournalEntry[] }).entries = 
-        [...state.journal.entries];
-    }
-    // If legacy format with entries at root
-    else if ((state as unknown as { entries?: AppJournalEntry[] }).entries && 
-             Array.isArray((state as unknown as { entries?: AppJournalEntry[] }).entries)) {
-      const legacyEntries = (state as unknown as { entries: AppJournalEntry[] }).entries;
-      
-      inputState = {
-        ...state,
-        journal: {
-          entries: [...legacyEntries]
-        }
-      };
-      
-      // Maintain entries at root for backward compatibility
-      (inputState as unknown as { entries: AppJournalEntry[] }).entries = [...legacyEntries];
-    }
-  }
-
-  // Apply the reducer
-  const reducerResult = reducer(inputState, action);
-  
-  // Special post-processing for journal actions
-  if (action.type.includes('journal/') || action.type.includes('JOURNAL')) {
-    // Ensure journal entries are properly reflected at both levels
-    if (reducerResult.journal && reducerResult.journal.entries) {
-      (reducerResult as unknown as { entries: AppJournalEntry[] }).entries = 
-        [...reducerResult.journal.entries];
-    } 
-    else if ((reducerResult as unknown as { entries?: AppJournalEntry[] }).entries && 
-             Array.isArray((reducerResult as unknown as { entries: AppJournalEntry[] }).entries)) {
-      const legacyEntries = (reducerResult as unknown as { entries: AppJournalEntry[] }).entries;
-      
-      if (!reducerResult.journal) {
-        reducerResult.journal = { entries: [] as AppJournalEntry[] };
-      }
-      
-      reducerResult.journal = {
-        ...reducerResult.journal,
-        entries: [...legacyEntries]
-      };
-    }
-  }
-  
-  // Apply adapters for tests
-  const adaptedState = adaptStateForTests(reducerResult as GameState);
-  
-  // Final adjustment for array access patterns
-  const adaptedWithInventory = adaptInventoryForTesting(adaptedState);
-  const fullyAdapted = adaptJournalForTesting(adaptedWithInventory);
-  
-  return fullyAdapted;
-};
-
+// Removed obsolete function: applyReducerForTesting
 /**
  * Creates a wrapped reducer function that handles state adapters automatically
  * 
  * @param reducer The original reducer function
  * @returns A wrapped reducer that applies adapters
  */
-export const createTestReducer = <T extends Partial<GameState>>(
-  reducer: (state: T, action: GameEngineAction) => T
-) => {
-  return (state: T, action: GameEngineAction): T => {
-    // Ensure state is in the new format
-    const normalizedState = migrationAdapter.oldToNew(state as unknown as GameState | LegacyState);
-    
-    // Apply the original reducer
-    const newState = reducer(normalizedState as unknown as T, action);
-    
-    // Apply adapters for backward compatibility
-    const adaptedState = adaptStateForTests(newState as unknown as GameState);
-    
-    // Return as the expected type
-    return adaptedState as unknown as T;
-  };
-};
-
+// Removed obsolete function: createTestReducer
 // Export mockStates from here to avoid circular dependency issue
 export { mockStates } from './mockStates';
 

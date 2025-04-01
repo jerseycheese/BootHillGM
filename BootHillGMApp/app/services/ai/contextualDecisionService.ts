@@ -76,14 +76,8 @@ export class ContextualDecisionService {
     // Use the contextual-specific extender with type safety
     const extendedState = extendGameStateForContextual(gameState);
     
-    // Cast the extended state to the expected type in contextualDecision.types.ts
-    const compatibleExtendedState = {
-      ...extendedState,
-      combat: {
-        ...extendedState.combat,
-        active: extendedState.combat.isActive // Add the 'active' property expected by the detector
-      }
-    };
+    // The extendGameStateForContextual already provides the necessary structure, including combat.active
+    const compatibleExtendedState = extendedState;
     
     return this.detector.detectDecisionPoint(narrativeState, character, compatibleExtendedState);
   }
@@ -234,11 +228,7 @@ export class ContextualDecisionService {
     if (gameState && hasNarrativeState(gameState)) {
       const extendedState = extendGameStateForContextual(gameState);
       // Highlight important game state elements
-      gameStateContext = `
-Current player status: ${extendedState.combat.isActive ? 'In Combat' : 'Exploring'}
-Location: ${extendedState.location?.type || 'Unknown'}
-Game progress: ${extendedState.gameProgress}%
-`;
+      gameStateContext = `\nCurrent player status: ${extendedState.combat.isActive ? 'In Combat' : 'Exploring'}\nLocation: ${extendedState.location?.type || 'Unknown'}\nGame progress: ${extendedState.gameProgress}%\n`;
     }
     
     // Combine into a single prompt

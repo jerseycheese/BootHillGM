@@ -1,14 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { GameState } from '../types/gameState';
-import { NormalizedState } from '../types/campaignState.types';
-import { migrationAdapter } from '../utils/stateAdapters';
-import { InventoryItem } from '../types/item.types';
-import { Character } from '../types/character';
-import { JournalEntry } from '../types/journal';
-import { CombatState } from '../types/state/combatState';
+// Removed unused imports: InventoryItem, Character, JournalEntry, CombatState, ExtendedGameState
 import { initialState as initialGameState } from '../types/initialState';
-import { migrateGameState } from '../utils/stateMigration';
-import { ExtendedGameState } from '../types/extendedState';
 import { GameEngineAction } from '../types/gameActions';
 
 /**
@@ -46,37 +39,17 @@ export const useCampaignStatePersistence = (
       stateRef.current = stateToSave;
 
       // Ensure state is in the new format before saving
-      const normalizedState = migrationAdapter.oldToNew(stateToSave) as NormalizedState;
+      // State is already in the new GameState format
+      const normalizedState = stateToSave;
 
-      // Create a clean state with properly preserved combat information
-      const cleanState = {
+      // State is already normalized (GameState), just add timestamp and client flag
+      const stateToStore = {
         ...normalizedState,
-        inventory: {
-          items: Array.isArray(normalizedState.inventory)
-            ? (normalizedState.inventory as InventoryItem[]).map((item) => ({ ...item }))
-            : (normalizedState.inventory?.items as InventoryItem[] | undefined)?.map(item => ({ ...item })) || []
-        },
-        npcs: [...(normalizedState.npcs || [])],
-        journal: {
-          entries: [...(normalizedState.journal?.entries || [])]
-        },
-        combat: {
-          ...(normalizedState.combat || {}),
-          isActive: Boolean(normalizedState.combat?.isActive || false)
-        },
-        character: {
-          ...normalizedState.character,
-          opponent: normalizedState.character?.opponent ? {
-            ...normalizedState.character.opponent,
-            attributes: { ...normalizedState.character.opponent.attributes }
-          } : null
-        },
         savedTimestamp: timestamp,
-        isClient: true, // Ensure isClient is set to true
-        narrative: normalizedState.narrative,
+        isClient: true,
       };
 
-      localStorage.setItem('campaignState', JSON.stringify(cleanState));
+      localStorage.setItem('campaignState', JSON.stringify(stateToStore));
       lastSavedRef.current = timestamp;
     } catch (error) {
       console.error('Error saving game state:', error);
@@ -109,74 +82,54 @@ export const useCampaignStatePersistence = (
       }
 
       // Migrate the loaded state to handle potential missing narrative data and schema changes
-      loadedState = migrateGameState(loadedState);
+      // Migration is no longer needed with the clean break approach
       
       // Ensure state is in the new format
-      const normalizedState = migrationAdapter.oldToNew(loadedState);
+      // State from localStorage should conform to GameState (or be handled if not)
+      const normalizedState = loadedState;
 
-      // Extract and properly type player and opponent
-      const playerCharacter = normalizedState.character && 
-        typeof normalizedState.character === 'object' && 
-        'player' in normalizedState.character ? 
-        (normalizedState.character.player as Character) : null;
-      
-      const opponentCharacter = normalizedState.character && 
-        typeof normalizedState.character === 'object' && 
-        'opponent' in normalizedState.character ? 
-        (normalizedState.character.opponent as Character) : null;
-    
-      // Extract properties we want to handle separately to avoid type conflicts
-      const { player, opponent, character, inventory, journal, combat, ...otherProps } = normalizedState as NormalizedState;
-      
+      // Assuming normalizedState is the parsed GameState from localStorage
+      // Merge with initialGameState to ensure all properties exist,
+      // giving precedence to loaded values.
       const restoredState: GameState = {
-        ...initialGameState, // Start with a fresh base state
-        ...otherProps, // Spread other properties safely
-        // Ensure inventory has the correct structure with items property
-        inventory: {
-          items: Array.isArray(normalizedState.inventory)
-            ? (normalizedState.inventory as InventoryItem[]).map((item) => ({ ...item }))
-            : (normalizedState.inventory as { items?: InventoryItem[] })?.items?.map(item => ({ ...item })) || []
-        },
-        // Ensure npcs has the correct structure
-        npcs: (normalizedState && 'npcs' in normalizedState && Array.isArray(normalizedState.npcs)
-          ? (normalizedState.npcs as Character[]).map(npc => ({ ...npc }))
-          : []) as unknown as string[], // Type assertion to match GameState definition
-        // Ensure journal has the correct structure with entries property
-        journal: {
-          entries: Array.isArray(normalizedState.journal)
-            ? (normalizedState.journal as JournalEntry[]).map((entry) => ({ ...entry }))
-            : (normalizedState.journal as { entries?: JournalEntry[] })?.entries?.map(entry => ({ ...entry })) || []
-        },
-        // Ensure character has the correct structure with properly typed player and opponent
+        ...initialGameState,
+        ...normalizedState,
+        // Explicitly ensure nested slices are merged correctly if needed,
+        // although the spread operator often handles this sufficiently.
+        // Example:
         character: {
-          player: playerCharacter as Character | null,
-          opponent: opponentCharacter as Character | null
+          ...initialGameState.character,
+          ...(normalizedState.character || {}),
         },
-        // Ensure combat has all required properties from CombatState
         combat: {
-          ...initialGameState.combat, // Start with all required properties
-          ...((normalizedState.combat as Partial<CombatState>) || {}), // Override with any values from loaded state
-          isActive: Boolean((normalizedState.combat as Partial<CombatState>)?.isActive) // Ensure isActive is a boolean
+          ...initialGameState.combat,
+          ...(normalizedState.combat || {}),
         },
-        // Ensure narrative has the correct type
-        narrative: normalizedState.narrative 
-          ? { ...initialGameState.narrative, ...normalizedState.narrative as typeof initialGameState.narrative }
-          : { ...initialGameState.narrative },
-        isClient: true, // Ensure isClient is set to true
+        inventory: {
+          ...initialGameState.inventory,
+          ...(normalizedState.inventory || {}),
+        },
+        journal: {
+          ...initialGameState.journal,
+          ...(normalizedState.journal || {}),
+        },
+        narrative: {
+          ...initialGameState.narrative,
+          ...(normalizedState.narrative || {}),
+        },
+        ui: {
+          ...initialGameState.ui,
+          ...(normalizedState.ui || {}),
+        },
+        // Ensure isClient is true after loading
+        isClient: true,
+        // Ensure savedTimestamp is updated from loadedState
         savedTimestamp: loadedState.savedTimestamp,
       };
 
-      // Create extended state version - ensure opponent is never undefined
-      const extendedRestoredState: ExtendedGameState = {
-        ...restoredState,
-        opponent: opponentCharacter || null, // Ensure opponent is never undefined
-        combatState: combat as CombatState | undefined,
-        entries: Array.isArray(normalizedState.journal)
-          ? (normalizedState.journal as JournalEntry[])
-          : (normalizedState.journal as { entries?: JournalEntry[] })?.entries || []
-      };
-
-      dispatch({ type: 'SET_STATE', payload: extendedRestoredState });
+      // Dispatch the fully formed GameState
+      dispatch({ type: 'SET_STATE', payload: restoredState });
+      stateRef.current = restoredState; // Update the ref
       return restoredState;
     } catch (error) {
       console.error('Error loading game state:', error);

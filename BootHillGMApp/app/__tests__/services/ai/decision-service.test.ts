@@ -241,7 +241,6 @@ describe('DecisionService', () => {
     });
     
     it('should handle API errors gracefully', async () => {
-      console.log('[TEST] Starting API error test');
       
       // Set flag to indicate this is the API error test
       (global.fetch as unknown as FetchMockProperties)._mockRejectedValueOnce = true;

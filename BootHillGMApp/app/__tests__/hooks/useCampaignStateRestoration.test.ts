@@ -1,36 +1,27 @@
 import { renderHook } from '@testing-library/react';
 import { useCampaignStateRestoration } from '../../hooks/useCampaignStateRestoration';
 import { GameState } from '../../types/gameState';
+// Removed unused imports: GameState, LocationType
 import { Character } from '../../types/character';
-import { LocationType } from '../../services/locationService';
 import { InventoryState } from '../../types/state/inventoryState';
 import { JournalState } from '../../types/state/journalState';
 import { CharacterState } from '../../types/state/characterState';
 import { CombatState } from '../../types/state/combatState';
 
-interface TestGameState extends GameState {
-  location: LocationType | null; // Updated to match GameState
-  combatState?: unknown; // For backwards compatibility in tests
-}
+// Removed TestGameState interface as GameState should be used directly
 
 describe('useCampaignStateRestoration', () => {
-    const mockCharacter: Character = {
+    const mockCharacter: Character = { // Add missing properties
         isNPC: false,
         isPlayer: true,
         id: 'test-character',
         name: 'Test Character',
-        attributes: {
-            speed: 10,
-            gunAccuracy: 10,
-            throwingAccuracy: 10,
-            strength: 10,
-            baseStrength: 10,
-            bravery: 10,
-            experience: 5,
-        },
+        attributes: { speed: 10, gunAccuracy: 10, throwingAccuracy: 10, strength: 10, baseStrength: 10, bravery: 10, experience: 5 },
+        minAttributes: { speed: 1, gunAccuracy: 1, throwingAccuracy: 1, strength: 1, baseStrength: 1, bravery: 1, experience: 0 },
+        maxAttributes: { speed: 20, gunAccuracy: 20, throwingAccuracy: 20, strength: 20, baseStrength: 20, bravery: 20, experience: 100 },
         wounds: [],
         isUnconscious: false,
-        inventory: { items: [] }, // Updated to use new inventory format
+        inventory: { items: [] },
     };
 
     // Create a properly structured character state
@@ -69,7 +60,7 @@ describe('useCampaignStateRestoration', () => {
         currentTurn: 'player'
     };
 
-    const mockState: TestGameState = {
+    const mockState: GameState = { // Use GameState type
         currentPlayer: 'Player1',
         npcs: [],
         location: { type: 'town', name: 'Testville' }, // Use a LocationType object
@@ -78,40 +69,31 @@ describe('useCampaignStateRestoration', () => {
         quests: [],
         character: mockCharacterState,
         combat: mockCombatState,
-        narrative: {
+        narrative: { // Ensure all NarrativeState properties are present
           currentStoryPoint: null,
           visitedPoints: [],
           availableChoices: [],
           narrativeHistory: [],
+          context: "",
           displayMode: 'standard',
-          error: null
+          error: null,
+          // Add potentially missing optional properties if needed by tests
+          narrativeContext: undefined,
+          selectedChoice: undefined,
+          storyProgression: undefined,
+          currentDecision: undefined,
+          lore: undefined,
         },
-        ui: {
+        ui: { // Ensure all UIState properties are present
           isLoading: false,
           modalOpen: null,
-          notifications: []
+          notifications: [],
+          activeTab: 'character'
         },
         gameProgress: 0,
         suggestedActions: [],
-        // For backwards compatibility in tests
-        combatState: {
-            currentTurn: 'player',
-            combatLog: [{ text: 'Combat started', type: 'info', timestamp: Date.now() }],
-            isActive: true,
-            combatType: 'brawling',
-            winner: null,
-            participants: [],
-            rounds: 0
-        },
-        get player() {
-          return this.character?.player ?? null;
-        },
-        get opponent() {
-          return this.character?.opponent ?? null;
-        },
-        get isCombatActive() {
-          return this.combat?.isActive ?? false;
-        }
+        // Removed legacy combatState property
+        // Removed legacy getters
     };
 
   test('returns initial state when initializing new game', () => {
@@ -125,7 +107,7 @@ describe('useCampaignStateRestoration', () => {
     // Test should check for null character state instead of looking inside it
     expect(result.current.character).not.toBeNull();
     expect(result.current.isClient).toBe(true);
-    expect(result.current.isCombatActive).toBe(false);
+    expect(result.current.combat?.isActive).toBe(false); // Check slice property
   });
 
   test('restores complete game state correctly', () => {
@@ -137,10 +119,12 @@ describe('useCampaignStateRestoration', () => {
     );
 
     expect(result.current.character).toEqual(mockCharacterState);
-    expect(result.current.opponent).toBeTruthy();
-    expect(result.current.opponent?.name).toBe('Test Opponent');
-    expect(result.current.isCombatActive).toBe(true);
-    expect((result.current as TestGameState).combatState?.currentTurn).toBe('player');
+    // Access properties via slices
+    expect(result.current.character?.opponent).toBeTruthy();
+    expect(result.current.character?.opponent?.name).toBe('Test Opponent');
+    expect(result.current.combat?.isActive).toBe(true);
+    // Access combat properties via combat slice, remove combatState access
+    expect(result.current.combat?.currentTurn).toBe('player');
   });
 
   test('handles corrupted JSON gracefully', () => {
@@ -156,7 +140,7 @@ describe('useCampaignStateRestoration', () => {
 
     expect(result.current.character).not.toBeNull();
     expect(result.current.isClient).toBe(true);
-    expect(result.current.isCombatActive).toBe(false);
+    expect(result.current.combat?.isActive).toBe(false); // Check slice property
     
     // Restore console.error
     consoleSpy.mockRestore();
@@ -171,7 +155,9 @@ describe('useCampaignStateRestoration', () => {
       })
     );
 
-    expect(result.current.character).toBeNull();
+    // Check player/opponent within the character slice
+    expect(result.current.character?.player).toBeNull();
+    expect(result.current.character?.opponent).toBeNull();
     expect(result.current.isClient).toBe(true);
   });
 
@@ -183,10 +169,11 @@ describe('useCampaignStateRestoration', () => {
       })
     );
 
-    const state = result.current as TestGameState;
-    expect(state.combatState).toBeTruthy();
-    expect(state.combatState?.combatLog).toBeInstanceOf(Array);
-    expect(state.combatState?.currentTurn).toBe('player');
+    const state = result.current; // Use GameState directly
+    // Access combat properties via combat slice
+    expect(state.combat).toBeTruthy();
+    expect(state.combat?.combatLog).toBeInstanceOf(Array);
+    expect(state.combat?.currentTurn).toBe('player');
   });
 
   test('ensures deep copy of inventory items', () => {
@@ -229,10 +216,11 @@ describe('useCampaignStateRestoration', () => {
       })
     );
 
-    const state = result.current as TestGameState;
+    const state = result.current; // Use GameState directly
     expect(result.current.inventory.items).toEqual([]);
     expect(result.current.journal.entries).toEqual([]);
-    expect(state.combatState).toBeUndefined();
+    // Check combat slice properties instead of legacy combatState
+    expect(state.combat?.isActive).toBe(false);
   });
 
   test('properly converts boolean values', () => {
@@ -262,7 +250,8 @@ describe('useCampaignStateRestoration', () => {
       })
     );
 
-    expect(typeof result.current.isCombatActive).toBe('boolean');
-    expect(typeof result.current.opponent?.isUnconscious).toBe('boolean');
+    // Access properties via slices
+    expect(typeof result.current.combat?.isActive).toBe('boolean');
+    expect(typeof result.current.character?.opponent?.isUnconscious).toBe('boolean');
   });
 });

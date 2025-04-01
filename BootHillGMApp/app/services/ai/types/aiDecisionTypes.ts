@@ -23,17 +23,17 @@ export interface AIDecisionServiceConfig {
  */
 export interface ExtendedCombatState extends CombatState {
   active: boolean;
+  // Add index signature for compatibility with contextualDecision.types.ts
+  [key: string]: unknown;
 }
 
 /**
  * Extended GameState with predicted properties we use for decision scoring
  * This interface represents the expected game state structure used by the decision service
  */
-export interface ExtendedGameState extends Omit<GameState, 'combat'> { // RE-ADD LEGACY PROPS
+export interface ExtendedGameState extends Omit<GameState, 'combat'> {
   combat: ExtendedCombatState;
   activeEvent?: boolean;
-  player: GameState['player']; // Re-add player property
-  isCombatActive: GameState['isCombatActive']; // Re-add isCombatActive property
 }
 
 /**

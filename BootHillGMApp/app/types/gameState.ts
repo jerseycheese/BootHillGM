@@ -1,4 +1,3 @@
-import { Character } from './character';
 import { LocationType } from '../services/locationService';
 import {
   CharacterState,
@@ -31,12 +30,7 @@ export interface GameState {
   gameProgress: number;
   savedTimestamp?: number;
   isClient?: boolean;
-  suggestedActions: SuggestedAction[]; // Added suggestedActions property
-  
-  // Legacy getters for backward compatibility
-  get player(): Character | null;
-  get opponent(): Character | null; // Added for test compatibility
-  get isCombatActive(): boolean;
+  suggestedActions: SuggestedAction[]; 
 }
 
 // Re-export initialState as initialGameState for backward compatibility

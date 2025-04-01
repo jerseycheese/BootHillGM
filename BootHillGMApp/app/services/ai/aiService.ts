@@ -39,11 +39,11 @@ export class AIService {
         // Create a more descriptive mock response based on the player's input
         const response = {
           narrative: `You ${playerInput}. The town of Redemption reacts to your actions - the sheriff nods slightly, watching your movements carefully from across the dusty street. A few locals turn to observe the newcomer.`,
-          suggestedActions: [
-            { text: "Talk to the sheriff", type: "interaction" },
-            { text: "Look around the town", type: "basic" },
-            { text: "Enter the saloon", type: "interaction" },
-            { text: "Check your belongings", type: "basic" }
+          suggestedActions: [ // Updated format
+            { id: 'mock-talk-sheriff', title: "Talk to the sheriff", description: "Ask about local events", type: 'optional' as const },
+            { id: 'mock-look-town', title: "Look around the town", description: "See who's here", type: 'optional' as const },
+            { id: 'mock-enter-saloon', title: "Enter the saloon", description: "Get some refreshment", type: 'optional' as const },
+            { id: 'mock-check-belongings', title: "Check your belongings", description: "Review your items", type: 'optional' as const }
           ],
           acquiredItems: [],
           removedItems: [],
@@ -116,11 +116,12 @@ export class AIService {
       location: undefined,
       acquiredItems: [],
       removedItems: [],
-      suggestedActions: [
-        { text: "Continue exploring", type: "basic" },
-        { text: "Talk to someone nearby", type: "interaction" },
-        { text: "Check inventory", type: "basic" },
-        { text: "Rest for a while", type: "basic" }
+      // Updated fallback suggestedActions to match SuggestedAction type
+      suggestedActions: [ // Ensure format matches SuggestedAction type
+        { id: 'fallback-1', title: "Continue exploring", description: "See what else is around", type: 'optional' as const },
+        { id: 'fallback-2', title: "Talk to someone nearby", description: "Gather information or rumors", type: 'optional' as const },
+        { id: 'fallback-3', title: "Check inventory", description: "Review your items", type: 'optional' as const },
+        { id: 'fallback-4', title: "Rest for a while", description: "Take a break", type: 'optional' as const }
       ],
       playerDecision: undefined,
       combatInitiated: false,
@@ -153,8 +154,7 @@ export class AIService {
         combatInitiated: response.combatInitiated || false,
         opponent: response.opponent || undefined
       };
-    } catch (error) {
-      console.error('Failed to parse AI response:', error);
+    } catch {
       // Provide a fallback when parsing fails
       return this.createFallbackResponse("continue the story");
     }
@@ -188,7 +188,7 @@ export class AIService {
     Respond with JSON in the following format:
     {
       "narrative": "Your response to the player's input",
-      "suggestedActions": [{"text": "Action 1", "type": "basic"}, {"text": "Action 2", "type": "interaction"}],
+      "suggestedActions": [{"id": "action-1", "title": "Action 1", "description": "Desc 1", "type": "optional"}, {"id": "action-2", "title": "Action 2", "description": "Desc 2", "type": "optional"}],
       "acquiredItems": ["Item 1", "Item 2"],
       "removedItems": ["Item 3"],
       "location": { "type": "town", "name": "Town Name" },

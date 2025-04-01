@@ -18,7 +18,6 @@ interface BHGMDebug {
 describe('debugConsole', () => {
   // Store original window properties
   const originalAddEventListener = window.addEventListener;
-  const originalConsoleLog = console.log;
   const originalConsoleError = console.error;
 
   // Mock functions
@@ -46,7 +45,6 @@ describe('debugConsole', () => {
   afterEach(() => {
     // Restore original functions
     window.addEventListener = originalAddEventListener;
-    console.log = originalConsoleLog;
     console.error = originalConsoleError;
   });
 

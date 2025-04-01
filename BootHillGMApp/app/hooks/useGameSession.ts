@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useCampaignState } from './useCampaignStateContext';
+import { useGameState } from '../context/GameStateProvider'; // Updated import
 import { useLocation } from './useLocation';
 import { getAIResponse } from '../services/ai/gameService';
 import { getJournalContext } from '../utils/JournalManager';
@@ -26,7 +26,7 @@ import { JournalUpdatePayload } from '../types/gameActions';
  * @returns Object containing game session state and handler functions
  */
 export const useGameSession = () => {
-  const { state, dispatch } = useCampaignState();
+  const { state, dispatch } = useGameState(); // Use correct hook
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
@@ -120,7 +120,7 @@ export const useGameSession = () => {
             quantity: 1,
             category: 'general' as ItemCategory,
           };
-          dispatch({ type: 'ADD_ITEM', payload: newItem });
+          dispatch({ type: 'inventory/ADD_ITEM', payload: newItem }); // Use namespaced type
         });
       }
 
@@ -131,7 +131,7 @@ export const useGameSession = () => {
             (item: InventoryItem) => item.name === itemName
           );
           if (itemToRemove) {
-            dispatch({ type: 'REMOVE_ITEM', payload: itemToRemove.id });
+            dispatch({ type: 'inventory/REMOVE_ITEM', payload: itemToRemove.id }); // Use namespaced type
           }
         });
       }

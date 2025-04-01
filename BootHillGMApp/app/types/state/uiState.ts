@@ -18,6 +18,7 @@ export interface UIState {
   isLoading: boolean;
   modalOpen: string | null;
   notifications: Notification[];
+  activeTab: string; // Added to fix type errors
 }
 
 /**
@@ -26,5 +27,6 @@ export interface UIState {
 export const initialUIState: UIState = {
   isLoading: false,
   modalOpen: null,
-  notifications: []
+  notifications: [],
+  activeTab: 'character' // Default active tab
 };

@@ -25,45 +25,56 @@ This documentation serves as a technical reference for developers working with t
 Primary state container and provider component.
 
 ```typescript
-interface GameState {
-  campaign: CampaignState;
-  character: CharacterState;
+// Final GameState structure from types/gameState.ts
+export interface GameState {
+  // Domain-specific slices
+  character: CharacterState | null;
   combat: CombatState;
-  inventory: InventoryState; // Managed by inventoryReducer
+  inventory: InventoryState;
   journal: JournalState;
-  settings: SettingsState;
-  game: GameState; // Top level gameReducer state.
+  narrative: NarrativeState;
+  ui: UIState;
+  
+  // Top-level state that doesn't fit into slices
+  currentPlayer: string;
+  npcs: string[];
+  location: LocationType | null;
+  quests: string[];
+  gameProgress: number;
+  savedTimestamp?: number;
+  isClient?: boolean;
+  suggestedActions: SuggestedAction[];
 }
 ```
 
-#### CampaignStateProvider
-Manages campaign-specific state with persistence, cleanup, and restoration capabilities. The component has been refactored into smaller, more maintainable parts:
+#### GameStateProvider
+The primary provider (`/app/context/GameStateProvider.tsx`) uses `useReducer` with the `rootReducer` to manage the unified `GameState`. It provides the `state` and `dispatch` function via the `useGameState` hook.
 
-- **Main Component**: Orchestrates state management hooks (`/app/components/CampaignStateManager.tsx`)
-- **Context**: Provides access to campaign state (`/app/hooks/useCampaignStateContext.ts`)
-- **Persistence Hook**: Handles state saving and loading (`/app/hooks/useCampaignStatePersistence.ts`) 
-- **Cleanup Hook**: Manages state reset functionality (`/app/hooks/useStateCleanup.ts`)
-- **Auto-Save Hook**: Monitors state for important changes (`/app/hooks/useAutoSave.ts`)
-- **Unload Handler**: Ensures state is saved on page close (`/app/hooks/useBeforeUnloadHandler.ts`)
+Specialized hooks handle specific concerns:
+- **Persistence**: `useCampaignStatePersistence` saves/loads state.
+- **Restoration**: `useCampaignStateRestoration` handles initial state loading.
+- **Initialization**: `useGameInitialization` coordinates initial setup.
+- **Auto-Save**: `useAutoSave` triggers saves based on state changes.
+- **Unload Handler**: `useBeforeUnloadHandler` saves state on exit.
 
 Usage:
 ```tsx
-import { useCampaignState } from '../components/CampaignStateManager';
+import { useGameState } from '../context/GameStateProvider';
+import { usePlayerCharacter } from '../context/GameStateProvider'; // Example selector
 
 const MyComponent = () => {
-  const { state, dispatch, player, inventory } = useCampaignState();
+  const { state, dispatch } = useGameState();
+  const player = usePlayerCharacter(); // Use selectors for derived state
   
-  // Access state directly
-  const characterName = state.character?.player?.name;
+  // Access state slices directly
+  const inventoryItems = state.inventory.items;
+  const characterName = state.character?.player?.name; // Or use selector: player?.name
   
-  // Access through legacy getters
-  const playerHealth = player?.attributes?.health;
-  
-  // Dispatch actions to update state
+  // Dispatch actions (use namespaced types where applicable)
   const handleAction = () => {
-    dispatch({ 
-      type: 'UPDATE_CHARACTER', 
-      payload: { /* update data */ } 
+    dispatch({
+      type: 'character/UPDATE_CHARACTER',
+      payload: { id: player?.id, /* update data */ }
     });
   };
   
@@ -91,84 +102,36 @@ const MyComponent = () => {
 - Middleware
 - State Selectors
 
-### State Format Compatibility & Parallel Models
+### Unified State Model (Post-Refactor #253)
 
-During the ongoing refactoring of the application's state management, we are temporarily supporting two parallel state models:
+The application now uses a single, unified `GameState` model based on domain-specific slices. The parallel legacy model and associated adapters/type guards have been removed as part of Issue #253.
 
-1.  **Legacy State Model**: This is the original, flatter state structure where state properties were often directly accessible at the root level (e.g., `state.inventory`).
-2.  **Domain-Specific State Slices**: This is the new, more organized structure where state is divided into domain-specific slices (e.g., `state.inventory.items`).
+**Key Principles:**
 
-This approach of supporting \"parallel state models\" is crucial for:
+*   **Single Source of Truth:** `GameState` defined in `types/gameState.ts` is the sole structure.
+*   **Slice-Based Access:** State is accessed via slices (e.g., `state.inventory.items`, `state.combat.isActive`).
+*   **Selectors:** Use selector hooks (defined in `context/GameStateProvider.tsx` or specific selector files like `hooks/selectors/`) for derived or memoized state access in components.
+*   **No Adapters:** State adapters and legacy getters are removed. Components and hooks interact directly with `GameState`.
+*   **Clean Break:** Backward compatibility with older saved game formats is *not* maintained.
 
--   **Backward Compatibility**: Ensuring that existing saved games and user data remain compatible with the evolving application.
--   **Incremental Refactoring**: Allowing for a gradual and less disruptive transition to the new state architecture.
-
-To handle these parallel models, we use **type guards** (see `app/hooks/selectors/typeGuards.ts`). These utility functions safely extract data from the state, regardless of whether it's in the legacy or the new format.
-
-```mermaid
-graph TD
-    subgraph Application State During Transition
-        direction LR
-        LegacyState(\"Legacy State (Flat)\")
-        NewState(\"New State (Domain Slices)\")
-    end
-
-    subgraph Example: Inventory Access
-        direction TB
-        LegacyInv[\"inventory: InventoryItem[]\"]
-        NewInv[\"inventory: { items: InventoryItem[] }\"]
-        TypeGuard[\"getItemsFromInventory() (Type Guard)\"]
-        Component(\"Component/Selector\")
-
-        LegacyInv --> TypeGuard
-        NewInv --> TypeGuard
-        TypeGuard --> Component
-    end
-
-    LegacyState --> LegacyInv
-    NewState --> NewInv
-
-    style LegacyState fill:#f9f,stroke:#333,stroke-width:2px
-    style NewState fill:#ccf,stroke:#333,stroke-width:2px
-#### Inventory State Transition
-
-The inventory state is a prime example of this transition. Initially, the inventory was stored as a simple array directly in the state:
-
-```typescript
-// Legacy format - direct array
-inventory: InventoryItem[]
-```
-
-With the move to domain-specific slices, the inventory state is now structured as an object with an `items` property:
-
-```typescript
-// New format - domain slice with items property
-inventory: {
-  items: InventoryItem[]
-}
-```
-
-The `getItemsFromInventory` type guard in `app/hooks/selectors/typeGuards.ts` is specifically designed to handle both of these formats, allowing components to access inventory items without needing to know the underlying state structure.
-```
-
-For more technical details on state format compatibility and how to work with both formats in your code, please refer to [[../technical-guides/state-compatibility|State Format Compatibility Guide]].
+See [[../state-unification|State Model Unification Guide]] for more details on the refactoring process and updated patterns.
 ### Reducer Structure
 The `gameReducer` has been split into multiple reducers to improve code organization and maintainability. Each reducer is responsible for a specific domain of the game state.
 
 - `gameReducer`: Handles overall game state and delegates to sub-reducers.
-- `inventoryReducer`: Manages the inventory state.
+- `inventoryReducer`: Manages the `inventory` slice.
+- `journalReducer`: Manages the `journal` slice.
+- `narrativeReducer`: Manages the narrative slice.
+- `characterReducer`: Handles character/opponent updates within the character slice.
+- `combatReducer`: Handles updates within the combat slice.
+- `uiReducer`: Manages the UI slice.
 
-The reducers are combined using a custom `combineReducers` function located in `app/reducers/index.ts`. This function takes an object of reducers and returns a single reducer function that can be used with `useReducer`.
+These are combined in the `rootReducer` (`app/reducers/rootReducer.ts`), which is used by `GameStateProvider`.
 
 ### Context Structure
 ```typescript
-const GameContext = React.createContext<{
-  state: GameState;
-  dispatch: React.Dispatch<GameAction>;
-}>({
-  state: initialState,
-  dispatch: () => null,
-});
+// See /app/context/GameStateProvider.tsx for the actual implementation
+const GameStateContext = createContext<GameStateContextType>({ ... });
 ```
 
 ### State Persistence

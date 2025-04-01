@@ -10,7 +10,6 @@ import { Character } from '../types/character';
 import { JournalUpdatePayload } from '../types/gameActions';
 import { v4 as uuidv4 } from 'uuid';
 
-
 interface OpponentCharacter {
   name?: string;
   id?: string;
@@ -55,7 +54,6 @@ export default function GamePromptWithOptimizedContext() {
       handleAIResponse(response);
       
       if (debugMode && process.env.NODE_ENV !== 'production' && response.contextQuality) {
-        console.debug('Context optimization stats:', response.contextQuality);
       }
     } catch {
       // Error is handled by the hook
@@ -79,7 +77,8 @@ export default function GamePromptWithOptimizedContext() {
       ? state.character.opponent 
       : (state as unknown as { opponent?: OpponentCharacter }).opponent;
     
-    if (state.isCombatActive && opponent?.name) {
+    // Access combat status via the combat slice
+    if (state.combat?.isActive && opponent?.name) {
       tags.push(`character:${opponent.name}`);
     }
     
@@ -123,7 +122,7 @@ export default function GamePromptWithOptimizedContext() {
     
     if (response.combatInitiated) {
       dispatch({ 
-        type: 'SET_COMBAT_ACTIVE', 
+        type: 'combat/SET_ACTIVE', // Use namespaced type
         payload: true 
       });
       
@@ -145,10 +144,13 @@ export default function GamePromptWithOptimizedContext() {
           inventory: { items: [] },
           wounds: [],
           isUnconscious: false,
+          // Add missing required properties with default values
+          minAttributes: { speed: 1, gunAccuracy: 1, throwingAccuracy: 1, strength: 1, baseStrength: 1, bravery: 1, experience: 0 },
+          maxAttributes: { speed: 20, gunAccuracy: 20, throwingAccuracy: 20, strength: 20, baseStrength: 20, bravery: 20, experience: 100 },
         };
         dispatch({ 
-          type: 'SET_OPPONENT', 
-          payload: characterPayload 
+          type: 'character/SET_OPPONENT', // Use namespaced type
+          payload: characterPayload as Character // Explicitly cast to Character
         });
       }
     }
@@ -164,7 +166,7 @@ export default function GamePromptWithOptimizedContext() {
         };
         
         dispatch({ 
-          type: 'ADD_ITEM', 
+          type: 'inventory/ADD_ITEM', // Use namespaced type
           payload: inventoryItem
         });
       });
@@ -173,7 +175,7 @@ export default function GamePromptWithOptimizedContext() {
     if (response.removedItems && response.removedItems.length > 0) {
       response.removedItems.forEach((itemName: string) => {
         dispatch({ 
-          type: 'REMOVE_ITEM', 
+          type: 'inventory/REMOVE_ITEM', // Use namespaced type
           payload: itemName 
         });
       });

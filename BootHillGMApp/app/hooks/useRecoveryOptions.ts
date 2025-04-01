@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
-import { Character } from '../types/character';
-import { GameEngineAction } from '../types/gameActions';
+import { GameState } from '../types/gameState';
+// Removed unused import: Character
+import { GameAction } from '../types/actions'; // Use GameAction
 import { Dispatch } from 'react';
 import { StoryPointType, NarrativeDisplayMode } from '../types/narrative.types';
 import { getStartingInventory } from '../utils/startingInventory';
@@ -9,24 +10,21 @@ import { getStartingInventory } from '../utils/startingInventory';
  * Custom hook to provide game recovery functionality
  * 
  * @param dispatch - State dispatch function
- * @param playerCharacter - Current player character
  * @param recoveryInProgress - Ref tracking recovery state
  * @returns Object containing recovery handler functions
  */
 export function useRecoveryOptions(
-  dispatch: Dispatch<GameEngineAction> | undefined,
-  playerCharacter: Character | null,
+  dispatch: Dispatch<GameAction> | undefined, // Expect GameAction
+  // Removed unused playerCharacter parameter
   recoveryInProgress: React.MutableRefObject<boolean>
 ) {
   
   const handleRecoverGame = useCallback(() => {
     // Prevent recursive calls
     if (recoveryInProgress.current) {
-      console.log("Recovery already in progress, skipping");
       return;
     }
     
-    console.log("User initiated game recovery");
     recoveryInProgress.current = true;
     
     // Wrap in requestAnimationFrame to avoid state updates during render
@@ -91,16 +89,17 @@ export function useRecoveryOptions(
             availableChoices: [],
             visitedPoints: ['recovery_point'],
             narrativeHistory: [emergencyNarrative],
-            displayMode: 'standard' as NarrativeDisplayMode
+            displayMode: 'standard' as NarrativeDisplayMode,
+            context: "" // Add missing context property
           },
           inventory: { items: getStartingInventory() },
           location: { type: 'town' as const, name: 'Boothill' },
           savedTimestamp: Date.now(),
           isClient: true,
           suggestedActions: [
-            { text: "Look around", type: 'basic' as const, context: "Survey your surroundings" },
-            { text: "Visit the saloon", type: 'basic' as const, context: "Find a drink and information" },
-            { text: "Check your gear", type: 'inventory' as const, context: "Make sure you have everything" }
+            { id: 'recovery-1', title: "Look around", description: "Survey your surroundings", type: 'optional' as const },
+            { id: 'recovery-2', title: "Visit the saloon", description: "Find a drink and information", type: 'optional' as const },
+            { id: 'recovery-3', title: "Check your gear", description: "Make sure you have everything", type: 'optional' as const }
           ]
         };
         
@@ -109,22 +108,21 @@ export function useRecoveryOptions(
         
         // Dispatch the emergency state
         if (dispatch) {
-          dispatch({ type: 'SET_STATE', payload: emergencyState });
+          // Cast payload as Partial<GameState> for SET_STATE action
+          dispatch({ type: 'SET_STATE', payload: emergencyState as Partial<GameState> });
         }
         
         // Clear recovered flag to allow future recoveries if needed
         setTimeout(() => {
           recoveryInProgress.current = false;
         }, 100);
-      } catch (error) {
-        console.error("Failed to recover game:", error);
+      } catch {
         recoveryInProgress.current = false;
       }
     });
   }, [dispatch, recoveryInProgress]);
   
   const handleRestartGame = useCallback(() => {
-    console.log("User initiated full game restart");
     
     // Clear all game state from localStorage
     try {

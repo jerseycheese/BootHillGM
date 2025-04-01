@@ -1,38 +1,31 @@
 import { gameReducer } from '../../reducers/gameReducer';
-import { GameState } from '../../types/gameState';
-import { ExtendedGameState } from '../../types/extendedState'; // Import ExtendedGameState
+// import { GameState } from '../../types/gameState'; // Removed unused import
+import { ExtendedGameState } from '../../types/extendedState'; // Re-added to match reducer signature
 import { GameEngineAction } from '../../types/gameActions';
 import { Character } from '../../types/character';
 import { InventoryItem, ItemCategory } from '../../types/item.types';
 import { NarrativeJournalEntry } from '../../types/journal';
 import { initialNarrativeState } from '../../types/narrative.types';
-import { journalAdapter } from '../../utils/stateAdapters'; // Import journalAdapter
+// import { journalAdapter } from '../../utils/stateAdapters'; // Removed adapter import
 import { initialCharacterState } from '../../types/state/characterState'; // Import initialCharacterState
 import { initialJournalState } from '../../types/state/journalState'; // Import initialJournalState
 import { initialInventoryState } from '../../types/state/inventoryState'; // Import initialInventoryState
 import { initialCombatState } from '../../types/state/combatState'; // Import initialCombatState
 import { initialUIState } from '../../types/state/uiState'; // Import initialUIState
-import { adaptStateForTests } from '../../utils/stateAdapters'; // Import adapter for state
+// import { adaptStateForTests } from '../../utils/stateAdapters'; // Removed adapter import
 
-interface JournalEntryObject {
-  timestamp: number;
-  content: string;
-  narrativeSummary?: string;
-  type: string;
-}
+// Removed unused JournalEntryObject interface
 
-// Helper function to get journal entries using the adapter
-const getJournalEntries = (state: ExtendedGameState): JournalEntryObject[] => {
-  // Use the adapter to get entries reliably
-  return journalAdapter.getEntries(state as GameState) as JournalEntryObject[];
-};
+// Removed getJournalEntries helper function as journalAdapter is gone
 
 describe('gameReducer', () => {
-  let initialState: ExtendedGameState; // Use ExtendedGameState
+  let initialState: ExtendedGameState; // Use ExtendedGameState to match reducer
 
   beforeEach(() => {
     // Create a base state with all required properties
-    const baseState = {
+    // Create a base state conforming to ExtendedGameState
+    // This requires properties that might have been in the legacy model
+    initialState = {
       // Slices
       character: initialCharacterState,
       combat: initialCombatState,
@@ -48,13 +41,16 @@ describe('gameReducer', () => {
       quests: [],
       gameProgress: 0,
       savedTimestamp: 0,
-      isClient: false, // Assuming default for tests
+      isClient: false,
       suggestedActions: [],
-    };
 
-    // Initialize with the correct slice structure and legacy properties for ExtendedGameState
-    // Double type assertion to first unknown then GameState to bypass type checking
-    initialState = adaptStateForTests(baseState as unknown as GameState) as ExtendedGameState;
+      // Properties potentially needed for ExtendedGameState (add defaults)
+      player: null, // Example legacy property
+      opponent: null, // Example legacy property
+      entries: [], // Example legacy property
+      isCombatActive: false, // Example legacy property
+      // Add other legacy properties as needed based on ExtendedGameState definition
+    };
   }); // End beforeEach
 
   it('should set player name', () => {
@@ -141,9 +137,8 @@ describe('gameReducer', () => {
     const action: GameEngineAction = { type: 'UPDATE_JOURNAL', payload: newEntry };
     const newState = gameReducer(initialState, action);
     
-    // Use helper function to get journal entries from either format
-    const entries = getJournalEntries(newState as ExtendedGameState);
-    expect(entries).toContainEqual(newEntry);
+    // Access entries directly from the journal slice
+    expect(newState.journal.entries).toContainEqual(newEntry);
   });
 
   it('should set combat status', () => {
@@ -204,11 +199,11 @@ describe('gameReducer', () => {
     const newItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health', category: 'general' as ItemCategory };
     const action: GameEngineAction = { type: 'ADD_ITEM', payload: newItem };
     
-    // Create a clean initial state adapted for tests with type assertion
-    const testState = adaptStateForTests({
+    // Create a clean initial state (ExtendedGameState)
+    const testState: ExtendedGameState = {
       ...initialState,
       inventory: { items: [] }
-    } as ExtendedGameState) as ExtendedGameState;
+    };
     
     const newState = gameReducer(testState, action);
     
@@ -219,11 +214,11 @@ describe('gameReducer', () => {
   it('should remove an item from the inventory', () => {
     const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health', category: 'general' as ItemCategory };
     
-    // Create a state with the item already in inventory with type assertion
-    const stateWithItem = adaptStateForTests({
+    // Create a state with the item already in inventory (ExtendedGameState)
+    const stateWithItem: ExtendedGameState = {
       ...initialState,
       inventory: { items: [item] }
-    } as ExtendedGameState) as ExtendedGameState;
+    };
     
     const action: GameEngineAction = { type: 'REMOVE_ITEM', payload: '1' };
     const newState = gameReducer(stateWithItem, action);
@@ -235,11 +230,11 @@ describe('gameReducer', () => {
   it('should update item quantity when adding an existing item', () => {
     const existingItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health', category: 'general' as ItemCategory };
     
-    // Create a state with the item already in inventory with type assertion
-    const stateWithItem = adaptStateForTests({
+    // Create a state with the item already in inventory (ExtendedGameState)
+    const stateWithItem: ExtendedGameState = {
       ...initialState,
       inventory: { items: [existingItem] }
-    } as ExtendedGameState) as ExtendedGameState;
+    };
     
     const action: GameEngineAction = { type: 'ADD_ITEM', payload: { ...existingItem, quantity: 2 } };
     const newState = gameReducer(stateWithItem, action);
@@ -251,11 +246,11 @@ describe('gameReducer', () => {
   it('should handle USE_ITEM action', () => {
     const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health', category: 'general' as ItemCategory };
     
-    // Create a state with the item already in inventory with type assertion
-    const stateWithItem = adaptStateForTests({
+    // Create a state with the item already in inventory (ExtendedGameState)
+    const stateWithItem: ExtendedGameState = {
       ...initialState,
       inventory: { items: [item] }
-    } as ExtendedGameState) as ExtendedGameState;
+    };
     
     const action: GameEngineAction = { type: 'USE_ITEM', payload: '1' };
     const newState = gameReducer(stateWithItem, action);
@@ -267,11 +262,11 @@ describe('gameReducer', () => {
   it('should remove item when quantity reaches 0 after USE_ITEM', () => {
     const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health', category: 'general' as ItemCategory };
     
-    // Create a state with the item already in inventory with type assertion
-    const stateWithItem = adaptStateForTests({
+    // Create a state with the item already in inventory (ExtendedGameState)
+    const stateWithItem: ExtendedGameState = {
       ...initialState,
       inventory: { items: [item] }
-    } as ExtendedGameState) as ExtendedGameState;
+    };
     
     const action: GameEngineAction = { type: 'USE_ITEM', payload: '1' };
     const newState = gameReducer(stateWithItem, action);
@@ -283,11 +278,11 @@ describe('gameReducer', () => {
   it('should handle UPDATE_ITEM_QUANTITY action', () => {
     const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health', category: 'general' as ItemCategory };
     
-    // Create a state with the item already in inventory with type assertion
-    const stateWithItem = adaptStateForTests({
+    // Create a state with the item already in inventory (ExtendedGameState)
+    const stateWithItem: ExtendedGameState = {
       ...initialState,
       inventory: { items: [item] }
-    } as ExtendedGameState) as ExtendedGameState;
+    };
     
     const action: GameEngineAction = { type: 'UPDATE_ITEM_QUANTITY', payload: { id: '1', quantity: 5 } };
     const newState = gameReducer(stateWithItem, action);
@@ -300,11 +295,11 @@ describe('gameReducer', () => {
     const validItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health', category: 'general' as ItemCategory };
     const invalidItem: InventoryItem = { id: '2', name: 'REMOVED_ITEMS: Invalid Item', quantity: 0, description: 'Should be removed', category: 'general' as ItemCategory };
     
-    // Create a state with both valid and invalid items with type assertion
-    const stateWithItems = adaptStateForTests({
+    // Create a state with both valid and invalid items (ExtendedGameState)
+    const stateWithItems: ExtendedGameState = {
       ...initialState,
       inventory: { items: [validItem, invalidItem] }
-    } as ExtendedGameState) as ExtendedGameState;
+    };
     
     const action: GameEngineAction = { type: 'CLEAN_INVENTORY' };
     const newState = gameReducer(stateWithItems, action);

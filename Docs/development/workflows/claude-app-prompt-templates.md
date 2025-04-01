@@ -134,6 +134,7 @@ Please use MCP tools to:
 3. Clean code principles
 4. Error handling for specified cases only
 5. Stay within the defined scope boundaries
+6. Use existing utils and helpers in /BootHillGM/BootHillGMApp/app/tests or /BootHillGM/BootHillGMApp/app/test or /BootHillGM/BootHillGMApp/app/utils
 
 ## Output Format
 Please provide implementation in this format:
@@ -294,6 +295,7 @@ Please use MCP tools to:
 1. Read the failing test file at [path]
 2. Examine the component implementation at [path]
 3. Review similar test patterns if needed
+4. Use existing utils and helpers in /BootHillGM/BootHillGMApp/app/tests or /BootHillGM/BootHillGMApp/app/test or /BootHillGM/BootHillGMApp/app/utils
 
 ## Test Requirements
 1. Use Jest and React Testing Library
@@ -334,6 +336,7 @@ Please use MCP tools to:
 1. Check the component code at [path]
 2. Review related files that might be causing conflicts
 3. Examine our build configuration if needed
+4. Use existing utils and helpers in /BootHillGM/BootHillGMApp/app/tests or /BootHillGM/BootHillGMApp/app/test or /BootHillGM/BootHillGMApp/app/utils
 
 ## Output Format
 Please provide:
@@ -456,6 +459,7 @@ Please use MCP to:
 1. Analyze the current component
 2. Review our coding standards
 3. Check similar components for patterns
+4. Use existing utils and helpers in /BootHillGM/BootHillGMApp/app/tests or /BootHillGM/BootHillGMApp/app/test or /BootHillGM/BootHillGMApp/app/utils
 
 ## Requirements
 ### Must Have
@@ -560,6 +564,7 @@ Please use MCP to:
 1. Examine the files to be modified
 2. Review similar implementations
 3. Check existing patterns
+4. Use existing utils and helpers in /BootHillGM/BootHillGMApp/app/tests or /BootHillGM/BootHillGMApp/app/test or /BootHillGM/BootHillGMApp/app/utils
 
 ## Output Format
 Please provide:

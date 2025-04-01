@@ -38,11 +38,11 @@ const DEBUG_TESTS = false;
 function conditionalLog(message: string, data?: unknown): void {
   if (DEBUG_TESTS) {
     if (data !== undefined) {
-      console.log(message, data);
+      console.log(message, data); // Added missing console.log call
     } else {
-      console.log(message);
+      console.log(message); // Log message only if data is undefined
     }
-  }
+  } // Added missing closing brace for the if block
 }
 
 // Mock fetch globally with proper typing

@@ -45,8 +45,9 @@ export function createNarrativeMockState(): BaseMockState {
       },
       visitedPoints: [],
       availableChoices: [],
+      // Update narrativeHistory to be an array of strings
       narrativeHistory: [
-        { id: 'dialogue1', speaker: 'NPC', text: 'Hello stranger', timestamp: 1615000000000 }
+        'NPC: Hello stranger'
       ],
       displayMode: 'standard',
       error: null

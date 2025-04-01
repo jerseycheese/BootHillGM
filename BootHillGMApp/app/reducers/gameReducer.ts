@@ -6,7 +6,7 @@ import { processInventoryState, processJournalState } from '../utils/gameReducer
 import { handleSetCharacter, handleUpdateCharacter, handleSetOpponent, UpdateCharacterPayload } from './characterReducer';
 import { handleSetCombatActive, handleUpdateCombatState, handleSetCombatType, handleEndCombat } from './combatReducer';
 import { handleSetNarrative, updateNarrativeState } from './narrativeHandler';
-import { handleSetState } from './stateAdapter';
+// Removed handleSetState import (obsolete adapter)
 import { GameEngineAction } from '../types/gameActions';
 import { LocationType } from '../services/locationService';
 import { Character } from '../types/character';
@@ -151,7 +151,8 @@ export function gameReducer(state: ExtendedGameState, action: GameEngineAction):
   // SET_STATE
   else if (actionType === 'SET_STATE' && 'payload' in action) {
     const payload = action.payload as Partial<ExtendedGameState>;
-    return handleSetState(state, payload);
+    // Directly merge the payload (Partial<ExtendedGameState>) into the state
+    return { ...state, ...payload };
   }
   
   // SET_SUGGESTED_ACTIONS / ui/SET_SUGGESTED_ACTIONS

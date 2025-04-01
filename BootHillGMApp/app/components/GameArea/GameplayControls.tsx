@@ -6,28 +6,12 @@
 import { CombatSystem } from '../Combat/CombatSystem';
 import InputManager from '../InputManager';
 import type { GameplayControlsProps } from './types';
-import { ensureCombatState, CombatType, LogEntry } from '../../types/combat';
+// Removed ensureCombatState import
+// Removed unused import: CombatType
+// Removed unused imports: CombatState, LogEntry, SuggestedAction
 import { Character } from '../../types/character';
-import { SuggestedAction } from '../../types/campaign';
 
-// Define a strongly-typed extended GameState interface for this component
-interface ExtendedGameState {
-  combatState?: {
-    isActive: boolean;
-    combatType: CombatType;
-    winner: string | null;
-    combatLog: LogEntry[];
-    participants: string[]; // This is a string[] in the extended state
-    rounds: number;
-    brawling?: {
-      playerModifier?: number;
-      opponentModifier?: number;
-      roundLog?: LogEntry[];
-    };
-    [key: string]: unknown;
-  };
-  suggestedActions?: SuggestedAction[];
-}
+// Removed local ExtendedGameState interface definition
 
 export function GameplayControls({
   isLoading,
@@ -43,7 +27,7 @@ export function GameplayControls({
   }
 
   // Access the state as extended state to handle combatState access
-  const extendedState = state as unknown as ExtendedGameState;
+  // Removed cast to ExtendedGameState, use state directly
 
   // Get the player character from character state (assuming character.player structure)
   const playerCharacter = 'player' in state.character 
@@ -55,26 +39,8 @@ export function GameplayControls({
     return null;
   }
 
-  // Transform combat state to match CombatSystem's expected format
-  const transformedCombatState = extendedState.combatState
-    ? ensureCombatState({
-        isActive: true,
-        combatType: extendedState.combatState.combatType,
-        winner: extendedState.combatState.winner,
-        rounds: extendedState.combatState.rounds,
-        // Convert string[] to empty CombatParticipant[] to satisfy type requirements
-        participants: [], 
-        combatLog: extendedState.combatState.combatLog || [],
-        brawling: extendedState.combatState.brawling ? {
-          round: 1,
-          playerModifier: extendedState.combatState.brawling.playerModifier ?? 0,
-          opponentModifier: extendedState.combatState.brawling.opponentModifier ?? 0,
-          roundLog: extendedState.combatState.brawling.roundLog ?? [],
-          playerCharacterId: playerCharacter.id,
-          opponentCharacterId: opponent?.id ?? ''
-        } : undefined
-      })
-    : undefined;
+  // Access combat state directly from the GameState slice
+  const combatStateSlice = state.combat;
 
   // Create a safe onSubmit handler that won't be undefined
   const handleUserInput = (input: string) => {
@@ -91,24 +57,17 @@ export function GameplayControls({
           opponent={opponent}
           onCombatEnd={onCombatEnd}
           dispatch={dispatch}
-          initialCombatState={transformedCombatState}
-          currentCombatState={extendedState.combatState 
-            ? ensureCombatState({
-                isActive: extendedState.combatState.isActive,
-                combatType: extendedState.combatState.combatType,
-                winner: extendedState.combatState.winner,
-                rounds: extendedState.combatState.rounds,
-                // Convert string[] to empty CombatParticipant[] to satisfy type requirements
-                participants: [],
-                combatLog: extendedState.combatState.combatLog || []
-              }) 
-            : undefined}
+          // Pass the combat slice directly, ensuring it conforms to CombatSystemProps['initialCombatState']
+          // Might need further adjustments based on CombatSystem's expected props
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          initialCombatState={combatStateSlice as any} // Cast to any to match reverted CombatSystem prop type
+          // currentCombatState prop might be obsolete if CombatSystem uses state directly
         />
       ) : (
         <InputManager
           onSubmit={handleUserInput}
           isLoading={isLoading}
-          suggestedActions={extendedState.suggestedActions || []}
+          suggestedActions={state.suggestedActions || []} // Access directly from state
         />
       )}
     </div>

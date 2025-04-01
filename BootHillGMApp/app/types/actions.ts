@@ -11,8 +11,10 @@ import { InventoryAction } from './actions/inventoryActions';
 import { JournalAction } from './actions/journalActions';
 import { NarrativeAction } from './actions/narrativeActions';
 import { UIAction } from './actions/uiActions';
+import { StoryProgressionAction } from './narrative/actions.types';
 import { GameState } from './gameState';
 
+import { SuggestedAction } from './campaign';
 /**
  * Global actions that don't belong to a specific slice
  */
@@ -51,6 +53,17 @@ export interface SetStateAction {
   payload: Partial<GameState>;
 }
 
+
+export interface SetSuggestedActionsAction {
+  type: 'SET_SUGGESTED_ACTIONS';
+  payload: SuggestedAction[];
+}
+
+
+export interface ClearErrorAction {
+  type: 'CLEAR_ERROR';
+}
+
 export interface NoOpAction {
   type: 'NO_OP';
   payload?: undefined;
@@ -67,7 +80,9 @@ export type GlobalAction =
   | SetGameProgressAction
   | SetSavedTimestampAction
   | SetStateAction
-  | NoOpAction;
+  | NoOpAction
+  | SetSuggestedActionsAction // Added new action type
+  | ClearErrorAction; // Added CLEAR_ERROR
 
 /**
  * Combined action type used throughout the application
@@ -81,4 +96,5 @@ export type GameAction =
   | InventoryAction
   | JournalAction
   | NarrativeAction
-  | UIAction;
+  | UIAction
+  | StoryProgressionAction; // Add Story Progression actions

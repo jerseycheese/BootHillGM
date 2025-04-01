@@ -1,28 +1,20 @@
 import { useMemo } from 'react';
 import { InventoryItem } from '../../types/item.types';
-import { useCampaignState } from '../useCampaignStateContext';
+// import { useCampaignState } from '../useCampaignStateContext'; // Removed legacy context hook
+import { useGame } from '../useGame'; // Import the correct context hook
 
 /**
  * Returns all inventory items
  */
 export const useInventoryItems = (): InventoryItem[] => {
-  const { state } = useCampaignState();
+  const { state } = useGame(); // Use the correct context hook
   
   return useMemo(() => {
-    // Safely handle undefined state or inventory
-    if (!state) return [];
+    // Safely handle undefined state or inventory slice
+    if (!state || !state.inventory) return [];
     
-    // Handle both legacy array format and new InventoryState format
-    if (Array.isArray(state.inventory)) {
-      return state.inventory;
-    }
-    
-    // Handle new structure with items property
-    if (state.inventory && 'items' in state.inventory) {
-      return state.inventory.items || [];
-    }
-    
-    return [];
+    // Directly return items from the inventory slice, defaulting to empty array
+    return state.inventory.items || [];
   }, [state]);
 };
 

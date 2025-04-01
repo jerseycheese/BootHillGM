@@ -26,10 +26,10 @@ MockGoogleGenerativeAI.mockImplementation((apiKey: string) => {
 // Define the actual default suggested actions from generateFallbackResponse
 // (Copied from gameService.test.ts for consistency)
 const fallbackPathDefaultActions = [
-  { text: "Look around", type: "basic", context: "Survey your surroundings" },
-  { text: "Check your inventory", type: "inventory", context: "See what you're carrying" },
-  { text: "Rest for a while", type: "basic", context: "Recover your energy" },
-  { text: "Continue forward", type: "basic", context: "Press on with your journey" }
+  { id: 'fallback-gen-1', title: "Look around", type: "optional", description: "Survey your surroundings" },
+  { id: 'fallback-gen-2', title: "Check your inventory", type: "optional", description: "See what you're carrying" },
+  { id: 'fallback-gen-3', title: "Rest for a while", type: "optional", description: "Recover your energy" },
+  { id: 'fallback-gen-4', title: "Continue forward", type: "optional", description: "Press on with your journey" }
 ];
 
 describe('getAIResponse', () => {

@@ -1,4 +1,5 @@
-import { CombatType, CombatState } from '../combat';
+import { CombatType } from '../combat'; // Keep CombatType if needed elsewhere
+import { CombatState } from '../state/combatState'; // Import CombatState from state
 import { CombatLogEntry } from '../state/combatState';
 
 /**
@@ -75,7 +76,7 @@ export interface ExecuteCombatActionAction {
 
 export interface UpdateCombatStateAction {
   type: 'combat/UPDATE_STATE' | 'UPDATE_COMBAT_STATE';
-  payload: CombatState;
+  payload: Partial<CombatState>; // Use CombatState from state, allow partial updates
 }
 
 /**

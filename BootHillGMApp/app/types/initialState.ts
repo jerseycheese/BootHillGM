@@ -28,18 +28,5 @@ export const initialState: GameState = {
   gameProgress: 0,
   savedTimestamp: 0,
   isClient: false,
-  suggestedActions: [], // Added missing required property
-  
-  // Legacy getters for backward compatibility
-  get player() {
-    return this.character?.player ?? null;
-  },
-  
-  get opponent() {
-    return this.character?.opponent ?? null;
-  },
-  
-  get isCombatActive() {
-    return this.combat.isActive;
-  }
+  suggestedActions: [],
 };

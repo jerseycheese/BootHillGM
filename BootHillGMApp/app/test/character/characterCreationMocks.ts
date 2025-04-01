@@ -34,8 +34,17 @@ function useCharacterCreationHandler() {
           cleanupState();
 
           const gameState: GameState = {
-            character: initialCharacterState,
-            combat: initialCombatState,
+            // Update character slice to include player and opponent
+            character: {
+              ...initialCharacterState,
+              player: mockCharacter,
+              opponent: null
+            },
+            // Update combat slice to include isActive
+            combat: {
+              ...initialCombatState,
+              isActive: false
+            },
             inventory: initialInventoryState,
             journal: initialJournalState,
             narrative: initialNarrativeState,
@@ -48,9 +57,7 @@ function useCharacterCreationHandler() {
             savedTimestamp: Date.now(),
             isClient: true,
             suggestedActions: [],
-            player: mockCharacter,
-            isCombatActive: false,
-            opponent: null,
+            // Removed obsolete top-level properties
           };
           saveGame(gameState);
         }

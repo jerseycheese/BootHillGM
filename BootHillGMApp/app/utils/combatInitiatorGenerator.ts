@@ -1,8 +1,33 @@
 import { Character } from '../types/character';
-import { CombatInitiator } from '../types/combatStateAdapter';
+// Removed CombatInitiator and UniversalCombatState imports from adapter
 import { GameSessionProps } from '../components/GameArea/types';
-import { UniversalCombatState } from '../types/combatStateAdapter';
 import { GameSessionType } from '../types/session/gameSession.types';
+import { CombatState } from '../types/state/combatState'; // Import standard CombatState
+import { CombatState as CombatStateFromCombat } from '../types/combat'; // Import the other CombatState type
+import { GameEngineAction } from '../types/gameActions'; // Import GameEngineAction for dispatch type
+import { Dispatch } from 'react'; // Import Dispatch
+
+// Redefine CombatInitiator locally using standard CombatState
+// Redefine CombatInitiator locally using standard CombatState
+interface CombatInitiator {
+  initiateCombat: (opponent: Character, combatState?: Partial<CombatStateFromCombat>) => void; // Match useCombatManager signature
+  executeCombatRound: () => void;
+  handleCombatAction: () => void;
+  handlePlayerHealthChange: (characterId: string, newHealth: number) => void;
+  onEquipWeapon: (itemId: string) => void;
+  getCurrentOpponent: () => Character | null;
+  opponent: Character | null;
+  isCombatActive: boolean;
+  dispatch: Dispatch<GameEngineAction>; // Use imported Dispatch and GameEngineAction
+  isLoading?: boolean;
+  error?: string | null;
+  handleUserInput?: (input: string) => void;
+  retryLastAction?: () => void;
+  handleDebug?: (command: string) => void;
+  handleSave?: () => void;
+  handleLoad?: () => void;
+  [key: string]: unknown;
+}
 
 /**
  * Creates a combat initiator object that centralizes combat-related functionality
@@ -28,7 +53,7 @@ export function createCombatInitiator(
   
   // Always create with defaults including a function for initiateCombat to satisfy type requirements
   const defaultInitiator: CombatInitiator = {
-    initiateCombat: (_opponent: Character, _combatState?: UniversalCombatState) => {
+    initiateCombat: (_opponent: Character, _combatState?: Partial<CombatState>) => { // Use standard CombatState
       // Default implementation does nothing
       // Using underscore prefix to indicate unused parameters
     },
@@ -65,7 +90,8 @@ export function createCombatInitiator(
     opponent: sessionProps.opponent,
     
     // State management
-    isCombatActive: state?.isCombatActive || false,
+    // Access combat status via the combat slice
+    isCombatActive: state?.combat?.isActive || false,
     dispatch,
     
     // Additional properties with safe defaults

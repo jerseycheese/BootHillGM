@@ -118,6 +118,7 @@ export {
  * @property narrativeHistory - Complete narrative text history
  * @property displayMode - How the narrative should be presented
  * @property narrativeContext - Additional context for AI generation
+ * @property context - Current narrative context string (summary of current situation)
  * @property storyProgression - Story progression tracking state
  * @property lore - Lore management state
  * @property error - Current error state, if any
@@ -129,10 +130,11 @@ export interface NarrativeState {
   narrativeHistory: string[];
   displayMode: NarrativeDisplayMode;
   narrativeContext?: NarrativeContext;
+  context: string; // Current narrative context string - added to fix type errors
   selectedChoice?: string;
   storyProgression?: StoryProgressionState;
   currentDecision?: PlayerDecision;
-  lore?: LoreStore; // New property for lore management
+  lore?: LoreStore; // Lore management state
   error?: NarrativeErrorInfo | null;
 }
 

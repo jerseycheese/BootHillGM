@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { cleanCharacterName } from '../utils/combatUtils';
 import { AIService } from '../services/ai';
-import { GameState } from '../types/campaign';
+import { GameState } from '../types/gameState'; // Updated import path
 import { GameEngineAction } from '../types/gameActions';
 import { JournalEntry } from '../types/journal';
 import { generateNarrativeSummary } from '../utils/aiService';
@@ -12,10 +12,19 @@ import { presentDecision } from '../actions/narrativeActions';
 // Create a service instance that can be replaced in tests
 export const aiService = new AIService();
 
-const getJournalContext = (journal: JournalEntry[]) => {
+/**
+ * Helper function to extract journal context
+ * 
+ * @param journal Journal entries to extract context from
+ * @returns Concatenated journal entries as a string
+ */
+const getJournalContext = (journal: JournalEntry[]): string => {
   return journal.slice(-5).map(entry => entry.content).join('\n');
 };
 
+/**
+ * Parameters for processing AI response
+ */
 interface ProcessResponseParams {
   input: string;
   response: AIResponse;
@@ -23,6 +32,12 @@ interface ProcessResponseParams {
   dispatch: React.Dispatch<GameEngineAction>;
 }
 
+/**
+ * Process AI response and update game state
+ * 
+ * @param params Processing parameters including input, response, state and dispatch
+ * @returns Object with acquired and removed items
+ */
 const processAIResponse = async ({ input, response, state, dispatch }: ProcessResponseParams) => {
   const narrativeUpdate = state.narrative?.narrativeHistory
     ? `${state.narrative.narrativeHistory.join('')}\n\nPlayer: ${input}\n\nGame Master: ${response.narrative}`
@@ -145,8 +160,6 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
       type: 'SET_COMBAT_ACTIVE',
       payload: true,
     });
-
-    dispatch({ type: 'SET_CHARACTER', payload: structuredOpponent });
   }
 
   const WEAPON_KEYWORDS = ['gun', 'rifle', 'pistol', 'revolver', 'peacemaker'];
@@ -183,6 +196,16 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
   return { acquiredItems: response.acquiredItems, removedItems: response.removedItems };
 };
 
+/**
+ * Hook for handling AI interactions in the game
+ * 
+ * Manages user input, AI responses, and updating the game state based on those interactions
+ * 
+ * @param state Current game state
+ * @param dispatch Dispatch function for updating state
+ * @param onInventoryChange Callback for when inventory changes
+ * @returns Object with interaction functions and loading state
+ */
 export const useAIInteractions = (
   state: GameState,
   dispatch: React.Dispatch<GameEngineAction>,
@@ -199,13 +222,15 @@ export const useAIInteractions = (
       setLastAction(input);
 
       try {
-        const journalContext = getJournalContext(state.journal || []);
+        // Access the 'entries' array within the journal state slice
+        const journalContext = getJournalContext(state.journal?.entries || []);
         
         // Get AI response
         const aiResponse = await aiService.getAIResponse(
           input,
           journalContext,
-          state.inventory || []
+          // Access the 'items' array within the inventory state slice
+          state.inventory?.items || []
         );
         
         // Process the response and update game state

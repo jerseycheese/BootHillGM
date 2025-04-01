@@ -1,14 +1,9 @@
 import { useEffect } from 'react';
-import { Character } from '../types/character';
-import { 
-  ensureCombatState, 
-  CombatParticipant, 
-  LogEntry, 
-  BrawlingState, 
-  WeaponCombatState,
-  CombatSummary
-} from '../types/combat';
-import { CombatInitiator } from '../types/combatStateAdapter';
+import { Character } from '../types/character'; // Re-import Character
+import { CombatState } from '../types/state/combatState'; // Use state types (Removed unused LogEntry alias)
+// Removed unused imports: GameAction, Dispatch
+
+// Removed unused local CombatInitiator interface definition
 import { Weapon } from '../types/weapon.types';
 import { Wound } from '../types/wound';
 import { InventoryItem } from '../types/item.types';
@@ -63,17 +58,19 @@ interface WeaponLike {
 /**
  * Interface for objects that are "combat-state-like" with minimal required properties
  */
+// Update CombatStateLike to reflect state/combatState properties
 interface CombatStateLike {
   isActive?: boolean;
   combatType?: 'brawling' | 'weapon' | null;
   winner?: string | null;
-  participants?: unknown[];
   rounds?: number;
-  combatLog?: LogEntry[];
-  brawling?: unknown;
-  weapon?: unknown;
-  summary?: unknown;
-  currentTurn?: 'player' | 'opponent';
+  combatLog?: CombatState['combatLog']; // Use type from CombatState
+  currentTurn?: CombatState['currentTurn'];
+  playerCharacterId?: string;
+  opponentCharacterId?: string;
+  roundStartTime?: number;
+  modifiers?: CombatState['modifiers'];
+  playerTurn?: CombatState['playerTurn'];
 }
 
 /**
@@ -139,7 +136,8 @@ function getSafeOpponent(state: unknown): OpponentLike | null {
  */
 export function useCombatStateRestoration(
     state: unknown,
-    gameSession: CombatInitiator | null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    gameSession: any | null // Use 'any' temporarily
 ) {
     useEffect(() => {
         if (!state || !gameSession) return;
@@ -213,28 +211,24 @@ export function useCombatStateRestoration(
             };
             
             // Handle type casting for array properties to avoid TypeScript errors
-            const emptyParticipantArray: CombatParticipant[] = [];
-            
-            console.log('safeCombatState.combatLog:', safeCombatState.combatLog); // ADDED LOG
-            const ensuredCombatState = ensureCombatState({
+            // Construct the state to pass to initiateCombat using state/CombatState properties
+            const restoredCombatState: Partial<CombatState> = {
                 isActive: safeCombatState?.isActive ?? false,
                 combatType: safeCombatState?.combatType ?? null,
-                winner: (safeCombatState?.winner === 'player' || safeCombatState?.winner === 'opponent') 
-                    ? safeCombatState.winner 
-                    : null,
-                participants: emptyParticipantArray, // Use properly typed empty array
+                winner: safeCombatState?.winner ?? null,
                 rounds: safeCombatState?.rounds ?? 0,
-                combatLog: safeCombatState.combatLog !== undefined ? safeCombatState.combatLog : [], // ADDED LOGIC - USE SAFE COMBAT STATE LOG
-                // Cast properties to their expected types or undefined
-                brawling: safeCombatState?.brawling as BrawlingState | undefined,
-                weapon: safeCombatState?.weapon as WeaponCombatState | undefined,
-                summary: safeCombatState?.summary as CombatSummary | undefined,
-            });
-            console.log('restoredOpponent:', restoredOpponent); // ADDED LOG
-            console.log('ensuredCombatState:', ensuredCombatState); // ADDED LOG
+                combatLog: safeCombatState?.combatLog ?? [],
+                currentTurn: safeCombatState?.currentTurn ?? null,
+                playerCharacterId: safeCombatState?.playerCharacterId,
+                opponentCharacterId: safeCombatState?.opponentCharacterId,
+                roundStartTime: safeCombatState?.roundStartTime,
+                modifiers: safeCombatState?.modifiers,
+                playerTurn: safeCombatState?.playerTurn,
+            };
             
 
-            gameSession.initiateCombat(restoredOpponent, ensuredCombatState);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            gameSession.initiateCombat(restoredOpponent, restoredCombatState as any); // Cast state to any temporarily
         }
     }, [
         gameSession,

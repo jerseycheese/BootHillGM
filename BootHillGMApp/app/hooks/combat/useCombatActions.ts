@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useCampaignState } from '../useCampaignStateContext';
+import { useGameState } from '../../context/GameStateProvider'; // Updated import
 import { resolveCombatRound } from '../../utils/combat/combatResolver';
 import { CombatSituation } from '../../utils/combat/hitModifiers';
 import { Character } from '../../types/character';
@@ -15,12 +15,13 @@ import { Character } from '../../types/character';
  */
 export const useCombatActions = () => {
   // Use the campaign state context
-  const { dispatch, state } = useCampaignState();
+  const { dispatch, state } = useGameState(); // Use the correct hook
   
   // Safely extract player from character state and opponent from root state
   const player = state?.character?.player;
   // The combat state doesn't have an opponent property - it's in the root state
-  const opponent = state?.opponent || null;
+  // Access opponent via the character slice
+  const opponent = state?.character?.opponent || null;
 
   /**
    * Updates a character's strength during combat.
@@ -34,7 +35,7 @@ export const useCombatActions = () => {
       if (characterType === 'player' && player && player.attributes) {
         const currentAttributes = player.attributes;
         dispatch({
-          type: 'UPDATE_CHARACTER',
+          type: 'character/UPDATE_CHARACTER', // Use namespaced action type
           payload: {
             id: player.id, 
             attributes: { ...currentAttributes, strength: Number(newStrength) },
@@ -43,7 +44,7 @@ export const useCombatActions = () => {
       } else if (characterType === 'opponent' && opponent && opponent.attributes) {
         const currentAttributes = opponent.attributes;
         dispatch({
-          type: 'SET_OPPONENT',
+          type: 'character/SET_OPPONENT', // Use namespaced action type
           payload: {
             ...opponent,
             attributes: { ...currentAttributes, strength: Number(newStrength) },
@@ -59,7 +60,6 @@ export const useCombatActions = () => {
    */
   const executeCombatRound = useCallback(async (handleCombatEnd: (winner: 'player' | 'opponent', combatResults: string) => void) => {
     if (!player || !opponent) {
-      //  onUpdateNarrative('Error executing combat round: Missing character or opponent data.');
       return;
     }
 

@@ -96,33 +96,52 @@ This is similar to how you might mock Drupal's theme functions or JavaScript lib
 
 ## Testing React Hooks
 
-Testing hooks follows these patterns:
+Testing hooks that consume the `GameStateContext` follows these patterns:
 
 ### Rendering and Acting
 
-```typescript
-const { result } = renderHook(() =>
-  useBrawlingCombat({
-    playerCharacter: mockPlayerCharacter,
-    opponent: mockNPC,
-    onCombatEnd: mockOnCombatEnd,
-    dispatch: mockDispatch,
-    initialCombatState: getDefaultState()
-  })
-);
+Use `@testing-library/react`'s `renderHook` along with a wrapper that provides the necessary context. The `renderWithMockContext` or `renderWithGameProvider` helpers from `test/utils/testWrappers.tsx` simplify this.
 
-// Trigger actions wrapped in act()
-await act(async () => {
-  await result.current.processRound(true, true);
+```typescript
+import { renderHook, act } from '@testing-library/react';
+import { useInventoryItems } from '../hooks/selectors/useInventorySelectors'; // Example hook
+import { GameStateProvider } from '../context/GameStateProvider'; // Or use renderWithMockContext
+import { createMockGameState } from '../test/utils/inventoryTestUtils';
+
+test('should return inventory items', () => {
+  const mockState = createMockGameState({
+    inventory: { items: [{ id: '1', name: 'Potion', ... }] }
+  });
+
+  // Option 1: Using GameStateProvider wrapper
+  const wrapper = ({ children }) => <GameStateProvider initialState={mockState}>{children}</GameStateProvider>;
+  const { result } = renderHook(() => useInventoryItems(), { wrapper });
+
+  // Option 2: Using renderWithMockContext (if hook doesn't need reducer logic)
+  // const { result } = renderHook(() => useInventoryItems(), {
+  //   wrapper: ({ children }) => renderWithMockContext(children, mockState)
+  // });
+
+  expect(result.current).toHaveLength(1);
+
+  // If testing actions that update state:
+  // await act(async () => {
+  //   result.current.someAction();
+  // });
 });
 ```
 
 ### State Assertions
 
+Access the state slice directly from the hook's return value or the context if testing components.
+
 ```typescript
-// Check state changes
-expect(result.current.brawlingState.round).toBe(2);
-expect(mockRoundLog[0].type).toBe('hit');
+// Check state changes after an action
+expect(result.current.state.combat.isActive).toBe(true);
+expect(result.current.state.inventory.items).toHaveLength(2);
+
+// Or check selector results
+expect(result.current).toEqual(['item1', 'item2']); // Example for useInventoryItemNames()
 ```
 
 ## Error Testing

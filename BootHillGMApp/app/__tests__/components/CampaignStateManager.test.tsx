@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { CampaignStateProvider, useCampaignState } from '../../components/CampaignStateManager';
+import { GameStateProvider, useGameState } from '../../context/GameStateProvider';
 import { GameState } from '../../types/gameState';
 import { ItemCategory } from '../../types/item.types';
 
@@ -41,12 +41,12 @@ describe('CampaignStateManager', () => {
 
   test('provides campaign state context with initial state', () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <CampaignStateProvider>
+      <GameStateProvider> {/* Use correct provider */}
         {children}
-      </CampaignStateProvider>
+      </GameStateProvider>
     );
 
-    const { result } = renderHook(() => useCampaignState(), { wrapper });
+    const { result } = renderHook(() => useGameState(), { wrapper }); // Use correct hook
 
     // Initial state should be set up with the adapter
     expect(result.current.state).toBeDefined();
@@ -57,8 +57,10 @@ describe('CampaignStateManager', () => {
     
     // Check that character state exists with null player and opponent
     expect(state.character).toBeDefined();
-    expect(state.player).toBeNull();
-    expect(state.opponent).toBeNull();
+    // Check player within the character slice
+    expect(state.character?.player).toBeNull(); // This assertion should now pass
+    // Check opponent within the character slice
+    expect(state.character?.opponent).toBeNull(); // This assertion should now pass
     
     // Check that inventory exists with items array
     expect(state.inventory).toBeDefined();
@@ -70,17 +72,17 @@ describe('CampaignStateManager', () => {
     
     // Check that combat state exists and is not active
     expect(state.combat).toBeDefined();
-    expect(state.isCombatActive).toBe(false);
+    expect(state.combat?.isActive).toBe(false); // This assertion should now pass
   });
   
   test('dispatches actions correctly', async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <CampaignStateProvider>
+      <GameStateProvider> {/* Use correct provider */}
         {children}
-      </CampaignStateProvider>
+      </GameStateProvider>
     );
 
-    const { result } = renderHook(() => useCampaignState(), { wrapper });
+    const { result } = renderHook(() => useGameState(), { wrapper }); // Use correct hook
 
     // Wait for state initialization
     await act(async () => {
@@ -90,8 +92,8 @@ describe('CampaignStateManager', () => {
     // Dispatch a test action
     await act(async () => {
       result.current.dispatch({ 
-        type: 'inventory/ADD_ITEM', 
-        payload: { 
+        type: 'inventory/ADD_ITEM', // This type should now be valid for the dispatch
+        payload: {
           id: 'test-item',
           name: 'Test Item',
           description: 'A test item',
@@ -104,9 +106,10 @@ describe('CampaignStateManager', () => {
     });
     
     // Verify the action was processed - make sure we have access to the updated state
-    expect(result.current.inventory).toBeDefined();
-    expect(result.current.inventory.length).toBeGreaterThan(0);
-    expect(result.current.inventory[0].name).toBe('Test Item');
+    // Access inventory via state slice
+    expect(result.current.state.inventory).toBeDefined();
+    expect(result.current.state.inventory.items.length).toBeGreaterThan(0);
+    expect(result.current.state.inventory.items[0].name).toBe('Test Item');
     
     // Also check the state directly
     expect(result.current.state.inventory.items).toBeDefined();

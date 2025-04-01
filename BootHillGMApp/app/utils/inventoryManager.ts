@@ -1,7 +1,7 @@
 import { InventoryItem, ItemCategory, createInventoryItem } from '../types/item.types';
 import { ItemValidationResult } from '../types/validation.types';
 import { Character } from '../types/character';
-import { CampaignState } from '../types/campaign';
+import { GameState } from '../types/gameState'; // Import GameState
 import { LocationType } from '../services/locationService';
 
 /**
@@ -36,10 +36,7 @@ function isLocationType(location: unknown): location is LocationType {
   }
 }
 
-// Type guard for CampaignState
-function isCampaignState(state: unknown): state is CampaignState {
-  return typeof state === 'object' && state !== null && typeof (state as CampaignState).currentPlayer === 'string' && isLocationType((state as CampaignState).location);
-}
+// Removed outdated isCampaignState type guard
 
 export class InventoryManager {
   /**
@@ -75,12 +72,9 @@ export class InventoryManager {
   static validateItemUse(
     item: InventoryItem,
     character: Character | undefined,
-    gameState: CampaignState & { isCombatActive: boolean }
+    gameState: GameState // Updated to use GameState
   ): ItemValidationResult {
-    // Check if gameState is valid using the type guard
-    if (!isCampaignState(gameState)) {
-        return { valid: false, reason: 'Invalid game state' };
-    }
+    // Removed check for outdated isCampaignState
 
     if (!item) {
       return { valid: false, reason: 'Item not found' };
@@ -102,17 +96,18 @@ export class InventoryManager {
         };
       }
 
-      // Use the type guard for location
-      if (requirements.location && isLocationType(gameState.location)
-        && gameState.location.type === 'town'
-        && !requirements.location.includes(gameState.location.name)) {
+      // Check location requirements using GameState structure
+      if (requirements.location && gameState.location // Check if location exists
+        && isLocationType(gameState.location) // Ensure it's a valid LocationType
+        && gameState.location.type === 'town' // Check if it's a town
+        && !requirements.location.includes(gameState.location.name)) { // Check if town name is allowed
         return {
           valid: false,
           reason: 'Cannot use this item here'
         };
       }
 
-      if (requirements.combatOnly && !gameState.isCombatActive) {
+      if (requirements.combatOnly && !gameState.combat.isActive) { // Check combat status via combat slice
         return {
           valid: false,
           reason: 'Can only be used during combat'

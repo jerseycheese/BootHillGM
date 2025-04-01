@@ -1,8 +1,11 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react'; // Keep screen import
 import CombatTypeSelection from '../../../components/Combat/CombatTypeSelection';
 import { Character } from '../../../types/character';
-import { TestCampaignStateProvider } from '../../utils/testWrappers';
+// import { TestCampaignStateProvider } from '../../utils/testWrappers'; // Removed legacy wrapper
+// Remove GameStateProvider import
+import { createMockGameState } from '../../../test/utils/inventoryTestUtils'; // Import state utility
+import { renderWithMockContext } from '../../../test/utils/testWrappers'; // Import the new mock context renderer
 
 describe('CombatTypeSelection', () => {
   const mockOnSelectType = jest.fn();
@@ -23,9 +26,12 @@ describe('CombatTypeSelection', () => {
     wounds: [],
     isUnconscious: false,
     isPlayer: true,
-    inventory: {
-      items: []
-    }
+    isNPC: false, // Add missing required property
+    inventory: { items: [] },
+    // Add missing required Character properties
+    minAttributes: { speed: 1, gunAccuracy: 1, throwingAccuracy: 1, strength: 1, baseStrength: 1, bravery: 1, experience: 0 },
+    maxAttributes: { speed: 20, gunAccuracy: 20, throwingAccuracy: 20, strength: 20, baseStrength: 20, bravery: 20, experience: 100 },
+    strengthHistory: { baseStrength: 10, changes: [] }
   };
   
   // Mock opponent character
@@ -44,9 +50,12 @@ describe('CombatTypeSelection', () => {
     wounds: [],
     isUnconscious: false,
     isNPC: true,
-    inventory: {
-      items: []
-    }
+    isPlayer: false, // Add missing required property
+    inventory: { items: [] },
+    // Add missing required Character properties
+    minAttributes: { speed: 1, gunAccuracy: 1, throwingAccuracy: 1, strength: 1, baseStrength: 1, bravery: 1, experience: 0 },
+    maxAttributes: { speed: 20, gunAccuracy: 20, throwingAccuracy: 20, strength: 20, baseStrength: 20, bravery: 20, experience: 100 },
+    strengthHistory: { baseStrength: 10, changes: [] }
   };
   
   // Reset mocks before each test
@@ -56,16 +65,15 @@ describe('CombatTypeSelection', () => {
 
   it('displays cleaned opponent name with default weapon', () => {
     // Create initial state with weapon in inventory
-    const initialState = {
+    // Create full GameState using the utility
+    const initialState = createMockGameState({
       inventory: {
         items: [
-          { id: '1', name: 'Colt Peacemaker', category: 'weapon', type: 'weapon' }
+          { id: '1', name: 'Colt Peacemaker', category: 'weapon', quantity: 1, description: '' } // Ensure full InventoryItem
         ]
       },
-      character: {
-        player: mockPlayer
-      }
-    };
+      character: { player: mockPlayer }
+    });
     
     // Use a modified opponent with metadata in name
     const opponentWithMetadata = {
@@ -73,15 +81,14 @@ describe('CombatTypeSelection', () => {
       name: 'Rancher\nSUGGESTED_ACTIONS: []'
     };
 
-    // Render with TestCampaignStateProvider
-    render(
-      <TestCampaignStateProvider initialState={initialState}>
-        <CombatTypeSelection
-          playerCharacter={mockPlayer}
-          opponent={opponentWithMetadata}
-          onSelectType={mockOnSelectType}
-        />
-      </TestCampaignStateProvider>
+    // Render with mock context provider
+    renderWithMockContext(
+      <CombatTypeSelection
+        playerCharacter={mockPlayer}
+        opponent={opponentWithMetadata}
+        onSelectType={mockOnSelectType}
+      />,
+      initialState // Pass the mock state to the wrapper
     );
 
     // Check that weapon combat option is available
@@ -94,39 +101,37 @@ describe('CombatTypeSelection', () => {
 
   it('shows available weapons for both combatants', () => {
     // Create initial state with weapons
-    const initialState = {
+    // Create full GameState using the utility
+    const initialState = createMockGameState({
       inventory: {
         items: [
-          { id: '1', name: 'Colt Peacemaker', category: 'weapon', type: 'weapon' },
-          { id: '2', name: 'Knife', category: 'weapon', type: 'weapon' }
+          { id: '1', name: 'Colt Peacemaker', category: 'weapon', quantity: 1, description: '' },
+          { id: '2', name: 'Knife', category: 'weapon', quantity: 1, description: '' }
         ]
       },
-      character: {
-        player: mockPlayer
-      }
-    };
+      character: { player: mockPlayer }
+    });
 
     // Modify player to have a weapon property
     const playerWithWeapon = {
       ...mockPlayer,
-      weapon: { name: 'Player Weapon', damage: 5 }
+      // weapon: { name: 'Player Weapon', damage: 5 } // 'weapon' is not a direct property of Character
     };
 
     // Modify opponent to have a weapon property
     const opponentWithWeapon = {
       ...mockOpponent,
-      weapon: { name: 'Shotgun', damage: 8 }
+      // weapon: { name: 'Shotgun', damage: 8 } // 'weapon' is not a direct property of Character
     };
 
-    // Render with TestCampaignStateProvider
-    render(
-      <TestCampaignStateProvider initialState={initialState}>
-        <CombatTypeSelection
-          playerCharacter={playerWithWeapon}
-          opponent={opponentWithWeapon}
-          onSelectType={mockOnSelectType}
-        />
-      </TestCampaignStateProvider>
+    // Render with mock context provider
+    renderWithMockContext(
+      <CombatTypeSelection
+        playerCharacter={playerWithWeapon}
+        opponent={opponentWithWeapon}
+        onSelectType={mockOnSelectType}
+      />,
+      initialState // Pass the mock state to the wrapper
     );
 
     // Check that weapon combat option is available and enabled
@@ -140,26 +145,24 @@ describe('CombatTypeSelection', () => {
   
   it('disables weapon combat option when no weapons available', () => {
     // Create initial state with NO weapons
-    const initialState = {
+    // Create full GameState using the utility
+    const initialState = createMockGameState({
       inventory: {
         items: [
-          { id: '1', name: 'Healing Potion', category: 'medical', type: 'consumable' }
+          { id: '1', name: 'Healing Potion', category: 'medical', quantity: 1, description: '' }
         ]
       },
-      character: {
-        player: mockPlayer
-      }
-    };
+      character: { player: mockPlayer }
+    });
 
-    // Render with TestCampaignStateProvider
-    render(
-      <TestCampaignStateProvider initialState={initialState}>
-        <CombatTypeSelection
-          playerCharacter={mockPlayer}
-          opponent={mockOpponent}
-          onSelectType={mockOnSelectType}
-        />
-      </TestCampaignStateProvider>
+    // Render with mock context provider
+    renderWithMockContext(
+      <CombatTypeSelection
+        playerCharacter={mockPlayer}
+        opponent={mockOpponent}
+        onSelectType={mockOnSelectType}
+      />,
+      initialState // Pass the mock state to the wrapper
     );
 
     // Check that weapon combat option is disabled

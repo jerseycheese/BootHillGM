@@ -20,10 +20,11 @@ export async function getAIResponse(
   // This is a simplified implementation for testing
   return {
     narrative: `You ${input}. The sheriff nods slightly, watching your movements carefully.`,
+    // Updated mock suggestedActions to match SuggestedAction type
     suggestedActions: [
-      { text: "Talk to the sheriff", type: "interaction" },
-      { text: "Look around the saloon", type: "basic" },
-      { text: "Order a drink", type: "interaction" }
+      { id: 'mock-1', title: "Talk to the sheriff", description: "Ask about local events", type: 'optional' as const },
+      { id: 'mock-2', title: "Look around the saloon", description: "See who's here", type: 'optional' as const },
+      { id: 'mock-3', title: "Order a drink", description: "Get some refreshment", type: 'optional' as const }
     ],
     acquiredItems: [],
     removedItems: [],

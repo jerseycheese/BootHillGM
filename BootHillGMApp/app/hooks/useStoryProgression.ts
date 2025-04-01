@@ -16,7 +16,7 @@ import {
   initialStoryProgressionState
 } from '../types/narrative.types';
 import {
-  addStoryPoint as addStoryPointUtil,
+  // Removed unused addStoryPointUtil import alias
   extractStoryPointFromNarrative,
   createStoryProgressionPoint,
   containsSignificantStoryAdvancement
@@ -122,13 +122,12 @@ export function useStoryProgression(): UseStoryProgressionResult {
    * Add a story point to the progression
    */
   const addStoryPoint = useCallback((point: StoryProgressionPoint) => {
+    // Dispatch the specific action for adding a story point
     dispatch({
-      type: 'UPDATE_NARRATIVE',
-      payload: {
-        storyProgression: addStoryPointUtil(storyProgression, point)
-      }
+      type: 'ADD_STORY_POINT', // Use the correct action type
+      payload: point // Pass the StoryProgressionPoint directly
     });
-  }, [dispatch, storyProgression]);
+  }, [dispatch]); // Removed unnecessary storyProgression dependency
   
   /**
    * Create and add a story point from raw data
@@ -162,15 +161,10 @@ export function useStoryProgression(): UseStoryProgressionResult {
       return;
     }
     
+    // Dispatch the specific action for updating the current point
     dispatch({
-      type: 'UPDATE_NARRATIVE',
-      payload: {
-        storyProgression: {
-          ...storyProgression,
-          currentPoint: pointId,
-          lastUpdated: Date.now()
-        }
-      }
+      type: 'UPDATE_CURRENT_POINT', // Use the correct action type
+      payload: pointId // Pass the point ID directly
     });
   }, [dispatch, storyProgression]);
   

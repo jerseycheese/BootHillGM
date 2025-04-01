@@ -79,7 +79,8 @@ export const initialNarrativeState: NarrativeState = {
   displayMode: 'standard',
   narrativeContext: undefined, // Initialize narrativeContext to undefined
   error: null,
-  lore: initialLoreState // Include lore in the initial state
+  lore: initialLoreState, // Include lore in the initial state
+  context: "" // Add missing context property
 };
 
 /**

@@ -1,236 +1,219 @@
+/**
+ * Root Reducer
+ * 
+ * Combines all slice reducers into a single unified reducer
+ */
+
 import { GameState } from '../types/gameState';
 import { GameAction } from '../types/actions';
-import { GameEngineAction } from '../types/gameActions';
-import { adaptEngineAction } from './gameActionsAdapter';
-import { migrationAdapter, LegacyState } from '../utils/stateAdapters';
+import { handleSetCharacter, handleUpdateCharacter, handleSetOpponent, CharacterPayload, UpdateCharacterPayload, OpponentPayload } from './characterReducer';
+import { handleSetCombatActive, handleUpdateCombatState, handleSetCombatType, handleEndCombat } from './combatReducer';
+import inventoryReducer from './inventoryReducer';
+import journalReducer from './journalReducer';
+import { narrativeReducer } from './narrativeReducer';
+import uiReducer from './uiReducer';
+import { initialUIState } from '../types/state/uiState';
+import { initialCombatState } from '../types/state/combatState';
+import { ExtendedGameState } from '../types/extendedState';
 import { LocationType } from '../services/locationService';
 import { SuggestedAction } from '../types/campaign';
-import { InventoryItem } from '../types/item.types';
-import { JournalEntry } from '../types/journal';
-
-// Import all slice reducers
-import { characterReducer } from './character/characterReducer';
-import { combatReducer } from './combat/combatReducer';
-import { inventoryReducer } from './inventory/inventoryReducer';
-import { journalReducer } from './journal/journalReducer';
-import { narrativeReducer } from './narrative/narrativeReducer';
-import { uiReducer } from './ui/uiReducer';
-
-// Import initial states
-import {
-  initialCharacterState,
-  initialCombatState,
-  initialInventoryState,
-  initialJournalState,
-  initialNarrativeState,
-  initialUIState
-} from '../types/state';
-
-// Import type guards
-import {
-  isArray,
-  hasCharacterSlice,
-  hasCombatSlice,
-  hasInventorySlice,
-  hasJournalSlice,
-  hasNarrativeSlice,
-  hasUISlice,
-  mapToTypedArray,
-  safeGet
-} from './utils/typeGuards';
+import { NarrativeAction } from '../types/narrative.types';
+import { CharacterState } from '../types/state';
 
 /**
- * Custom type guard for checking if an action has a payload
+ * Safe helper to check if an action is of a specific type
  */
-function hasPayload<T>(action: GameAction): action is GameAction & { payload: T } {
-  return 'payload' in action && action.payload !== undefined;
+function isActionType(action: GameAction, type: string | string[]): boolean {
+  if (Array.isArray(type)) {
+    return type.includes(action.type);
+  }
+  return action.type === type;
 }
 
 /**
- * Root reducer that combines all slice reducers
- * 
- * This is the core of our Redux-like state management system.
+ * Custom action type for NO_OP that can work with narrative reducer
  */
-export function rootReducer(state: GameState, action: GameAction): GameState {
-  if (!state) {
-    // This should never happen in practice as we always provide an initial state
-    throw new Error('State cannot be undefined');
-  }
+const NO_OP_ACTION: NarrativeAction = {
+  type: 'ADD_NARRATIVE_HISTORY',
+  payload: ''
+};
 
-  // Transform any legacy state format to the new structure
-  const normalizedState = ensureCompleteState(migrationAdapter.oldToNew(state));
-
-  // Handle global state updates first
-  const updatedGlobalState = handleGlobalActions(normalizedState, action);
-  
-  // Then delegate to slice reducers - being careful with null vs undefined
-  const sliceUpdatedState = {
-    ...updatedGlobalState,
-    // Fix: Pass undefined if character is null, matching the characterReducer signature
-    character: characterReducer(updatedGlobalState.character || undefined, action),
-    combat: combatReducer(updatedGlobalState.combat, action),
-    inventory: inventoryReducer(updatedGlobalState.inventory, action),
-    journal: journalReducer(updatedGlobalState.journal, action),
-    narrative: narrativeReducer(updatedGlobalState.narrative, action),
-    ui: uiReducer(updatedGlobalState.ui, action),
-  };
-  
-  return sliceUpdatedState;
-}
+// Create a null character state to use as a default
+const NULL_CHARACTER_STATE: CharacterState = {
+  player: null,
+  opponent: null
+};
 
 /**
- * Ensures the state has all required properties with proper types
+ * Character reducer - adapter for existing handler functions
+ * Uses a wrapper pattern to safely convert state types
  */
-function ensureCompleteState(state: Partial<GameState> | LegacyState): GameState {
-  const completeState = {
-    // Character slice
-    character: hasCharacterSlice(state) ? state.character : initialCharacterState,
-    
-    // Combat slice
-    combat: hasCombatSlice(state) ? state.combat : initialCombatState,
-    
-    // Inventory slice with proper types
-    inventory: hasInventorySlice(state)
-      ? state.inventory
-      : {
-          ...initialInventoryState,
-          items: isArray(state.inventory)
-            ? mapToTypedArray(state.inventory, item => item as unknown) as InventoryItem[]
-            : []
-        },
-    
-    // Journal slice with proper types
-    journal: hasJournalSlice(state)
-      ? state.journal
-      : {
-          ...initialJournalState,
-          entries: isArray(state.journal)
-            ? mapToTypedArray(state.journal, entry => entry as unknown) as JournalEntry[]
-            : []
-        },
-    
-    // Narrative slice
-    narrative: hasNarrativeSlice(state) ? state.narrative : initialNarrativeState,
-    
-    // UI slice
-    ui: hasUISlice(state) ? state.ui : initialUIState,
-    
-    // Global properties
-    currentPlayer: safeGet<string>(state, 'currentPlayer', ''),
-    npcs: safeGet<string[]>(state, 'npcs', []),
-    location: safeGet<LocationType | null>(state, 'location', null),
-    quests: safeGet<string[]>(state, 'quests', []),
-    gameProgress: safeGet<number>(state, 'gameProgress', 0),
-    savedTimestamp: safeGet<number | undefined>(state, 'savedTimestamp', undefined),
-    isClient: safeGet<boolean | undefined>(state, 'isClient', undefined),
-    suggestedActions: safeGet<SuggestedAction[]>(state, 'suggestedActions', []),
-    
-    // Required getters for GameState interface
-    get player() {
-      return this.character?.player || null;
-    },
-    get opponent() {
-      // Since we can't make this property an accessor getter in the interface,
-      // we need to rely on the character.opponent property
-      return this.character?.opponent || null;
-    },
-    get isCombatActive() {
-      return this.combat?.isActive || false;
-    }
-  };
+const characterReducer = (state: CharacterState | null = null, action: GameAction): CharacterState | null => {
+  if (!action) return state;
   
-  return completeState;
-}
-
-/**
- * Handle global actions that don't belong to any specific slice
- */
-function handleGlobalActions(state: GameState, action: GameAction): GameState {
-  // Use string comparison instead of strict type checking
-  const actionType = action.type as string;
-
-  // SET_PLAYER
-  if (actionType === 'SET_PLAYER') {
-    if (hasPayload<string>(action)) {
-      return { ...state, currentPlayer: action.payload };
-    }
+  // Use null or the actual state, preventing the type error
+  const safeState = state || NULL_CHARACTER_STATE;
+  
+  if (isActionType(action, ['character/SET_CHARACTER', 'SET_CHARACTER']) && 'payload' in action) {
+    // Create a mock ExtendedGameState just for the handler
+    const mockState = { character: safeState } as ExtendedGameState;
+    return handleSetCharacter(mockState, action.payload as CharacterPayload).character;
   }
   
-  // ADD_NPC
-  else if (actionType === 'ADD_NPC') {
-    if (hasPayload<string>(action)) {
-      return { ...state, npcs: [...state.npcs, action.payload] };
-    }
+  if (isActionType(action, ['character/UPDATE_CHARACTER', 'UPDATE_CHARACTER']) && 'payload' in action) {
+    // Create a mock ExtendedGameState just for the handler
+    const mockState = { character: safeState } as ExtendedGameState;
+    return handleUpdateCharacter(mockState, action.payload as UpdateCharacterPayload).character;
   }
   
-  // SET_LOCATION
-  else if (actionType === 'SET_LOCATION') {
-    if (hasPayload<LocationType>(action)) {
-      return { ...state, location: action.payload };
-    }
+  if (isActionType(action, ['character/SET_OPPONENT', 'SET_OPPONENT']) && 'payload' in action) {
+    // Create a mock ExtendedGameState just for the handler
+    const mockState = { character: safeState } as ExtendedGameState;
+    return handleSetOpponent(mockState, action.payload as OpponentPayload).character;
   }
   
-  // ADD_QUEST
-  else if (actionType === 'ADD_QUEST') {
-    if (hasPayload<string>(action)) {
-      return { ...state, quests: [...state.quests, action.payload] };
-    }
-  }
-  
-  // SET_GAME_PROGRESS
-  else if (actionType === 'SET_GAME_PROGRESS') {
-    if (hasPayload<number>(action)) {
-      return { ...state, gameProgress: action.payload };
-    }
-  }
-  
-  // SET_SAVED_TIMESTAMP
-  else if (actionType === 'SET_SAVED_TIMESTAMP') {
-    if (hasPayload<number>(action)) {
-      return { ...state, savedTimestamp: action.payload };
-    }
-  }
-  
-  // SET_SUGGESTED_ACTIONS
-  else if (actionType === 'SET_SUGGESTED_ACTIONS') {
-    if (hasPayload<SuggestedAction[]>(action)) {
-      return { ...state, suggestedActions: action.payload };
-    }
-  }
-  
-  // SET_STATE
-  else if (actionType === 'SET_STATE') {
-    if (hasPayload<Record<string, unknown>>(action)) {
-      const payload = action.payload;
-      return {
-        ...state,
-        currentPlayer: safeGet<string>(payload, 'currentPlayer', state.currentPlayer),
-        npcs: safeGet<string[]>(payload, 'npcs', state.npcs),
-        location: safeGet<LocationType | null>(payload, 'location', state.location),
-        quests: safeGet<string[]>(payload, 'quests', state.quests),
-        gameProgress: safeGet<number>(payload, 'gameProgress', state.gameProgress),
-        savedTimestamp: safeGet<number | undefined>(payload, 'savedTimestamp', state.savedTimestamp),
-        isClient: safeGet<boolean | undefined>(payload, 'isClient', state.isClient),
-        suggestedActions: safeGet<SuggestedAction[]>(payload, 'suggestedActions', state.suggestedActions),
-      };
-    }
-  }
-  
-  // Default case: return state as is
   return state;
-}
+};
 
 /**
- * Root reducer that works with GameEngineAction
- * This is a compatibility layer for legacy code
+ * Combat reducer - adapter for existing handler functions
  */
-export function gameEngineReducer(state: GameState, action: GameEngineAction): GameState {
-  // Convert GameEngineAction to GameAction
-  const adaptedAction = adaptEngineAction(action);
+const combatReducer = (state = initialCombatState, action: GameAction) => {
+  if (!action) return state;
   
-  // Call the regular rootReducer with the adapted action
-  return rootReducer(state, adaptedAction);
-}
+  // Create a safe wrapper state that matches what the handler expects
+  const wrapState = { combat: state };
+  
+  if (isActionType(action, ['combat/SET_COMBAT_ACTIVE', 'SET_COMBAT_ACTIVE']) && 'payload' in action) {
+    return handleSetCombatActive(
+      wrapState as ExtendedGameState, 
+      action.payload as boolean
+    ).combat;
+  }
+  
+  if (isActionType(action, ['combat/UPDATE_COMBAT_STATE', 'UPDATE_COMBAT_STATE']) && 'payload' in action) {
+    return handleUpdateCombatState(
+      wrapState as ExtendedGameState, 
+      action.payload
+    ).combat;
+  }
+  
+  if (isActionType(action, ['combat/SET_COMBAT_TYPE', 'SET_COMBAT_TYPE']) && 'payload' in action) {
+    return handleSetCombatType(
+      wrapState as ExtendedGameState, 
+      action.payload as 'brawling' | 'weapon' | null
+    ).combat;
+  }
+  
+  if (isActionType(action, ['combat/END_COMBAT', 'END_COMBAT'])) {
+    return handleEndCombat(wrapState as ExtendedGameState).combat;
+  }
+  
+  return state;
+};
 
-// Default export for compatibility with existing imports
+// Individual handlers for top-level state properties
+const handleCurrentPlayer = (state = '', action: GameAction): string => {
+  if (isActionType(action, 'SET_PLAYER') && 'payload' in action) {
+    return action.payload as string;
+  }
+  return state;
+};
+
+const handleNpcs = (state: string[] = [], action: GameAction): string[] => {
+  if (isActionType(action, 'ADD_NPC') && 'payload' in action) {
+    return [...state, action.payload as string];
+  }
+  return state;
+};
+
+const handleLocation = (state: LocationType | null = null, action: GameAction): LocationType | null => {
+  if (isActionType(action, 'SET_LOCATION') && 'payload' in action) {
+    return action.payload as LocationType;
+  }
+  return state;
+};
+
+const handleQuests = (state: string[] = [], action: GameAction): string[] => {
+  if (isActionType(action, 'ADD_QUEST') && 'payload' in action) {
+    return [...state, action.payload as string];
+  }
+  return state;
+};
+
+const handleGameProgress = (state = 0, action: GameAction): number => {
+  if (isActionType(action, 'SET_GAME_PROGRESS') && 'payload' in action) {
+    return action.payload as number;
+  }
+  return state;
+};
+
+const handleSavedTimestamp = (state = 0, action: GameAction): number => {
+  if (isActionType(action, 'SET_SAVED_TIMESTAMP') && 'payload' in action) {
+    return action.payload as number;
+  }
+  return state;
+};
+
+const handleIsClient = (state = false, _action: GameAction): boolean => {
+  // This is typically not modified after initialization
+  return state;
+};
+
+const handleSuggestedActions = (state: SuggestedAction[] = [], action: GameAction): SuggestedAction[] => {
+  if (isActionType(action, 'SET_SUGGESTED_ACTIONS') && 'payload' in action) {
+    return action.payload as SuggestedAction[];
+  }
+  return state;
+};
+
+/**
+ * Initial state for the application
+ */
+const initialState: GameState = {
+  character: null,
+  combat: initialCombatState,
+  inventory: { items: [] },
+  journal: { entries: [] },
+  narrative: narrativeReducer(undefined, NO_OP_ACTION),
+  ui: { ...initialUIState },
+  currentPlayer: '',
+  npcs: [],
+  location: null,
+  quests: [],
+  gameProgress: 0,
+  savedTimestamp: 0,
+  isClient: false,
+  suggestedActions: []
+};
+
+/**
+ * Root reducer function that combines all slice reducers
+ */
+const rootReducer = (state: GameState = initialState, action: GameAction): GameState => {
+  // Type-check for null or undefined action
+  if (!action) return state;
+  
+  return {
+    // Domain-specific slices
+    character: characterReducer(state.character, action),
+    combat: combatReducer(state.combat, action),
+    inventory: inventoryReducer(state.inventory, action),
+    journal: journalReducer(state.journal, action),
+    // Use type assertion for narrative reducer since its action typing is more restrictive
+    narrative: narrativeReducer(state.narrative, action as NarrativeAction),
+    ui: uiReducer(state.ui, action),
+    
+    // Top-level state properties
+    currentPlayer: handleCurrentPlayer(state.currentPlayer, action),
+    npcs: handleNpcs(state.npcs, action),
+    location: handleLocation(state.location, action),
+    quests: handleQuests(state.quests, action),
+    gameProgress: handleGameProgress(state.gameProgress, action),
+    savedTimestamp: handleSavedTimestamp(state.savedTimestamp, action),
+    isClient: handleIsClient(state.isClient, action),
+    suggestedActions: handleSuggestedActions(state.suggestedActions, action)
+  };
+};
+
 export default rootReducer;

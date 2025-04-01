@@ -6,7 +6,7 @@ import { JournalEntry } from '../types/journal';
 import { InventoryState } from '../types/state/inventoryState';
 import { JournalState } from '../types/state/journalState';
 import { CharacterState } from '../types/state/characterState';
-import { LegacyState } from './stateAdapters'; // Assuming stateAdapters is in the same utils directory
+// Removed import of obsolete LegacyState from stateAdapters
 
 // Define a custom type with the extra properties for testing
 // This might be specific to the hook's tests, consider if it should stay there or move.
@@ -184,7 +184,7 @@ export const restoreCharacter = (character: Partial<Character>): Character => {
 
 // --- Normalization Functions ---
 
-export const normalizeInventoryItems = (normalizedState: Partial<GameState>, savedState: LegacyState): InventoryItem[] => {
+export const normalizeInventoryItems = (normalizedState: Partial<GameState>, savedState: unknown): InventoryItem[] => {
   if (normalizedState.inventory && 
       typeof normalizedState.inventory === 'object' && 
       'items' in (normalizedState.inventory as object)) {
@@ -196,11 +196,12 @@ export const normalizeInventoryItems = (normalizedState: Partial<GameState>, sav
   }
   
   // Fallback to original saved state if it was an array
-  return Array.isArray(savedState.inventory) ? 
-    savedState.inventory.map((item: unknown) => ({ ...item as InventoryItem })) : [];
+  const inventory = (savedState as { inventory?: unknown })?.inventory;
+  return Array.isArray(inventory) ?
+    inventory.map((item: unknown) => ({ ...item as InventoryItem })) : [];
 };
 
-export const normalizeJournalEntries = (normalizedState: Partial<GameState>, savedState: LegacyState): JournalEntry[] => {
+export const normalizeJournalEntries = (normalizedState: Partial<GameState>, savedState: unknown): JournalEntry[] => {
   // Get entries from normalized state if available
   if (normalizedState.journal && 
       typeof normalizedState.journal === 'object' && 
@@ -214,35 +215,38 @@ export const normalizeJournalEntries = (normalizedState: Partial<GameState>, sav
   }
   
   // Fallback to original saved state (journal array)
-  if (Array.isArray(savedState.journal)) {
-    return savedState.journal.map(ensureJournalEntry);
+  const journal = (savedState as { journal?: unknown })?.journal;
+  if (Array.isArray(journal)) {
+    return journal.map(ensureJournalEntry);
   }
   
   // Last resort, check for root entries property (older format?)
-  if (Array.isArray(savedState.entries)) {
-    return savedState.entries.map(ensureJournalEntry);
+  const entries = (savedState as { entries?: unknown })?.entries;
+  if (Array.isArray(entries)) {
+    return entries.map(ensureJournalEntry);
   }
   
   // If nothing is available, return empty array
   return [];
 };
 
-export const normalizeCharacterState = (savedState: LegacyState, opponentCharacter: Character | null): CharacterState | null => {
+export const normalizeCharacterState = (savedState: unknown, opponentCharacter: Character | null): CharacterState | null => {
   // For tests that check if character is null
-  if (savedState.character === null) {
+  const state = savedState as { character?: Partial<CharacterState> | Partial<Character> | null, player?: Partial<Character> | null };
+  if (state?.character === null) {
     return null;
   }
   
   // Handle cases where character might be undefined but player isn't explicitly set
-  if (savedState.character === undefined && !savedState.player) {
+  if (state?.character === undefined && !state?.player) {
     return null; // Or potentially return default empty state? Returning null matches original logic.
   }
   
   // For tests that use the full character object directly
-  if (savedState.character && typeof savedState.character === 'object') {
+  if (state?.character && typeof state.character === 'object') {
     // Check if it's already in CharacterState format
-    if ('player' in savedState.character || 'opponent' in savedState.character) {
-      const charState = savedState.character as CharacterState;
+    if ('player' in state.character || 'opponent' in state.character) {
+      const charState = state.character as CharacterState;
       // Restore player and opponent within the state
       const restoredPlayer = charState.player ? restoreCharacter(charState.player) : null;
       const restoredOpponent = charState.opponent ? restoreCharacter(charState.opponent) : opponentCharacter; // Prioritize root opponent if charState.opponent is null/missing
@@ -255,18 +259,18 @@ export const normalizeCharacterState = (savedState: LegacyState, opponentCharact
     }
     
     // If it's a Character object directly, create proper CharacterState
-    if ('name' in savedState.character || 'attributes' in savedState.character) {
+    if ('name' in state.character || 'attributes' in state.character) {
       return {
-        player: restoreCharacter(savedState.character as Partial<Character>),
+        player: restoreCharacter(state.character as Partial<Character>),
         opponent: opponentCharacter // Include restored root opponent if it exists
       };
     }
   }
   
   // If using the player property directly, create CharacterState from that
-  if (savedState.player && typeof savedState.player === 'object') {
+  if (state?.player && typeof state.player === 'object') {
     return {
-      player: restoreCharacter(savedState.player as Partial<Character>),
+      player: restoreCharacter(state.player as Partial<Character>),
       opponent: opponentCharacter // Include restored root opponent if it exists
     };
   }
@@ -278,12 +282,13 @@ export const normalizeCharacterState = (savedState: LegacyState, opponentCharact
   } as CharacterState; 
 };
 
-export const normalizeInventoryState = (savedState: LegacyState, normalizedItems: InventoryItem[]): InventoryState => {
+export const normalizeInventoryState = (savedState: unknown, normalizedItems: InventoryItem[]): InventoryState => {
   // Tests might expect an array for direct comparison, but we need to store it in the new format
-  if (Array.isArray(savedState.inventory)) {
+  const inventory = (savedState as { inventory?: unknown })?.inventory;
+  if (Array.isArray(inventory)) {
     // Ensure items are deep copied
     return { 
-      items: savedState.inventory.map(item => ({ ...item as InventoryItem })) 
+      items: inventory.map((item: unknown) => ({ ...item as InventoryItem }))
     } as InventoryState;
   }
   

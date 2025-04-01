@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react';
 import { InventoryItem } from '../types/item.types';
-import { useCampaignState } from './useCampaignStateContext';
+import { useGameState } from '../context/GameStateProvider'; // Updated import
 import { getAIResponse } from '../services/ai/gameService';
 import { getJournalContext } from '../utils/JournalManager';
 import { InventoryManager } from '../utils/inventoryManager';
 import { getPlayerFromCharacter, getItemsFromInventory, getEntriesFromJournal } from './selectors/typeGuards';
-import { createCompatibleState } from '../utils/gameStateUtils';
-import { StateWithMixedStructure } from '../types/gameSession.types';
+import { GameState } from '../types/gameState'; // Import GameState
+// Removed import of obsolete createCompatibleState
+// Removed unused import: StateWithMixedStructure
 import { useLocation } from './useLocation';
 import { JournalUpdatePayload } from '../types/gameActions';
 
@@ -20,7 +21,7 @@ import { JournalUpdatePayload } from '../types/gameActions';
 export const useItemHandler = (
   updateNarrative: (text: string | { text: string; playerInput?: string; acquiredItems?: string[]; removedItems?: string[] }) => void
 ) => {
-  const { state, dispatch } = useCampaignState();
+  const { state, dispatch } = useGameState(); // Use correct hook
   const { updateLocation } = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,19 +62,16 @@ export const useItemHandler = (
 
       // Validate item use *before* calling getAIResponse
       const playerCharacter = getPlayerFromCharacter(state.character);
-      const isCombatActive = state.combat && 
-        typeof state.combat === 'object' && 
-        'isActive' in state.combat ? 
-        !!state.combat.isActive : false;
+      // Removed unused variable: isCombatActive
       
       // Create a compatible state for the validateItemUse function
-      const stateWithMixedStructure = state as unknown as StateWithMixedStructure;
-      const compatibleState = createCompatibleState(stateWithMixedStructure, isCombatActive);
+      // Removed unused variable: stateWithMixedStructure
+      // Removed obsolete state compatibility conversion
       
       const validationResult = InventoryManager.validateItemUse(
         item,
         playerCharacter || undefined,
-        compatibleState
+        state as GameState // Pass current GameState directly
       );
       
       if (!validationResult.valid) {
@@ -98,7 +96,7 @@ export const useItemHandler = (
       );
 
       // Now dispatch the USE_ITEM action *after* getting the AI response
-      dispatch({ type: 'USE_ITEM', payload: itemId });
+      dispatch({ type: 'inventory/USE_ITEM', payload: itemId }); // Use namespaced type
       
       // Create a proper JournalUpdatePayload with required fields
       const journalPayload: JournalUpdatePayload = {

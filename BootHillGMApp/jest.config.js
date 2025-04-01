@@ -1,4 +1,4 @@
-const nextJest = require('next/jest')
+import nextJest from 'next/jest.js' // Use import syntax
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
@@ -17,7 +17,7 @@ const customJestConfig = {
   testPathIgnorePatterns: [
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
-    '**/*.d.ts', // Exclude all .d.ts files
+    '\\.d\\.ts$', // Exclude all .d.ts files using standard regex
     '<rootDir>/app/__tests__/hooks/useCombatManager.test.ts',
     '<rootDir>/app/__tests__/hooks/useLocation.test.ts'
   ],
@@ -46,4 +46,4 @@ const customJestConfig = {
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-module.exports = createJestConfig(customJestConfig)
+export default createJestConfig(customJestConfig) // Use export default syntax

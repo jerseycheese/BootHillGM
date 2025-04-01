@@ -7,49 +7,23 @@ import { MainGameArea } from "./GameArea/MainGameArea";
 import { SidePanel } from "./GameArea/SidePanel";
 import { InventoryManager } from "../utils/inventoryManager";
 import DevToolsPanel from "./Debug/DevToolsPanel";
-import { GameAction, CampaignState } from "../types/campaign";
-import { GameEngineAction } from "../types/gameActions";
-import { Dispatch } from "react";
-import { LocationService } from "../services/locationService";
+// Removed unused imports: GameAction, GameEngineAction, Dispatch
+// Removed unused import: LocationService
 import { Character } from "../types/character";
 import { InventoryItem } from "../types/item.types";
-import { CombatState } from "../types/combat";
-import { JournalEntry } from "../types/journal";
+// Removed unused imports: CombatState, JournalEntry
 import { CombatInitiator } from "../types/combatStateAdapter";
 
-interface ExtendedState {
-  suggestedActions?: unknown[];
-  error?: string;
-}
-
+// Removed unused interface: ExtendedState
 export default function GameSession() {
   const { isInitializing, isClient } = useGameInitialization();
   const gameSession = useGameSession();
   const { state, dispatch, executeCombatRound, getCurrentOpponent } = gameSession;
   
   // Get LocationService singleton instance for parsing locations
-  const locationService = useMemo(() => LocationService.getInstance(), []);
+  // Removed unused locationService variable
 
-  // Create a dispatch adapter that converts GameAction to GameEngineAction
-  const dispatchAdapter = useMemo<Dispatch<GameAction>>(() => {
-    return (action) => {
-      // Handle any necessary type conversions
-      if (action.type === 'SET_LOCATION' && typeof action.payload === 'string') {
-        // Convert string locations to LocationType using the LocationService
-        const locationObject = locationService.parseLocation(action.payload);
-        
-        // Dispatch with properly typed location object
-        dispatch({
-          type: 'SET_LOCATION',
-          payload: locationObject
-        });
-        return;
-      }
-      
-      // For all other actions, pass through
-      dispatch(action as unknown as GameEngineAction);
-    };
-  }, [dispatch, locationService]);
+  // Removed dispatchAdapter as GameAction should be used consistently
 
   const handleUseItem = useCallback(() => {
     // Existing implementation
@@ -82,7 +56,7 @@ export default function GameSession() {
     }
     
     InventoryManager.equipWeapon(playerCharacter, item);
-    dispatch({ type: 'EQUIP_WEAPON', payload: itemId });
+    dispatch({ type: 'inventory/EQUIP_WEAPON', payload: itemId }); // Use namespaced type
   }, [state, dispatch]);
 
   const handleCombatAction = useCallback(async () => {
@@ -132,7 +106,8 @@ export default function GameSession() {
     handleUseItem,
     handleCombatAction,
     handlePlayerHealthChange: adaptedHealthChangeHandler,
-    opponent
+    opponent,
+    isCombatActive: state.combat?.isActive || false // Add isCombatActive from combat slice
   };
 
   // Create a properly typed combat initiator object
@@ -150,7 +125,8 @@ export default function GameSession() {
     opponent,
     
     // State management
-    isCombatActive: state?.isCombatActive || false,
+    // Access combat status via the combat slice
+    isCombatActive: state?.combat?.isActive || false,
     dispatch,
     
     // Additional properties - using optional chaining to handle properties that may not exist
@@ -218,9 +194,9 @@ export default function GameSession() {
   };
 
   // Try to get a valid Character or handle errors gracefully
-  let playerCharacter: Character;
+  // Removed unused variable: playerCharacter
   try {
-    playerCharacter = getPlayerCharacter();
+    getPlayerCharacter(); // Call function but don't assign to unused variable
   } catch (error) {
     console.error('Failed to extract player character:', error);
     // Use the LoadingScreen with a custom error message instead of an invalid type
@@ -231,50 +207,24 @@ export default function GameSession() {
     />;
   }
 
-  const extendedState = state as ExtendedState;
+  // Removed unused variable: extendedState
 
-  // Properly define the player getter function with explicit return type
-  const getPlayer = function(this: CampaignState): Character | null {
-    return this.character;
-  };
-  
-  // Create our campaign state with all required properties
-  const campaignState: CampaignState = {
-    currentPlayer: state.currentPlayer || '',
-    npcs: state.npcs || [],
-    character: playerCharacter,
-    location: state.location,
-    gameProgress: state.gameProgress,
-    journal: state.journal && 'entries' in state.journal 
-      ? state.journal.entries 
-      : (state.journal as unknown as JournalEntry[] || []),
-    narrative: state.narrative,
-    inventory: state.inventory && 'items' in state.inventory 
-      ? state.inventory.items 
-      : (state.inventory as unknown as InventoryItem[] || []),
-    quests: state.quests || [],
-    isCombatActive: state.isCombatActive || false,
-    opponent: opponent,
-    isClient: state.isClient,
-    suggestedActions: extendedState.suggestedActions as unknown as [] || [],
-    combatState: state.combat as unknown as CombatState | undefined,
-    error: extendedState.error,
-    
-    // Define the getter with proper binding
-    get player() {
-      return getPlayer.call(this);
-    }
-  };
+  // Removed obsolete CampaignState reconstruction logic
 
   return (
     <div className="wireframe-container" data-testid="game-container">
       <div className="grid grid-cols-[1fr_300px] gap-4">
-        <MainGameArea {...sessionProps} />
-        <SidePanel {...sessionProps} />
+        {/* Temporarily cast dispatch prop until MainGameArea/SidePanel props are updated */}
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <MainGameArea {...sessionProps} dispatch={sessionProps.dispatch as any} />
+        {/* Temporarily cast dispatch prop until MainGameArea/SidePanel props are updated */}
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <SidePanel {...sessionProps} dispatch={sessionProps.dispatch as any} />
       </div>
       <DevToolsPanel 
-        gameState={campaignState} 
-        dispatch={dispatchAdapter} 
+        // Pass the current GameState directly to DevToolsPanel
+        gameState={state}
+        dispatch={dispatch} // Use direct dispatch
       />
     </div>
   );

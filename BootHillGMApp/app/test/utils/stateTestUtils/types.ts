@@ -4,10 +4,19 @@
 import { GameState } from '../../../types/gameState';
 import { GameEngineAction } from '../../../types/gameActions';
 import { Character } from '../../../types/character';
-import { NarrativeContext } from '../../../types/narrative.types';
+// Import specific types needed for BaseMockState.narrative
+import {
+  NarrativeContext,
+  StoryPoint,
+  NarrativeChoice,
+  NarrativeDisplayMode,
+  NarrativeErrorInfo
+} from '../../../types/narrative.types';
 import { UIState } from '../../../types/state/uiState';
 import { InventoryState } from '../../../types/state/inventoryState';
 import { JournalState } from '../../../types/state/journalState';
+import { LocationType } from '../../../services/locationService'; // Import LocationType
+import { SuggestedAction } from '../../../types/campaign'; // Import SuggestedAction
 
 // Type definitions for test journal entries - kept separate from app JournalEntry
 export interface TestJournalEntry {
@@ -41,21 +50,22 @@ export interface BaseMockState {
   inventory: InventoryState;
   journal: JournalState;
   narrative: {
-    currentStoryPoint: unknown;
-    visitedPoints: unknown[];
-    availableChoices: unknown[];
-    narrativeHistory: unknown[];
-    displayMode: string;
-    error: unknown;
+    // Update types to match NarrativeState
+    currentStoryPoint: StoryPoint | null;
+    visitedPoints: string[];
+    availableChoices: NarrativeChoice[];
+    narrativeHistory: string[];
+    displayMode: NarrativeDisplayMode;
+    error: NarrativeErrorInfo | null;
     narrativeContext?: NarrativeContext;
   };
   ui: UIState;
   currentPlayer: string;
   npcs: string[];
-  location: unknown;
+  location: LocationType | null; // Update location type
   quests: string[];
   gameProgress: number;
-  suggestedActions: unknown[];
+  suggestedActions: SuggestedAction[]; // Update suggestedActions type
 }
 
 // Augment existing Jest types with ES2015 module syntax

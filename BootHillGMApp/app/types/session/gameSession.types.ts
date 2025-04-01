@@ -2,7 +2,8 @@ import { Character } from '../character';
 import { GameEngineAction } from '../gameActions';
 import { Dispatch } from 'react';
 import { GameState } from '../gameState';
-import { UniversalCombatState } from '../combatStateAdapter';
+// Removed obsolete UniversalCombatState import
+import { CombatState } from '../state/combatState'; // Import standard CombatState
 
 /**
  * Represents the core structure of a game session with all its available methods
@@ -12,7 +13,7 @@ export interface GameSessionType {
   state?: GameState;
   dispatch?: Dispatch<GameEngineAction>;
   executeCombatRound?: () => Promise<void>;
-  initiateCombat?: (opponent: Character, combatState?: UniversalCombatState) => void;
+  initiateCombat?: (opponent: Character, combatState?: Partial<CombatState>) => void; // Use standard CombatState
   getCurrentOpponent?: () => Character | null;
   // Use a more specific type for characterType to match the implementation
   handleStrengthChange?: (characterType: "player" | "opponent", newStrength: number) => void;

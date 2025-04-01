@@ -64,7 +64,8 @@ export function createBasicMockState(): BaseMockState {
     ui: {
       isLoading: false,
       modalOpen: null,
-      notifications: []
+      notifications: [],
+      activeTab: 'character' // Add missing activeTab property
     },
     currentPlayer: '',
     npcs: [],

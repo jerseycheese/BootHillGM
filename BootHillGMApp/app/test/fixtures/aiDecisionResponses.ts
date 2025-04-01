@@ -47,7 +47,8 @@ export const createTestGameState = (): { narrative: NarrativeState; character: C
         narrativeBranches: {},
         decisionHistory: [],
         pendingDecisions: [] // Added required field
-      }
+      },
+      context: "" // Add missing context property
     },
     character: {
       id: 'player-1',

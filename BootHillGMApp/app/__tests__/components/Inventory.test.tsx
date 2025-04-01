@@ -1,14 +1,15 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react'; // Keep screen import
 import { Inventory } from '../../components/Inventory';
 import { InventoryItem } from '../../types/item.types';
 import { useGameSession } from '../../hooks/useGameSession';
-import { GameProvider } from '../../hooks/useGame';
-import { CampaignStateContext } from '../../components/CampaignStateManager';
+// Removed unused imports
+// import { GameProvider } from '../../hooks/useGame';
+// import { CampaignStateContext } from '../../components/CampaignStateManager';
 import {
-  createMockCampaignState,
+  createMockGameState, // Use the new utility
   createMockInventoryItem,
 } from '../../test/utils/inventoryTestUtils';
-import { prepareStateForTesting } from '../../test/utils/stateTestUtils';
+import { renderWithMockContext } from '../../test/utils/testWrappers'; // Import the new mock context renderer
 
 jest.mock('../../hooks/useGameSession'); // Mock useGameSession
 
@@ -18,21 +19,15 @@ jest.mock('../../utils/inventoryManager', () => ({
   },
 }));
 
-// Create adapted mock state with proper compatibility layer
-const createAdaptedMockState = (partialState = {}) => {
-  // Get the original mock state
-  const originalState = createMockCampaignState(partialState);
-  
-  // Apply adapters to make it compatible with the new architecture
-  return prepareStateForTesting(originalState);
-};
+// Removed createAdaptedMockState helper
 
-// Configure the mock GameSession hook with proper state
-const mockUseGameSession = (overrides = {}) => {
-  const adaptedState = createAdaptedMockState();
+// Configure the mock GameSession hook with the new GameState structure
+const mockUseGameSession = (stateOverrides = {}, hookOverrides = {}) => {
+  // Use the new mock state utility
+  // Removed unused mockState definition from helper
   
   return {
-    state: adaptedState,
+    state: createMockGameState(stateOverrides), // Create state directly here if needed by hook consumers, though provider is primary source
     dispatch: jest.fn(),
     isLoading: false,
     error: null,
@@ -40,13 +35,12 @@ const mockUseGameSession = (overrides = {}) => {
     retryLastAction: jest.fn(),
     handleUseItem: jest.fn(),
     isUsingItem: jest.fn().mockReturnValue(false),
-    ...overrides
+    ...hookOverrides
   };
 };
 
 describe('Inventory', () => {
-  const mockSaveGame = jest.fn();
-  const mockLoadGame = jest.fn();
+  // Removed unused mockSaveGame and mockLoadGame
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -59,39 +53,7 @@ describe('Inventory', () => {
     cannotUse: 'Cannot use item',
   };
 
-  // Render component with GameProvider wrapper
-  const renderWithContext = (
-    ui: React.ReactElement,
-    partialState = {}
-  ) => {
-    // Create state with adapters applied
-    const adaptedState = createAdaptedMockState(partialState);
-    
-    // Create context with both new state shape and legacy properties
-    const contextValue = {
-      state: adaptedState,
-      dispatch: jest.fn(),
-      saveGame: mockSaveGame,
-      loadGame: mockLoadGame,
-      cleanupState: jest.fn(),
-      // Legacy properties from our adapters
-      player: adaptedState.player,
-      opponent: adaptedState.opponent,
-      inventory: adaptedState.inventory,
-      entries: adaptedState.entries,
-      isCombatActive: adaptedState.isCombatActive,
-      narrativeContext: adaptedState.narrativeContext,
-    };
-    
-    // Render with both providers
-    return render(
-      <GameProvider initialState={adaptedState}>
-        <CampaignStateContext.Provider value={contextValue}>
-          {ui}
-        </CampaignStateContext.Provider>
-      </GameProvider>
-    );
-  };
+  // Removed renderWithContext helper, will render directly
 
   test('does not render items with missing properties', () => {
     const mockItems = [
@@ -120,17 +82,17 @@ describe('Inventory', () => {
       }), // Missing quantity
     ] as InventoryItem[];
     
-    // Update the useGameSession mock with adapted state
-    const adaptedState = createAdaptedMockState({
-      inventory: { items: mockItems }
-    });
-    
-    (useGameSession as jest.Mock).mockReturnValue({
-      ...mockUseGameSession(),
-      state: adaptedState
-    });
+    // Set up the mock for useGameSession with the specific inventory state
+    // Create the specific state needed for this test
+    const mockStateWithItems = createMockGameState({ inventory: { items: mockItems } });
+    // Mock useGameSession, state comes from provider below
+    (useGameSession as jest.Mock).mockReturnValue(mockUseGameSession());
 
-    renderWithContext(<Inventory />, { inventory: { items: mockItems } });
+    // Render with the mock context provider
+    renderWithMockContext(
+      <Inventory />,
+      mockStateWithItems // Pass the mock state to the wrapper
+    );
 
     expect(screen.getByText(/Health Potion/)).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
@@ -140,21 +102,21 @@ describe('Inventory', () => {
   });
 
   test('handles missing character gracefully', () => {
-    // Create state without a character
-    const adaptedState = createAdaptedMockState({
-      character: null,
-    });
+    // Set up the mock for useGameSession with null character and error
+    // Create the specific state needed for this test
+    const stateWithError = createMockGameState({ character: { player: null, opponent: null } });
+    // Mock useGameSession to return the error, but state comes from provider
+    (useGameSession as jest.Mock).mockReturnValue({
+      ...mockUseGameSession(), // Get default mock values (dispatch, etc.)
+      error: ERROR_MESSAGES.noCharacter // Override error
+    }
+    );
 
-    const mockSessionWithoutCharacter = {
-      ...mockUseGameSession(),
-      state: adaptedState,
-      error: ERROR_MESSAGES.noCharacter,
-      isUsingItem: jest.fn().mockReturnValue(false),
-    };
-    
-    (useGameSession as jest.Mock).mockReturnValue(mockSessionWithoutCharacter);
-
-    renderWithContext(<Inventory />, { character: null });
+    // Render with the mock context provider
+    renderWithMockContext(
+      <Inventory />,
+      stateWithError // Pass the mock state to the wrapper
+    );
 
     expect(screen.getByTestId('error-display')).toHaveTextContent(ERROR_MESSAGES.noCharacter);
   });

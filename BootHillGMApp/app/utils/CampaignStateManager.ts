@@ -1,14 +1,13 @@
 /**
  * Campaign State Manager
  * 
- * Manages the game state for a campaign, with backward compatibility
- * for the new state architecture.
+ * Manages the game state for a campaign using the unified GameState model.
  */
 
 import { GameState } from '../types/gameState';
-import { adaptStateForTests, legacyGetters } from './stateAdapters';
+// Removed obsolete imports: adaptStateForTests, legacyGetters
 import { initialState } from '../types/initialState';
-import { migrateGameState, needsMigration } from './stateMigration';
+// Removed obsolete imports: migrateGameState, needsMigration
 
 export class CampaignStateManager {
   private state: GameState;
@@ -21,53 +20,60 @@ export class CampaignStateManager {
   }
   
   /**
-   * Gets the current state with adapters applied for backward compatibility
+   * Gets the current game state.
    */
   public getState(): GameState {
-    return adaptStateForTests(this.state);
+    // Return raw state, no adaptation needed
+    return this.state;
   }
   
   /**
-   * Gets the player character from state using character adapter
+   * Gets the player character directly from the state's character slice.
    * to maintain backward compatibility with tests expecting null character
    */
   public getCharacter() {
-    return legacyGetters.getPlayer(this.state);
+    // Access player directly from character slice
+    return this.state.character?.player || null;
   }
   
   /**
-   * Gets the opponent character from state using adapter
+   * Gets the opponent character directly from the state's character slice.
    */
   public getOpponent() {
-    return legacyGetters.getOpponent(this.state);
+    // Access opponent directly from character slice
+    return this.state.character?.opponent || null;
   }
   
   /**
-   * Gets the inventory items using adapter
+   * Gets the inventory items directly from the state's inventory slice.
    */
   public getInventory() {
-    return legacyGetters.getItems(this.state);
+    // Access items directly from inventory slice
+    return this.state.inventory?.items || [];
   }
   
   /**
-   * Gets journal entries using adapter
+   * Gets journal entries directly from the state's journal slice.
    */
   public getJournalEntries() {
-    return legacyGetters.getEntries(this.state);
+    // Access entries directly from journal slice
+    return this.state.journal?.entries || [];
   }
   
   /**
-   * Checks if combat is active using adapter
+   * Checks if combat is active directly from the state's combat slice.
    */
   public isCombatActive() {
-    return legacyGetters.isCombatActive(this.state);
+    // Access isActive directly from combat slice
+    return this.state.combat?.isActive || false;
   }
   
   /**
-   * Gets narrative context using adapter
+   * Gets narrative context directly from the state's narrative slice.
    */
   public getNarrativeContext() {
-    return legacyGetters.getNarrativeContext(this.state);
+    // Access narrativeContext directly from narrative slice
+    return this.state.narrative?.narrativeContext || undefined;
   }
   
   /**
@@ -89,12 +95,7 @@ export class CampaignStateManager {
         const parsedState = JSON.parse(savedState);
         
         // Check if state needs migration
-        if (needsMigration(parsedState)) {
-          const migratedState = migrateGameState(parsedState);
-          // Save the migrated state back to storage
-          localStorage.setItem('bootHillGMState', JSON.stringify(migratedState));
-          return migratedState;
-        }
+        // Migration logic removed due to clean break approach
         
         return parsedState;
       }
@@ -117,11 +118,4 @@ export class CampaignStateManager {
     }
   }
   
-  /**
-   * Gets the internal raw state without adaptation
-   * Used internally by the manager
-   */
-  private _getStateInternal(): GameState {
-    return this.state;
-  }
 }

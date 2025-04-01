@@ -1,6 +1,6 @@
 import { ExtendedGameState } from '../types/extendedState';
 import { NarrativeState } from '../types/state/narrativeState';
-import { migrateGameState } from '../utils/stateMigration';
+// Removed migrateGameState import (obsolete)
 
 /**
  * Handles setting narrative text with proper history management
@@ -51,13 +51,14 @@ export function updateNarrativeState(
   updatedNarrative: Partial<NarrativeState>
 ): ExtendedGameState {
   // Create a deep copy to avoid mutation issues
-  const newState = migrateGameState({
+  // Directly merge the updated narrative state without migration
+  const newState = {
     ...state,
     narrative: {
       ...state.narrative,
       ...updatedNarrative
     }
-  }) as ExtendedGameState;
+  } as ExtendedGameState;
   
   return newState;
 }

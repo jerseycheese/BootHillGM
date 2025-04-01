@@ -1,68 +1,27 @@
 /**
  * Game State Provider
  * 
- * Provides game state to the application with backward compatibility
- * for both new and legacy components.
+ * Provides game state to the application using a clean slice-based architecture.
  */
 
 import React, { useReducer, createContext, useContext, ReactNode, useMemo, Dispatch } from 'react';
 import rootReducer from '../reducers/rootReducer';
 import { GameState, initialGameState } from '../types/gameState';
-import { adaptStateForTests, legacyGetters } from '../utils/stateAdapters';
-import { Character } from '../types/character';
-import { JournalEntry } from '../types/journal';
-import { NarrativeContext } from '../types/narrative.types';
-import { InventoryItem } from '../types/item.types';
-import { GameEngineAction } from '../types/gameActions';
-
-// Import GameAction from the same path that rootReducer is importing from
 import { GameAction } from '../types/actions';
 
 /**
- * Interface for our context, uses Character instead of the CharacterState
- * to ensure compatibility with the legacy components
+ * Interface for our context, simplified to only provide state and dispatch
+ * without legacy compatibility properties
  */
 interface GameStateContextType {
   state: GameState;
-  dispatch: Dispatch<GameEngineAction>;
-  // Legacy direct state access properties
-  player: Character | null;
-  opponent: Character | null;
-  inventory: InventoryItem[];
-  entries: JournalEntry[];
-  isCombatActive: boolean;
-  narrativeContext: NarrativeContext | null;
-  combatRounds: number;
-  currentTurn: string | null;
-  // Other legacy properties as needed
+  dispatch: Dispatch<GameAction>;
 }
-
-// Create type-safe accessor functions to handle potential undefined properties
-const safeGetRounds = (state: GameState): number => {
-  return state.combat && typeof state.combat === 'object' && 'rounds' in state.combat 
-    ? (state.combat.rounds as number) 
-    : 0;
-};
-
-const safeGetCurrentTurn = (state: GameState): string | null => {
-  return state.combat && typeof state.combat === 'object' && 'currentTurn' in state.combat 
-    ? (state.combat.currentTurn as string | null) 
-    : null;
-};
 
 // Create the context with default values
 export const GameStateContext = createContext<GameStateContextType>({
   state: initialGameState,
   dispatch: () => null,
-  // Legacy properties
-  player: null,
-  opponent: null,
-  inventory: [],
-  entries: [],
-  isCombatActive: false,
-  narrativeContext: null,
-  combatRounds: 0,
-  currentTurn: null,
 });
 
 interface GameStateProviderProps {
@@ -73,53 +32,27 @@ interface GameStateProviderProps {
 /**
  * Game State Provider component
  * 
- * Provides state management for the application with both
- * new selectors pattern and legacy state access.
+ * Provides state management for the application with a clean slice-based
+ * state model and dispatch function.
  */
 export const GameStateProvider: React.FC<GameStateProviderProps> = ({ 
   children, 
   initialGameState: providedInitialState = initialGameState 
 }) => {
-  // Set up reducer with built-in adapter support
-  const [state, originalDispatch] = useReducer(
-    rootReducer as unknown as (state: GameState, action: GameAction) => GameState, 
+  // Set up reducer with the provided or default initial state
+  const [state, dispatch] = useReducer(
+    rootReducer, 
     providedInitialState
   );
   
-  // Create compatible dispatch that handles legacy actions
-  // Use type assertion to resolve compatibility issues
-  const wrappedDispatch = (action: GameEngineAction) => {
-    // Cast GameEngineAction to GameAction to match what createCompatibleDispatch expects
-    originalDispatch(action as unknown as GameAction);
-  };
-  
-  // Create an adapted state with backward compatibility
-  const adaptedState = adaptStateForTests(state);
-  
-  // Context value includes both new state and legacy properties
+  // Context value includes state and dispatch
   // Using useMemo to prevent unnecessary re-renders
   const contextValue = useMemo(() => {
-    // Create a properly typed context value
-    const value: GameStateContextType = {
-      // New state management
-      state: adaptedState,
-      dispatch: wrappedDispatch,
-      
-      // Legacy direct state access for backward compatibility
-      player: legacyGetters.getPlayer(state),
-      opponent: legacyGetters.getOpponent(state),
-      inventory: legacyGetters.getItems(state),
-      entries: legacyGetters.getEntries(state) as JournalEntry[],
-      isCombatActive: legacyGetters.isCombatActive(state),
-      narrativeContext: legacyGetters.getNarrativeContext(state),
-      
-      // Additional legacy properties
-      combatRounds: safeGetRounds(state),
-      currentTurn: safeGetCurrentTurn(state),
+    return { 
+      state, 
+      dispatch 
     };
-    
-    return value;
-  }, [state, adaptedState]);
+  }, [state]);
   
   return (
     <GameStateContext.Provider value={contextValue}>
@@ -131,7 +64,7 @@ export const GameStateProvider: React.FC<GameStateProviderProps> = ({
 /**
  * Custom hook to access game state
  * 
- * Provides access to both the new state structure and legacy properties
+ * Provides access to the state and dispatch function
  */
 export const useGameState = () => useContext(GameStateContext);
 
@@ -149,33 +82,18 @@ export function createSelector<T, K extends unknown[]>(
   deps: (state: GameState) => K = () => [] as unknown as K
 ) {
   return function useSelector(): T {
-    const { state, dispatch } = useGameState();
+    const { state } = useGameState();
     
     // Use React's useMemo for memoization
     return useMemo(
       () => selector(state),
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [state, ...deps(state), dispatch]
+      [state, ...deps(state)]
     );
   };
 }
 
-// Helper functions for safe property access
-const safeGetContext = (state: GameState) => {
-  return state.narrative && typeof state.narrative === 'object' && 'context' in state.narrative
-    ? state.narrative.context 
-    : null;
-};
-
-const safeGetActiveTab = (state: GameState) => {
-  return state.ui && typeof state.ui === 'object' && 'activeTab' in state.ui
-    ? state.ui.activeTab as string
-    : 'character';
-};
-
-/**
- * Example selector hooks using the factory:
- */
+// Example selector hooks using the factory:
 
 // Character selectors
 export const usePlayerCharacter = createSelector(
@@ -217,12 +135,18 @@ export const useJournalEntries = createSelector(
 
 // Narrative selectors
 export const useNarrativeContext = createSelector(
-  safeGetContext,
-  state => [safeGetContext(state)]
+  state => state.narrative?.narrativeContext || null,
+  state => [state.narrative?.narrativeContext]
+);
+
+// Narrative context selector (for current narrative text)
+export const useNarrativeContextString = createSelector(
+  state => state.narrative?.context || '',
+  state => [state.narrative?.context]
 );
 
 // UI selectors
 export const useActiveTab = createSelector(
-  safeGetActiveTab,
-  state => [safeGetActiveTab(state)]
+  state => state.ui?.activeTab || 'character',
+  state => [state.ui?.activeTab]
 );

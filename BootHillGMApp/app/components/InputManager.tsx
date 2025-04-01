@@ -27,7 +27,7 @@ export default function InputManager({
   /**
    * Determines the CSS class for a suggested action button based on its type.
    * 
-   * @param type - The type of the suggested action ('combat', 'basic', 'interaction', 'chaotic')
+   * @param type - The type of the suggested action ('main', 'side', 'optional')
    * @returns A string containing the CSS class for the button
    */
   const actionClass = (type: string) => {
@@ -47,12 +47,12 @@ export default function InputManager({
             return (
               <button
                 key={`${action.type}-${index}`}
-                onClick={() => handleAction(action.text)}
+                onClick={() => handleAction(action.title)} // Use title instead of text
                 disabled={isLoading}
                 className={actionClass(action.type)}
-                title={action.context || action.text}
+                title={action.description || action.title} // Use description and title
               >
-                {action.text}
+                {action.title}
               </button>
             );
           })}

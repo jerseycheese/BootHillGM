@@ -45,13 +45,15 @@ const mockNarrativeState: NarrativeState = {
       lastUpdated: 0
     },
     narrativeBranches: {},
-    pendingDecisions: [],
+    // Removed invalid 'context' property from NarrativeContext
+    pendingDecisions: [], // Added missing comma
     decisionHistory: []
   },
   // Add required properties
   visitedPoints: [],
   availableChoices: [],
-  displayMode: 'standard' as NarrativeDisplayMode
+  displayMode: 'standard' as NarrativeDisplayMode,
+  context: ""
 };
 
 // Mock character with all required attributes
@@ -237,7 +239,6 @@ describe('DecisionService', () => {
     });
     
     it('should handle API errors gracefully', async () => {
-      console.log('[TEST] Starting API error test in decision-service.test.ts');
       
       // Reset fetch mock to ensure we get a clean state
       (global.fetch as jest.MockedFunction<typeof fetch>).mockReset();
