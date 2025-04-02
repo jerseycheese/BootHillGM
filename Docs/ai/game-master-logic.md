@@ -3,7 +3,7 @@ title: AI Game Master Logic
 aliases: [AI GM Logic, Game Master System]
 tags: [ai, core-system, mvp]
 created: 2024-12-28
-updated: 2024-12-28
+updated: 2025-04-01
 ---
 
 # AI Game Master Logic (MVP)
@@ -11,7 +11,9 @@ updated: 2024-12-28
 ## Overview
 The AI Game Master (GM) is the core component of BootHillGM, responsible for creating and managing the game world, narrating the story, and facilitating player interactions within a simplified Boot Hill RPG framework. This document outlines the essential logic for implementing the AI GM in the MVP version.
 
-For implementation details, see [[gemini-integration|Gemini Integration]].
+For implementation details, see:
+- [[gemini-integration|Gemini Integration]]
+- [[ai-game-service|AI Game Service Architecture]]
 
 ## Core Functions (MVP)
 
@@ -92,6 +94,9 @@ For theme guidelines, see [[training-data/western-themes|Western Themes]].
 
 ### Connection Issues
 - [x] Implement basic error messages for API timeouts or failures
+- [x] Context-aware fallback responses for different player actions
+
+For implementation details, see [[ai-game-service|AI Game Service Architecture]].
 
 ## Boot Hill RPG Specific Logic
 
@@ -137,6 +142,7 @@ For UI implementation, see [[../architecture/ui-wireframes|UI Wireframes]].
 ### Response Time Optimization
 - [x] Implement basic caching for frequently used game data
 - [x] Optimize prompt construction to minimize token usage
+- [x] Modular service architecture for improved maintainability
 
 ### Memory Management
 - [x] Implement efficient storage of essential game state

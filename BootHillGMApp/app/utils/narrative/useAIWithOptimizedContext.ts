@@ -57,8 +57,14 @@ export function useAIWithOptimizedContext() {
         : getDefaultContext();
       const contextBuildTime = performance.now() - startTime;
       
+      // Use the positional parameters for backward compatibility with tests
+      // Note: This approach ensures both our implementation and tests remain compatible
       const aiResponse = await getAIResponse(
-        prompt, context, inventory, undefined, narrativeState.narrativeContext
+        prompt,
+        context,
+        inventory,
+        undefined,
+        narrativeState.narrativeContext
       );
       
       
@@ -103,11 +109,21 @@ export function useAIWithOptimizedContext() {
     getDefaultContext
   ]);
   
+  /**
+   * Makes an AI request with focus on specific tags
+   * 
+   * @param prompt User input prompt
+   * @param inventory Current inventory items
+   * @param focusTags Tags to focus on
+   * @returns AI response
+   */
   const makeAIRequestWithFocus = useCallback(async (
-    prompt: string, inventory: InventoryItem[], _focusTags: string[]
+    prompt: string, inventory: InventoryItem[], focusTags: string[]
   ): Promise<AIRequestResult> => {
     return makeAIRequest(prompt, inventory, {
-      compressionLevel: 'medium', maxTokens: 1500, prioritizeRecentEvents: true,
+      compressionLevel: 'medium', 
+      maxTokens: 1500, 
+      prioritizeRecentEvents: true,
       relevanceThreshold: 6, 
       includedContextSections: [
         'narrative_history', 'decision_history', 'character_relationships', 
@@ -116,11 +132,20 @@ export function useAIWithOptimizedContext() {
     });
   }, [makeAIRequest]);
   
+  /**
+   * Makes an AI request with compact context for faster responses
+   * 
+   * @param prompt User input prompt
+   * @param inventory Current inventory items
+   * @returns AI response
+   */
   const makeAIRequestWithCompactContext = useCallback(async (
     prompt: string, inventory: InventoryItem[]
   ): Promise<AIRequestResult> => {
     return makeAIRequest(prompt, inventory, {
-      compressionLevel: 'high', maxTokens: 1000, maxHistoryEntries: 5,
+      compressionLevel: 'high', 
+      maxTokens: 1000, 
+      maxHistoryEntries: 5,
       maxDecisionHistory: 3,
       includedContextSections: [
         'narrative_history', 'decision_history', 'story_progression'
@@ -129,7 +154,10 @@ export function useAIWithOptimizedContext() {
   }, [makeAIRequest]);
   
   return {
-    makeAIRequest, makeAIRequestWithFocus, makeAIRequestWithCompactContext,
-    isLoading, error
+    makeAIRequest, 
+    makeAIRequestWithFocus, 
+    makeAIRequestWithCompactContext,
+    isLoading, 
+    error
   };
 }

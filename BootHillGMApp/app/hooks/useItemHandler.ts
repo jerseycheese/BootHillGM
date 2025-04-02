@@ -89,11 +89,11 @@ export const useItemHandler = (
       const actionText = `use ${item.name}`;
       const journalEntries = getEntriesFromJournal(state.journal);
       
-      const response = await getAIResponse(
-        actionText,
-        getJournalContext(journalEntries),
-        inventoryItems
-      );
+      const response = await getAIResponse({
+        prompt: actionText,
+        journalContext: getJournalContext(journalEntries),
+        inventory: inventoryItems
+      });
 
       // Now dispatch the USE_ITEM action *after* getting the AI response
       dispatch({ type: 'inventory/USE_ITEM', payload: itemId }); // Use namespaced type

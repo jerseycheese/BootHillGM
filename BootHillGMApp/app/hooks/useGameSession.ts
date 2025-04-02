@@ -73,11 +73,11 @@ export const useGameSession = () => {
       const journalEntries = getEntriesFromJournal(state.journal);
       const inventoryItems = getItemsFromInventory(state.inventory);
 
-      const response = await getAIResponse(
-        input,
-        getJournalContext(journalEntries),
-        inventoryItems
-      );
+      const response = await getAIResponse({
+        prompt: input,
+        journalContext: getJournalContext(journalEntries),
+        inventory: inventoryItems
+      });
 
       // Create a properly structured JournalUpdatePayload object
       const journalEntry: JournalUpdatePayload = {

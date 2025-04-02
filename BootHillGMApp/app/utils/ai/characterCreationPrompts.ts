@@ -13,6 +13,6 @@ export async function getCharacterCreationStep(step: number, currentField: strin
     Also, provide a brief description of what this ${currentField} represents in the context of a Western character.
   `;
 
-  const response = await getAIResponse(prompt, '', []);
+  const response = await getAIResponse({ prompt, journalContext: '', inventory: [] });
   return response.narrative;
 }

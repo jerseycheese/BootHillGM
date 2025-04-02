@@ -21,7 +21,7 @@ export async function generateCompleteCharacter(): Promise<Character> {
   `;
 
     try {
-      const response = await getAIResponse(prompt, '', []);
+      const response = await getAIResponse({ prompt, journalContext: '', inventory: [] });
       // The AI returns both JSON data and narrative text together
       // Extract only the JSON portion between markdown code blocks to ensure clean parsing
       const jsonMatch = response.narrative.match(/```json\n([\s\S]*?)\n```/);

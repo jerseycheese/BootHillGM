@@ -25,7 +25,7 @@ export async function generateFieldValue(
 ): Promise<string | number> {
     if (key === 'name') {
         const prompt = "Generate a name for a character in a Western-themed RPG. Provide only the name.";
-        const response = await getAIResponse(prompt, '', []);
+        const response = await getAIResponse({ prompt, journalContext: '', inventory: [] });
         return response.narrative.trim();
     } else {
         return generateRandomValue(key as keyof Character['attributes']);

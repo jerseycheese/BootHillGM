@@ -84,26 +84,26 @@ export const optimizedGetAIResponse = async function(
     }
     
     // Call original method with optimized context
-    return originalGetAIResponse(
+    return originalGetAIResponse({
       prompt,
-      optimizedContext, // Replace journal context with optimized context
+      journalContext: optimizedContext, // Replace journal context with optimized context
       inventory,
       storyProgressionContext,
       narrativeContext
-    );
+    });
   } catch (error) {
     // If optimization fails, fall back to original implementation with warning
     if (process.env.NODE_ENV !== 'production') {
       console.warn('Context optimization failed, falling back to original context:', error);
     }
     
-    return originalGetAIResponse(
+    return originalGetAIResponse({
       prompt,
       journalContext,
       inventory,
       storyProgressionContext,
       narrativeContext
-    );
+    });
   }
 };
 
@@ -120,7 +120,7 @@ export const getAIResponse = (
   // If patch is applied, use optimized version, otherwise use original
   return isPatchApplied 
     ? optimizedGetAIResponse(prompt, journalContext, inventory, storyProgressionContext, narrativeContext)
-    : originalGetAIResponse(prompt, journalContext, inventory, storyProgressionContext, narrativeContext);
+    : originalGetAIResponse({ prompt, journalContext, inventory, storyProgressionContext, narrativeContext });
 };
 
 /**

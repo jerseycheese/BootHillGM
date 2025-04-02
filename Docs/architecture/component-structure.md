@@ -3,7 +3,7 @@ title: Component Breakdown
 aliases: [Component Structure, Component Architecture, UI Components]
 tags: [architecture, components, mvp, implementation, ui]
 created: 2024-12-28
-updated: 2025-03-23
+updated: 2025-04-01
 ---
 
 # Component Breakdown (MVP Focus)
@@ -14,6 +14,7 @@ This document provides a comprehensive breakdown of the application's component 
 - [[api-integration|API Integration]]
 - [[../core-systems/combat-system|Combat System]]
 - [[../core-systems/journal-system|Journal System]]
+- [[../ai/ai-game-service|AI Game Service Architecture]]
 - [Storybook Usage Guide](../../BootHillGMApp/app/docs/storybook-usage.md)
 
 ## Component Development
@@ -106,6 +107,7 @@ Key components have Storybook stories for isolated development and testing.
   - [x] Handles Gemini API interactions
   - [x] Processes responses and updates state
   - [x] Manages error handling and retries
+  - [x] Modular architecture with specialized components
 - **useAIInteractions Hook**: Enhanced state management
   - [x] Separated response processing logic
   - [x] Improved error handling
@@ -117,6 +119,9 @@ Key components have Storybook stories for isolated development and testing.
   - [x] Narrative generation
   - [x] Combat initiation
   - [x] Inventory updates
+  - [x] Fallback response generation
+
+For detailed AI service architecture, see [[../ai/ai-game-service|AI Game Service Architecture]].
 
 ### Character Management
 - **Character Creation System:**
@@ -201,12 +206,14 @@ Key components have Storybook stories for isolated development and testing.
 - [x] Optimized component architecture
 - [x] Improved state management integration
 - [x] Added Storybook for isolated component development
+- [x] Refactored AI service into modular architecture
 
 ## Related Documentation
 - [[state-management|State Management Architecture]]
 - [[api-integration|API Integration]]
 - [[../core-systems/combat-system|Combat System]]
 - [[../core-systems/journal-system|Journal System]]
+- [[../ai/ai-game-service|AI Game Service Architecture]]
 - [[../wireframes/ui-wireframes|UI Wireframes]]
 - [[../technical-guides/testing|Testing Guide]]
 - [[../features/_current/narrative-formatting|Narrative Display]]

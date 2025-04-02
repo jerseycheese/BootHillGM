@@ -41,8 +41,7 @@ describe('getAIResponse', () => {
       opponent: null,
       acquiredItems: [],
       removedItems: [],
-      suggestedActions: [], // Expected empty in this specific mock
-      // Add optional fields expected in the return type but potentially missing in mock
+      suggestedActions: [],
       lore: undefined,
       playerDecision: undefined,
       storyProgression: undefined,
@@ -296,8 +295,7 @@ describe('getAIResponse', () => {
       opponent: null,
       acquiredItems: [],
       removedItems: [],
-      suggestedActions: fallbackPathDefaultActions, // Use actual fallback actions
-      // Ensure optional fields are undefined in fallback
+      suggestedActions: fallbackPathDefaultActions,
       lore: undefined,
       playerDecision: undefined,
       storyProgression: undefined,
@@ -329,8 +327,7 @@ describe('getAIResponse', () => {
       opponent: null,
       acquiredItems: [],
       removedItems: [],
-      suggestedActions: fallbackPathDefaultActions, // Use actual fallback actions
-       // Ensure optional fields are undefined in fallback
+      suggestedActions: fallbackPathDefaultActions,
       lore: undefined,
       playerDecision: undefined,
       storyProgression: undefined,
@@ -389,13 +386,12 @@ describe('getAIResponse', () => {
     // Expect the promise to resolve with the fallback response, not reject
     await expect(getAIResponse('test prompt', '', [])).resolves.toEqual({
       narrative: "the player considers their next move. The western frontier stretches out before you, full of opportunity and danger.", // Default generic fallback narrative
-      location: { type: 'town', name: 'Boothill' }, // Default fallback location
+      location: { type: 'town', name: 'Boothill' },
       combatInitiated: false,
       opponent: null,
       acquiredItems: [],
       removedItems: [],
-      suggestedActions: fallbackPathDefaultActions, // Use actual fallback actions
-       // Ensure optional fields are undefined in fallback
+      suggestedActions: fallbackPathDefaultActions,
       lore: undefined,
       playerDecision: undefined,
       storyProgression: undefined,

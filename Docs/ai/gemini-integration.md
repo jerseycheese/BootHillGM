@@ -3,13 +3,15 @@ title: Gemini API Integration
 aliases: [AI API Integration, Gemini Implementation]
 tags: [ai, integration, api, performance]
 created: 2024-12-28
-updated: 2024-12-28
+updated: 2025-04-01
 ---
 
 # Gemini API Integration
 
 ## Overview
 This document describes the integration of the Gemini API into the Boot Hill GM application.
+
+For detailed information about the AI Game Service architecture, see [[ai-game-service|AI Game Service Architecture]].
 
 ## Purpose
 The Gemini Integration documentation aims to:
@@ -69,3 +71,4 @@ The Gemini Integration documentation aims to:
 - [x] Output validation
 - [x] Error handling
 - [x] Performance optimization
+- [x] Service componentization (see [[ai-game-service|AI Game Service Architecture]])

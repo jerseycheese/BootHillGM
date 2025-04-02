@@ -31,14 +31,14 @@ export const useInitializationStrategies = () => {
       const startingInventory = getStartingInventory();
 
       // Generate initial narrative and actions considering character background
-      const response = await getAIResponse(
-        `Initialize a new game session for ${characterData?.name || 'the player'}.
+      const response = await getAIResponse({
+        prompt: `Initialize a new game session for ${characterData?.name || 'the player'}.
         Describe their current situation and location in detail.
         Consider the character's background.
         Include suggestions for what they might do next.`,
-        "",
-        startingInventory // Pass starting inventory items to AI for context
-      );
+        journalContext: "",
+        inventory: startingInventory // Pass starting inventory items to AI for context
+      });
 
       // Save the initial narrative to localStorage for reset functionality
       localStorage.setItem("initial-narrative", JSON.stringify({ narrative: response.narrative }));
@@ -99,13 +99,13 @@ export const useInitializationStrategies = () => {
                              ? state.narrative.narrativeHistory[state.narrative.narrativeHistory.length - 1]
                              : "");
 
-      const response = await getAIResponse(
-        `Based on the current situation, what are some actions ${
+      const response = await getAIResponse({
+        prompt: `Based on the current situation, what are some actions ${
           state.character?.player?.name || "the player"
         } might take?`,
-        currentContent,
-        getItemsFromInventory(state.inventory)
-      );
+        journalContext: currentContent,
+        inventory: getItemsFromInventory(state.inventory)
+      });
 
       return {
         ...state,
@@ -131,17 +131,17 @@ export const useInitializationStrategies = () => {
    */
   const initializeExistingCharacter = useCallback(async (state: GameState): Promise<GameState> => {
     try {
-      const response = await getAIResponse(
-        `Initialize a new game session for ${
+      const response = await getAIResponse({
+        prompt: `Initialize a new game session for ${
           state.character?.player?.name || "Unknown"
         }.
         Provide a detailed introduction to the character's current situation.
         Consider their background, and circumstances.
         Include clear suggestions for what they might do next.
         Ensure to explicitly state their current location.`,
-        "",
-        getItemsFromInventory(state.inventory)
-      );
+        journalContext: "",
+        inventory: getItemsFromInventory(state.inventory)
+      });
 
       const existingCharacterNarrative: NarrativeState = {
         currentStoryPoint: {

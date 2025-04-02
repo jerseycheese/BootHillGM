@@ -53,11 +53,11 @@ export const useStateCleanup = (state: GameState, dispatch: React.Dispatch<GameE
     // This provides a starting point for the new game session.
     if (state.character?.player) {
       try {
-        const response = await getAIResponse(
-          `Initialize a new game session for ${state.character.player.name}. Describe their current situation and location in detail. Include suggestions for what they might do next.`,
-          "", // No journal context for the initial narrative
-          state.inventory?.items || []
-        );
+        const response = await getAIResponse({
+          prompt: `Initialize a new game session for ${state.character.player.name}. Describe their current situation and location in detail. Include suggestions for what they might do next.`,
+          journalContext: "", // No journal context for the initial narrative
+          inventory: state.inventory?.items || []
+        });
         cleanState.narrative = {
           ...initialNarrativeState,
           narrativeHistory: [response.narrative],
