@@ -9,6 +9,7 @@ import { GameServiceResponse } from '../types/gameService.types';
  * @returns A validated and processed GameServiceResponse
  * @throws Error if validation fails
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function validateAndProcessResponse(jsonResponse: any): GameServiceResponse {
   // Convert combatInitiated to boolean if it's a string
   if (typeof jsonResponse.combatInitiated === 'string') {

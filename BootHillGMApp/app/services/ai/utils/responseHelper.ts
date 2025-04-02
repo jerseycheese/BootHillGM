@@ -1,4 +1,4 @@
-import { GenerateContentResult } from '@google/generative-ai';
+import { GenerateContentResult, GenerativeModel } from '@google/generative-ai';
 import { retryWithExponentialBackoff } from '../../../utils/retry';
 
 /**
@@ -22,7 +22,7 @@ export function timeoutPromise(ms: number) {
  * @returns Promise that resolves to the model response or rejects with a timeout error
  */
 export async function fetchWithTimeout(
-  model: any, 
+  model: GenerativeModel,
   prompt: string, 
   timeoutMs: number
 ): Promise<GenerateContentResult> {

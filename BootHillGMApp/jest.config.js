@@ -19,7 +19,9 @@ const customJestConfig = {
     '<rootDir>/node_modules/',
     '\\.d\\.ts$', // Exclude all .d.ts files using standard regex
     '<rootDir>/app/__tests__/hooks/useCombatManager.test.ts',
-    '<rootDir>/app/__tests__/hooks/useLocation.test.ts'
+    '<rootDir>/app/__tests__/hooks/useLocation.test.ts',
+    '<rootDir>/app/__tests__/services/ai/__mocks__/.*', // Ignore files in AI service mocks directory
+    '<rootDir>/app/__tests__/services/ai/helpers/.*', // Ignore files in AI service helpers directory
   ],
   collectCoverage: true,
   collectCoverageFrom: [

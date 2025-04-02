@@ -1,400 +1,173 @@
+/**
+ * Tests for the AI Game Service
+ * 
+ * Tests the getAIResponse function which orchestrates AI response processing,
+ * including prompt construction, response handling, validation, and fallback mechanisms.
+ */
 import { getAIResponse } from '../../../services/ai/gameService';
 import { getAIModel } from '../../../utils/ai/aiConfig';
-import { GenerateContentResult } from '@google/generative-ai';
+import { 
+  mockGenerateContent, 
+  setupGameServiceMocks, 
+  mockSuccessfulAIResponse,
+  mockFailedAIResponse,
+  createExpectedResponse
+} from './helpers/gameServiceTestHelpers';
+import {
+  mockBasicResponse,
+  mockPlayerDecisionResponse,
+  mockInvalidPlayerDecisionResponse,
+  mockTownResponse,
+  mockWildernessResponse,
+  mockLandmarkResponse,
+  mockUnknownResponse,
+  mockCombatResponse,
+  mockMissingOpponentResponse,
+  mockInvalidJsonResponse,
+  mockInvalidLocationResponse,
+  mockLocationConsistencyResponse,
+  mockWildernessDescriptionResponse,
+  defaultFallbackResponse
+} from './__mocks__/gameServiceMocks';
 
+// Mock the AI config
 jest.mock('../../../utils/ai/aiConfig', () => ({
   getAIModel: jest.fn(),
 }));
 
-const mockGenerateContent = jest.fn();
-
+// Set up the mock model
 (getAIModel as jest.Mock).mockReturnValue({
   generateContent: mockGenerateContent,
 });
 
-// Define the default suggested actions generated *within* getAIResponse success path (NEW FORMAT)
-const successPathDefaultActions = [
-  { id: 'fallback-ai-1', title: "Look around", type: "optional", description: "Survey your surroundings" },
-  { id: 'fallback-ai-2', title: "Continue forward", type: "optional", description: "Proceed on your journey" },
-  { id: 'fallback-ai-3', title: "Check your inventory", type: "optional", description: "See what you're carrying" }
-];
-
-// Define the actual default suggested actions from generateFallbackResponse (NEW FORMAT)
-const fallbackPathDefaultActions = [
-  { id: 'fallback-gen-1', title: "Look around", type: "optional", description: "Survey your surroundings" },
-  { id: 'fallback-gen-2', title: "Check your inventory", type: "optional", description: "See what you're carrying" },
-  { id: 'fallback-gen-3', title: "Rest for a while", type: "optional", description: "Recover your energy" },
-  { id: 'fallback-gen-4', title: "Continue forward", type: "optional", description: "Press on with your journey" }
-];
-
-
 describe('getAIResponse', () => {
+  // Reset mocks before each test
   beforeEach(() => {
-    mockGenerateContent.mockReset();
+    setupGameServiceMocks();
   });
 
-  it('should return structured data on successful AI response', async () => {
-    const mockJsonResponse = {
-      narrative: 'Test narrative',
-      location: { type: 'town', name: 'Testville' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [],
-      lore: undefined,
-      playerDecision: undefined,
-      storyProgression: undefined,
-    };
-
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(mockJsonResponse)),
-      },
-    } as unknown as GenerateContentResult);
-
-    const result = await getAIResponse('test prompt', '', []);
-
-    // Adjust expectation to use the success path defaults when mock has empty actions
-    const expectedResult = {
-      ...mockJsonResponse,
-      suggestedActions: mockJsonResponse.suggestedActions.length > 0 ? mockJsonResponse.suggestedActions : successPathDefaultActions
-    };
-
-    expect(result).toEqual(expectedResult);
-    expect(mockGenerateContent).toHaveBeenCalledWith(expect.any(String));
+  describe('Basic Response Handling', () => {
+    it('should return structured data on successful AI response', async () => {
+      mockSuccessfulAIResponse(mockBasicResponse);
+      
+      const result = await getAIResponse('test prompt', '', []);
+      
+      // Adjust expectation to use the success path defaults when mock has empty actions
+      const expectedResult = createExpectedResponse(mockBasicResponse);
+      
+      expect(result).toEqual(expectedResult);
+      expect(mockGenerateContent).toHaveBeenCalledWith(expect.any(String));
+    });
+    
+    it('should return fallback response if the AI model throws an error', async () => {
+      mockFailedAIResponse(new Error('AI model error'));
+      
+      // Expect the promise to resolve with the fallback response, not reject
+      await expect(getAIResponse('test prompt', '', [])).resolves.toEqual(defaultFallbackResponse);
+    });
   });
-  it('should extract and validate playerDecision from AI response', async () => {
-    const mockResponse = {
-      narrative: 'Test narrative',
-      location: { type: 'town', name: 'Test Town' },
-      combatInitiated: false,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [],
-      playerDecision: {
-        prompt: 'What will you do?',
-        options: [
-          { text: 'Option 1', impact: 'Impact 1' },
-          { text: 'Option 2', impact: 'Impact 2' }
-        ],
-        importance: 'significant',
-        context: 'Decision context'
+
+  describe('Player Decision Handling', () => {
+    it('should extract and validate playerDecision from AI response', async () => {
+      mockSuccessfulAIResponse(mockPlayerDecisionResponse);
+      
+      const result = await getAIResponse('test prompt', '', []);
+      
+      expect(result.playerDecision).toBeDefined();
+      expect(result.playerDecision?.prompt).toBe('What will you do?');
+      expect(result.playerDecision?.options).toHaveLength(2);
+      expect(result.playerDecision?.importance).toBe('significant');
+    });
+    
+    it('should handle invalid playerDecision in AI response', async () => {
+      mockSuccessfulAIResponse(mockInvalidPlayerDecisionResponse);
+      
+      const result = await getAIResponse('test prompt', '', []);
+      
+      expect(result.playerDecision).toBeUndefined();
+    });
+  });
+
+  describe('Location Type Handling', () => {
+    it('should handle various location types correctly', async () => {
+      // Test town location
+      mockSuccessfulAIResponse(mockTownResponse);
+      const expectedTownResult = createExpectedResponse(mockTownResponse);
+      expect(await getAIResponse('test', '', [])).toEqual(expectedTownResult);
+      
+      // Test wilderness location
+      mockSuccessfulAIResponse(mockWildernessResponse);
+      const expectedWildernessResult = createExpectedResponse(mockWildernessResponse);
+      expect(await getAIResponse('test', '', [])).toEqual(expectedWildernessResult);
+      
+      // Test landmark location
+      mockSuccessfulAIResponse(mockLandmarkResponse);
+      const expectedLandmarkResult = createExpectedResponse(mockLandmarkResponse);
+      expect(await getAIResponse('test', '', [])).toEqual(expectedLandmarkResult);
+      
+      // Test unknown location
+      mockSuccessfulAIResponse(mockUnknownResponse);
+      const expectedUnknownResult = createExpectedResponse(mockUnknownResponse);
+      expect(await getAIResponse('test', '', [])).toEqual(expectedUnknownResult);
+    });
+    
+    it('should return fallback response for invalid location type', async () => {
+      mockSuccessfulAIResponse(mockInvalidLocationResponse);
+      
+      // Expect the fallback response
+      await expect(getAIResponse('test', '', [])).resolves.toEqual(defaultFallbackResponse);
+    });
+    
+    it('should maintain location consistency between narrative and location object', async () => {
+      mockSuccessfulAIResponse(mockLocationConsistencyResponse);
+      
+      const result = await getAIResponse('test', '', []);
+      expect(result.location.type).toBe('town');
+      expect((result.location as { type: 'town'; name: string }).name).toBe('Redemption');
+      expect(result.narrative).toContain('Redemption'); // Check for town name specifically
+    });
+    
+    it('should provide detailed wilderness descriptions', async () => {
+      mockSuccessfulAIResponse(mockWildernessDescriptionResponse);
+      
+      const result = await getAIResponse('test', '', []);
+      expect(result.location.type).toBe('wilderness');
+      if (result.location.type === 'wilderness') {
+        expect(result.location.description).toBe('Rolling hills dotted with scrub brush and cacti');
+        expect(result.narrative).toBe('You trek through rolling hills dotted with scrub brush and cacti.'); // Exact match
       }
-    };
-
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(mockResponse)),
-      },
-    });
-
-    const result = await getAIResponse('test prompt', '', []);
-
-    expect(result.playerDecision).toBeDefined();
-    expect(result.playerDecision?.prompt).toBe('What will you do?');
-    expect(result.playerDecision?.options).toHaveLength(2);
-    expect(result.playerDecision?.importance).toBe('significant');
-  });
-
-  it('should handle invalid playerDecision in AI response', async () => {
-    const mockResponse = {
-      narrative: 'Test narrative',
-      location: { type: 'town', name: 'Test Town' },
-      combatInitiated: false,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [],
-      playerDecision: {
-        prompt: 'What will you do?',
-        options: [{ text: 'Option 1', impact: 'Impact 1' }], // Only one option, should be invalid
-        importance: 'significant'
-      }
-    };
-
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(mockResponse)),
-      },
-    });
-
-    const result = await getAIResponse('test prompt', '', []);
-
-    expect(result.playerDecision).toBeUndefined();
-  });
-
-  it('should handle various location types correctly', async () => {
-    const mockTownResponse = {
-      narrative: 'You are in a town.',
-      location: { type: 'town', name: 'Dusty Gulch' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [], // Expected empty in this specific mock
-      lore: undefined,
-      playerDecision: undefined,
-      storyProgression: undefined,
-    };
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(mockTownResponse)),
-      },
-    } as unknown as GenerateContentResult);
-     // Adjust expectation for success path default suggestedActions
-    const expectedTownResult = { ...mockTownResponse, suggestedActions: successPathDefaultActions };
-    expect(await getAIResponse('test', '', [])).toEqual(expectedTownResult);
-
-    const mockWildernessResponse = {
-      narrative: 'You are in the wilderness.',
-      location: { type: 'wilderness', description: 'Open plains' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [], // Expected empty in this specific mock
-      lore: undefined,
-      playerDecision: undefined,
-      storyProgression: undefined,
-    };
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(mockWildernessResponse)),
-      },
-    } as unknown as GenerateContentResult);
-    // Adjust expectation for success path default suggestedActions
-    const expectedWildernessResult = { ...mockWildernessResponse, suggestedActions: successPathDefaultActions };
-    expect(await getAIResponse('test', '', [])).toEqual(expectedWildernessResult);
-
-    const mockLandmarkResponse = {
-      narrative: 'You see a landmark.',
-      location: { type: 'landmark', name: 'Hidden Valley', description: 'A secluded valley' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [], // Expected empty in this specific mock
-      lore: undefined,
-      playerDecision: undefined,
-      storyProgression: undefined,
-    };
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(mockLandmarkResponse)),
-      },
-    } as unknown as GenerateContentResult);
-    // Adjust expectation for success path default suggestedActions
-    const expectedLandmarkResult = { ...mockLandmarkResponse, suggestedActions: successPathDefaultActions };
-    expect(await getAIResponse('test', '', [])).toEqual(expectedLandmarkResult);
-
-    const mockUnknownResponse = {
-      narrative: 'You are lost.',
-      location: { type: 'unknown' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [], // Expected empty in this specific mock
-      lore: undefined,
-      playerDecision: undefined,
-      storyProgression: undefined,
-    };
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(mockUnknownResponse)),
-      },
-    } as unknown as GenerateContentResult);
-    // Adjust expectation for success path default suggestedActions
-     const expectedUnknownResult = { ...mockUnknownResponse, suggestedActions: successPathDefaultActions };
-    expect(await getAIResponse('test', '', [])).toEqual(expectedUnknownResult);
-  });
-
-  it('should handle combat initiation correctly', async () => {
-    const mockCombatResponse = {
-      narrative: 'You are attacked!',
-      location: { type: 'wilderness', description: 'Open plains' },
-      combatInitiated: true,
-      opponent: {
-        id: 'opponent-1',
-        name: 'Bandit',
-        attributes: {
-          strength: 10,
-          baseStrength: 10,
-          speed: 5,
-          gunAccuracy: 5,
-          throwingAccuracy: 5,
-          bravery: 5,
-          experience: 0,
-        },
-        wounds: [],
-        isUnconscious: false,
-        inventory: [],
-        isNPC: true,
-        isPlayer: false,
-      },
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [], // Expected empty in this specific mock
-      lore: undefined,
-      playerDecision: undefined,
-      storyProgression: undefined,
-    };
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(mockCombatResponse)),
-      },
-    } as unknown as GenerateContentResult);
-
-    const result = await getAIResponse('test', '', []);
-     // Adjust expectation for success path default suggestedActions
-    const expectedCombatResult = { ...mockCombatResponse, suggestedActions: successPathDefaultActions };
-    expect(result).toEqual(expectedCombatResult);
-    expect(result.combatInitiated).toBe(true);
-    expect(result.opponent).toBeDefined();
-    expect(result.opponent!.name).toBe('Bandit');
-  });
-
-  it('should handle missing opponent when combatInitiated is false', async () => {
-    const mockResponse = {
-      narrative: 'All is quiet.',
-      location: { type: 'town', name: 'Peaceful Town' },
-      combatInitiated: false,
-      // opponent: null,  // Explicitly omitted, as per the requirements
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [],
-    };
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(mockResponse)),
-      },
-    } as unknown as GenerateContentResult);
-
-    const result = await getAIResponse('test', '', []);
-    expect(result.combatInitiated).toBe(false);
-    expect(result.opponent).toBe(null); // Should be explicitly null
-  });
-
-  it('should return fallback response for invalid JSON structure', async () => {
-    const invalidJsonResponse = {
-      narrative: 'Test narrative',
-      location: 'invalid location', // Should be an object
-    };
-
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(invalidJsonResponse)),
-      },
-    } as unknown as GenerateContentResult);
-
-    // Expect the fallback response (which uses fallbackPathDefaultActions)
-    await expect(getAIResponse('test prompt', '', [])).resolves.toEqual({
-      narrative: "the player considers their next move. The western frontier stretches out before you, full of opportunity and danger.", // Default generic fallback narrative
-      location: { type: 'town', name: 'Boothill' }, // Default fallback location
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: fallbackPathDefaultActions,
-      lore: undefined,
-      playerDecision: undefined,
-      storyProgression: undefined,
     });
   });
 
-  it('should return fallback response for invalid location type', async () => {
-    const invalidLocationResponse = {
-      narrative: 'Test narrative',
-      location: { type: 'invalid', name: 'Invalid Location' }, // Invalid type
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [],
-    };
-
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(invalidLocationResponse)),
-      },
-    } as unknown as GenerateContentResult);
-
-    // Expect the fallback response (which uses fallbackPathDefaultActions)
-    await expect(getAIResponse('test', '', [])).resolves.toEqual({
-       narrative: "the player considers their next move. The western frontier stretches out before you, full of opportunity and danger.", // Default generic fallback narrative
-      location: { type: 'town', name: 'Boothill' }, // Default fallback location
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: fallbackPathDefaultActions,
-      lore: undefined,
-      playerDecision: undefined,
-      storyProgression: undefined,
+  describe('Combat Handling', () => {
+    it('should handle combat initiation correctly', async () => {
+      mockSuccessfulAIResponse(mockCombatResponse);
+      
+      const result = await getAIResponse('test', '', []);
+      const expectedCombatResult = createExpectedResponse(mockCombatResponse);
+      expect(result).toEqual(expectedCombatResult);
+      expect(result.combatInitiated).toBe(true);
+      expect(result.opponent).toBeDefined();
+      expect(result.opponent!.name).toBe('Bandit');
+    });
+    
+    it('should handle missing opponent when combatInitiated is false', async () => {
+      mockSuccessfulAIResponse(mockMissingOpponentResponse);
+      
+      const result = await getAIResponse('test', '', []);
+      expect(result.combatInitiated).toBe(false);
+      expect(result.opponent).toBe(null); // Should be explicitly null
     });
   });
 
-  it('should maintain location consistency between narrative and location object', async () => {
-    const mockResponse = {
-      narrative: 'You arrive in the town of Redemption. The dusty streets are quiet under the midday sun.',
-      location: { type: 'town', name: 'Redemption' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [],
-    };
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(mockResponse)),
-      },
-    } as unknown as GenerateContentResult);
-
-    const result = await getAIResponse('test', '', []);
-    expect(result.location.type).toBe('town');
-    expect((result.location as { type: 'town'; name: string }).name).toBe('Redemption');
-    expect(result.narrative).toContain('Redemption'); // Check for town name specifically
-  });
-
-  it('should provide detailed wilderness descriptions', async () => {
-    const mockResponse = {
-      narrative: 'You trek through rolling hills dotted with scrub brush and cacti.',
-      location: { type: 'wilderness', description: 'Rolling hills dotted with scrub brush and cacti' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [],
-    };
-    mockGenerateContent.mockResolvedValueOnce({
-      response: {
-        text: () => Promise.resolve(JSON.stringify(mockResponse)),
-      },
-    } as unknown as GenerateContentResult);
-
-    const result = await getAIResponse('test', '', []);
-    expect(result.location.type).toBe('wilderness');
-    if (result.location.type === 'wilderness') {
-      expect(result.location.description).toBe('Rolling hills dotted with scrub brush and cacti');
-      expect(result.narrative).toBe('You trek through rolling hills dotted with scrub brush and cacti.'); // Exact match
-    }
-  });
-
-  it('should return fallback response if the AI model throws an error', async () => {
-    mockGenerateContent.mockRejectedValueOnce(new Error('AI model error'));
-
-    // Expect the promise to resolve with the fallback response, not reject
-    await expect(getAIResponse('test prompt', '', [])).resolves.toEqual({
-      narrative: "the player considers their next move. The western frontier stretches out before you, full of opportunity and danger.", // Default generic fallback narrative
-      location: { type: 'town', name: 'Boothill' },
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: fallbackPathDefaultActions,
-      lore: undefined,
-      playerDecision: undefined,
-      storyProgression: undefined,
+  describe('Error Handling', () => {
+    it('should return fallback response for invalid JSON structure', async () => {
+      // Type assertion needed for test purpose
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockSuccessfulAIResponse(mockInvalidJsonResponse as any);
+      
+      // Expect the fallback response
+      await expect(getAIResponse('test prompt', '', [])).resolves.toEqual(defaultFallbackResponse);
     });
   });
 });

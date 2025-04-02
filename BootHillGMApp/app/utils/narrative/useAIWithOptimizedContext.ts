@@ -118,7 +118,7 @@ export function useAIWithOptimizedContext() {
    * @returns AI response
    */
   const makeAIRequestWithFocus = useCallback(async (
-    prompt: string, inventory: InventoryItem[], focusTags: string[]
+    prompt: string, inventory: InventoryItem[], _focusTags: string[]
   ): Promise<AIRequestResult> => {
     return makeAIRequest(prompt, inventory, {
       compressionLevel: 'medium', 

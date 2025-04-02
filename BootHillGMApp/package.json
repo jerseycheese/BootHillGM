@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest --testPathIgnorePatterns=\"useCombatManager.test.ts|useLocation.test.ts|useCharacterCreation.test.ts|global.d.ts\"",
+    "test": "jest --testPathIgnorePatterns=\"useCombatManager.test.ts|useLocation.test.ts|useCharacterCreation.test.ts|global.d.ts|app/__tests__/services/ai/__mocks__/|app/__tests__/services/ai/helpers/\"",
     "test:watch": "jest --watch --testPathIgnorePatterns=\"useCombatManager.test.ts|useLocation.test.ts|useCharacterCreation.test.ts|global.d.ts\"",
     "test:component": "jest --testPathPattern=app/__tests__/components",
     "test:hooks": "jest --testPathPattern=app/__tests__/hooks --testPathIgnorePatterns=\"useCombatManager.test.ts|useLocation.test.ts|useCharacterCreation.test.ts\"",
