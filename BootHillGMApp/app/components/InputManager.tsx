@@ -17,15 +17,24 @@ export default function InputManager({
 }) {
   const [userInput, setUserInput] = useState('');
 
+  /**
+   * Handles user action submission, either from suggested actions or manual input.
+   * Only processes actions when not in loading state and onSubmit handler exists.
+   * 
+   * @param text - The action text to submit
+   */
   const handleAction = useCallback((text: string) => {
-    if (!isLoading) {
+    if (!isLoading && onSubmit) {
+      // Call onSubmit with the text
       onSubmit(text);
+      // Reset input field after submission
       setUserInput('');
     }
   }, [isLoading, onSubmit]);
 
   /**
    * Determines the CSS class for a suggested action button based on its type.
+   * Maps game action types (like 'combat', 'basic', etc.) to appropriate color classes.
    * 
    * @param type - The type of the suggested action
    * @returns A string containing the CSS class for the button
@@ -43,7 +52,7 @@ export default function InputManager({
       'danger': 'bg-red-500'  // Backward compatibility
     };
     
-    // Use the mapped class or default to black for unknown types
+    // Use the mapped class or default to gray for unknown types
     const bgClass = typeClasses[type as keyof typeof typeClasses] || 'bg-gray-500';
     
     return `px-3 py-1 text-sm rounded hover:bg-opacity-80 disabled:opacity-50 text-white ${bgClass}`;
