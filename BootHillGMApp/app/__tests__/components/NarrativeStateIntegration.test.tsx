@@ -107,7 +107,12 @@ describe('Narrative State Integration', () => {
       </CampaignStateProvider>
     );
     
-    expect(JSON.parse(getByTestId('narrative-history').textContent!)).toEqual([]);
+    // Expect the default initial narrative history, not an empty array
+    // When initializing without saved state, the history comes from GameStorage.getNarrativeText()
+    const expectedInitialHistory = [
+      'Your adventure begins in the rugged frontier town of Boot Hill...'
+    ];
+    expect(JSON.parse(getByTestId('narrative-history').textContent!)).toEqual(expectedInitialHistory);
   });
 
   it('should cleanup narrative state', async () => {

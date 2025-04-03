@@ -9,7 +9,7 @@ import {
   createMockGameState, // Use the new utility
   createMockInventoryItem,
 } from '../../test/utils/inventoryTestUtils';
-import { renderWithMockContext } from '../../test/utils/testWrappers'; // Import the new mock context renderer
+import { renderWithProviders } from '../testWrappers'; // Corrected import path
 
 jest.mock('../../hooks/useGameSession'); // Mock useGameSession
 
@@ -89,9 +89,9 @@ describe('Inventory', () => {
     (useGameSession as jest.Mock).mockReturnValue(mockUseGameSession());
 
     // Render with the mock context provider
-    renderWithMockContext(
+    renderWithProviders(
       <Inventory />,
-      mockStateWithItems // Pass the mock state to the wrapper
+      { initialState: mockStateWithItems } // Pass state via options object
     );
 
     expect(screen.getByText(/Health Potion/)).toBeInTheDocument();
@@ -113,9 +113,9 @@ describe('Inventory', () => {
     );
 
     // Render with the mock context provider
-    renderWithMockContext(
+    renderWithProviders(
       <Inventory />,
-      stateWithError // Pass the mock state to the wrapper
+      { initialState: stateWithError } // Pass state via options object
     );
 
     expect(screen.getByTestId('error-display')).toHaveTextContent(ERROR_MESSAGES.noCharacter);

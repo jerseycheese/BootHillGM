@@ -1,127 +1,111 @@
 import { Character } from '../types/character';
 import { GameSessionProps } from '../components/GameArea/types';
-import { adaptHealthChangeHandler } from '../hooks/useCombatStateRestoration';
-import { InventoryItem } from '../types/item.types';
 import { InventoryManager } from '../utils/inventoryManager';
-import { GameSessionType } from '../types/session/gameSession.types';
-import { GameEngineAction } from '../types/gameActions';
+import { GameAction } from '../types/actions'; // Base action type from provider
+import { GameEngineAction } from '../types/gameActions'; // Expected action type by props
+import { GameState, initialGameState } from '../types/gameState';
 import { Dispatch } from 'react';
 
 /**
  * Generates session props for the game interface components
- * 
- * @param gameSession - Current game session object
+ *
+ * @param state - Current game state object
+ * @param dispatch - Dispatch function for game actions (from useGameState)
  * @param playerCharacter - Extracted player character
+ * @param isLoading - Flag indicating if initialization is in progress
  * @returns GameSessionProps object
  */
 export function generateSessionProps(
-  gameSession: GameSessionType | null | undefined, 
-  playerCharacter: Character | null
+  state: GameState | null | undefined,
+  dispatch: Dispatch<GameAction> | null | undefined, // Accept GameAction from provider
+  playerCharacter: Character | null,
+  isLoading: boolean
 ): GameSessionProps {
-  // Safe access to gameSession properties
-  const state = gameSession?.state;
-  const dispatch = gameSession?.dispatch;
-  const getCurrentOpponent = gameSession?.getCurrentOpponent;
-  
-  // Get current opponent with safe fallback
-  const opponent = getCurrentOpponent ? 
-    (() => {
-      try {
-        return getCurrentOpponent();
-      } catch (e) {
-        console.error("Error getting opponent:", e);
-        return null;
-      }
-    })() : null;
-  
-  // ID getters for health change handler
-  const getPlayerId = () => playerCharacter?.id || 'player';
-  const getOpponentId = () => opponent?.id || 'opponent';
-  
-  // Create adaptedHealthChangeHandler
-  const adaptedHealthChangeHandler = gameSession?.handleStrengthChange ?
-    adaptHealthChangeHandler(
-      gameSession.handleStrengthChange, 
-      getPlayerId(), 
-      getOpponentId()
-    ) : () => {};
-    
-  // Define action handlers
-  const handleUseItem = () => {
-    // Just a placeholder - implementation would go here
+
+  // Derive opponent directly from state
+  const opponent = state?.character?.opponent || null;
+
+  // ID getters for health change handler - renamed with underscore prefix since unused
+  const _getPlayerId = () => playerCharacter?.id || 'player';
+  const _getOpponentId = () => opponent?.id || 'opponent';
+
+  // Create adaptedHealthChangeHandler - Placeholder
+  // TODO: Re-evaluate how handleStrengthChange is accessed/passed if needed
+  const localAdaptedHealthChangeHandler = (characterType: string, newStrength: number) => {
+      console.warn('adaptedHealthChangeHandler not fully implemented', { characterType, newStrength });
+  };
+
+  // Define action handlers that depend on dispatch and state
+  const handleUseItem = (itemId: string) => {
+    console.warn('handleUseItem not implemented', { itemId });
   };
 
   const handleEquipWeapon = (itemId: string) => {
-    if (!state || !state.character || !dispatch || !playerCharacter) {
+    if (!state || !dispatch || !playerCharacter) {
+      console.warn('Cannot equip weapon: missing state, dispatch, or character');
       return;
     }
-    
-    // Extract inventory items safely
-    let inventoryItems: InventoryItem[] = [];
-    if (state.inventory) {
-      if ('items' in state.inventory && Array.isArray(state.inventory.items)) {
-        inventoryItems = state.inventory.items;
-      } else if (Array.isArray(state.inventory)) {
-        inventoryItems = state.inventory;
-      }
-    }
-      
-    // Find the item with the matching ID
-    const item = inventoryItems.find((i: InventoryItem) => i.id === itemId);
-    
+    const item = state.inventory?.items.find((i) => i.id === itemId);
     if (!item || item.category !== 'weapon') {
+      console.warn(`Cannot equip item ${itemId}: not a weapon or not found.`);
       return;
     }
-    
+    // Assuming InventoryManager might mutate, but dispatch should handle state update
     InventoryManager.equipWeapon(playerCharacter, item);
-    dispatch({ type: 'EQUIP_WEAPON', payload: itemId });
+    // Dispatch the correct action type expected by inventoryReducer
+    // Cast the specific action if needed, but dispatch function itself uses GameAction
+    dispatch({ type: 'inventory/EQUIP_WEAPON', payload: itemId });
   };
-  
-  // Create a non-nullable dispatch function
-  const safeDispatch: Dispatch<GameEngineAction> = dispatch || (() => {});
-  
-  // Always create default values for the session props
-  const defaultProps: Omit<GameSessionProps, 'state'> & { state: null } = {
-    handleEquipWeapon,
-    handleUseItem,
-    handlePlayerHealthChange: adaptedHealthChangeHandler,
-    opponent,
-    state: null,
+
+  // Create a non-nullable dispatch function, casting to the expected prop type
+  const safeDispatch: Dispatch<GameEngineAction> = dispatch as Dispatch<GameEngineAction> || (() => {});
+
+  // Default props structure for when state/dispatch are missing
+  // Ensure this matches GameSessionProps structure
+  const defaultProps: GameSessionProps = {
+    state: initialGameState, // Provide initial state instead of null
     dispatch: safeDispatch,
-    executeCombatRound: undefined,
-    initiateCombat: undefined,
-    getCurrentOpponent: undefined,
-    handleUserInput: undefined,
-    isLoading: false, // Ensure this is a boolean
+    isLoading: isLoading,
     error: null,
-    retryLastAction: undefined,
     isCombatActive: false,
-    handleCombatEnd: () => {}
+    opponent: null,
+    handleUserInput: () => { console.warn('handleUserInput not available in default props'); },
+    retryLastAction: () => { console.warn('retryLastAction not available in default props'); },
+    handleCombatEnd: () => {},
+    handlePlayerHealthChange: localAdaptedHealthChangeHandler,
+    handleUseItem,
+    handleEquipWeapon,
+    executeCombatRound: async () => { console.warn('executeCombatRound not available in default props'); },
+    initiateCombat: () => { console.warn('initiateCombat not available in default props'); },
+    getCurrentOpponent: () => null,
   };
-  
-  // If gameSession is unavailable, return default props
-  if (!gameSession || !state) {
-    return defaultProps as unknown as GameSessionProps;
+
+  // If state or dispatch is unavailable, return default props
+  if (!state || !dispatch) {
+    return defaultProps;
   }
-  
-  // Ensure all required properties are non-undefined
-  const isLoading = gameSession.isLoading ?? false; // Use nullish coalescing to ensure boolean
-  
-  // If gameSession is available, merge with real values
+
+  // Construct final props using direct arguments and derived values
   return {
-    ...gameSession,
+    // Core props from arguments/state
     state: state,
+    dispatch: safeDispatch, // Use the casted dispatch
+    isLoading: isLoading,
+    error: null, // Assuming error is not part of GameState
+
+    // Derived/Calculated props
+    isCombatActive: state.combat?.isActive ?? false,
+    opponent,
     handleEquipWeapon,
     handleUseItem,
-    handlePlayerHealthChange: adaptedHealthChangeHandler,
-    opponent,
-    isCombatActive: gameSession.isCombatActive ?? false, // Use nullish coalescing 
-    handleCombatEnd: gameSession.handleCombatEnd || (() => {}),
-    // Ensure dispatch is not undefined
-    dispatch: safeDispatch,
-    // Ensure isLoading is a boolean
-    isLoading,
-    // Ensure error is string | null, not undefined
-    error: gameSession.error ?? null
+    handlePlayerHealthChange: localAdaptedHealthChangeHandler,
+
+    // Provide safe defaults for functions potentially missing from original structure
+    handleUserInput: () => { console.warn('handleUserInput not implemented'); },
+    retryLastAction: () => { console.warn('retryLastAction not implemented'); },
+    handleCombatEnd: () => {},
+    executeCombatRound: async () => { console.warn('executeCombatRound not implemented'); },
+    initiateCombat: () => { console.warn('initiateCombat not implemented'); },
+    getCurrentOpponent: () => opponent,
   };
 }

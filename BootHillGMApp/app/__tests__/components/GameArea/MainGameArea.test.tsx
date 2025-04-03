@@ -3,7 +3,8 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MainGameArea } from '../../../components/GameArea/MainGameArea';
 import { GameState } from '../../../types/campaign';
-import { NarrativeProvider } from '../../../context/NarrativeContext';
+// Update the import path for NarrativeProvider
+import { NarrativeProvider } from '../../../hooks/narrative/NarrativeProvider';
 
 // Mock NarrativeWithDecisions with proper rendering of newlines
 jest.mock('../../../components/narrative/NarrativeWithDecisions', () => {

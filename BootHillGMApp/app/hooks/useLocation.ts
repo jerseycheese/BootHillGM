@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { LocationService, LocationType, LocationState } from '../services/locationService';
-import { useCampaignState } from './useCampaignStateContext';
+// Removed import { useCampaignState } from './useCampaignStateContext';
+import { useGameState } from '../context/GameStateProvider'; // Import correct hook
 
 // Default location type when none is specified
 const DEFAULT_LOCATION: LocationType = { type: 'unknown' };
@@ -85,7 +86,8 @@ const extractLocationType = (locationData: unknown): LocationType => {
  * and provides location updates, history tracking, and persistence.
  */
 export const useLocation = () => {
-  const { state, dispatch } = useCampaignState();
+  // Use the correct state hook
+  const { state, dispatch } = useGameState();
   const locationService = LocationService.getInstance();
   
   // Initialize location state with current location and empty history
@@ -116,12 +118,17 @@ export const useLocation = () => {
       currentHistory = state.location.history;
     }
 
-    // Update location state with proper structure
-    setLocationState({
-      currentLocation: newLocation,
-      history: locationService.updateLocationHistory(currentHistory, newLocation)
-    });
-  }, [state?.location, locationService, locationState.history]);
+    const newHistory = locationService.updateLocationHistory(currentHistory, newLocation);
+
+    // Only update state if location or history content has actually changed
+    if (JSON.stringify(newLocation) !== JSON.stringify(locationState.currentLocation) ||
+        JSON.stringify(newHistory) !== JSON.stringify(locationState.history)) {
+      setLocationState({
+        currentLocation: newLocation,
+        history: newHistory
+      });
+    }
+  }, [state?.location, locationService, locationState.history, locationState.currentLocation]);
 
   /**
    * Updates the current location and adds it to history
@@ -144,7 +151,7 @@ export const useLocation = () => {
     });
 
     // Local state is updated via the useEffect above
-  }, [dispatch, locationState]);
+  }, [dispatch, locationState]); // Remove unnecessary locationState.currentLocation dependency
 
   return {
     locationState,

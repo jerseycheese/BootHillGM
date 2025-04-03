@@ -1,6 +1,6 @@
 // DevToolsPanel.tsx
 import React from "react";
-import { useCampaignState } from "../CampaignStateManager";
+// Removed unused import { useCampaignState } from "../CampaignStateManager";
 import { DevToolsPanelProps } from "../../types/debug.types";
 
 // Import components
@@ -22,8 +22,7 @@ import { useDevTools } from "../../hooks/useDevTools";
  * test decision flows, and view game state.
  */
 const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) => {
-  // Use the campaign state hook (potential future usage)
-  useCampaignState();
+  // Removed unused useCampaignState hook call
   
   // Use our custom hook to handle all DevTools functionality
   const {
@@ -44,7 +43,7 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
     forceRender,
     toggleDevPanel,
     
-    narrativeContext,
+    // narrativeContext, // Removed - no longer returned by useDevTools
     decisionHistory,
     hasActiveDecision
   } = useDevTools(gameState);
@@ -78,7 +77,7 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
             
             {/* Decision Testing Section */}
             <DecisionTestingSection 
-              narrativeContext={narrativeContext}
+              narrativeContext={{ state: gameState.narrative, dispatch: dispatch }}
               loading={loading}
               setLoading={setLoading}
               setError={setError}
@@ -106,7 +105,7 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
 
           {/* Narrative Context Debug Panel */}
           <NarrativeDebugPanel 
-            narrativeContext={narrativeContext}
+            narrativeContext={{ state: gameState.narrative, dispatch: dispatch }}
             renderCount={renderCount}
             showDecisionHistory={showDecisionHistory}
             decisionHistory={decisionHistory}

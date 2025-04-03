@@ -20,7 +20,7 @@ import {
  */
 export function useLore() {
   const { state, dispatch } = useNarrative();
-  const loreStore = state.lore || initialLoreState;
+  const loreStore = state.narrative?.lore || initialLoreState; // Access via narrative slice
 
   /**
    * Add a new lore fact

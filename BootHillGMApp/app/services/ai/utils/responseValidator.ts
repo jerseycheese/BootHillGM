@@ -20,7 +20,8 @@ export function validateAndProcessResponse(jsonResponse: any): GameServiceRespon
   if (
     typeof jsonResponse.narrative !== 'string' ||
     typeof jsonResponse.location !== 'object' ||
-    !['town', 'wilderness', 'landmark', 'unknown'].includes(jsonResponse.location.type) ||
+    // Add 'alley' and 'interior' to allowed location types
+    !['town', 'wilderness', 'landmark', 'unknown', 'alley', 'interior'].includes(jsonResponse.location.type) ||
     typeof jsonResponse.combatInitiated !== 'boolean' ||
     !Array.isArray(jsonResponse.acquiredItems) ||
     !Array.isArray(jsonResponse.removedItems) ||

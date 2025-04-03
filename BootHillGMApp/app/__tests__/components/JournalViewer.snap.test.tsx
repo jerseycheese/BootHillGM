@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import JournalViewer from '@/app/components/JournalViewer';
-import { mockJournalEntries, _createMockEntryList } from '@/app/test/fixtures/mockComponents';
+import JournalViewer from '@/components/JournalViewer';
+import { mockJournalEntries } from '@/test/fixtures/mockComponents';
 
 // Mock formatDate to ensure consistent snapshots
 const originalDate = global.Date;
@@ -9,13 +9,17 @@ beforeAll(() => {
   // Mock Date constructor to return a fixed date
   const mockDate = new Date(1648635000000); // March 30, 2022
   global.Date = class extends originalDate {
-    constructor(date) {
-      if (date) {
-        return new originalDate(date);
-      }
-      return mockDate;
+    constructor(date?: string | number | Date) { // Add optional type
+      // If a date is provided, call the original constructor
+      // Otherwise, initialize with the mock date's time
+      super(date ? date : mockDate.getTime());
     }
-  } as unknown; // Changed from 'any' to 'unknown'
+    // Optionally override other static methods if needed, e.g., Date.now()
+    static now() {
+      return mockDate.getTime();
+    }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any; // Assert the type for assignment to global.Date
 });
 
 afterAll(() => {

@@ -1,75 +1,56 @@
 /**
- * Narrative Utility Functions and Initial States
- * 
- * This file contains utility functions and initial state objects for the narrative system.
- * It includes type guards for runtime type checking and default state initialization.
+ * Utilities and type guards for narrative types
  */
 
 import { StoryPoint } from './story-point.types';
 import { NarrativeChoice } from './choice.types';
 import { NarrativeState } from '../narrative.types';
 import { StoryProgressionState } from './progression.types';
-import { initialLoreState } from './lore.types';
+import { initialLoreState } from './lore.types'; // Import initialLoreState
 
 /**
- * Type guard to check if an object is a valid StoryPoint
- * 
- * This function verifies that an unknown object conforms to the StoryPoint interface
- * by checking for required properties and their types. It's useful for runtime validation
- * when receiving data from external sources like APIs or local storage.
- * 
- * @param obj - The object to check
- * @returns A boolean indicating if the object is a valid StoryPoint
- * @example
- * ```typescript
- * const maybeStoryPoint = JSON.parse(localStorage.getItem('currentStoryPoint'));
- * if (isStoryPoint(maybeStoryPoint)) {
- *   // TypeScript now knows this is a StoryPoint
- *   console.log(maybeStoryPoint.title);
- * }
- * ```
+ * Type guard to check if an object is a StoryPoint
  */
-export const isStoryPoint = (obj: unknown): obj is StoryPoint => {
+export function isStoryPoint(obj: unknown): obj is StoryPoint {
   return (
-    obj !== null &&
+    obj !== null && // Explicit null check
     typeof obj === 'object' &&
-    typeof (obj as Record<string, unknown>).id === 'string' &&
-    typeof (obj as Record<string, unknown>).title === 'string' &&
-    typeof (obj as Record<string, unknown>).content === 'string' &&
-    typeof (obj as Record<string, unknown>).type === 'string'
+    obj !== null && // Redundant but safe null check
+    'id' in obj && typeof (obj as Record<string, unknown>).id === 'string' &&
+    'title' in obj && typeof (obj as Record<string, unknown>).title === 'string' &&
+    'content' in obj && typeof (obj as Record<string, unknown>).content === 'string' &&
+    'type' in obj && typeof (obj as Record<string, unknown>).type === 'string' // Add type check for 'type'
   );
+}
+
+/**
+ * Type guard to check if an object is a NarrativeChoice
+ */
+export function isNarrativeChoice(obj: unknown): obj is NarrativeChoice {
+  return (
+    obj !== null && // Explicit null check
+    typeof obj === 'object' &&
+    // Check for property existence before type checking
+    'id' in obj && typeof (obj as Record<string, unknown>).id === 'string' &&
+    'text' in obj && typeof (obj as Record<string, unknown>).text === 'string' &&
+    'leadsTo' in obj && typeof (obj as Record<string, unknown>).leadsTo === 'string'
+  );
+}
+
+/**
+ * Initial state for StoryProgressionState
+ */
+export const initialStoryProgressionState: StoryProgressionState = {
+  currentPoint: null,
+  progressionPoints: {},
+  mainStorylinePoints: [], // Initialize as empty array
+  branchingPoints: {},
+  lastUpdated: Date.now() // Initialize with current time
 };
 
 /**
- * Type guard to check if an object is a valid NarrativeChoice
- * 
- * This function verifies that an unknown object conforms to the NarrativeChoice interface
- * by checking for required properties and their types. It's useful for validating choice
- * data when loading from storage or receiving from an API.
- * 
- * @param obj - The object to check
- * @returns A boolean indicating if the object is a valid NarrativeChoice
- * @example
- * ```typescript
- * const choices = JSON.parse(localStorage.getItem('availableChoices')) || [];
- * const validChoices = choices.filter(isNarrativeChoice);
- * ```
- */
-export const isNarrativeChoice = (obj: unknown): obj is NarrativeChoice => {
-  return (
-    obj !== null &&
-    typeof obj === 'object' &&
-    typeof (obj as Record<string, unknown>).id === 'string' &&
-    typeof (obj as Record<string, unknown>).text === 'string' &&
-    typeof (obj as Record<string, unknown>).leadsTo === 'string'
-  );
-};
-
-/**
- * Initialize a new empty narrative state
- * 
- * This provides a consistent starting point for the narrative system, ensuring
- * all required properties are initialized with sensible defaults.
+ * Initial state for narrative management
+ * Provides default values for all required properties
  */
 export const initialNarrativeState: NarrativeState = {
   currentStoryPoint: null,
@@ -77,22 +58,10 @@ export const initialNarrativeState: NarrativeState = {
   availableChoices: [],
   narrativeHistory: [],
   displayMode: 'standard',
-  narrativeContext: undefined, // Initialize narrativeContext to undefined
+  context: '',
+  storyProgression: initialStoryProgressionState,
+  currentDecision: undefined,
   error: null,
-  lore: initialLoreState, // Include lore in the initial state
-  context: "" // Add missing context property
-};
-
-/**
- * Initialize empty story progression state
- * 
- * This provides a consistent starting point for the story progression tracking system,
- * with empty collections and tracking fields properly initialized.
- */
-export const initialStoryProgressionState: StoryProgressionState = {
-  currentPoint: null,
-  progressionPoints: {},
-  mainStorylinePoints: [],
-  branchingPoints: {},
-  lastUpdated: Date.now()
+  needsInitialGeneration: false, // Add the flag for triggering AI narrative generation
+  lore: initialLoreState // Add missing lore state
 };

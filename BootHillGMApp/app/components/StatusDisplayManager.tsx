@@ -11,7 +11,8 @@
 import React, { memo } from 'react';
 import { Character } from '../types/character';
 import { getCharacterStrength } from '../utils/strengthSystem';
-import { useCampaignState } from './CampaignStateManager';
+// Removed import { useCampaignState } from './CampaignStateManager';
+import { useGameState } from '../context/GameStateProvider'; // Import correct hook
 import { LocationType } from '../services/locationService';
 
 interface StrengthBarProps {
@@ -150,7 +151,8 @@ interface StatusDisplayManagerProps {
 }
 
 function StatusDisplayManager({ character, location }: StatusDisplayManagerProps) {
-    const { dispatch } = useCampaignState();
+    // Use the correct state hook
+    const { dispatch } = useGameState();
     const currentStrength = getCharacterStrength(character);
     const maxStrength = character.attributes.baseStrength;
     const displayLocation = location;
@@ -170,7 +172,8 @@ function StatusDisplayManager({ character, location }: StatusDisplayManagerProps
 
     const handleResetStrength = () => {
         dispatch({
-            type: 'SET_CHARACTER', // Use SET_CHARACTER as it replaces the whole object
+            // Use the namespaced action type expected by characterReducer
+            type: 'character/SET_CHARACTER',
             payload: {
                 ...character,
                 wounds: [],

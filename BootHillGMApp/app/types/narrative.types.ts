@@ -122,6 +122,7 @@ export {
  * @property storyProgression - Story progression tracking state
  * @property lore - Lore management state
  * @property error - Current error state, if any
+ * @property needsInitialGeneration - Flag to indicate narrative needs AI generation
  */
 export interface NarrativeState {
   currentStoryPoint: StoryPoint | null;
@@ -136,6 +137,7 @@ export interface NarrativeState {
   currentDecision?: PlayerDecision;
   lore?: LoreStore; // Lore management state
   error?: NarrativeErrorInfo | null;
+  needsInitialGeneration?: boolean; // Flag to trigger AI narrative generation
 }
 
 /**

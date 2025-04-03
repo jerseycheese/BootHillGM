@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { GameProviderWrapper } from './components/GameProviderWrapper';
-import { CampaignStateProvider } from './components/CampaignStateManager';
+// Removed import { CampaignStateProvider } from './components/CampaignStateManager';
 import NarrativeOptimizationProvider from './components/NarrativeOptimizationProvider';
 import Navigation from './components/Navigation';
 import { Suspense } from 'react';
@@ -29,7 +29,7 @@ export default function RootLayout({
         <link rel="stylesheet" href={crimsonText.href} />
       </head>
       <body>
-        <CampaignStateProvider>
+        {/* Removed CampaignStateProvider wrapper */}
           <GameProviderWrapper>
             <NarrativeOptimizationProvider>
               <Suspense fallback={<p>Loading...</p>}>
@@ -40,7 +40,7 @@ export default function RootLayout({
               </main>
             </NarrativeOptimizationProvider>
           </GameProviderWrapper>
-        </CampaignStateProvider>
+        {/* Removed CampaignStateProvider wrapper */}
       </body>
     </html>
   );

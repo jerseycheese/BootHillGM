@@ -12,6 +12,7 @@ import { JournalAction } from './actions/journalActions';
 import { NarrativeAction } from './actions/narrativeActions';
 import { UIAction } from './actions/uiActions';
 import { StoryProgressionAction } from './narrative/actions.types';
+export type { NarrativeAction }; // Re-export NarrativeAction
 import { GameState } from './gameState';
 
 import { SuggestedAction } from './campaign';
@@ -69,6 +70,10 @@ export interface NoOpAction {
   payload?: undefined;
 }
 
+export interface ResetStateAction {
+  type: 'RESET_STATE';
+}
+
 /**
  * Union type of all global actions
  */
@@ -82,7 +87,8 @@ export type GlobalAction =
   | SetStateAction
   | NoOpAction
   | SetSuggestedActionsAction // Added new action type
-  | ClearErrorAction; // Added CLEAR_ERROR
+  | ClearErrorAction // Added CLEAR_ERROR
+  | ResetStateAction; // Add ResetStateAction here
 
 /**
  * Combined action type used throughout the application

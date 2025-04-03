@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useNarrative } from '../context/NarrativeContext';
+// Removed import { useNarrative } from '../context/NarrativeContext';
+import { useGameState } from '../context/GameStateProvider'; // Import correct hook
 import { useOptimizedNarrativeContext } from '../utils/narrative';
 
 /**
@@ -9,7 +10,8 @@ import { useOptimizedNarrativeContext } from '../utils/narrative';
  * This can be used as an example of how to use the optimization system
  */
 export default function OptimizedNarrativeDisplay() {
-  const { state } = useNarrative();
+  // Use the correct state hook
+  const { state } = useGameState();
   const { 
     getDefaultContext, 
     getFocusedContext, 
@@ -44,8 +46,9 @@ export default function OptimizedNarrativeDisplay() {
     getDefaultContext,
     getFocusedContext,
     getCompactContext,
-    state.narrativeHistory,
-    state.narrativeContext
+    // Access properties via the narrative slice
+    state.narrative?.narrativeHistory,
+    state.narrative?.narrativeContext
   ]);
   
   // Handle focus tag changes
@@ -102,9 +105,9 @@ export default function OptimizedNarrativeDisplay() {
       </div>
       
       <div className="stats mt-4 text-sm text-gray-600">
-        <p>Narrative History Entries: {state.narrativeHistory?.length || 0}</p>
-        <p>Decision History Entries: {state.narrativeContext?.decisionHistory?.length || 0}</p>
-        <p>Character Focus: {state.narrativeContext?.characterFocus?.join(', ') || 'None'}</p>
+        <p>Narrative History Entries: {state.narrative?.narrativeHistory?.length || 0}</p>
+        <p>Decision History Entries: {state.narrative?.narrativeContext?.decisionHistory?.length || 0}</p>
+        <p>Character Focus: {state.narrative?.narrativeContext?.characterFocus?.join(', ') || 'None'}</p>
         <p>Optimization Mode: {optimizationMode}</p>
         {optimizationMode === 'focused' && (
           <p>Focus Tags: {focusTags.join(', ') || 'None'}</p>

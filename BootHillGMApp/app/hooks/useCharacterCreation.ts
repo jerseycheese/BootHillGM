@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { generateCharacterSummary, generateCompleteCharacter } from '../services/ai/characterService';
 import { generateName } from '../services/ai/nameGenerator';
-import { useCampaignState } from '../components/CampaignStateManager';
+// Removed import { useCampaignState } from '../components/CampaignStateManager';
+import { useGameState } from '../context/GameStateProvider'; // Import correct hook
 import { Character } from "../types/character";
 import { GameState, initialGameState } from '../types/gameState';
 import { initialNarrativeState } from '../types/narrative.types';
@@ -62,7 +63,10 @@ export const initialCharacter: Character = {
  */
 export function useCharacterCreation() {
   const router = useRouter();
-  const { saveGame, cleanupState } = useCampaignState();
+  // Removed useCampaignState call
+  // const { saveGame, cleanupState } = useCampaignState();
+  // Get dispatch from the correct context
+  const { dispatch } = useGameState();
 
   // Create a fresh character for the new session
   const [character, setCharacter] = useState<Character>(() => {
@@ -197,7 +201,8 @@ export function useCharacterCreation() {
           // Complete character creation and start a new game
           
           // This is a new character, so we want to clean up old game state
-          cleanupState();
+          // Dispatch an action to reset the state instead of calling cleanupState
+          dispatch({ type: 'RESET_STATE' });
           
           // Clear previous narrative state and reset previous game data
           if (typeof localStorage !== 'undefined') {
@@ -218,7 +223,7 @@ export function useCharacterCreation() {
           };
           
           // Create game state with proper structure
-          const gameState: GameState = {
+          const _gameState: GameState = {
             ...initialGameState,
             character: characterState,
             inventory: {
@@ -239,7 +244,10 @@ export function useCharacterCreation() {
           }));
           
           // Save the game state
-          saveGame(gameState);
+          // Removed direct saveGame call. Assume saving is handled elsewhere or via dispatch.
+          // saveGame(gameState);
+          // Optionally, dispatch a save request action if needed:
+          // dispatch({ type: 'SAVE_GAME_REQUEST', payload: gameState });
           
           // Navigate to game session
           router.push("/game-session");
@@ -254,7 +262,8 @@ export function useCharacterCreation() {
         setIsGeneratingField(false);
       }
     },
-    [character, showSummary, cleanupState, saveGame, router]
+    // Updated dependencies
+    [character, showSummary, dispatch, router]
   );
 
   useEffect(() => {

@@ -7,7 +7,8 @@
  */
 
 import { useState, useCallback } from 'react';
-import { useNarrative } from '../../context/NarrativeContext';
+// Update import path to use the correct NarrativeProvider
+import { useNarrative } from '../../hooks/narrative/NarrativeProvider';
 import { getAIResponse } from '../../services/ai/gameService';
 import { InventoryItem } from '../../types/item.types';
 import { useOptimizedNarrativeContext, useNarrativeContextSynchronization } from './narrativeContextIntegration';
@@ -64,7 +65,7 @@ export function useAIWithOptimizedContext() {
         context,
         inventory,
         undefined,
-        narrativeState.narrativeContext
+        narrativeState.narrative?.narrativeContext // Access via narrative slice
       );
       
       

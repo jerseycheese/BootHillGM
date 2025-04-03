@@ -101,9 +101,10 @@ export const useGameSession = (): { isInitializing: boolean; isClient: boolean }
         // Handle errors gracefully with fallback suggestions
         console.error("Error initializing game session:", error);
         return handleErrorRecovery(state);
-      } finally {
-        setIsInitializing(false);
-      }
+      } // REMOVED finally block that set isInitializing false too early
+      // finally {
+      //   setIsInitializing(false);
+      // }
     },
     [
       state,
@@ -149,22 +150,27 @@ export const useGameSession = (): { isInitializing: boolean; isClient: boolean }
           lastSavedTimestampRef.current = initializedState.savedTimestamp;
           hasInitializedRef.current = true;
 
-          // Wrap dispatch in requestAnimationFrame to avoid render phase updates
-          requestAnimationFrame(() => {
+          // REMOVED requestAnimationFrame wrapper to attempt more synchronous update
+          // requestAnimationFrame(() => {
             try {
               // We know initializedState is a proper GameState at this point
+              // Removed log
               dispatch({ type: 'SET_STATE', payload: initializedState });
 
               // Add safety check before saving
               if (saveGame) {
                 saveGame(initializedState);
               }
+              // Set initializing false AFTER dispatch and save
+              setIsInitializing(false);
             } catch (dispatchError) {
               console.error("Error dispatching initialized state:", dispatchError);
+              setIsInitializing(false); // Also set false on error
             } finally {
+              // Ensure initProcessingRef is set regardless of rAF
               initProcessingRef.current = false;
             }
-          });
+          // }); // End of removed rAF
         } else {
           console.error("Game initialization failed - no state returned");
           initProcessingRef.current = false;

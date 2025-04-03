@@ -2,6 +2,8 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import DevToolsPanel from '../DevToolsPanel';
+import { GameState } from '../../../types/gameState';
+import { initialState } from '../../../types/initialState';
 
 // Mock dependencies
 jest.mock('../../CampaignStateManager', () => ({
@@ -90,11 +92,29 @@ Object.defineProperty(window, 'bhgmDebug', {
 });
 
 describe('DevToolsPanel', () => {
-  const mockProps = {
-    gameState: { 
-      player: { name: 'Test Player' },
-      world: { location: 'Test Location' },
+  // Create a valid GameState object based on the required properties
+  const mockGameState: GameState = {
+    ...initialState,
+    character: {
+      player: {
+        id: 'player-1',
+        name: 'Test Player',
+        isNPC: false,
+        isPlayer: true,
+        inventory: { items: [] },
+        attributes: { speed: 10, gunAccuracy: 10, throwingAccuracy: 10, strength: 10, baseStrength: 10, bravery: 10, experience: 0 },
+        minAttributes: { speed: 1, gunAccuracy: 1, throwingAccuracy: 1, strength: 1, baseStrength: 1, bravery: 1, experience: 0 },
+        maxAttributes: { speed: 10, gunAccuracy: 10, throwingAccuracy: 10, strength: 10, baseStrength: 10, bravery: 10, experience: 100 },
+        wounds: [],
+        isUnconscious: false
+      },
+      opponent: null
     },
+    location: 'town',
+  };
+
+  const mockProps = {
+    gameState: mockGameState,
     dispatch: jest.fn(),
   };
 

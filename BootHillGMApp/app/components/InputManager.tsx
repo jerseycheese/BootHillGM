@@ -27,16 +27,26 @@ export default function InputManager({
   /**
    * Determines the CSS class for a suggested action button based on its type.
    * 
-   * @param type - The type of the suggested action ('main', 'side', 'optional')
+   * @param type - The type of the suggested action
    * @returns A string containing the CSS class for the button
    */
   const actionClass = (type: string) => {
-    return `px-3 py-1 text-sm rounded hover:bg-opacity-80 disabled:opacity-50 text-white ${
-      type === 'combat' ? 'bg-red-500' : 
-      type === 'basic' ? 'bg-blue-500' : 
-      type === 'interaction' ? 'bg-green-500' : 
-      'bg-black'
-    }`;
+    // Fixed mapping of action types to CSS classes
+    const typeClasses = {
+      'combat': 'bg-red-500',
+      'basic': 'bg-blue-500',
+      'interaction': 'bg-green-500',
+      'chaotic': 'bg-black',
+      'main': 'bg-blue-500',  // Backward compatibility
+      'side': 'bg-green-500', // Backward compatibility
+      'optional': 'bg-purple-500', // Backward compatibility
+      'danger': 'bg-red-500'  // Backward compatibility
+    };
+    
+    // Use the mapped class or default to black for unknown types
+    const bgClass = typeClasses[type as keyof typeof typeClasses] || 'bg-gray-500';
+    
+    return `px-3 py-1 text-sm rounded hover:bg-opacity-80 disabled:opacity-50 text-white ${bgClass}`;
   };
 
   return (
@@ -44,13 +54,19 @@ export default function InputManager({
       {suggestedActions.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {suggestedActions.map((action, index) => {
+            // Log action type for debugging
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`Action ${index}: ${action.title}, type: ${action.type}`);
+            }
+            
             return (
               <button
-                key={`${action.type}-${index}`}
-                onClick={() => handleAction(action.title)} // Use title instead of text
+                key={`${action.id || `${action.type}-${index}`}`}
+                onClick={() => handleAction(action.title)}
                 disabled={isLoading}
                 className={actionClass(action.type)}
-                title={action.description || action.title} // Use description and title
+                title={action.description || action.title}
+                data-action-type={action.type} // Add data attribute for easier debugging/testing
               >
                 {action.title}
               </button>

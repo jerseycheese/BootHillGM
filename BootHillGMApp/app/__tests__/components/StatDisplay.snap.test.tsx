@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import StatDisplay from '@/app/components/StatDisplay';
+import StatDisplay from '@/components/StatDisplay';
 
 describe('StatDisplay snapshots', () => {
   it('matches snapshot with basic props', () => {

@@ -53,7 +53,8 @@ export const DecisionProvider: React.FC<DecisionProviderProps> = ({
   const [service] = useState(() => decisionService || new AIDecisionService());
   
   // Access the narrative context
-  const { state: narrativeState, dispatch } = useNarrative();
+  // Rename 'narrativeState' to 'gameState' to reflect the actual content from useNarrative
+  const { state: gameState, dispatch } = useNarrative();
   
   // Component state
   const [currentDecision, setCurrentDecision] = useState<PlayerDecision | null>(null);
@@ -70,7 +71,8 @@ export const DecisionProvider: React.FC<DecisionProviderProps> = ({
     
     try {
       // Generate a decision from the service
-      const decision = await service.generateDecision(narrativeState, character);
+      // Pass the narrative slice from the gameState
+      const decision = await service.generateDecision(gameState.narrative, character);
       
       // PlayerDecision is now directly returned from generateDecision
       const playerDecision = decision;
@@ -89,7 +91,7 @@ export const DecisionProvider: React.FC<DecisionProviderProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [narrativeState, character, service, dispatch]);
+  }, [gameState, character, service, dispatch]); // Updated dependency
   
   // Check for decision points when narrative context changes
   useEffect(() => {
@@ -107,7 +109,8 @@ export const DecisionProvider: React.FC<DecisionProviderProps> = ({
     // Check if we should present a decision
     const checkForDecisionPoint = async () => {
       try {
-        const result = service.detectDecisionPoint(narrativeState, character);
+        // Pass the narrative slice from the gameState
+        const result = service.detectDecisionPoint(gameState.narrative, character);
         
         if (result.shouldPresent) {
           await generateDecision();
@@ -121,7 +124,7 @@ export const DecisionProvider: React.FC<DecisionProviderProps> = ({
     };
     
     checkForDecisionPoint();
-  }, [narrativeState, character, lastCheckTime, currentDecision, isLoading, service, generateDecision]);
+  }, [gameState, character, lastCheckTime, currentDecision, isLoading, service, generateDecision]); // Updated dependency
   
   /**
    * Force check for decision point (can be triggered by player or game events)

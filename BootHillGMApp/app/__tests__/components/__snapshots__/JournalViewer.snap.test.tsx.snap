@@ -68,7 +68,7 @@ exports[`JournalViewer snapshots matches snapshot with entries in reverse chrono
           03/30/2022
         </strong>
         : 
-        The Missing Sheriff: active
+        The Missing Sheriff: started
       </li>
       <li
         class="wireframe-text mb-2"
@@ -153,7 +153,7 @@ exports[`JournalViewer snapshots matches snapshot with multiple entries of diffe
           03/30/2022
         </strong>
         : 
-        The Missing Sheriff: active
+        The Missing Sheriff: started
       </li>
       <li
         class="wireframe-text mb-2"
@@ -238,7 +238,7 @@ exports[`JournalViewer snapshots matches snapshot with quest entry 1`] = `
           03/30/2022
         </strong>
         : 
-        The Missing Sheriff: active
+        The Missing Sheriff: started
       </li>
     </ul>
   </div>

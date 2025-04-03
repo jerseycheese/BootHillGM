@@ -53,6 +53,58 @@ const items = state.inventory?.items || [];
 const journalEntries = state.journal?.entries || [];
 ```
 
+### Narrative Context Changes
+
+The narrative state is now part of the unified GameState model, accessible via the `narrative` slice. A compatibility layer has been implemented through `NarrativeProvider` to ensure existing components can continue to function while the codebase transitions to the new pattern.
+
+#### Accessing Narrative State
+
+```typescript
+// ❌ OLD WAY (direct properties)
+const narrativeHistory = state.narrativeHistory || [];
+const narrativeContext = state.narrativeContext;
+
+// ✅ NEW WAY (via narrative slice)
+const narrativeHistory = state.narrative?.narrativeHistory || [];
+const narrativeContext = state.narrative?.narrativeContext;
+```
+
+#### Using Narrative Hooks
+
+Several hooks are provided for working with narrative state:
+
+1. **useNarrative**: Compatibility hook that works with both old and new components
+2. **useNarrativeContext**: Provides decision-related functionality
+3. **useNarrativeInitialization**: Handles initializing narrative state
+
+Example usage:
+
+```typescript
+// Using the consolidated hook
+import { useNarrative } from '../hooks/useNarrative';
+
+const MyComponent = () => {
+  const { state, dispatch, context, decisions } = useNarrative();
+  
+  // Access narrative data
+  const narrativeHistory = context.narrativeHistory;
+  
+  // Use decision functions
+  const presentDecision = () => {
+    decisions.presentPlayerDecision({
+      prompt: 'What will you do?',
+      choices: ['Run', 'Fight', 'Hide']
+    });
+  };
+  
+  return (
+    <div>
+      {/* Component implementation */}
+    </div>
+  );
+};
+```
+
 ### Testing Hooks & Components
 
 When testing hooks or components that interact with the state:
@@ -124,3 +176,4 @@ expect(mockDispatch).toHaveBeenCalledWith(
 - [x] Updated tests to use `GameState` structure and appropriate test wrappers (`renderWithMockContext`).
 - [x] Standardized action types (using namespaced versions where applicable).
 - [x] Fixed type errors and build failures resulting from the refactor.
+- [x] Added compatibility layers for narrative context to support existing components.

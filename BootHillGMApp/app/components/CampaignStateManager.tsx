@@ -15,6 +15,7 @@ import { useAutoSave } from '../hooks/useAutoSave';
 import { useBeforeUnloadHandler } from '../hooks/useBeforeUnloadHandler';
 import { JournalEntry } from '../types/journal';
 import { NarrativeContext } from '../types/narrative/context.types';
+import GameStorage from '../utils/gameStorage';
 
 /**
  * Safe access to browser storage APIs that works with SSR/SSG
@@ -71,6 +72,93 @@ const safeStorage = {
 };
 
 /**
+ * Fixes the campaign state by combining data from multiple localStorage keys using GameStorage utility
+ */
+function fixCampaignState() {
+  if (!isBrowser) return null;
+  
+  try {
+    // Get existing campaign state
+    const campaignStateJSON = safeStorage.local.getItem('campaignState');
+    const campaignState: Record<string, unknown> = campaignStateJSON ? JSON.parse(campaignStateJSON) : {};
+    
+    // Check if character data is needed
+    if (!campaignState.character || !(campaignState.character as Record<string, unknown>).player) {
+      // Use GameStorage to get character data
+      const characterState = GameStorage.getCharacter();
+      if (characterState.player) {
+        campaignState.character = characterState;
+      }
+    }
+    
+    // Get narrative data if needed
+    if (!campaignState.narrative || !(campaignState.narrative as Record<string, unknown>).initialNarrative) {
+      // Get narrative text from GameStorage
+      const narrativeText = GameStorage.getNarrativeText();
+      if (narrativeText) {
+        // Initialize narrative if needed
+        if (!campaignState.narrative) {
+          campaignState.narrative = {};
+        }
+        // Add narrative text
+        (campaignState.narrative as Record<string, unknown>).initialNarrative = narrativeText;
+        (campaignState.narrative as Record<string, unknown>).narrativeHistory = narrativeText.split('\n');
+      }
+    }
+    
+    // Get suggested actions if needed
+    if (!campaignState.suggestedActions || !(campaignState.suggestedActions as Array<unknown>).length) {
+      campaignState.suggestedActions = GameStorage.getSuggestedActions();
+    }
+    
+    // Get journal entries if needed
+    if (!campaignState.journal || 
+        (typeof campaignState.journal === 'object' && 
+         // Check if 'entries' exists and is an array before checking length
+         (!('entries' in (campaignState.journal as object)) ||
+          !Array.isArray((campaignState.journal as { entries: unknown }).entries) ||
+          (campaignState.journal as { entries: unknown[] }).entries.length === 0))) {
+      const journalEntries = GameStorage.getJournalEntries();
+      if (journalEntries.length > 0) {
+        campaignState.journal = {
+          entries: journalEntries
+        };
+      }
+    }
+    
+    // Save the fixed state
+    safeStorage.local.setItem('campaignState', JSON.stringify(campaignState));
+    return JSON.stringify(campaignState);
+  } catch (e) {
+    console.error('Error fixing campaign state:', e);
+    return null;
+  }
+}
+
+/**
+ * Ensures character state is properly initialized in case of a new game
+ */
+function ensureCharacterState(state: GameState): GameState {
+  // Check if character state is missing or invalid
+  if (!state.character || 
+      (typeof state.character === 'object' && 
+       'player' in state.character && 
+       !state.character.player)) {
+    
+    // Use GameStorage to get character data
+    const characterState = GameStorage.getCharacter();
+    
+    // Return updated state with character data
+    return {
+      ...state,
+      character: characterState
+    };
+  }
+  
+  return state;
+}
+
+/**
  * CampaignStateProvider component manages the game state for a campaign session.
  * It combines multiple specialized hooks for state management, persistence, and cleanup.
  * 
@@ -87,10 +175,34 @@ const safeStorage = {
 export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isInitializedRef = useRef(false);
   const isInitializing = isBrowser && Boolean(safeStorage.session.getItem('initializing_new_character'));
-
+  
+  // First attempt to fix the state if needed
+  const fixedStateRef = useRef<string | null>(null);
+  
   // Get the saved state from localStorage
   const savedStateJSON = useMemo(() => {
-    return safeStorage.local.getItem('campaignState');
+    // If we've already fixed the state, use that
+    if (fixedStateRef.current) return fixedStateRef.current;
+    
+    // Otherwise, try to fix the state first
+    const rawState = safeStorage.local.getItem('campaignState');
+    
+    // Check if state needs fixing (has null player or missing narrative)
+    const needsFix = !rawState || 
+                     rawState.includes('"player":null') || 
+                     !rawState.includes('"narrative"');
+    
+    if (needsFix) {
+      // Try to fix the state by combining data from different sources
+      const fixedState = fixCampaignState();
+      if (fixedState) {
+        console.log('Fixed campaign state');
+        fixedStateRef.current = fixedState;
+        return fixedState;
+      }
+    }
+    
+    return rawState;
   }, []);
   
   // Only log in development mode and in the browser
@@ -122,7 +234,7 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   const dispatch = createCompatibleDispatch(originalDispatch as unknown as React.Dispatch<unknown>) as React.Dispatch<GameEngineAction>;
   
   // Apply adapters for backward compatibility - use explicit cast to handle type mismatch
-  const adaptedState = adaptStateForTests(state as GameState);
+  const _adaptedState = adaptStateForTests(state as GameState);
 
   // Handle initialization
   useEffect(() => {
@@ -131,8 +243,28 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
         safeStorage.session.removeItem('initializing_new_character');
       }
       isInitializedRef.current = true;
+      
+      // Ensure character state is properly initialized
+      if (!state.character || 
+          (typeof state.character === 'object' && 
+           'player' in state.character && 
+           !state.character.player)) {
+        
+        // Use GameStorage to get character data
+        const characterState = GameStorage.getCharacter();
+        
+        // Update state with character data
+        if (characterState.player) {
+          dispatch({
+            // Use namespaced type and pass the player character object
+            // Use the non-namespaced type expected by GameEngineAction
+            type: 'SET_CHARACTER',
+            payload: characterState.player
+          });
+        }
+      }
     }
-  }, [isInitializing]);
+  }, [isInitializing, state, dispatch]);
 
   // State persistence logic
   const { saveGame, loadGame, stateRef } = useCampaignStatePersistence(
@@ -151,21 +283,26 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   useBeforeUnloadHandler(stateRef);
 
   // Create context value with legacy getters for backward compatibility
-  const contextValue = useMemo(() => ({
-    state: adaptedState,
-    dispatch,
-    saveGame,
-    loadGame,
-    cleanupState,
+  const contextValue = useMemo(() => {
+    // Ensure character state is valid
+    const validatedState = ensureCharacterState(state as GameState);
     
-    // Legacy getters for backward compatibility
-    player: legacyGetters.getPlayer(state as GameState),
-    opponent: legacyGetters.getOpponent(state as GameState),
-    inventory: legacyGetters.getItems(state as GameState),
-    entries: legacyGetters.getEntries(state as GameState) as JournalEntry[],
-    isCombatActive: legacyGetters.isCombatActive(state as GameState),
-    narrativeContext: legacyGetters.getNarrativeContext(state as GameState) as NarrativeContext | undefined,
-  }), [state, adaptedState, dispatch, saveGame, loadGame, cleanupState]);
+    return {
+      state: adaptStateForTests(validatedState),
+      dispatch,
+      saveGame,
+      loadGame,
+      cleanupState,
+      
+      // Legacy getters for backward compatibility
+      player: legacyGetters.getPlayer(validatedState),
+      opponent: legacyGetters.getOpponent(validatedState),
+      inventory: legacyGetters.getItems(validatedState),
+      entries: legacyGetters.getEntries(validatedState) as JournalEntry[],
+      isCombatActive: legacyGetters.isCombatActive(validatedState),
+      narrativeContext: legacyGetters.getNarrativeContext(validatedState) as NarrativeContext | undefined,
+    };
+  }, [state, dispatch, saveGame, loadGame, cleanupState]);
 
   return (
     <div

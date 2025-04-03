@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import OptimizedNarrativeDisplay from '../components/OptimizedNarrativeDisplay';
 import GamePromptWithOptimizedContext from '../components/GamePromptWithOptimizedContext';
-import { useNarrative, NarrativeProvider } from '../context/NarrativeContext';
+import { useNarrative } from '../context/NarrativeContext';
+import { NarrativeProvider } from '../hooks/narrative/NarrativeProvider';
 import { estimateTokenCount } from '../utils/narrative';
 
 /**
@@ -29,7 +30,7 @@ const NarrativeContent = () => {
   const [isShowingOriginal, setIsShowingOriginal] = useState(false);
   
   // Calculate metrics for comparison
-  const originalContext = state.narrativeHistory.join('\n');
+  const originalContext = (state.narrative?.narrativeHistory || []).join('\n'); // Access via narrative slice with fallback
   const originalTokenCount = estimateTokenCount(originalContext);
   
   return (
@@ -95,7 +96,7 @@ const NarrativeContent = () => {
             <h3 className="font-bold text-lg mb-2">Original Context</h3>
             <p className="text-sm text-gray-600 mb-1">Length: {originalContext.length} characters</p>
             <p className="text-sm text-gray-600 mb-1">Tokens: ~{originalTokenCount}</p>
-            <p className="text-sm text-gray-600">Entries: {state.narrativeHistory.length}</p>
+            <p className="text-sm text-gray-600">Entries: {state.narrative?.narrativeHistory?.length || 0}</p>
           </div>
           
           <div className="p-4 border rounded bg-white shadow-sm">

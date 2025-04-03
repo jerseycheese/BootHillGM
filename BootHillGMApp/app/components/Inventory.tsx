@@ -3,7 +3,9 @@ import { ErrorDisplay } from './ErrorDisplay';
 import { InventoryList } from './InventoryList';
 import ErrorBoundary from './ErrorBoundary';
 import { useGameSession } from '../hooks/useGameSession';
-import { useInventoryItems } from '../hooks/stateSelectors';
+// Import from the correct context provider file
+import { useInventoryItems } from '../context/GameStateProvider';
+// Removed import { useInventoryItems } from '../hooks/stateSelectors';
 
 /**
  * Props for the Inventory component.
@@ -40,6 +42,7 @@ export const Inventory: React.FC<InventoryProps<string>> = ({
   // This is memoized and will only trigger re-renders when the inventory changes
   const inventoryItems = useInventoryItems();
 
+  // Removed log
   // Callback handlers for item actions
   const handleEquipWeaponClick = useCallback((itemId: string) => {
     handleEquipWeapon?.(itemId);

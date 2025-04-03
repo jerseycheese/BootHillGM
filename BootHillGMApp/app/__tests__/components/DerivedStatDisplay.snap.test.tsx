@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import DerivedStatDisplay from '@/app/components/DerivedStatDisplay';
+import DerivedStatDisplay from '@/components/DerivedStatDisplay';
 
 describe('DerivedStatDisplay snapshots', () => {
   it('matches snapshot with basic props', () => {

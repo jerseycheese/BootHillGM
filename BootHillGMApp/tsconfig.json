@@ -18,8 +18,10 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".", // Needed for path aliases
     "paths": {
-      "*": ["./*"]
+      "@/*": ["./app/*"], // Define the @/ alias
+      "*": ["./*"] // Keep existing wildcard if needed
     },
     "types": ["jest", "node", "@testing-library/jest-dom"]
   },

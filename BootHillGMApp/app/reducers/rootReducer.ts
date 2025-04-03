@@ -193,6 +193,17 @@ const initialState: GameState = {
 const rootReducer = (state: GameState = initialState, action: GameAction): GameState => {
   // Type-check for null or undefined action
   if (!action) return state;
+
+  // Handle the full state replacement action from initialization
+  if (action.type === 'SET_STATE' && 'payload' in action) {
+    // Ensure payload conforms to GameState, potentially adding validation if needed
+    return action.payload as GameState;
+  }
+  // Handle resetting the state to initial values
+  if (action.type === 'RESET_STATE') {
+    // Return a fresh copy of the initial state
+    return { ...initialState };
+  }
   
   return {
     // Domain-specific slices

@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useGameInitialization } from "../hooks/useGameInitialization";
-import { useGameSession } from "../hooks/useGameSession";
+// Removed useGameSession import as state/dispatch come from useGameState now
+// import { useGameSession } from "../hooks/useGameSession";
+import { useGameState } from "../context/GameStateProvider"; // Import useGameState
 import { useCombatStateRestoration } from "../hooks/useCombatStateRestoration";
 import { useCharacterExtraction } from "../hooks/useCharacterExtraction";
 import { useRecoveryOptions } from "../hooks/useRecoveryOptions";
@@ -14,7 +16,9 @@ import { generateSessionProps } from "../utils/sessionPropsGenerator";
 import { createCombatInitiator } from "../utils/combatInitiatorGenerator";
 import { useCampaignStateAdapter } from "../hooks/useCampaignStateAdapter";
 import { RecoveryOptions } from "./GameArea/RecoveryOptions";
-import { GameSessionType } from "../types/session/gameSession.types";
+// Removed GameSessionType import as it's no longer used directly
+// import { GameSessionType } from "../types/session/gameSession.types";
+import { useNarrativeInitialization } from "../hooks/useNarrativeInitialization";
 
 // Maximum loading time before showing recovery options
 const MAX_LOADING_TIME = 5000; // 5 seconds
@@ -31,20 +35,21 @@ export default function GameSessionContent(): JSX.Element {
   
   // Core hooks
   const { isInitializing, isClient } = useGameInitialization();
-  const gameSession = useGameSession();
-  const { 
-    playerCharacter, 
-    playerCharacterError, 
+  // const gameSession = useGameSession(); // Removed useGameSession call
+  const { state, dispatch } = useGameState(); // Get state and dispatch directly
+  const {
+    playerCharacter,
+    playerCharacterError,
     recoveryInProgress,
     characterRecovered
-  } = useCharacterExtraction(gameSession?.state);
+  } = useCharacterExtraction(state); // Use direct state
   
   // Recovery hooks
   const { handleRecoverGame, handleRestartGame }: {
     handleRecoverGame: () => void;
     handleRestartGame: () => void;
   } = useRecoveryOptions(
-    gameSession?.dispatch,
+    dispatch, // Use direct dispatch
     // Removed playerCharacter argument as it's no longer used by the hook
     recoveryInProgress
   );
@@ -53,19 +58,23 @@ export default function GameSessionContent(): JSX.Element {
   // Removed campaignState from destructuring as it's no longer returned by the adapter
   // Removed playerCharacter argument as it's no longer used by the adapter hook
   const { dispatchAdapter } = useCampaignStateAdapter(
-    gameSession?.dispatch,
-    gameSession?.state
+    dispatch, // Use direct dispatch
+    state      // Use direct state
   );
   
-  // Explicitly cast the gameSession to GameSessionType to ensure type compatibility
-  const typedGameSession = gameSession as GameSessionType;
+  // Removed typedGameSession cast
   
-  // Generate session props and combat initiator
-  const sessionProps = generateSessionProps(typedGameSession, playerCharacter);
-  const combatInitiator = createCombatInitiator(typedGameSession, sessionProps);
+  // Generate session props using direct state and dispatch
+  const sessionProps = generateSessionProps(state, dispatch, playerCharacter, isInitializing);
+  // Update createCombatInitiator if its signature changed, assuming it needs state/dispatch now
+  // TODO: Verify createCombatInitiator signature if errors occur
+  const combatInitiator = createCombatInitiator(state, dispatch, sessionProps); // Pass state and dispatch directly
   
   // Restore combat state if needed
-  useCombatStateRestoration(gameSession?.state || null, combatInitiator);
+  useCombatStateRestoration(state || null, combatInitiator); // Use direct state
+  
+  // Initialize AI narrative generation if needed
+  useNarrativeInitialization();
   
   // Set up loading time tracker
   useEffect(() => {
@@ -141,7 +150,7 @@ export default function GameSessionContent(): JSX.Element {
   }, [playerCharacterError, handleRecoverGame, characterRecovered, recoveryInProgress]);
   
   // Early exit for loading state
-  if (!isClient || !gameSession || !gameSession.state) {
+  if (!isClient || !state) { // Check direct state
     return (
       <LoadingScreen 
         type="session" 
@@ -208,7 +217,7 @@ export default function GameSessionContent(): JSX.Element {
       <div id="bhgmDevToolsPanel" data-testid="dev-tools-panel">
         <DevToolsPanel
           // Pass the current gameSession state directly
-          gameState={gameSession?.state}
+          gameState={state} // Use direct state
           dispatch={dispatchAdapter}
         />
       </div>

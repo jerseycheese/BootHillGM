@@ -52,14 +52,16 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
 
   // Determine if a narrative item is a key story point
   const isKeyStoryPoint = useCallback((content: string) => {
-    if (!mainStoryline.length) return false;
+    // Add null checks to prevent "undefined.length" error
+    if (!mainStoryline || !Array.isArray(mainStoryline) || mainStoryline.length === 0) return false;
+    if (!storyProgression || !storyProgression.progressionPoints) return false;
 
     // Check if the content matches any story point description or title
     return mainStoryline.some((pointId: string) => {
       const point = storyProgression.progressionPoints[pointId];
       return point && (content.includes(point.description) || content.includes(point.title));
     });
-  }, [mainStoryline, storyProgression.progressionPoints]);
+  }, [mainStoryline, storyProgression]);
 
   // Use useMemo unconditionally at the top level, and handle the conditional logic inside
   const narrativeItems = useMemo(() => {
@@ -185,7 +187,7 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
   useEffect(() => {
     // Only check for decision triggers if the narrative has changed
     // and there's no active decision already
-    if (narrative !== lastNarrativeRef.current && !hasActiveDecision) {
+    if (narrative !== lastNarrativeRef.current && !hasActiveDecision && checkForDecisionTriggers) {
       
       // Only analyze the new part of the narrative
       const newContent = narrative.replace(lastNarrativeRef.current, '').trim();
@@ -207,15 +209,15 @@ export const NarrativeDisplay: React.FC<NarrativeDisplayProps> = ({
       id={id || "bhgmNarrativeDisplayContainer"}
     >
       <div className="narrative-content py-4 2">
-        {narrativeItems.map((item, index) => {
+        {narrativeItems && narrativeItems.map((item, index) => {
           let testId = `narrative-item-${item.type}`;
 
           
           if (item.type === 'item-update' && item.metadata?.updateType) {
             testId += `-${item.metadata.updateType}`;
           }
-          // Check if this is a key story point
-          const isStoryPoint = item.type === 'narrative' && isKeyStoryPoint(item.content);
+          // Check if this is a key story point - with additional null checks
+          const isStoryPoint = Boolean(item.type === 'narrative' && item.content && isKeyStoryPoint(item.content));
 
           const element = (
             <NarrativeContent

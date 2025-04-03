@@ -1,0 +1,6 @@
+// This file is now redundant and should be deleted.
+// The consolidated test wrappers have been moved to:
+// /users/jackhaas/projects/boothillgm/BootHillGMApp/app/test/utils/testWrappers.tsx
+//
+// Please delete this file after merging the changes.
+// All tests should import from 'app/test/utils/testWrappers.tsx' instead.

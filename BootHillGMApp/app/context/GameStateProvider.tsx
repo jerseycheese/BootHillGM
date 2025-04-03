@@ -27,6 +27,7 @@ export const GameStateContext = createContext<GameStateContextType>({
 interface GameStateProviderProps {
   children: ReactNode;
   initialGameState?: GameState;
+  initialState?: GameState; // Add this prop for tests
 }
 
 /**
@@ -37,12 +38,16 @@ interface GameStateProviderProps {
  */
 export const GameStateProvider: React.FC<GameStateProviderProps> = ({ 
   children, 
-  initialGameState: providedInitialState = initialGameState 
+  initialGameState: providedInitialState,
+  initialState: testInitialState, // Add this prop
 }) => {
+  // Use testInitialState or providedInitialState or default initialGameState
+  const finalInitialState = testInitialState || providedInitialState || initialGameState;
+  
   // Set up reducer with the provided or default initial state
   const [state, dispatch] = useReducer(
     rootReducer, 
-    providedInitialState
+    finalInitialState
   );
   
   // Context value includes state and dispatch
@@ -85,10 +90,11 @@ export function createSelector<T, K extends unknown[]>(
     const { state } = useGameState();
     
     // Use React's useMemo for memoization
+    // Memoize based ONLY on the specific dependencies returned by the deps function
     return useMemo(
       () => selector(state),
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [state, ...deps(state)]
+      [state, ...deps(state)] // Re-add direct dependency on the whole state object
     );
   };
 }
@@ -150,3 +156,31 @@ export const useActiveTab = createSelector(
   state => state.ui?.activeTab || 'character',
   state => [state.ui?.activeTab]
 );
+
+// UI notification selectors
+export const useNotifications = createSelector(
+  state => state.ui?.notifications || [],
+  state => [state.ui?.notifications]
+);
+
+export const useNotificationsByType = (type: string) => {
+  const { state } = useGameState();
+  return useMemo(
+    () => (state.ui?.notifications || []).filter(notification => notification.type === type),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.ui?.notifications, type]
+  );
+};
+
+export const useLatestNotification = createSelector(
+  state => {
+    const notifications = state.ui?.notifications || [];
+    if (notifications.length === 0) return undefined;
+    
+    // Sort by timestamp and return the most recent
+    return [...notifications].sort((a, b) => b.timestamp - a.timestamp)[0];
+  },
+  state => [state.ui?.notifications]
+);
+
+// Add more selectors as needed for different state slices

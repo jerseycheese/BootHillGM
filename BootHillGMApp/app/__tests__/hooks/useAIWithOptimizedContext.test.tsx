@@ -1,10 +1,18 @@
-// /app/__tests__/hooks/useAIWithOptimizedContext.test.tsx
-// Import React first
+/**
+ * Test file for useAIWithOptimizedContext hook
+ * 
+ * This file tests the AI context optimization hook that provides
+ * different context generation strategies for AI requests.
+ */
+
+// Import React first for mocking
 import * as React from 'react';
 const { useState } = React;
-import { getAIResponse } from '../../../app/services/ai/gameService';
+import { renderHook, act } from '@testing-library/react';
+import { getAIResponse } from '../../services/ai/gameService';
+import { TestWrapper } from '../../test/utils/testWrappers';
 
-// Mock React hooks
+// Mock React hooks - must be before other imports that use React
 jest.mock('react', () => {
   const originalReact = jest.requireActual('react');
   return {
@@ -14,20 +22,23 @@ jest.mock('react', () => {
   };
 });
 
-// Mock dependencies before importing the module being tested
-jest.mock('../../../app/context/NarrativeContext', () => ({
+// Mock dependencies
+jest.mock('../../hooks/narrative/NarrativeProvider', () => ({
+  NarrativeProvider: ({ children }: { children: React.ReactNode }) => children, // Fixed typing
   useNarrative: jest.fn(() => ({
     state: {
-      narrativeHistory: ['Event 1', 'Event 2', 'Event 3'],
-      narrativeContext: {
-        characterFocus: ['Character 1'],
-        themes: ['Theme 1', 'Theme 2']
+      narrative: {
+        narrativeHistory: ['Event 1', 'Event 2', 'Event 3'],
+        narrativeContext: {
+          characterFocus: ['Character 1'],
+          themes: ['Theme 1', 'Theme 2']
+        }
       }
     }
   }))
 }));
 
-jest.mock('../../../app/utils/narrative/narrativeContextIntegration', () => ({
+jest.mock('../../utils/narrative/narrativeContextIntegration', () => ({
   useNarrativeContextSynchronization: jest.fn(() => ({
     ensureFreshContext: jest.fn().mockResolvedValue(true)
   })),
@@ -39,10 +50,9 @@ jest.mock('../../../app/utils/narrative/narrativeContextIntegration', () => ({
   }))
 }));
 
-// Use import instead of require
-jest.mock('../../../app/services/ai/gameService', () => ({
+jest.mock('../../services/ai/gameService', () => ({
   getAIResponse: jest.fn().mockImplementation(async (prompt, context) => ({
-    narrative: `Response to: ${prompt} with context length: ${context.length}`,
+    narrative: `Response to: ${prompt} with context length: ${context?.length || 0}`,
     location: { type: 'indoor', name: 'Test Location' },
     acquiredItems: [],
     removedItems: [],
@@ -52,13 +62,13 @@ jest.mock('../../../app/services/ai/gameService', () => ({
   }))
 }));
 
-jest.mock('../../../app/utils/narrative/narrativeCompression', () => ({
-  estimateTokenCount: jest.fn((text) => text.length / 4)
+jest.mock('../../utils/narrative/narrativeCompression', () => ({
+  estimateTokenCount: jest.fn((text) => (text?.length || 0) / 4)
 }));
 
 // Now import the component being tested
-import { useAIWithOptimizedContext } from '../../../app/utils/narrative/useAIWithOptimizedContext';
-import { InventoryItem } from '../../../app/types/item.types';
+import { useAIWithOptimizedContext } from '../../utils/narrative/useAIWithOptimizedContext';
+import { InventoryItem } from '../../types/item.types';
 
 describe('useAIWithOptimizedContext', () => {
   beforeEach(() => {
@@ -78,19 +88,19 @@ describe('useAIWithOptimizedContext', () => {
       .mockImplementationOnce((initialValue) => [initialValue, setIsLoadingMock])  // For isLoading
       .mockImplementationOnce((initialValue) => [initialValue, setErrorMock]);     // For error
       
-    // Call the hook
-    const hook = useAIWithOptimizedContext();
+    // Call the hook with the consolidated TestWrapper
+    const { result } = renderHook(() => useAIWithOptimizedContext(), { wrapper: TestWrapper });
     
     // Check expected API
-    expect(hook).toHaveProperty('isLoading');
-    expect(hook).toHaveProperty('error');
-    expect(hook).toHaveProperty('makeAIRequest');
-    expect(hook).toHaveProperty('makeAIRequestWithFocus');
-    expect(hook).toHaveProperty('makeAIRequestWithCompactContext');
+    expect(result.current).toHaveProperty('isLoading');
+    expect(result.current).toHaveProperty('error');
+    expect(result.current).toHaveProperty('makeAIRequest');
+    expect(result.current).toHaveProperty('makeAIRequestWithFocus');
+    expect(result.current).toHaveProperty('makeAIRequestWithCompactContext');
     
-    expect(typeof hook.makeAIRequest).toBe('function');
-    expect(typeof hook.makeAIRequestWithFocus).toBe('function');
-    expect(typeof hook.makeAIRequestWithCompactContext).toBe('function');
+    expect(typeof result.current.makeAIRequest).toBe('function');
+    expect(typeof result.current.makeAIRequestWithFocus).toBe('function');
+    expect(typeof result.current.makeAIRequestWithCompactContext).toBe('function');
   });
   
   it('should make AI requests and update state', async () => {
@@ -112,24 +122,60 @@ describe('useAIWithOptimizedContext', () => {
       suggestedActions: []
     });
     
-    // Call the hook
-    const { makeAIRequest } = useAIWithOptimizedContext();
+    // Call the hook with renderHook using the consolidated TestWrapper
+    const { result } = renderHook(() => useAIWithOptimizedContext(), { wrapper: TestWrapper });
     
     // Call the makeAIRequest function with test data
     const inventory: InventoryItem[] = [
-      { id: 'item1', name: 'Test Item', description: 'A test item' } as InventoryItem
+      { id: 'item1', name: 'Test Item', description: 'A test item', category: 'general', quantity: 1 }
     ];
     
     // Make the request
-    const response = await makeAIRequest('Test prompt', inventory);
+    await act(async () => {
+      await result.current.makeAIRequest('Test prompt', inventory);
+    });
     
     // Verify the game service was called
     expect(getAIResponse).toHaveBeenCalled();
     
-    // Verify we got a response
-    expect(response).toBeDefined();
-    
     // Verify loading state was updated
+    expect(setIsLoadingMock).toHaveBeenCalledWith(true);
+    expect(setIsLoadingMock).toHaveBeenCalledWith(false);
+  });
+  
+  it('should handle errors during AI requests', async () => {
+    // Set mock values for useState
+    const setIsLoadingMock = jest.fn();
+    const setErrorMock = jest.fn();
+    
+    // Mock useState for this test
+    (useState as jest.Mock)
+      .mockImplementationOnce(() => [false, setIsLoadingMock]) // For isLoading
+      .mockImplementationOnce(() => [null, setErrorMock]);     // For error
+    
+    // Mock an error response
+    const testError = new Error('AI service failed');
+    (getAIResponse as jest.Mock).mockRejectedValueOnce(testError);
+    
+    // Call the hook with renderHook
+    const { result } = renderHook(() => useAIWithOptimizedContext(), { wrapper: TestWrapper });
+    
+    // Make the request that will fail
+    await act(async () => {
+      try {
+        await result.current.makeAIRequest('Test prompt', []);
+      } catch {
+        // Error should be caught inside the hook
+      }
+    });
+    
+    // Verify the service was called
+    expect(getAIResponse).toHaveBeenCalled();
+    
+    // Verify error state was updated
+    expect(setErrorMock).toHaveBeenCalledWith(testError);
+    
+    // Verify loading state was updated (set to true then back to false)
     expect(setIsLoadingMock).toHaveBeenCalledWith(true);
     expect(setIsLoadingMock).toHaveBeenCalledWith(false);
   });

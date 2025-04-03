@@ -3,7 +3,7 @@ title: Boot Hill GM Documentation
 aliases: [Home, Documentation Home]
 tags: [documentation, home, index]
 created: 2024-12-28
-updated: 2025-01-17
+updated: 2025-04-03
 ---
 
 # Boot Hill GM Documentation
@@ -36,6 +36,12 @@ The documentation aims to:
 - [[core-systems/player-decision-tracking|Player Decision Tracking System]]
 - [[core-systems/player-decision-relevance-system|Player Decision Relevance System]]
 - [[core-systems/combat-modifiers|Combat Modifiers]]
+
+### Technical Guides
+> [[technical-guides/_index|Technical Guides]]
+- [[technical-guides/setup|Development Setup]]
+- [[technical-guides/state-management/state-unification|State Unification Guide]]
+- [[technical-guides/testing/testing-patterns|Testing Patterns]]
 
 ### Features
 > [[features/_index|Features Overview]]
@@ -78,6 +84,10 @@ The documentation aims to:
 - [[development/workflows/feature-workflow|Feature Development]]
 - [[development/workflows/ai-workflow|AI Development]]
 
+### Issues
+> [[issues/index|Project Issues]]
+- [[issues/issue-142/cleanup-tasks|Issue #142 Cleanup Tasks]]
+
 ### Reference
 - [[reference/_index|Reference Documentation]]
 - [[examples/_index|Code Examples]]
@@ -94,10 +104,12 @@ graph TD
     B --> F[Features]
     B --> G[AI]
     B --> H[Architecture]
+    B --> O[Technical Guides]
     C --> I[Meta]
     C --> J[Rules]
     D --> K[Workflows]
     D --> L[Reference]
     D --> M[Examples]
     D --> N[Templates]
+    D --> P[Issues]
 ```

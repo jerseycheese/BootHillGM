@@ -5,7 +5,7 @@ import { Character } from '../../../types/character';
 // import { TestCampaignStateProvider } from '../../utils/testWrappers'; // Removed legacy wrapper
 // Remove GameStateProvider import
 import { createMockGameState } from '../../../test/utils/inventoryTestUtils'; // Import state utility
-import { renderWithMockContext } from '../../../test/utils/testWrappers'; // Import the new mock context renderer
+import { renderWithProviders } from '../../testWrappers'; // Correct import path and function name
 
 describe('CombatTypeSelection', () => {
   const mockOnSelectType = jest.fn();
@@ -82,13 +82,13 @@ describe('CombatTypeSelection', () => {
     };
 
     // Render with mock context provider
-    renderWithMockContext(
+    renderWithProviders(
       <CombatTypeSelection
         playerCharacter={mockPlayer}
         opponent={opponentWithMetadata}
         onSelectType={mockOnSelectType}
       />,
-      initialState // Pass the mock state to the wrapper
+      { initialState } // Pass state via options object
     );
 
     // Check that weapon combat option is available
@@ -125,13 +125,13 @@ describe('CombatTypeSelection', () => {
     };
 
     // Render with mock context provider
-    renderWithMockContext(
+    renderWithProviders(
       <CombatTypeSelection
         playerCharacter={playerWithWeapon}
         opponent={opponentWithWeapon}
         onSelectType={mockOnSelectType}
       />,
-      initialState // Pass the mock state to the wrapper
+      { initialState } // Pass state via options object
     );
 
     // Check that weapon combat option is available and enabled
@@ -156,13 +156,13 @@ describe('CombatTypeSelection', () => {
     });
 
     // Render with mock context provider
-    renderWithMockContext(
+    renderWithProviders(
       <CombatTypeSelection
         playerCharacter={mockPlayer}
         opponent={mockOpponent}
         onSelectType={mockOnSelectType}
       />,
-      initialState // Pass the mock state to the wrapper
+      { initialState } // Pass state via options object
     );
 
     // Check that weapon combat option is disabled

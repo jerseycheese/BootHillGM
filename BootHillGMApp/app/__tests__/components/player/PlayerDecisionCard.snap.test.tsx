@@ -1,10 +1,10 @@
 import React from 'react';
 import { render } from '@testing-library/react';
-import PlayerDecisionCard from '@/app/components/player/PlayerDecisionCard';
-import { mockPlayerDecisions } from '@/app/test/fixtures/mockComponents';
+import PlayerDecisionCard from '@/components/player/PlayerDecisionCard';
+import { mockPlayerDecisions } from '@/test/fixtures/mockComponents';
 
 // Mock the narrative context
-jest.mock('@/app/hooks/useNarrativeContext', () => ({
+jest.mock('@/hooks/useNarrativeContext', () => ({
   useNarrativeContext: () => ({
     recordPlayerDecision: jest.fn(),
     isGeneratingNarrative: false,
@@ -64,7 +64,7 @@ describe('PlayerDecisionCard snapshots', () => {
   // Loading state
   it('matches snapshot while generating narrative', () => {
     // Create a new mock implementation for just this test
-    const originalMock = jest.requireMock('@/app/hooks/useNarrativeContext');
+    const originalMock = jest.requireMock('@/hooks/useNarrativeContext');
     const originalImplementation = originalMock.useNarrativeContext;
     
     // Override the mock completely

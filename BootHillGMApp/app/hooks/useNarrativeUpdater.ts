@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { useCampaignState } from './useCampaignStateContext';
+// Removed import { useCampaignState } from './useCampaignStateContext';
+import { useGameState } from '../context/GameStateProvider'; // Import correct hook
 import { addNarrativeHistory } from '../actions/narrativeActions';
 import { UpdateNarrativeParams } from '../types/gameSession.types';
 
@@ -10,7 +11,8 @@ import { UpdateNarrativeParams } from '../types/gameSession.types';
  * @returns An updateNarrative function that handles narrative state updates
  */
 export const useNarrativeUpdater = () => {
-  const { dispatch } = useCampaignState();
+  // Use the correct state hook
+  const { dispatch } = useGameState();
 
   /**
    * Updates the game narrative using the narrativeReducer

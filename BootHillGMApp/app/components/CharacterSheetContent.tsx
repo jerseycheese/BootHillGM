@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+// Removed unused import { useEffect } from 'react';
 import { useGameInitialization } from '../hooks/useGameInitialization';
-import { useGame } from '../hooks/useGame';
-import { useCampaignState } from '../components/CampaignStateManager';
+// Removed import { useGame } from '../hooks/useGame';
+// Removed import { useCampaignState } from '../components/CampaignStateManager';
+// Removed unused import { useGameState } from '../context/GameStateProvider';
 import { Wound } from '../types/wound';
-import { Character } from '../types/character';
+// Removed unused import { Character } from '../types/character';
 import StatDisplay from '../components/StatDisplay';
 import DerivedStatDisplay from '../components/DerivedStatDisplay';
 import useCharacterStats from '../hooks/useCharacterStats';
@@ -16,43 +17,15 @@ import useCharacterStats from '../hooks/useCharacterStats';
  */
 export default function CharacterSheetContent() {
   const { isClient, isInitializing } = useGameInitialization();
-  const { state, dispatch } = useGame();
-  const { loadGame, saveGame } = useCampaignState();
-  const { character, derivedStats, setCharacter } = useCharacterStats();
+  // Use the correct state hook
+  // Removed unused state and dispatch from useGameState
+  // const { state, dispatch } = useGameState();
+  // Removed loadGame/saveGame from useCampaignState
+  // Removed unused setCharacter from useCharacterStats
+  const { character, derivedStats } = useCharacterStats();
 
-  useEffect(() => {
-    // Only run on client and when character is not present
-    if (isClient && !character) {
-      // First try to load from campaign state
-      const loadedState = loadGame();
-
-      // If no campaign state, check for last created character
-      if (!loadedState?.character && typeof window !== 'undefined') {
-        const lastCharacterJSON = localStorage.getItem('lastCreatedCharacter');
-        if (lastCharacterJSON) {
-          try {
-            const lastCharacter = JSON.parse(lastCharacterJSON);
-
-            // Create a new game state with this character
-            const newState = {
-              ...state,
-              character: lastCharacter,
-              savedTimestamp: Date.now(),
-            };
-
-            // Save and update the state
-            saveGame(newState);
-            dispatch({ type: 'SET_STATE', payload: newState });
-            setCharacter(lastCharacter);
-          } catch (error) {
-            console.error("Error parsing character from local storage:", error);
-          }
-        }
-      } else if (loadedState?.character) {
-        setCharacter(loadedState.character as unknown as Character);
-      }
-    }
-  }, [isClient, character, loadGame, saveGame, dispatch, state, setCharacter]);
+  // Removed useEffect that attempted manual state loading/saving.
+  // This should be handled by the main initialization and persistence hooks.
 
   if (!isClient || isInitializing || !character) {
     return (

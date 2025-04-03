@@ -1,7 +1,6 @@
 import { GameState } from '../types/gameState';
 import { initialState as initialGameState } from '../types/initialState';
-// Removed unused imports: CharacterState, CombatState, NarrativeState, UIState, CombatType
-// Removed unused imports from stateRestorationUtils
+import GameStorage from '../utils/gameStorage';
 
 interface RestoreStateOptions {
   isInitializing: boolean;
@@ -17,6 +16,7 @@ interface RestoreStateOptions {
  * - Deep copying of complex objects (inventory, combat state)
  * - Validation of restored data
  * - Error handling for corrupt or invalid saves
+ * - Fallback to localStorage for missing state data
  * 
  * Used by CampaignStateManager to handle state initialization.
  */
@@ -26,19 +26,65 @@ export const useCampaignStateRestoration = ({
 }: RestoreStateOptions): GameState => {
   // Initialize with proper structure for new games
   if (isInitializing) {
-    // Return initial state directly, ensuring isClient is set
+    // Get initial character state from any saved progress or create new
+    const characterState = GameStorage.getCharacter();
+    
+    // Ensure character has inventory items
+    if (characterState.player && 
+        (!characterState.player.inventory || 
+         !characterState.player.inventory.items || 
+         characterState.player.inventory.items.length === 0)) {
+      characterState.player.inventory = {
+        items: GameStorage.getDefaultInventoryItems()
+      };
+    }
+    
+    // Return initial state with character data and narrative generation flag
     return {
       ...initialGameState,
       isClient: true,
+      character: characterState,
+      narrative: {
+        ...initialGameState.narrative,
+        narrativeHistory: [
+          'Your adventure begins in the rugged frontier town of Boot Hill...',
+          'The dusty streets are lined with wooden buildings, a saloon, and a general store.',
+          'What would you like to do?'
+        ],
+        needsInitialGeneration: true // Flag to trigger AI narrative generation
+      },
+      suggestedActions: GameStorage.getSuggestedActions()
     };
   }
 
   if (!savedStateJSON) {
-    // Return initial state directly, ensuring isClient is set and character is null
+    console.warn('No saved state found, attempting to recover from localStorage');
+    
+    // Try to reconstruct from fragmented localStorage
+    // Get character from any available source
+    const characterState = GameStorage.getCharacter();
+    
+    // Ensure character has inventory items
+    if (characterState.player && 
+        (!characterState.player.inventory || 
+         !characterState.player.inventory.items || 
+         characterState.player.inventory.items.length === 0)) {
+      characterState.player.inventory = {
+        items: GameStorage.getDefaultInventoryItems()
+      };
+    }
+    
+    // Return initial state with recovered data and narrative generation flag
     return {
       ...initialGameState,
       isClient: true,
-      character: null,
+      character: characterState,
+      narrative: {
+        ...initialGameState.narrative,
+        narrativeHistory: [GameStorage.getNarrativeText()],
+        needsInitialGeneration: true // Flag to trigger AI narrative generation
+      },
+      suggestedActions: GameStorage.getSuggestedActions()
     };
   }
 
@@ -46,35 +92,70 @@ export const useCampaignStateRestoration = ({
     let savedState: unknown;
     try {
       savedState = JSON.parse(savedStateJSON);
-    } catch {
-      // Silently handle parse errors and return initial state
+    } catch (e) {
+      console.error('Error parsing saved state:', e);
+      
+      // Recover what we can from localStorage
+      const characterState = GameStorage.getCharacter();
+      
+      // Ensure character has inventory items
+      if (characterState.player && 
+          (!characterState.player.inventory || 
+           !characterState.player.inventory.items || 
+           characterState.player.inventory.items.length === 0)) {
+        characterState.player.inventory = {
+          items: GameStorage.getDefaultInventoryItems()
+        };
+      }
+      
+      // Return initial state with recovered data
       return {
         ...initialGameState,
         isClient: true,
-        character: { // Ensure character slice exists but is empty
-          player: null,
-          opponent: null,
+        character: characterState,
+        narrative: {
+          ...initialGameState.narrative,
+          narrativeHistory: [GameStorage.getNarrativeText()],
+          needsInitialGeneration: true // Flag to trigger AI narrative generation
         },
+        suggestedActions: GameStorage.getSuggestedActions()
       };
     }
     
     // Process the state with adapters to ensure backward compatibility 
-    // No adaptation needed; savedState should represent GameState structure
     const normalizedState = savedState as Partial<GameState>;
     
+    // Check if we need to trigger narrative generation
+    const needsNarrativeGeneration = 
+      !normalizedState.narrative || 
+      !normalizedState.narrative.narrativeHistory || 
+      normalizedState.narrative.narrativeHistory.length <= 1 || 
+      normalizedState.narrative.narrativeHistory[0] === 'Your adventure begins in the rugged frontier town of Boot Hill...';
+    
     // Check if combat has isActive property to avoid property access error
-    // Simplified check for combat activity directly from normalized state
     const combatIsActive = Boolean(normalizedState.combat?.isActive);
+
+    // Ensure character state is properly structured
+    let characterState = normalizedState.character 
+      ? (typeof normalizedState.character === 'object' && 'player' in normalizedState.character
+          ? normalizedState.character
+          : { player: normalizedState.character, opponent: null })
+      : null;
+    
+    // If character state is still null, try to recover from localStorage
+    if (!characterState || !characterState.player) {
+      console.log('Character state missing or invalid, attempting recovery from localStorage');
+      characterState = GameStorage.getCharacter();
+    }
+    
+    // Inventory check will be done after merging below
 
     // Merge the loaded state with initial state to ensure all properties exist
     const restoredState: GameState = {
       ...initialGameState,
       ...normalizedState,
       // Ensure nested slices are also merged correctly
-      character: {
-        player: normalizedState.character?.player ?? initialGameState.character?.player ?? null,
-        opponent: normalizedState.character?.opponent ?? initialGameState.character?.opponent ?? null,
-      },
+      character: characterState,
       combat: {
         ...initialGameState.combat,
         ...(normalizedState.combat || {}),
@@ -92,31 +173,64 @@ export const useCampaignStateRestoration = ({
       narrative: {
         ...initialGameState.narrative,
         ...(normalizedState.narrative || {}),
+        // Add flag to trigger narrative generation if needed
+        needsInitialGeneration: needsNarrativeGeneration
       },
       ui: {
         ...initialGameState.ui,
         ...(normalizedState.ui || {}),
       },
+      // Ensure suggested actions are available
+      suggestedActions: normalizedState.suggestedActions || GameStorage.getSuggestedActions(),
       // Ensure isClient and savedTimestamp are correctly set
       isClient: true,
       savedTimestamp: typeof normalizedState.savedTimestamp === 'number'
         ? normalizedState.savedTimestamp
-        : undefined,
+        : Date.now(),
     };
-
-    // Return the merged GameState directly
+    
+    // Ensure character has inventory items AFTER merging state
+    // This prevents loaded empty inventory from overwriting defaults
+    if (restoredState.character?.player &&
+        (!restoredState.character.player.inventory ||
+         !restoredState.character.player.inventory.items ||
+         restoredState.character.player.inventory.items.length === 0)) {
+      // Ensure inventory object exists before assigning items
+      if (!restoredState.character.player.inventory) {
+          restoredState.character.player.inventory = { items: [] };
+      }
+      restoredState.character.player.inventory.items = GameStorage.getDefaultInventoryItems();
+    }
     return restoredState;
     
   } catch (error) {
     console.error('Error restoring state:', error);
-    // Return initial state directly on error, ensuring isClient is set
+    
+    // Recovery path for error cases
+    // Get character from any available source
+    const characterState = GameStorage.getCharacter();
+    
+    // Ensure character has inventory items
+    if (characterState.player && 
+        (!characterState.player.inventory || 
+         !characterState.player.inventory.items || 
+         characterState.player.inventory.items.length === 0)) {
+      characterState.player.inventory = {
+        items: GameStorage.getDefaultInventoryItems()
+      };
+    }
+    
+    // Return initial state with recovered data
     return {
       ...initialGameState,
       isClient: true,
-      character: { // Ensure character slice exists but is empty
-        player: null,
-        opponent: null,
+      character: characterState,
+      narrative: {
+        ...initialGameState.narrative,
+        narrativeHistory: [GameStorage.getNarrativeText()],
+        needsInitialGeneration: true // Flag to trigger AI narrative generation
       },
+      suggestedActions: GameStorage.getSuggestedActions()
     };
   }
 };

@@ -23,6 +23,31 @@ import {
 } from '../utils/storyUtils';
 
 /**
+ * Ensures the story progression state has valid default values
+ * @param state - The story progression state to validate
+ * @returns A story progression state with valid default values
+ */
+function ensureValidStoryState(state: StoryProgressionState | undefined): StoryProgressionState {
+  if (!state) return initialStoryProgressionState;
+  
+  // Create a default valid state structure
+  // Ensure the state conforms to the StoryProgressionState interface
+  const validState: StoryProgressionState = {
+    currentPoint: state.currentPoint || initialStoryProgressionState.currentPoint,
+    progressionPoints: state.progressionPoints || initialStoryProgressionState.progressionPoints,
+    mainStorylinePoints: Array.isArray(state.mainStorylinePoints)
+      ? state.mainStorylinePoints
+      : initialStoryProgressionState.mainStorylinePoints,
+    branchingPoints: state.branchingPoints || initialStoryProgressionState.branchingPoints,
+    lastUpdated: typeof state.lastUpdated === 'number'
+      ? state.lastUpdated
+      : initialStoryProgressionState.lastUpdated,
+  };
+  
+  return validState;
+}
+
+/**
  * Validates and converts a string to a StorySignificance type
  * @param value - The string value to validate
  * @returns A valid StorySignificance value
@@ -109,8 +134,8 @@ interface UseStoryProgressionResult {
 export function useStoryProgression(): UseStoryProgressionResult {
   const { state, dispatch } = useGameSession();
   
-  // Get the story progression state or use the initial state if not yet set
-  const storyProgression = state.narrative?.storyProgression || initialStoryProgressionState;
+  // Get the story progression state with validation to ensure it has required properties
+  const storyProgression = ensureValidStoryState(state?.narrative?.storyProgression);
   
   // Get the current story point if one exists
   const currentPoint = useMemo(() => {
@@ -118,15 +143,24 @@ export function useStoryProgression(): UseStoryProgressionResult {
     return storyProgression.progressionPoints[storyProgression.currentPoint] || null;
   }, [storyProgression.currentPoint, storyProgression.progressionPoints]);
   
+  // Get the main storyline points, ensuring it's always a valid array
+  const mainStoryline = useMemo(() => {
+    return Array.isArray(storyProgression.mainStorylinePoints) 
+      ? storyProgression.mainStorylinePoints 
+      : [];
+  }, [storyProgression.mainStorylinePoints]);
+  
   /**
    * Add a story point to the progression
    */
   const addStoryPoint = useCallback((point: StoryProgressionPoint) => {
     // Dispatch the specific action for adding a story point
-    dispatch({
-      type: 'ADD_STORY_POINT', // Use the correct action type
-      payload: point // Pass the StoryProgressionPoint directly
-    });
+    if (dispatch) {
+      dispatch({
+        type: 'ADD_STORY_POINT', // Use the correct action type
+        payload: point // Pass the StoryProgressionPoint directly
+      });
+    }
   }, [dispatch]); // Removed unnecessary storyProgression dependency
   
   /**
@@ -162,10 +196,12 @@ export function useStoryProgression(): UseStoryProgressionResult {
     }
     
     // Dispatch the specific action for updating the current point
-    dispatch({
-      type: 'UPDATE_CURRENT_POINT', // Use the correct action type
-      payload: pointId // Pass the point ID directly
-    });
+    if (dispatch) {
+      dispatch({
+        type: 'UPDATE_CURRENT_POINT', // Use the correct action type
+        payload: pointId // Pass the point ID directly
+      });
+    }
   }, [dispatch, storyProgression]);
   
   /**
@@ -179,7 +215,10 @@ export function useStoryProgression(): UseStoryProgressionResult {
    * Generate a summary of the story progression for display
    */
   const generateSummary = useCallback((maxPoints = 3) => {
-    const pointIds = storyProgression.mainStorylinePoints.slice(-maxPoints);
+    // Ensure mainStorylinePoints is a valid array
+    const pointIds = Array.isArray(storyProgression.mainStorylinePoints) 
+      ? storyProgression.mainStorylinePoints.slice(-maxPoints)
+      : [];
     
     if (pointIds.length === 0) {
       return "No significant story events have occurred yet.";
@@ -200,7 +239,7 @@ export function useStoryProgression(): UseStoryProgressionResult {
    * @param location - Optional location context
    */
   const processNarrativeForStoryPoints = useCallback((narrative: string, location?: LocationType) => {
-    if (!narrative) return;
+    if (!narrative || !dispatch) return;
     
     // Try to extract explicit story point data
     const storyPointData = extractStoryPointFromNarrative(narrative);
@@ -225,13 +264,13 @@ export function useStoryProgression(): UseStoryProgressionResult {
         'minor'
       );
     }
-  }, [addStoryPoint, createAndAddStoryPoint, storyProgression.currentPoint]);
+  }, [addStoryPoint, createAndAddStoryPoint, storyProgression.currentPoint, dispatch]);
   
   return {
     storyProgression,
     currentPoint,
-    allPoints: storyProgression.progressionPoints,
-    mainStoryline: storyProgression.mainStorylinePoints,
+    allPoints: storyProgression.progressionPoints || {},
+    mainStoryline,  // Return the pre-validated mainStoryline
     addStoryPoint,
     createAndAddStoryPoint,
     setCurrentPoint,

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNarrative } from '../context/NarrativeContext';
+import { useGameState } from '../context/GameStateProvider';
 import { LocationType } from '../services/locationService';
 import { EVENTS, triggerCustomEvent } from '../utils/events';
 import { initializeBrowserDebugTools, updateDebugCurrentDecision } from '../utils/debugConsole';
@@ -7,11 +7,12 @@ import { generateEnhancedDecision } from '../utils/contextualDecisionGenerator.e
 import { initializeDecisionDebugTools } from '../utils/decisionDebug';
 import { clearCurrentDecision, addNarrativeHistory } from '../actions/narrativeActions';
 import { createDecisionGameState } from '../utils/decisionStateUtils';
+import { GameState } from '../types/gameState';
 
 /**
  * Custom hook to manage DevTools state and functionality
  */
-export function useDevTools(gameState: unknown) {
+export function useDevTools(gameState: GameState) {
   // Core state
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +25,9 @@ export function useDevTools(gameState: unknown) {
   const [decisionScore, setDecisionScore] = useState<number | undefined>(undefined);
 
   // Narrative context
-  const narrativeContext = useNarrative();
+  // Use the correct state hook
+  const { state, dispatch } = useGameState();
+  // narrativeContext is no longer a separate object, access state directly
 
   /**
    * Forces a re-render of all components via a custom event system.
@@ -41,7 +44,8 @@ export function useDevTools(gameState: unknown) {
   const handleClearDecision = useCallback(() => {
     setLoading("clearing");
     try {
-      narrativeContext.dispatch(clearCurrentDecision());
+      // Use the dispatch from useGameState
+      dispatch(clearCurrentDecision());
       triggerCustomEvent(EVENTS.DECISION_CLEARED);
       forceRender();
     } catch (err) {
@@ -52,7 +56,7 @@ export function useDevTools(gameState: unknown) {
         setLoading(null);
       }, 100);
     }
-  }, [narrativeContext, forceRender]);
+  }, [dispatch, forceRender]); // Update dependencies
 
   /**
    * Handles the generation and presentation of a contextual decision based on
@@ -64,10 +68,12 @@ export function useDevTools(gameState: unknown) {
     
     try {
       // First, notify the user that we're generating a decision
-      narrativeContext.dispatch(addNarrativeHistory("\nGenerating a contextual decision based on current narrative context...\n"));
+      // Use the dispatch from useGameState
+      dispatch(addNarrativeHistory("\nGenerating a contextual decision based on current narrative context...\n"));
       
       // Clear any existing decision to prevent conflicts
-      narrativeContext.dispatch(clearCurrentDecision());
+      // Use the dispatch from useGameState
+      dispatch(clearCurrentDecision());
       triggerCustomEvent(EVENTS.DECISION_CLEARED);
       
       // Add a slight delay to ensure the UI updates with our message
@@ -77,23 +83,27 @@ export function useDevTools(gameState: unknown) {
           const locationToUse = locationType || selectedLocationType;
           
           // Make sure we're using the most up-to-date narrative state
-          const currentNarrativeState = narrativeContext.state;
+          // Access narrative state directly from the main state object
+          const currentNarrativeState = state.narrative;
           
           // Create a properly structured game state for decision generation
-          const decisionGameState = createDecisionGameState(gameState, currentNarrativeState);
+          // Ensure currentNarrativeState is not null before passing
+          const decisionGameState = currentNarrativeState ? createDecisionGameState(gameState, currentNarrativeState) : null;
           
           // Generate a contextual decision using the AI-enhanced generator with current context
-          const contextualDecision = await generateEnhancedDecision(
+          // Pass narrativeContext from the state slice
+          const contextualDecision = decisionGameState ? await generateEnhancedDecision(
             decisionGameState,
-            currentNarrativeState.narrativeContext,
+            currentNarrativeState?.narrativeContext,
             locationToUse,
             true // Force generation
-          );
+          ) : null;
           
           // In case of generation failure
           if (!contextualDecision) {
             const errorMessage = `Failed to generate a decision for the current narrative context`;
-            narrativeContext.dispatch(addNarrativeHistory(`\n${errorMessage}\n`));
+            // Use the dispatch from useGameState
+            dispatch(addNarrativeHistory(`\n${errorMessage}\n`));
             setError(errorMessage);
             setLoading(null);
             return;
@@ -105,10 +115,12 @@ export function useDevTools(gameState: unknown) {
           }
           
           // Remove the generating message
-          const narrativeHistory = [...narrativeContext.state.narrativeHistory];
+          // Access narrativeHistory from the main state object
+          const narrativeHistory = [...(state.narrative?.narrativeHistory || [])];
           narrativeHistory.pop(); // Remove the loading message
           
-          narrativeContext.dispatch({
+          // Use the dispatch from useGameState
+          dispatch({
             type: 'UPDATE_NARRATIVE',
             payload: {
               narrativeHistory: narrativeHistory
@@ -116,7 +128,8 @@ export function useDevTools(gameState: unknown) {
           });
           
           // Now present the new decision
-          narrativeContext.dispatch({
+          // Use the dispatch from useGameState
+          dispatch({
             type: 'PRESENT_DECISION',
             payload: contextualDecision
           });
@@ -144,7 +157,7 @@ export function useDevTools(gameState: unknown) {
       console.error('BHGM Debug: Contextual decision error:', err);
       setLoading(null);
     }
-  }, [gameState, narrativeContext, selectedLocationType, forceRender]);
+  }, [gameState, state.narrative, dispatch, selectedLocationType, forceRender]); // Update dependencies
 
   /**
    * Toggles visibility of the entire DevTools panel
@@ -157,8 +170,19 @@ export function useDevTools(gameState: unknown) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // Create a safe getter function that will never return null
+    const safeGameStateGetter = (): GameState => {
+      // If state.narrative exists, create a decision game state, otherwise return gameState directly
+      if (state.narrative) {
+        const decisionState = createDecisionGameState(gameState, state.narrative);
+        // Ensure we never return null by providing a fallback
+        return decisionState || gameState;
+      }
+      return gameState;
+    };
+
     initializeBrowserDebugTools(
-      () => createDecisionGameState(gameState, narrativeContext.state),
+      safeGameStateGetter,
       (locationType?: LocationType) => handleContextualDecision(locationType),
       () => handleClearDecision()
     );
@@ -177,26 +201,30 @@ export function useDevTools(gameState: unknown) {
         console.error('Failed to trigger AI decision:', error);
       }
     };
-  }, [gameState, handleClearDecision, handleContextualDecision, narrativeContext.state]);
+  }, [gameState, handleClearDecision, handleContextualDecision, state.narrative]); // Update dependencies
 
   // Update the debug namespace with current decision
   useEffect(() => {
-    updateDebugCurrentDecision(narrativeContext.state.currentDecision || null);
+    // Access currentDecision from the main state object
+    updateDebugCurrentDecision(state.narrative?.currentDecision || null);
     
-    if (narrativeContext.state.currentDecision) {
-      triggerCustomEvent(EVENTS.UI_STATE_CHANGED, { 
+    // Access currentDecision from the main state object
+    if (state.narrative?.currentDecision) {
+      triggerCustomEvent(EVENTS.UI_STATE_CHANGED, {
         type: 'decision',
         active: true,
-        id: narrativeContext.state.currentDecision.id
+        id: state.narrative.currentDecision.id
       });
     }
-  }, [narrativeContext.state.currentDecision]);
+  }, [state.narrative?.currentDecision]); // Update dependencies
 
   // Get decision history for display
-  const decisionHistory = narrativeContext.state.narrativeContext?.decisionHistory || [];
+  // Access decisionHistory from the main state object
+  const decisionHistory = state.narrative?.narrativeContext?.decisionHistory || [];
   
   // Check if there's currently an active decision
-  const hasActiveDecision = !!narrativeContext.state.currentDecision;
+  // Access currentDecision from the main state object
+  const hasActiveDecision = !!state.narrative?.currentDecision;
 
   return {
     // State
@@ -219,7 +247,7 @@ export function useDevTools(gameState: unknown) {
     toggleDevPanel,
     
     // Narrative info
-    narrativeContext,
+    // narrativeContext is no longer needed here, state is accessed directly
     decisionHistory,
     hasActiveDecision
   };

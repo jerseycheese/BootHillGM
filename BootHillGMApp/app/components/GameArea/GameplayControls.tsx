@@ -3,15 +3,19 @@
  * Switches between normal input mode and combat system based on game state.
  * Handles loading states and suggested actions during gameplay.
  */
+'use client';
+
+import { useMemo } from 'react'; // Import useMemo
 import { CombatSystem } from '../Combat/CombatSystem';
 import InputManager from '../InputManager';
 import type { GameplayControlsProps } from './types';
-// Removed ensureCombatState import
-// Removed unused import: CombatType
-// Removed unused imports: CombatState, LogEntry, SuggestedAction
+import type { SuggestedAction } from '../../types/campaign';
 import { Character } from '../../types/character';
+import GameStorage from '../../utils/gameStorage';
+import { CombatState } from '../../types/combat';
 
-// Removed local ExtendedGameState interface definition
+// Default actions moved outside component to avoid ESLint dependency warning
+const defaultActions: SuggestedAction[] = [];
 
 export function GameplayControls({
   isLoading,
@@ -22,21 +26,66 @@ export function GameplayControls({
   onCombatEnd,
   dispatch,
 }: GameplayControlsProps) {
-  if (!state.character) {
-    return null;
+  // Derive suggestedActions directly from state or fallback - always call useMemo
+  const actionsToDisplay = useMemo(() => {
+    if (!state) return defaultActions;
+    
+    if (state.suggestedActions && state.suggestedActions.length > 0) {
+      return state.suggestedActions;
+    }
+    
+    // Fallback if state actions are empty or invalid
+    console.log('GameplayControls: Falling back to GameStorage for suggested actions');
+    return GameStorage.getSuggestedActions();
+  }, [state]); // Only depend on state
+  
+  // If the game is initializing, show a loading state for controls
+  if (isLoading) {
+    return (
+      <div className="mt-4 shrink-0 flex items-center justify-center">
+        <p className="text-lg font-semibold">Loading Controls...</p>
+      </div>
+    );
   }
 
-  // Access the state as extended state to handle combatState access
-  // Removed cast to ExtendedGameState, use state directly
+  if (!state) {
+    return (
+      <div className="mt-4 shrink-0">
+        <p>Loading game controls...</p>
+      </div>
+    );
+  }
 
-  // Get the player character from character state (assuming character.player structure)
+  // Even if state.character is null, still try to render the input controls
+  // with fallback suggested actions from GameStorage
+  if (!state.character) {
+    return (
+      <div className="mt-4 shrink-0">
+        <InputManager
+          onSubmit={(input) => onUserInput?.(input)}
+          isLoading={isLoading}
+          suggestedActions={actionsToDisplay}
+        />
+      </div>
+    );
+  }
+
+  // Get the player character from character state (attempting both formats)
   const playerCharacter = 'player' in state.character 
     ? state.character.player 
     : state.character as unknown as Character;
 
-  // Make sure we have a non-null playerCharacter before proceeding
+  // If playerCharacter is null, still show the input manager with suggested actions
   if (!playerCharacter) {
-    return null;
+    return (
+      <div className="mt-4 shrink-0">
+        <InputManager
+          onSubmit={(input) => onUserInput?.(input)}
+          isLoading={isLoading}
+          suggestedActions={actionsToDisplay}
+        />
+      </div>
+    );
   }
 
   // Access combat state directly from the GameState slice
@@ -57,17 +106,14 @@ export function GameplayControls({
           opponent={opponent}
           onCombatEnd={onCombatEnd}
           dispatch={dispatch}
-          // Pass the combat slice directly, ensuring it conforms to CombatSystemProps['initialCombatState']
-          // Might need further adjustments based on CombatSystem's expected props
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          initialCombatState={combatStateSlice as any} // Cast to any to match reverted CombatSystem prop type
-          // currentCombatState prop might be obsolete if CombatSystem uses state directly
+          // Cast using as CombatState to match required type
+          initialCombatState={combatStateSlice as CombatState}
         />
       ) : (
         <InputManager
           onSubmit={handleUserInput}
           isLoading={isLoading}
-          suggestedActions={state.suggestedActions || []} // Access directly from state
+          suggestedActions={actionsToDisplay}
         />
       )}
     </div>
