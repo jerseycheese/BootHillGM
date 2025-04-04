@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { GameState, initialGameState } from "../../types/gameState";
 import { StoryPointType, NarrativeDisplayMode, NarrativeState } from "../../types/narrative.types";
 import { getAIResponse } from "../../services/ai/gameService";
+import { validateAndEnhanceResponse } from "../../services/ai/utils/responseValidator"; // Import enhancer
 import { getStartingInventory } from "../../utils/startingInventory";
 import { Character } from "../../types/character"; // Added import
 import {
@@ -39,20 +40,23 @@ export const useInitializationStrategies = () => {
         journalContext: "",
         inventory: startingInventory // Pass starting inventory items to AI for context
       });
-
+      
+      // Enhance the response to ensure diverse actions (context no longer needed)
+      const enhancedResponse = validateAndEnhanceResponse(response);
       // Save the initial narrative to localStorage for reset functionality
-      localStorage.setItem("initial-narrative", JSON.stringify({ narrative: response.narrative }));
+      localStorage.setItem("initial-narrative", JSON.stringify({ narrative: enhancedResponse.narrative }));
 
       // Save the initial suggested actions for reset functionality
-      if (response.suggestedActions && response.suggestedActions.length > 0) {
+      // Use enhanced actions for saving
+      if (enhancedResponse.suggestedActions && enhancedResponse.suggestedActions.length > 0) {
         const savedGameState = localStorage.getItem("saved-game-state");
         const gameState = savedGameState ? JSON.parse(savedGameState) : {};
-        gameState.suggestedActions = response.suggestedActions;
+        gameState.suggestedActions = enhancedResponse.suggestedActions;
         localStorage.setItem("saved-game-state", JSON.stringify(gameState));
       }
 
       // Process the location to ensure it has the correct type
-      const processedLocation = processLocation(response.location);
+      const processedLocation = processLocation(enhancedResponse.location);
 
       return {
         ...initialGameState,
@@ -66,12 +70,12 @@ export const useInitializationStrategies = () => {
             id: 'intro',
             type: 'exposition' as StoryPointType,
             title: 'Introduction',
-            content: response.narrative,
+            content: enhancedResponse.narrative,
             choices: [],
           },
           availableChoices: [],
           visitedPoints: ['intro'],
-          narrativeHistory: [response.narrative],
+          narrativeHistory: [enhancedResponse.narrative],
           displayMode: 'standard' as NarrativeDisplayMode,
           context: "",
         },
@@ -79,7 +83,7 @@ export const useInitializationStrategies = () => {
         inventory: createInventoryState(startingInventory),
         savedTimestamp: Date.now(),
         isClient: true,
-        suggestedActions: response.suggestedActions || [],
+        suggestedActions: enhancedResponse.suggestedActions || [], // Use enhanced actions
       } as GameState;
     } catch (error) {
       console.error("Error in new character initialization:", error);

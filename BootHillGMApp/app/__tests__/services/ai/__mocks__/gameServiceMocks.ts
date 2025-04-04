@@ -4,9 +4,9 @@
  * Contains mock response data, suggested actions, and other test fixtures
  * used to test the AI Game Service functionality.
  */
-import { SuggestedAction } from '../../../../../types/campaign';
-import { Character } from '../../../../../types/character';
-import { GameServiceResponse } from '../../../../../services/ai/types/gameService.types';
+import { SuggestedAction } from '../../../../types/campaign';
+import { Character } from '../../../../types/character';
+import { GameServiceResponse } from '../../../../services/ai/types/gameService.types';
 
 /**
  * Mock suggested actions used in test cases.
@@ -15,17 +15,17 @@ import { GameServiceResponse } from '../../../../../services/ai/types/gameServic
 
 // Default suggested actions generated within getAIResponse success path
 export const successPathDefaultActions: SuggestedAction[] = [
-  { id: 'fallback-ai-1', title: "Look around", type: "optional", description: "Survey your surroundings" },
-  { id: 'fallback-ai-2', title: "Continue forward", type: "optional", description: "Proceed on your journey" },
-  { id: 'fallback-ai-3', title: "Check your inventory", type: "optional", description: "See what you're carrying" }
+  { id: 'fallback-ai-1', title: "Look around", type: "basic", description: "Survey your surroundings" },
+  { id: 'fallback-ai-2', title: "Continue forward", type: "main", description: "Proceed on your journey" },
+  { id: 'fallback-ai-3', title: "Check your inventory", type: "interaction", description: "See what you're carrying" }
 ];
 
 // Default suggested actions from generateFallbackResponse
 export const fallbackPathDefaultActions: SuggestedAction[] = [
-  { id: 'fallback-gen-1', title: "Look around", type: "optional", description: "Survey your surroundings" },
-  { id: 'fallback-gen-2', title: "Check your inventory", type: "optional", description: "See what you're carrying" },
+  { id: 'fallback-gen-1', title: "Look around", type: "basic", description: "Survey your surroundings" },
+  { id: 'fallback-gen-2', title: "Check your inventory", type: "interaction", description: "See what you're carrying" },
   { id: 'fallback-gen-3', title: "Rest for a while", type: "optional", description: "Recover your energy" },
-  { id: 'fallback-gen-4', title: "Continue forward", type: "optional", description: "Press on with your journey" }
+  { id: 'fallback-gen-4', title: "Continue forward", type: "main", description: "Press on with your journey" }
 ];
 
 /**
@@ -66,10 +66,13 @@ export const mockPlayerDecisionResponse: Partial<GameServiceResponse> = {
   removedItems: [],
   suggestedActions: [],
   playerDecision: {
+    id: 'mock-decision-1', // Added
+    timestamp: Date.now(), // Added
+    aiGenerated: true, // Added
     prompt: 'What will you do?',
     options: [
-      { text: 'Option 1', impact: 'Impact 1' },
-      { text: 'Option 2', impact: 'Impact 2' }
+      { id: 'decision-opt-1', text: 'Option 1', impact: 'Impact 1' },
+      { id: 'decision-opt-2', text: 'Option 2', impact: 'Impact 2' }
     ],
     importance: 'significant',
     context: 'Decision context'
@@ -85,9 +88,13 @@ export const mockInvalidPlayerDecisionResponse: Partial<GameServiceResponse> = {
   removedItems: [],
   suggestedActions: [],
   playerDecision: {
+    id: 'mock-invalid-decision-1', // Added
+    timestamp: Date.now(), // Added
+    aiGenerated: true, // Added
     prompt: 'What will you do?',
-    options: [{ text: 'Option 1', impact: 'Impact 1' }], // Only one option, should be invalid
-    importance: 'significant'
+    options: [{ id: 'invalid-decision-opt-1', text: 'Option 1', impact: 'Impact 1' }], // Only one option, should be invalid
+    importance: 'significant',
+    context: 'Invalid decision context' // Added
   }
 };
 
@@ -172,9 +179,12 @@ export const mockCombatResponse: Partial<GameServiceResponse> = {
       bravery: 5,
       experience: 0,
     },
+    // Add missing properties required by Character type
+    minAttributes: { strength: 0, baseStrength: 0, speed: 0, gunAccuracy: 0, throwingAccuracy: 0, bravery: 0, experience: 0 },
+    maxAttributes: { strength: 20, baseStrength: 20, speed: 10, gunAccuracy: 10, throwingAccuracy: 10, bravery: 10, experience: 100 },
     wounds: [],
     isUnconscious: false,
-    inventory: [],
+    inventory: { items: [] }, // Corrected structure
     isNPC: true,
     isPlayer: false,
   } as Character,
@@ -210,6 +220,7 @@ export const mockInvalidJsonResponse = {
 // Invalid location type response
 export const mockInvalidLocationResponse: Partial<GameServiceResponse> = {
   narrative: 'Test narrative',
+  // @ts-expect-error - Intentionally using invalid type for testing error handling
   location: { type: 'invalid', name: 'Invalid Location' }, // Invalid type
   combatInitiated: false,
   opponent: null,
@@ -250,13 +261,18 @@ export const mockWildernessDescriptionResponse: Partial<GameServiceResponse> = {
 
 // Default fallback response
 export const defaultFallbackResponse: GameServiceResponse = {
-  narrative: "the player considers their next move. The western frontier stretches out before you, full of opportunity and danger.",
+  narrative: "the player considers their next move. The western frontier stretches out before you, full of opportunity and danger. The decisions you make here could shape your fortune - for better or worse. A moment's consideration might be the difference between success and disaster.",
   location: { type: 'town', name: 'Boothill' },
   combatInitiated: false,
   opponent: null,
   acquiredItems: [],
   removedItems: [],
-  suggestedActions: fallbackPathDefaultActions,
+  suggestedActions: [ // Updated to match fallbackService.ts generic output mapped to fallbackPathDefaultActions IDs
+    { id: 'fallback-gen-1', title: "Focus on your objective", description: "Remember why you're here", type: 'main' },
+    { id: 'fallback-gen-2', title: "Look for interesting details", description: "Find something worth investigating", type: 'side' },
+    { id: 'fallback-gen-3', title: "Prepare for trouble", description: "Stay ready for action", type: 'combat' },
+    { id: 'fallback-gen-4', title: "Find someone to talk to", description: "Look for information from others", type: 'interaction' }
+  ],
   lore: undefined,
   playerDecision: undefined,
   storyProgression: undefined,

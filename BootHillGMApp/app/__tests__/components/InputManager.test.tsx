@@ -10,6 +10,7 @@
  * - Input field clearing after submission
  * - Empty input validation
  * - Edge case: handling undefined onSubmit callback
+ * - Testing all action types and button styling
  */
 
 import React from 'react';
@@ -24,13 +25,13 @@ describe('InputManager', () => {
     { 
       id: 'action-1', 
       title: 'Explore town', 
-      type: 'optional', // Changed from 'basic' to 'optional' to match allowed types
+      type: 'optional',
       description: 'Explore the town of Boot Hill' 
     },
     { 
       id: 'action-2', 
       title: 'Talk to sheriff', 
-      type: 'side', // Changed from 'interaction' to 'side' to match allowed types
+      type: 'side',
       description: 'Have a conversation with the sheriff' 
     }
   ];
@@ -170,5 +171,56 @@ describe('InputManager', () => {
     expect(() => {
       fireEvent.click(exploreButton);
     }).not.toThrow();
+  });
+
+  // Test for action type attributes and styling
+  test('applies correct data-action-type attributes and styling to buttons', () => {
+    // Create mock actions for all supported types
+    const allActionTypes: SuggestedAction[] = [
+      { id: 'action-main', title: 'Main quest', type: 'main', description: 'Main quest action' },
+      { id: 'action-side', title: 'Side quest', type: 'side', description: 'Side quest action' },
+      { id: 'action-optional', title: 'Optional quest', type: 'optional', description: 'Optional quest action' },
+      { id: 'action-combat', title: 'Combat action', type: 'combat', description: 'Combat action' },
+      { id: 'action-basic', title: 'Basic action', type: 'basic', description: 'Basic action' },
+      { id: 'action-interaction', title: 'Interaction', type: 'interaction', description: 'Interaction action' },
+      { id: 'action-chaotic', title: 'Chaotic action', type: 'chaotic', description: 'Chaotic action' },
+      { id: 'action-danger', title: 'Danger action', type: 'danger', description: 'Danger action' }
+    ];
+
+    render(
+      <InputManager 
+        onSubmit={mockOnSubmit} 
+        isLoading={false} 
+        suggestedActions={allActionTypes} 
+      />
+    );
+    
+    // Verify each button has the correct data-action-type attribute
+    allActionTypes.forEach(action => {
+      const button = screen.getByText(action.title);
+      expect(button).toHaveAttribute('data-action-type', action.type);
+      
+      // Also verify CSS classes based on type
+      switch(action.type) {
+        case 'main':
+        case 'basic':
+          expect(button).toHaveClass('bg-blue-500');
+          break;
+        case 'side':
+        case 'interaction':
+          expect(button).toHaveClass('bg-green-500');
+          break;
+        case 'optional':
+          expect(button).toHaveClass('bg-purple-500');
+          break;
+        case 'combat':
+        case 'danger':
+          expect(button).toHaveClass('bg-red-500');
+          break;
+        case 'chaotic':
+          expect(button).toHaveClass('bg-black');
+          break;
+      }
+    });
   });
 });

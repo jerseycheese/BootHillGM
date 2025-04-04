@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getAIResponse } from '../../services/ai/gameService';
 import { generateCharacterSummary, generateNarrativeSummary } from '../../utils/aiService';
 import { Character } from '../../types/character';
+import { defaultFallbackResponse } from '../services/ai/__mocks__/gameServiceMocks'; // Import the mock
 
 jest.mock("@google/generative-ai");
 
@@ -23,14 +24,7 @@ MockGoogleGenerativeAI.mockImplementation((apiKey: string) => {
   } as unknown as GoogleGenerativeAI;
 });
 
-// Define the actual default suggested actions from generateFallbackResponse
-// (Copied from gameService.test.ts for consistency)
-const fallbackPathDefaultActions = [
-  { id: 'fallback-gen-1', title: "Look around", type: "optional", description: "Survey your surroundings" },
-  { id: 'fallback-gen-2', title: "Check your inventory", type: "optional", description: "See what you're carrying" },
-  { id: 'fallback-gen-3', title: "Rest for a while", type: "optional", description: "Recover your energy" },
-  { id: 'fallback-gen-4', title: "Continue forward", type: "optional", description: "Press on with your journey" }
-];
+// Removed local definition, will use imported defaultFallbackResponse
 
 describe('getAIResponse', () => {
   beforeEach(() => {
@@ -65,19 +59,7 @@ describe('getAIResponse', () => {
     mockGenerateContent.mockRejectedValue(new Error('API error')); // Use mockRejectedValue to fail all retries
 
     // Expect the promise to resolve with the fallback response
-    await expect(getAIResponse('Test prompt', 'Test context', [])).resolves.toEqual({
-      narrative: "the player considers their next move. The western frontier stretches out before you, full of opportunity and danger.", // Default generic fallback narrative
-      location: { type: 'town', name: 'Boothill' }, // Default fallback location
-      combatInitiated: false,
-      opponent: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: fallbackPathDefaultActions, // Use actual fallback actions
-      // Ensure optional fields are undefined in fallback
-      lore: undefined,
-      playerDecision: undefined,
-      storyProgression: undefined,
-    });
+    await expect(getAIResponse('Test prompt', 'Test context', [])).resolves.toEqual(defaultFallbackResponse); // Use imported mock
   });
 
   it('parses acquired and removed items correctly', async () => {

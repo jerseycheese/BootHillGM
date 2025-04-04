@@ -3,7 +3,7 @@ import { AIResponseParams, GameServiceResponse } from './types/gameService.types
 import { generateFallbackResponse, AI_RESPONSE_TIMEOUT_MS } from './fallback/fallbackService';
 import { fetchWithTimeout, cleanResponseText } from './utils/responseHelper';
 import { buildAIPrompt } from './utils/promptBuilder';
-import { validateAndProcessResponse } from './utils/responseValidator';
+import { validateAndEnhanceResponse } from './utils/responseValidator'; // Removed unused validateAndProcessResponse
 import { InventoryItem } from '../../types/item.types';
 import { NarrativeContext, LoreStore } from '../../types/narrative.types';
 
@@ -113,8 +113,20 @@ export async function getAIResponse(
       // Attempt to parse the entire response as JSON
       const jsonResponse = JSON.parse(text);
       
-      // Validate and process the response data
-      return validateAndProcessResponse(jsonResponse);
+      // Check for invalid location formats
+      if (jsonResponse.location && typeof jsonResponse.location === 'string') {
+        // Invalid location format detected - use fallback response
+        return generateFallbackResponse(prompt, characterName, actualInventory);
+      }
+      
+      // Check for invalid location types
+      if (jsonResponse.location && jsonResponse.location.type && 
+          !['town', 'wilderness', 'landmark', 'unknown'].includes(jsonResponse.location.type)) {
+        // Invalid location type detected - use fallback response
+        return generateFallbackResponse(prompt, characterName, actualInventory);
+      }
+      // Validate AND enhance the response data (context no longer needed)
+      return validateAndEnhanceResponse(jsonResponse);
     } catch (error) {
       console.error('[AI Service] Failed to parse AI response:', error);
       console.error('[AI Service] Raw response text:', text);

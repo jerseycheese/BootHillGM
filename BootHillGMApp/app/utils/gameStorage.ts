@@ -220,38 +220,37 @@ export const GameStorage = {
       }
     }
     
-    // Return default actions if nothing found - with proper types
+    // Return default actions with a variety of types to test all styling
     return [
       { 
         id: 'action-look-around', 
         title: 'Look around', 
         description: 'Examine your surroundings to get a better sense of where you are.', 
-        type: 'optional' // Update to valid type
+        type: 'basic'
       },
       { 
         id: 'action-check-inventory', 
         title: 'Check inventory', 
         description: 'Take stock of what you have with you.', 
-        type: 'optional' // Update to valid type
+        type: 'main'
       },
       { 
         id: 'action-talk-to-someone', 
         title: 'Find someone to talk to', 
         description: 'Look for another person to interact with.', 
-        type: 'optional' // Update to valid type
+        type: 'interaction'
       },
       { 
         id: 'action-explore', 
         title: 'Explore the area', 
         description: 'Move around to discover what\'s nearby.', 
-        type: 'optional' // Update to valid type
+        type: 'side'
       },
-      // Add a chaotic action to test styling
       { 
         id: 'action-challenge-stranger', 
         title: 'Challenge a stranger', 
         description: 'Pick a fight with someone you don\'t know.', 
-        type: 'optional' // Update to valid type
+        type: 'chaotic'
       }
     ];
   },
@@ -448,38 +447,37 @@ export const GameStorage = {
         narrativeContext: undefined,
       };
       
-      // Default suggested actions with proper types
-      // Explicitly type the array and use valid 'type' values
+      // Default suggested actions with varied types to showcase different button styles
       const suggestedActions: SuggestedAction[] = [
         {
           id: 'action-look-around',
           title: 'Look around',
           description: 'Examine your surroundings to get a better sense of where you are.',
-          type: 'optional' // Use valid type
+          type: 'basic'
         },
         {
           id: 'action-check-inventory',
           title: 'Check inventory',
           description: 'Take stock of what you have with you.',
-          type: 'optional' // Use valid type
+          type: 'main'
         },
         {
           id: 'action-talk-to-someone',
           title: 'Find someone to talk to',
           description: 'Look for another person to interact with.',
-          type: 'optional' // Use valid type
+          type: 'interaction'
         },
         {
           id: 'action-explore',
           title: 'Explore the area',
           description: 'Move around to discover what\'s nearby.',
-          type: 'optional' // Use valid type
+          type: 'side'
         },
         {
           id: 'action-challenge-stranger',
           title: 'Challenge a stranger',
           description: 'Pick a fight with someone you don\'t know.',
-          type: 'optional' // Use valid type
+          type: 'chaotic'
         }
       ];
       

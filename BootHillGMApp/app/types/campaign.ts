@@ -7,13 +7,18 @@
 import { GameState } from './gameState';
 
 /**
+ * Action type definition for suggested actions
+ */
+export type ActionType = 'main' | 'side' | 'optional' | 'combat' | 'basic' | 'interaction' | 'chaotic' | 'danger';
+
+/**
  * Suggested actions that the game might propose to the player
  */
 export interface SuggestedAction {
   id: string;
   title: string;
   description: string;
-  type: 'main' | 'side' | 'optional';
+  type: ActionType;
   condition?: (state: GameState) => boolean;
   reward?: string;
   difficulty?: 'easy' | 'medium' | 'hard';

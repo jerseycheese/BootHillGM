@@ -3,7 +3,7 @@
  * Manages input validation, loading states, and submission.
  * Disables input and shows feedback during processing.
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { SuggestedAction } from '../types/campaign';
 
 export default function InputManager({ 
@@ -16,6 +16,14 @@ export default function InputManager({
   suggestedActions?: SuggestedAction[];
 }) {
   const [userInput, setUserInput] = useState('');
+
+  // Debug: Log the suggested actions and their types on component mount and when they change
+  useEffect(() => {
+    console.log('Suggested Actions:', suggestedActions);
+    suggestedActions.forEach((action, index) => {
+      console.log(`Action ${index}: ${action.title}, type: ${action.type}, id: ${action.id}`);
+    });
+  }, [suggestedActions]);
 
   /**
    * Handles user action submission, either from suggested actions or manual input.
@@ -42,15 +50,19 @@ export default function InputManager({
   const actionClass = (type: string) => {
     // Fixed mapping of action types to CSS classes
     const typeClasses = {
+      // Primary action types from campaign.ts and extended types
       'combat': 'bg-red-500',
       'basic': 'bg-blue-500',
       'interaction': 'bg-green-500',
       'chaotic': 'bg-black',
-      'main': 'bg-blue-500',  // Backward compatibility
-      'side': 'bg-green-500', // Backward compatibility
-      'optional': 'bg-purple-500', // Backward compatibility
-      'danger': 'bg-red-500'  // Backward compatibility
+      'main': 'bg-blue-500',
+      'side': 'bg-green-500', 
+      'optional': 'bg-purple-500',
+      'danger': 'bg-red-500'
     };
+    
+    // Debug: Log the type and the class being used
+    console.log(`Action type: ${type}, CSS class: ${typeClasses[type as keyof typeof typeClasses] || 'bg-gray-500'}`);
     
     // Use the mapped class or default to gray for unknown types
     const bgClass = typeClasses[type as keyof typeof typeClasses] || 'bg-gray-500';
@@ -63,10 +75,8 @@ export default function InputManager({
       {suggestedActions.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {suggestedActions.map((action, index) => {
-            // Log action type for debugging
-            if (process.env.NODE_ENV === 'development') {
-              console.log(`Action ${index}: ${action.title}, type: ${action.type}`);
-            }
+            // Always log action type for debugging
+            console.log(`Rendering action ${index}: ${action.title}, type: ${action.type}`);
             
             return (
               <button
