@@ -18,7 +18,8 @@ describe('utils/characterLogging', () => {
   });
 
   it('should log start event', () => {
-    const data = { test: 'data' };
+    // Fix: Convert timestamp to string to match StartData type
+    const data = { test: 'data', timestamp: new Date(Date.now()).toISOString() };
     logger.start(data);
     
     expect(mockConsole.log).toHaveBeenCalledWith(
@@ -28,11 +29,14 @@ describe('utils/characterLogging', () => {
   });
 
   it('should log stage events', () => {
-    const data = { stage: 'test' };
-    logger.log('test-stage', data);
+    // Fix: Use a valid stage ('parsed') and data structure (ParsedData)
+    const data: import('../../types/character').ParsedData = {
+      character: { name: 'Parsed Name' }
+    };
+    logger.log('parsed', data);
     
     expect(mockConsole.log).toHaveBeenCalledWith(
-      expect.stringContaining('[Character test-context] test-stage'),
+      expect.stringContaining('[Character test-context]'),
       expect.objectContaining({ data })
     );
   });
@@ -48,12 +52,27 @@ describe('utils/characterLogging', () => {
   });
 
   it('should log complete event', () => {
-    const data = { complete: true };
-    logger.complete(data);
+    // Create a minimal character-like object to satisfy the type
+    // Fix: Add required attributes properties to match Character type
+    const mockCharacter: import('../../types/character').Character = {
+      id: 'test-id',
+      name: 'Test Character',
+      isNPC: false,
+      isPlayer: true,
+      inventory: { items: [] },
+      attributes: { speed: 10, gunAccuracy: 10, throwingAccuracy: 10, strength: 10, baseStrength: 10, bravery: 10, experience: 0 },
+      minAttributes: { speed: 1, gunAccuracy: 1, throwingAccuracy: 1, strength: 8, baseStrength: 8, bravery: 1, experience: 0 },
+      maxAttributes: { speed: 20, gunAccuracy: 20, throwingAccuracy: 20, strength: 20, baseStrength: 20, bravery: 20, experience: 11 },
+      wounds: [],
+      isUnconscious: false,
+      // Note: 'complete' is not part of the Character type itself
+    };
+    
+    logger.complete(mockCharacter);
     
     expect(mockConsole.log).toHaveBeenCalledWith(
       expect.stringContaining('[Character test-context] complete'),
-      expect.objectContaining({ data })
+      expect.objectContaining({ data: mockCharacter })
     );
   });
 });

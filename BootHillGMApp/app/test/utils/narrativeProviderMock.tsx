@@ -1,6 +1,8 @@
 import React from 'react';
 import { initialNarrativeState } from '../../types/narrative.types';
 import NarrativeContext from '../../context/NarrativeContext';
+import { GameState } from '../../types/gameState';
+import { initialState } from '../../types/initialState';
 
 /**
  * Creates a mock NarrativeProvider to wrap components for testing
@@ -13,10 +15,11 @@ export const MockNarrativeProvider: React.FC<{children: React.ReactNode}> = ({ c
   const mockLoadNarrativeState = jest.fn().mockReturnValue(initialNarrativeState);
   const mockResetNarrativeState = jest.fn();
   
-  // Mock context value
-  const contextValue = {
-    state: { 
-      ...initialNarrativeState,
+  // Create a minimal GameState with required properties
+  const mockState: GameState = {
+    ...initialState,
+    narrative: {
+      ...initialState.narrative,
       narrativeContext: {
         characterFocus: [],
         themes: [],
@@ -36,7 +39,12 @@ export const MockNarrativeProvider: React.FC<{children: React.ReactNode}> = ({ c
         pendingDecisions: [],
         decisionHistory: []
       }
-    },
+    }
+  };
+  
+  // Mock context value
+  const contextValue = {
+    state: mockState,
     dispatch: mockDispatch,
     saveNarrativeState: mockSaveNarrativeState,
     loadNarrativeState: mockLoadNarrativeState,

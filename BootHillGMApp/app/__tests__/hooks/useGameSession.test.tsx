@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { TestCampaignStateProvider } from '../utils/testWrappers';
+import { TestCampaignStateProvider } from '../../test/utils/campaignTestWrappers';
 import { useGameSession } from '../../hooks/useGameSession';
 import { InventoryManager } from '../../utils/inventoryManager';
 import { getAIResponse } from '../../services/ai/gameService';
@@ -108,15 +108,20 @@ describe('useGameSession', () => {
         }
       ]
     },
-    journal: {
-      entries: []
-    },
+    // Fix: Change journal to be an array directly to match TestCampaignState type
+    journal: [],
+    // Fix: Assign the full character object directly to the character property
     character: {
-      player: {
-        id: 'test-player',
-        name: 'Test Player',
-        attributes: {}
-      }
+      id: 'test-player',
+      name: 'Test Player',
+      isNPC: false,
+      isPlayer: true,
+      inventory: { items: [] },
+      attributes: { speed: 10, gunAccuracy: 10, throwingAccuracy: 10, strength: 10, baseStrength: 10, bravery: 10, experience: 0 },
+      minAttributes: { speed: 1, gunAccuracy: 1, throwingAccuracy: 1, strength: 8, baseStrength: 8, bravery: 1, experience: 0 },
+      maxAttributes: { speed: 20, gunAccuracy: 20, throwingAccuracy: 20, strength: 20, baseStrength: 20, bravery: 20, experience: 11 },
+      wounds: [],
+      isUnconscious: false
     },
     combat: {
       opponent: null,

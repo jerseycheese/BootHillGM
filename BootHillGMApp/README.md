@@ -35,11 +35,44 @@ BootHillGMApp/
 │   ├── reducers/      # Redux-style reducers
 │   ├── services/      # API services and external integrations
 │   ├── styles/        # CSS and styling utilities
+│   ├── test/          # Test utilities and helpers
+│   │   └── utils/     # Shared test utilities
+│   ├── __tests__/     # Test files
+│   │   ├── components/  # Component tests
+│   │   ├── hooks/       # Hook tests
+│   │   └── utils/       # Utility tests
 │   ├── types/         # TypeScript type definitions
 │   └── utils/         # Utility functions
 │       └── docs/      # Development tool documentation
 ├── public/            # Static assets
-└── tests/             # Test files
+```
+
+## Testing Organization
+
+The project uses Jest for testing and follows these organization patterns:
+
+- **Test Files**: Located in `app/__tests__/` organized by type (components, hooks, etc.)
+- **Test Utilities**: Located in `app/test/utils/` for shared test helpers
+- **Component-Based Hook Testing**: Tests hooks by rendering them within a component
+
+```tsx
+// Example of component-based hook testing pattern
+function TestComponent({ initialValue = 0 }) {
+  const { count, increment } = useCounter(initialValue);
+  return (
+    <div data-testid="counter">
+      <span data-testid="count">{count}</span>
+      <button onClick={increment}>Increment</button>
+    </div>
+  );
+}
+
+test('useCounter increments count', () => {
+  render(<TestComponent />);
+  expect(screen.getByTestId('count').textContent).toBe('0');
+  fireEvent.click(screen.getByRole('button'));
+  expect(screen.getByTestId('count').textContent).toBe('1');
+});
 ```
 
 ## Key Features
@@ -66,6 +99,11 @@ Documentation for specific components and implementation details is co-located w
 
 - **Development Tools:** `/app/utils/docs/`
   - [Debug Tools](/app/utils/docs/debug-tools.md)
+
+- **Testing:** 
+  - [Testing Guide](/app/__tests__/README.md)
+  - [Component-Based Hook Testing](/Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/component-based-hook-testing.md)
+  - [Test Organization](/Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/test-organization.md)
 
 ### Project-Level Documentation
 
@@ -100,6 +138,13 @@ Broader documentation about architecture, planning, and systems is maintained in
 - UPPERCASE_SNAKE_CASE for constants
 - .ts extension for TypeScript files
 - .tsx extension for TypeScript + JSX files
+
+### Testing Conventions
+
+- Test files use `.test.tsx` or `.test.ts` extensions
+- Test utilities are imported from `/app/test/utils`
+- Component tests focus on user behavior, not implementation details
+- Hook tests use the component-based testing pattern
 
 ## Technology Stack
 

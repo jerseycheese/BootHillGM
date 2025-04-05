@@ -3,7 +3,7 @@ title: Test Organization
 aliases: [Test Folder Structure, Test File Organization]
 tags: [technical, testing, organization, structure, jest]
 created: 2025-03-22
-updated: 2025-03-22
+updated: 2025-04-04
 ---
 
 # Test Organization
@@ -14,25 +14,30 @@ This guide explains the folder structure and organization patterns for tests in 
 
 ## Test Folder Structure
 
-The BootHillGM project follows a structured approach to organizing test files, making it easy to locate and maintain tests as the codebase grows.
+The BootHillGM project follows a structured approach to organizing test files. Shared test utilities have been consolidated into `app/test/utils/`.
 
 ```
 BootHillGMApp/
 ├── app/
 │   ├── __tests__/                  # Main test directory for app-level tests
-│   │   ├── components/             # Tests for components
-│   │   │   ├── Common/             # Tests for common components
-│   │   │   ├── Debug/              # Tests for debug components
-│   │   │   ├── __snapshots__/      # Snapshot files
-│   │   │   └── ...                 # Individual component tests
+│   │   ├── components/             # Tests for components (e.g., Common/, Debug/)
+│   │   │   └── __snapshots__/      # Snapshot files
 │   │   ├── hooks/                  # Tests for custom hooks
 │   │   ├── context/                # Tests for context providers
-│   │   ├── services/               # Tests for services
-│   │   │   ├── ai/                 # Tests for AI services
-│   │   │   └── ...                 # Other service tests
+│   │   ├── services/               # Tests for services (e.g., ai/)
 │   │   ├── reducers/               # Tests for reducers
-│   │   ├── utils/                  # Tests for utility functions
+│   │   # ├── utils/                # DEPRECATED - Utilities moved to app/test/utils
 │   │   └── integration/            # Integration tests
+│   │
+│   ├── test/                       # NEW: Central location for shared test utilities
+│   │   ├── utils/
+│   │   │   ├── index.ts            # Exports all utilities
+│   │   │   ├── gameStateTestUtils.ts # Utilities for GameState
+│   │   │   ├── testWrappers.tsx    # Rendering wrappers (e.g., renderWithGameProvider)
+│   │   │   ├── localStorageMock.ts # Mock localStorage
+│   │   │   ├── narrativeProviderMock.tsx # Mock NarrativeProvider
+│   │   │   └── ...                 # Other specific utilities
+│   │
 │   ├── components/                 # Component source files
 │   │   ├── Common/                 # Shared components
 │   │   │   ├── __tests__/          # Co-located tests (alternative approach)
@@ -42,23 +47,12 @@ BootHillGMApp/
 │   │   ├── __tests__/              # Co-located context tests
 │   │   └── ...                     # Context files
 │   └── ...                         # Other app directories
-├── test/                           # Test utilities and shared resources
-│   ├── fixtures/                   # Test data fixtures
-│   │   ├── characters.ts           # Character data fixtures
-│   │   ├── combat.ts               # Combat data fixtures
-│   │   └── ...                     # Other fixtures
-│   ├── setup/                      # Test setup files
-│   │   ├── jest.setup.js           # Jest setup file
-│   │   └── ...                     # Other setup files
-│   ├── utils/                      # Test utilities
-│   │   ├── renderWithContext.tsx   # Context wrapper for tests
-│   │   ├── mockComponents.tsx      # Common component mocks
-│   │   └── ...                     # Other test utilities
-│   └── mocks/                      # Mock data and services
-│       ├── api.ts                  # API mocks
-│       ├── localStorage.ts         # localStorage mock
-│       └── ...                     # Other mocks
-└── ...                             # Other project directories
+│
+├── Docs/                           # Project documentation
+├── ...                             # Other project root files/dirs
+
+# Note: The root /test directory shown previously might be outdated or used for different purposes.
+# The primary location for app-specific test utilities is now /app/test/utils/.
 ```
 
 ## Visual Test Structure
@@ -66,36 +60,60 @@ BootHillGMApp/
 ```mermaid
 graph TD
     A[BootHillGMApp] --> B[app]
-    A --> C[test]
     
     B --> D[__tests__]
     B --> E[components]
     B --> F[context]
     B --> G[hooks]
     B --> H[services]
-    
+    B --> ATU[test/utils]  # New central utility location within app
+
     D --> I[components]
     D --> J[hooks]
     D --> K[context]
     D --> L[services]
     D --> M[reducers]
-    D --> N[utils]
+    # D --> N[utils] # Deprecated
     D --> O[integration]
     
     E --> P[Common]
     E --> Q[Debug]
     E --> R[...]
     
-    P --> S[__tests__]
+    P --> S[__tests__] # Co-located tests example
     
-    C --> T[fixtures]
-    C --> U[setup]
-    C --> V[utils]
-    C --> W[mocks]
-    
+    ATU --> AA[index.ts]
+    ATU --> AB[gameStateTestUtils.ts]
+    ATU --> AC[testWrappers.tsx]
+    ATU --> AD[...] # Other utilities
+
     I --> X[Common]
     I --> Y[Debug]
     I --> Z[__snapshots__]
+
+    subgraph Legend
+        direction LR
+        LEG1(Source Code Dirs)
+        LEG2(Test Dirs)
+        LEG3(Utility Dirs)
+    end
+    
+    style D fill:#f9f,stroke:#333,stroke-width:2px
+    style I fill:#f9f,stroke:#333,stroke-width:1px
+    style J fill:#f9f,stroke:#333,stroke-width:1px
+    style K fill:#f9f,stroke:#333,stroke-width:1px
+    style L fill:#f9f,stroke:#333,stroke-width:1px
+    style M fill:#f9f,stroke:#333,stroke-width:1px
+    style O fill:#f9f,stroke:#333,stroke-width:1px
+    style S fill:#f9f,stroke:#333,stroke-width:1px
+    style Z fill:#f9f,stroke:#333,stroke-width:1px
+    
+    style ATU fill:#ccf,stroke:#333,stroke-width:2px
+    style AA fill:#ccf,stroke:#333,stroke-width:1px
+    style AB fill:#ccf,stroke:#333,stroke-width:1px
+    style AC fill:#ccf,stroke:#333,stroke-width:1px
+    style AD fill:#ccf,stroke:#333,stroke-width:1px
+
 ```
 
 ## Naming Conventions
@@ -105,7 +123,7 @@ graph TD
 The BootHillGM project uses consistent naming patterns for test files:
 
 1. **Component Tests**: `ComponentName.test.tsx`
-2. **Hook Tests**: `useHookName.test.ts`
+2. **Hook Tests**: `useHookName.test.tsx` (note: using .tsx for component-based hook testing)
 3. **Utility Tests**: `utilityName.test.ts`
 4. **Integration Tests**: `FeatureName.test.tsx`
 5. **Snapshot Tests**: `ComponentName.snap.test.tsx`
@@ -242,45 +260,70 @@ it('renders character details correctly', () => {
 });
 ```
 
-### 4. Test Utilities
+### 4. Component-Based Hook Testing
+
+Rather than testing hooks directly, create a test component that uses the hook:
+
+```typescript
+// Creating a test component for hook testing
+function TestComponent({ initialValue = 0 }) {
+  const { count, increment } = useCounter(initialValue);
+  
+  return (
+    <div data-testid="counter">
+      <span data-testid="count">{count}</span>
+      <button data-testid="increment" onClick={increment}>Increment</button>
+    </div>
+  );
+}
+
+test('useCounter increments count', () => {
+  render(<TestComponent />);
+  
+  // Test the hook's behavior through the component
+  expect(screen.getByTestId('count').textContent).toBe('0');
+  fireEvent.click(screen.getByTestId('increment'));
+  expect(screen.getByTestId('count').textContent).toBe('1');
+});
+```
+
+### 5. Test Utilities
 
 Create utility functions for common testing patterns:
 
 ```typescript
-// test/utils/renderWithContext.tsx
-import { render } from '@testing-library/react';
-import { GameProvider } from '../../app/context/GameContext';
-import { ThemeProvider } from '../../app/context/ThemeProvider';
+// app/test/utils/gameStateTestUtils.ts (Note the updated path)
+import { GameState } from '../../types/gameState';
+import { initialState } from '../../types/initialState';
 
-export function renderWithContext(ui, options = {}) {
-  const {
-    gameState = {},
-    theme = 'light',
-    ...renderOptions
-  } = options;
-  
-  function Wrapper({ children }) {
-    return (
-      <ThemeProvider initialTheme={theme}>
-        <GameProvider initialState={gameState}>
-          {children}
-        </GameProvider>
-      </ThemeProvider>
-    );
-  }
-  
-  return render(ui, { wrapper: Wrapper, ...renderOptions });
-}
+/**
+ * Creates a mock GameState object with default values that can be overridden
+ * 
+ * @param overrides - Partial GameState with values to override defaults
+ * @returns Complete GameState object suitable for testing
+ */
+export const createMockGameState = (overrides: Partial<GameState> = {}): GameState => ({
+  ...initialState,
+  ...overrides
+});
 
 // Usage in test
-import { renderWithContext } from '../../../test/utils/renderWithContext';
+import { gameStateUtils } from '../../test/utils'; // Import via index
 
-it('shows player stats from context', () => {
-  renderWithContext(<PlayerStats />, {
-    gameState: { player: { health: 75, maxHealth: 100 } }
+it('renders player stats correctly', () => {
+  const mockState = gameStateUtils.createMockGameState({ // Use namespaced utility
+    character: {
+      player: {
+        id: 'test-player',
+        name: 'Test Character',
+        // Other required properties...
+      },
+      opponent: null
+    }
   });
   
-  expect(screen.getByText('75/100')).toBeInTheDocument();
+  gameStateUtils.renderWithGameProvider(<PlayerStats />, mockState); // Use namespaced utility
+  expect(screen.getByText('Test Character')).toBeInTheDocument();
 });
 ```
 
@@ -307,23 +350,23 @@ Separate integration tests from unit tests:
 __tests__/
 ├── components/    # Unit tests for components
 ├── hooks/         # Unit tests for hooks
-├── utils/         # Unit tests for utilities
+# ├── utils/       # DEPRECATED - Utilities moved to app/test/utils
 └── integration/   # Cross-component integration tests
 ```
 
 ### 3. Centralize Test Utilities
 
-Keep test utilities in a central location for reuse:
+Keep shared test utilities centralized in `app/test/utils/` for reuse:
 
 ```
-test/
-├── utils/             # Shared test utilities
-│   ├── renderWithProviders.tsx
-│   ├── mockComponents.tsx
-│   └── testHelpers.ts
-├── fixtures/          # Shared test data
-└── setup/             # Jest setup files
+app/test/
+└── utils/             # Shared test utilities
+    ├── index.ts
+    ├── gameStateTestUtils.ts
+    ├── testWrappers.tsx
+    └── ...
 ```
+(Note: A root `/test` directory might exist for other purposes like fixtures or global setup, but app-specific utilities reside in `app/test/utils/`)
 
 ### 4. Group by Component Type
 
@@ -339,13 +382,35 @@ __tests__/
 └── features/        # Tests for feature components
 ```
 
+## Jest Hoisting Pattern
+
+To avoid issues with Jest hoisting, always declare mocks before using them:
+
+```typescript
+// Correct pattern
+jest.mock('../../utils/gameStorage', () => ({
+  getCharacter: jest.fn(),
+  // other methods...
+}));
+
+// After mocking, then get a reference for use in tests
+const mockGameStorage = GameStorage as jest.Mocked<typeof GameStorage>;
+
+// Now configure mock implementations in your tests
+beforeEach(() => {
+  mockGameStorage.getCharacter.mockReturnValue({
+    // return values...
+  });
+});
+```
+
 ## Creating New Tests
 
 When adding new tests to the BootHillGM project, follow these steps:
 
 1. **Choose the Right Location**: Determine where the test file should go based on what it's testing
 2. **Follow Naming Conventions**: Use consistent file and test case naming
-3. **Reuse Test Utilities**: Use existing utilities and fixtures when possible
+3. **Reuse Test Utilities**: Import utilities from `app/test/utils/index.ts`
 4. **Be Consistent**: Follow the patterns established in similar tests
 
 ### Example: Adding a New Component Test
@@ -404,6 +469,88 @@ describe('Dialog component', () => {
 });
 ```
 
+### Example: Adding a New Hook Test
+
+```typescript
+// app/__tests__/hooks/useInventory.test.tsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { useInventory } from '../../hooks/useInventory';
+
+// Create a test component that uses the hook
+function TestComponent({ initialItems = [] }) {
+  const { items, addItem, removeItem } = useInventory(initialItems);
+  
+  return (
+    <div data-testid="inventory">
+      <ul>
+        {items.map(item => (
+          <li key={item.id}>
+            {item.name}
+            <button
+              onClick={() => removeItem(item.id)}
+              data-testid={`remove-${item.id}`}
+            >
+              Remove
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button
+        onClick={() => addItem({ id: 'test-item', name: 'Test Item' })}
+        data-testid="add-item"
+      >
+        Add Item
+      </button>
+    </div>
+  );
+}
+
+describe('useInventory hook', () => {
+  it('initializes with provided items', () => {
+    const initialItems = [
+      { id: 'item-1', name: 'First Item' },
+      { id: 'item-2', name: 'Second Item' }
+    ];
+    
+    render(<TestComponent initialItems={initialItems} />);
+    
+    expect(screen.getByText('First Item')).toBeInTheDocument();
+    expect(screen.getByText('Second Item')).toBeInTheDocument();
+  });
+  
+  it('adds items correctly', () => {
+    render(<TestComponent />);
+    
+    // Initially no items
+    expect(screen.queryByText('Test Item')).not.toBeInTheDocument();
+    
+    // Add an item
+    fireEvent.click(screen.getByTestId('add-item'));
+    
+    // Item should now be in the list
+    expect(screen.getByText('Test Item')).toBeInTheDocument();
+  });
+  
+  it('removes items correctly', () => {
+    const initialItems = [
+      { id: 'item-1', name: 'Item to Remove' }
+    ];
+    
+    render(<TestComponent initialItems={initialItems} />);
+    
+    // Item should initially be in the list
+    expect(screen.getByText('Item to Remove')).toBeInTheDocument();
+    
+    // Remove the item
+    fireEvent.click(screen.getByTestId('remove-item-1'));
+    
+    // Item should no longer be in the list
+    expect(screen.queryByText('Item to Remove')).not.toBeInTheDocument();
+  });
+});
+```
+
 ## Running Tests Effectively
 
 ### Filtering Tests by Location
@@ -447,10 +594,13 @@ npm test -- --onlyChanged
 2. **Deeply nested tests**: Too much nesting can make test output hard to read and debug
 3. **Duplicated test utilities**: Reusing code reduces maintenance burden
 4. **Unrelated assertions**: Each test should focus on testing one specific behavior
+5. **Missing TypeScript**: Using proper TypeScript types in tests helps catch errors early
+6. **Improper Jest mocking**: Incorrect mock setup can lead to hoisting issues and test failures
 
 ## Related Documentation
 
 - [[component-testing|Component Testing]]
+- [[component-based-hook-testing|Component-Based Hook Testing]]
 - [[hook-testing|Hook Testing]]
 - [[integration-testing|Integration Testing]]
 - [[snapshot-testing|Snapshot Testing]]

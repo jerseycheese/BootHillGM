@@ -6,7 +6,7 @@ import { NarrativeItem } from '../../components/NarrativeDisplay';
 import { CampaignStateContext } from '../../components/CampaignStateManager';
 import { initialNarrativeState } from '../../types/narrative.types';
 import { initialGameState } from '../../types/gameState';
-import { MockNarrativeProvider } from '../utils/narrativeProviderMock';
+import { MockNarrativeProvider } from '../../test/utils/narrativeProviderMock';
 
 // Create a test wrapper that provides both the CampaignStateContext and NarrativeProvider
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -24,12 +24,19 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   };
 
-  const mockContextValue = {
+  // Fix: Add missing properties required by CampaignStateContextType
+  const mockContextValue: import('../../types/campaignState.types').CampaignStateContextType = {
     state: mockState,
     dispatch: jest.fn(),
     saveGame: jest.fn(),
     loadGame: jest.fn(),
-    cleanupState: jest.fn()
+    cleanupState: jest.fn(),
+    player: null, // Add missing property
+    opponent: null, // Add missing property
+    inventory: [], // Add missing property
+    entries: [], // Add missing property
+    isCombatActive: false, // Add missing property
+    narrativeContext: undefined // Add missing property
   };
 
   return (

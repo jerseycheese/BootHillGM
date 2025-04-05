@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
 import { CampaignStateContext } from '../../hooks/useCampaignStateContext';
-import { CampaignState } from '../../types/campaign';
 import { CampaignStateContextType } from '../../types/campaignState.types';
 import { GameEngineAction } from '../../types/gameActions';
 import { CombatState } from '../../types/state/combatState';
@@ -10,9 +9,38 @@ import { InventoryState } from '../../types/state/inventoryState';
 import { JournalState } from '../../types/state/journalState';
 import { GameState } from '../../types/gameState';
 import { InventoryItem } from '../../types/item.types';
+import { Character } from '../../types/character';
+import { SuggestedAction } from '../../types/campaign';
+import { JournalEntry } from '../../types/journal';
+import { NarrativeState, initialNarrativeState } from '../../types/state/narrativeState';
+import { LocationType } from '../../services/locationService'; // Import LocationType
+
+/**
+ * Interface for a partial campaign state used in tests
+ * This matches the expected shape in the components that use it
+ */
+interface TestCampaignState {
+  currentPlayer?: string;
+  npcs?: string[]; // Use string[] to match GameState type
+  character?: Character | null;
+  inventory?: InventoryItem[] | { items: InventoryItem[] };
+  narrative?: Partial<NarrativeState>;
+  journal?: JournalEntry[];
+  location?: LocationType | null; // Use imported LocationType
+  isCombatActive?: boolean;
+  opponent?: Character | null;
+  quests?: string[]; // Use string[] to match GameState type
+  gameProgress?: number;
+  suggestedActions?: SuggestedAction[];
+  savedTimestamp?: number;
+  isClient?: boolean;
+  
+  // Legacy getter for backward compatibility
+  player?: Character | null;
+}
 
 // Default test state with guaranteed inventory structure
-const defaultCampaignState: Partial<CampaignState> = {
+const defaultCampaignState: TestCampaignState = {
   currentPlayer: 'test-player-id',
   npcs: [],
   character: {
@@ -89,7 +117,7 @@ const defaultCampaignState: Partial<CampaignState> = {
  */
 export interface TestWrapperProps {
   children: ReactNode;
-  initialState?: Partial<CampaignState>;
+  initialState?: Partial<TestCampaignState>;
 }
 
 /**
@@ -104,7 +132,7 @@ export const TestCampaignStateProvider: React.FC<TestWrapperProps> = ({
   const mergedState = { 
     ...defaultCampaignState,
     ...initialState
-  } as CampaignState;
+  } as TestCampaignState;
 
   // Add mock dispatch function that logs what's being dispatched
   const mockDispatch = jest.fn((action: GameEngineAction) => {
@@ -147,19 +175,21 @@ export const TestCampaignStateProvider: React.FC<TestWrapperProps> = ({
     },
     currentTurn: null,
     winner: null,
-    participants: []
+    participants: [],
+    // activeTab: 'combat' // Removed: Not part of CombatState type
   };
 
   const defaultUIState: UIState = {
     isLoading: false,
     modalOpen: null,
-    notifications: []
+    notifications: [],
+    activeTab: 'narrative' // Required by the type
   };
   
   // Create a CharacterState from the campaign state
   const characterState: CharacterState = {
-    player: mergedState.character,
-    opponent: mergedState.opponent
+    player: mergedState.character || null,
+    opponent: mergedState.opponent || null
   };
   
   // Handle both inventory formats from tests
@@ -195,26 +225,15 @@ export const TestCampaignStateProvider: React.FC<TestWrapperProps> = ({
     ui: defaultUIState,
     inventory: inventoryState,
     journal: journalState,
-    narrative: mergedState.narrative,
-    currentPlayer: mergedState.currentPlayer,
+    narrative: mergedState.narrative ? { ...initialNarrativeState, ...mergedState.narrative } : initialNarrativeState,
+    currentPlayer: mergedState.currentPlayer || '',
     npcs: mergedState.npcs || [],
-    location: mergedState.location,
+    location: mergedState.location || null,
     quests: mergedState.quests || [],
     gameProgress: mergedState.gameProgress || 0,
     savedTimestamp: mergedState.savedTimestamp,
-    isClient: mergedState.isClient,
+    isClient: mergedState.isClient || false,
     suggestedActions: mergedState.suggestedActions || [],
-    
-    // Implement the required getters
-    get player() {
-      return mergedState.character;
-    },
-    get opponent() {
-      return mergedState.opponent;
-    },
-    get isCombatActive() {
-      return mergedState.isCombatActive || false;
-    }
   };
   
   // Create the context value with all required properties of CampaignStateContextType
@@ -224,7 +243,7 @@ export const TestCampaignStateProvider: React.FC<TestWrapperProps> = ({
     saveGame: saveGame,
     loadGame: loadGame,
     cleanupState: cleanupState,
-    player: player,
+    player: player || null,
     opponent: mergedState.opponent || null,
     inventory: inventoryItems,
     entries: journalState.entries,

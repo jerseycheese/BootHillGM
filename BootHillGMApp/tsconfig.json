@@ -25,6 +25,13 @@
     },
     "types": ["jest", "node", "@testing-library/jest-dom"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts", 
+    "**/*.ts", 
+    "**/*.tsx", 
+    ".next/types/**/*.ts", 
+    "app/types/**/*.ts",
+    "types/**/*.d.ts"  // Include our new global type definitions
+  ],
   "exclude": ["node_modules"]
 }
