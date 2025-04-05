@@ -4,8 +4,24 @@
 @import 'tailwindcss/utilities';
 
 :root {
+  /* Existing variables */
   --background: #ffffff;
   --foreground: #171717;
+  
+  /* Player Decision Card variables */
+  --text-primary: #f6e6cc;
+  --text-secondary: #d2c8b6;
+  --card-bg: #2a2118;
+  --option-bg: #342a1f;
+  --option-hover: #463929;
+  --submit-bg: #8b6d48;
+  --submit-hover: #a88653;
+  --border-color: #594a3a;
+  --focus-color: #c8a878;
+  --critical-color: #a52a2a;
+  --significant-color: #b8860b;
+  --moderate-color: #8b6d48;
+  --minor-color: #556b2f;
 }
 
 @media (prefers-color-scheme: dark) {
