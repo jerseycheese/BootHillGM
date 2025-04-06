@@ -87,7 +87,9 @@ export const useInitializationStrategies = () => {
       } as GameState;
     } catch (error) {
       console.error("Error in new character initialization:", error);
-      return createFallbackNewCharacterState(characterData);
+      // Handle the Promise<GameState> issue by awaiting the result
+      const fallbackState = await createFallbackNewCharacterState(characterData);
+      return fallbackState;
     }
   }, []);
 
@@ -176,7 +178,9 @@ export const useInitializationStrategies = () => {
       } as GameState;
     } catch (error) {
       console.error("Error initializing existing character state:", error);
-      return createFallbackExistingCharacterState(state);
+      // Handle the Promise<GameState> issue by awaiting the result
+      const fallbackState = await createFallbackExistingCharacterState(state);
+      return fallbackState;
     }
   }, []);
 
@@ -185,7 +189,7 @@ export const useInitializationStrategies = () => {
    * @param state - Current game state, possibly incomplete or invalid
    * @returns A valid game state for recovery
    */
-  const handleErrorRecovery = useCallback((state: GameState): GameState => {
+  const handleErrorRecovery = useCallback(async (state: GameState): Promise<GameState> => {
     // Removed log
     try {
       // Make sure we have a valid character
@@ -209,7 +213,8 @@ export const useInitializationStrategies = () => {
         // If we still don't have a character, use basic recovery state
         if (!characterData) {
           // Removed log
-          return createBasicRecoveryState();
+          const recoveryState = await createBasicRecoveryState();
+          return recoveryState;
         }
 
         // Create a basic state with the character
@@ -252,11 +257,12 @@ export const useInitializationStrategies = () => {
     } catch (finalError) {
       // Last resort fallback
       console.error("Final error recovery attempt failed:", finalError);
-      return createEmergencyState();
+      const emergencyState = await createEmergencyState();
+      return emergencyState;
     }
   }, []);
 
-  // Return all strategies
+  // Return all strategies with the correct Promise<GameState> typing
   return {
     initializeNewCharacter,
     generateNewSuggestions,

@@ -19,6 +19,7 @@ export interface GameServiceResponse {
   /** Narrative text describing the current scene or action results */
   narrative: string;
   
+  
   /** Current location information (town, wilderness, etc.) */
   location: LocationType;
   

@@ -81,4 +81,27 @@ describe('JournalViewer snapshots', () => {
     expect(journalViewer).toBeInTheDocument();
     expect(journalViewer).toMatchSnapshot();
   });
+
+  // Add tests for undefined and null entries
+  it('matches snapshot with undefined entries', () => {
+    // @ts-expect-error - Testing with undefined entries
+    const { container } = render(<JournalViewer entries={undefined} />);
+    expect(container).toMatchSnapshot();
+  });
+
+  it('matches snapshot with null entries', () => {
+    // @ts-expect-error - Testing with null entries
+    const { container } = render(<JournalViewer entries={null} />);
+    expect(container).toMatchSnapshot();
+  });
+
+  it('handles entries with missing IDs', () => {
+    const entryWithoutId = {
+      ...mockJournalEntries.narrative,
+      id: undefined
+    };
+    // @ts-expect-error - Testing with missing ID
+    const { container } = render(<JournalViewer entries={[entryWithoutId]} />);
+    expect(container).toMatchSnapshot();
+  });
 });

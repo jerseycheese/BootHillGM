@@ -29,14 +29,17 @@ export const useInitializationTimeout = (
       initProcessingRef.current = true;
 
       // Store the timeout ID in the ref so we can clear it if needed
-      timeoutIdRef.current = setTimeout(() => {
+      timeoutIdRef.current = setTimeout(async () => {
         console.error("Game initialization timeout - forcing completion");
         initProcessingRef.current = false;
 
         // If state is available, dispatch emergency recovery state
         if (dispatch) {
           try {
-            const emergencyState = createEmergencyState();
+            // Wait for the emergency state to be created
+            const emergencyState = await createEmergencyState();
+            
+            // Now we have a proper GameState, not a Promise<GameState>
             dispatch({ type: 'SET_STATE', payload: emergencyState });
 
             // Try to save this state

@@ -280,7 +280,8 @@ export const resetGame = (): GameEngineAction => {
   
   // Create inventory state with starting inventory
   const inventoryState: InventoryState = {
-    items: startingInventory
+    items: startingInventory,
+    equippedWeaponId: null // Add required property with a default value
   };
   
   // Create journal state

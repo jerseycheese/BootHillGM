@@ -5,6 +5,7 @@ import { NarrativeJournalEntry, CombatJournalEntry } from '../../types/journal';
 
 describe('JournalViewer', () => {
   const mockNarrativeEntry: NarrativeJournalEntry = {
+    id: 'narrative-1',
     type: 'narrative',
     timestamp: 1617235200000,
     content: 'Started the journey',
@@ -12,6 +13,7 @@ describe('JournalViewer', () => {
   };
 
   const mockCombatEntry: CombatJournalEntry = {
+    id: 'combat-1',
     type: 'combat',
     timestamp: 1617321600000,
     content: 'Combat occurred',
@@ -53,6 +55,7 @@ describe('JournalViewer', () => {
 
   test('handles invalid timestamps gracefully', () => {
     const entryWithInvalidDate: NarrativeJournalEntry = {
+      id: 'invalid-timestamp',
       type: 'narrative',
       timestamp: NaN,
       content: 'Invalid date entry'
@@ -60,5 +63,21 @@ describe('JournalViewer', () => {
     
     render(<JournalViewer entries={[entryWithInvalidDate]} />);
     expect(screen.getByText('Invalid date', { selector: 'strong' })).toBeInTheDocument();
+  });
+
+  test('handles undefined entries gracefully', () => {
+    // @ts-expect-error - Testing with undefined entries to ensure component doesn't crash
+    render(<JournalViewer entries={undefined} />);
+    expect(screen.getByText('Journal')).toBeInTheDocument();
+    // Should not show "No journal entries yet" message
+    expect(screen.getByText('No journal entries yet.')).toBeInTheDocument();
+  });
+
+  test('handles null entries gracefully', () => {
+    // @ts-expect-error - Testing with null entries to ensure component doesn't crash
+    render(<JournalViewer entries={null} />);
+    expect(screen.getByText('Journal')).toBeInTheDocument();
+    // Should not show "No journal entries yet" message
+    expect(screen.getByText('No journal entries yet.')).toBeInTheDocument();
   });
 });

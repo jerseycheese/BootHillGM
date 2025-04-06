@@ -5,11 +5,13 @@ import { InventoryItem } from '../item.types';
  */
 export interface InventoryState {
   items: InventoryItem[];
+  equippedWeaponId: string | null;
 }
 
 /**
  * Initial state for the inventory slice
  */
 export const initialInventoryState: InventoryState = {
-  items: []
+  items: [],
+  equippedWeaponId: null,
 };

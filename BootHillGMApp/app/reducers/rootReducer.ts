@@ -14,6 +14,7 @@ import { narrativeReducer } from './narrativeReducer';
 import uiReducer from './uiReducer';
 import { initialUIState } from '../types/state/uiState';
 import { initialCombatState } from '../types/state/combatState';
+import { initialInventoryState } from '../types/state/inventoryState';
 import { ExtendedGameState } from '../types/extendedState';
 import { LocationType } from '../services/locationService';
 import { SuggestedAction } from '../types/campaign';
@@ -173,7 +174,7 @@ const handleSuggestedActions = (state: SuggestedAction[] = [], action: GameActio
 const initialState: GameState = {
   character: null,
   combat: initialCombatState,
-  inventory: { items: [] },
+  inventory: initialInventoryState, // Using the proper initial inventory state with equippedWeaponId
   journal: { entries: [] },
   narrative: narrativeReducer(undefined, NO_OP_ACTION),
   ui: { ...initialUIState },

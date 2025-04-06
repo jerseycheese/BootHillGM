@@ -1,15 +1,22 @@
 import { useState, useCallback } from 'react';
 import { InventoryItem } from '../types/item.types';
-import { useGameState } from '../context/GameStateProvider'; // Updated import
+import { useGameState } from '../context/GameStateProvider';
 import { getAIResponse } from '../services/ai/gameService';
 import { getJournalContext } from '../utils/JournalManager';
 import { InventoryManager } from '../utils/inventoryManager';
 import { getPlayerFromCharacter, getItemsFromInventory, getEntriesFromJournal } from './selectors/typeGuards';
-import { GameState } from '../types/gameState'; // Import GameState
-// Removed import of obsolete createCompatibleState
-// Removed unused import: StateWithMixedStructure
+import { GameState } from '../types/gameState';
 import { useLocation } from './useLocation';
-import { JournalUpdatePayload } from '../types/gameActions';
+import { generateNarrativeSummary } from '../utils/ai/narrativeSummary';
+import { NarrativeJournalEntry } from '../types/journal';
+
+// Response type for narrative updates
+interface NarrativeUpdateParams {
+  text: string;
+  playerInput?: string;
+  acquiredItems?: string[];
+  removedItems?: string[];
+}
 
 /**
  * Hook for handling item interactions within the game session.
@@ -19,9 +26,9 @@ import { JournalUpdatePayload } from '../types/gameActions';
  * @returns Object containing item-related state and functions
  */
 export const useItemHandler = (
-  updateNarrative: (text: string | { text: string; playerInput?: string; acquiredItems?: string[]; removedItems?: string[] }) => void
+  updateNarrative: (text: string | NarrativeUpdateParams) => void
 ) => {
-  const { state, dispatch } = useGameState(); // Use correct hook
+  const { state, dispatch } = useGameState();
   const { updateLocation } = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,11 +69,6 @@ export const useItemHandler = (
 
       // Validate item use *before* calling getAIResponse
       const playerCharacter = getPlayerFromCharacter(state.character);
-      // Removed unused variable: isCombatActive
-      
-      // Create a compatible state for the validateItemUse function
-      // Removed unused variable: stateWithMixedStructure
-      // Removed obsolete state compatibility conversion
       
       const validationResult = InventoryManager.validateItemUse(
         item,
@@ -98,26 +100,34 @@ export const useItemHandler = (
       // Now dispatch the USE_ITEM action *after* getting the AI response
       dispatch({ type: 'inventory/USE_ITEM', payload: itemId }); // Use namespaced type
       
-      // Create a proper JournalUpdatePayload with required fields
-      const journalPayload: JournalUpdatePayload = {
-        id: `item-use-${Date.now()}`, // Generate a unique ID
-        content: `Used ${item.name}`,
+      // Generate narrative summary for the journal entry
+      const narrativeText = response.narrative || `You use the ${item.name}.`;
+      
+      // Generate a narrative summary for the journal entry
+      console.log('[ITEM-USE] Generating narrative summary for item use');
+      const narrativeSummary = await generateNarrativeSummary(actionText, narrativeText);
+      console.log('[ITEM-USE] Generated narrative summary:', narrativeSummary);
+      
+      // Create a properly typed journal entry
+      const journalEntry: NarrativeJournalEntry = {
+        id: `item-use-${Date.now()}`,
         timestamp: Date.now(),
-        type: 'inventory',
-        items: {
-          acquired: [],
-          removed: [item.name]
-        }
+        content: narrativeText,
+        type: 'narrative',
+        narrativeSummary: narrativeSummary
       };
       
+      console.log('[ITEM-USE] Adding journal entry with summary:', journalEntry);
+      
+      // Use the standard journal/ADD_ENTRY action 
       dispatch({
-        type: 'UPDATE_JOURNAL',
-        payload: journalPayload
+        type: 'journal/ADD_ENTRY',
+        payload: journalEntry
       });
 
       // Explicitly update the narrative with the item usage
       updateNarrative({
-        text: response.narrative || `You use the ${item.name}.`,
+        text: narrativeText,
         playerInput: actionText,
         removedItems: response.removedItems && response.removedItems.length > 0 ? [item.name] : undefined
       });
@@ -140,6 +150,21 @@ export const useItemHandler = (
       console.error('Error in handleUseItem:', error);
       const errorMsg = `Failed to use item. Please try again.`;
       setError(errorMsg);
+      
+      // Create a fallback journal entry with a basic summary
+      const fallbackEntry: NarrativeJournalEntry = {
+        id: `item-use-fallback-${Date.now()}`,
+        timestamp: Date.now(),
+        content: `You attempted to use an item.`,
+        type: 'narrative',
+        narrativeSummary: `Attempted to use an item`
+      };
+      
+      // Add fallback entry to journal
+      dispatch({
+        type: 'journal/ADD_ENTRY',
+        payload: fallbackEntry
+      });
     } finally {
       // Always reset the using item state
       setUsingItems(prev => {

@@ -106,27 +106,51 @@ const getJournalEntries = (): JournalEntry[] => {
  * @returns Array of default inventory items for new characters
  */
 const getDefaultInventoryItems = (): InventoryItem[] => {
+  // Create unique IDs for each item to prevent conflicts
+  const timestamp = Date.now();
+  
   return [
     {
-      id: `item-${Date.now()}-1`,
+      id: `item-${timestamp}-1`,
+      name: "Revolver",
+      description: "A reliable six-shooter, well-maintained and ready for action",
+      quantity: 1,
+      category: "weapon"
+    },
+    {
+      id: `item-${timestamp}-2`,
+      name: "Ammunition",
+      description: "A box of bullets for your revolver",
+      quantity: 24,
+      category: "general" // Changed from "ammo"
+    },
+    {
+      id: `item-${timestamp}-3`,
       name: "Canteen",
-      description: "A dented metal canteen for carrying water",
+      description: "A metal canteen for carrying water",
       quantity: 1,
       category: "general"
     },
     {
-      id: `item-${Date.now()}-2`,
+      id: `item-${timestamp}-4`,
       name: "Bandana",
       description: "A faded red bandana",
       quantity: 1,
-      category: "general"
+      category: "general" // Changed from "clothing"
     },
     {
-      id: `item-${Date.now()}-3`,
+      id: `item-${timestamp}-5`,
       name: "Pocket Knife",
       description: "A small folding knife",
       quantity: 1,
       category: "general"
+    },
+    {
+      id: `item-${timestamp}-6`,
+      name: "Gold Coins",
+      description: "A small pouch of gold coins",
+      quantity: 25,
+      category: "general" // Changed from "currency"
     }
   ];
 };

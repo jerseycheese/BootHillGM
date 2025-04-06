@@ -1,11 +1,12 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { ErrorDisplay } from './ErrorDisplay';
 import { InventoryList } from './InventoryList';
 import ErrorBoundary from './ErrorBoundary';
 import { useGameSession } from '../hooks/useGameSession';
 // Import from the correct context provider file
 import { useInventoryItems } from '../context/GameStateProvider';
-// Removed import { useInventoryItems } from '../hooks/stateSelectors';
+// Added imports for Inventory Item type
+import { InventoryItem } from '../types/item.types';
 
 /**
  * Props for the Inventory component.
@@ -22,27 +23,40 @@ interface InventoryProps<T extends string> {
    * @param itemId The ID of the weapon being unequipped.
    */
   handleUnequipWeapon?: (itemId: T) => void;
+  /**
+   * Optional array of inventory items to display. If not provided, 
+   * items will be fetched from context.
+   */
+  items?: InventoryItem[];
 }
 
 /**
  * Inventory component to display and manage the character's inventory.
  * 
  * Updated to use state selectors pattern for better performance and clarity.
+ * Can receive items directly through props or fetch them from context.
  *
  * @param props The component props.
   */
 export const Inventory: React.FC<InventoryProps<string>> = ({
   handleEquipWeapon,
   handleUnequipWeapon: onUnequipWeapon,
+  items: propItems,
 }) => {
   // Use the game session for actions
   const { retryLastAction, isUsingItem, isLoading, handleUseItem, error } = useGameSession();
   
   // Use the inventory selector hook to access inventory items
   // This is memoized and will only trigger re-renders when the inventory changes
-  const inventoryItems = useInventoryItems();
+  const contextItems = useInventoryItems();
+  
+  // Use items from props if provided, otherwise use from context
+  const inventoryItems = propItems || contextItems;
+  
+  // Debug log
+  console.log('Inventory component received items:', 
+              inventoryItems ? `${inventoryItems.length} items` : 'undefined/null');
 
-  // Removed log
   // Callback handlers for item actions
   const handleEquipWeaponClick = useCallback((itemId: string) => {
     handleEquipWeapon?.(itemId);
@@ -63,23 +77,28 @@ export const Inventory: React.FC<InventoryProps<string>> = ({
   }, [handleUseItem, handleEquipWeaponClick, onUnequipWeapon]);
 
   // Filter out items with missing required properties
-  const filteredInventory = inventoryItems.filter(item => 
-    item.id && item.name && typeof item.quantity === 'number'
-  );
+  const filteredInventory = Array.isArray(inventoryItems) ? 
+    inventoryItems.filter(item => item && item.id && item.name && typeof item.quantity === 'number') : 
+    [];
 
   return (
     <ErrorBoundary>
       <div id="bhgmInventory" data-testid="inventory" className="wireframe-section bhgm-inventory">
         <h2 className="wireframe-subtitle">Inventory</h2>
         <ErrorDisplay error={error ? { reason: error } : null} onRetry={retryLastAction} />
-        <InventoryList 
-          id="bhgmInventoryList" 
-          data-testid="inventory-list" 
-          items={filteredInventory} 
-          onItemAction={handleItemAction} 
-          isUsingItem={isUsingItem} 
-          isLoading={isLoading} 
-        />
+        
+        {filteredInventory.length === 0 ? (
+          <p className="wireframe-text mt-2">Your inventory is empty.</p>
+        ) : (
+          <InventoryList 
+            id="bhgmInventoryList" 
+            data-testid="inventory-list" 
+            items={filteredInventory} 
+            onItemAction={handleItemAction} 
+            isUsingItem={isUsingItem} 
+            isLoading={isLoading} 
+          />
+        )}
       </div>
     </ErrorBoundary>
   );

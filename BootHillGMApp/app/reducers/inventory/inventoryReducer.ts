@@ -1,129 +1,13 @@
+/**
+ * Inventory Reducer
+ * 
+ * Manages inventory state including items, equipped weapons, and related operations.
+ * Supports multiple action types for adding, removing, and updating items.
+ */
+
 import { InventoryState, initialInventoryState } from '../../types/state/inventoryState';
+import { InventoryItem } from '../../types/item.types';
 import { GameAction } from '../../types/actions';
-import { determineIfWeapon } from '../../utils/ai/aiUtils';
-import { findClosestWeapon } from '../../utils/weaponUtils';
-import { InventoryItem, ItemCategory, ItemRequirements, ItemEffect } from '../../types/item.types';
-import { Weapon } from '../../types/weapon.types';
-import {
-  isNonNullObject,
-  isArray,
-  isString,
-  isInventoryItem,
-  hasId,
-  safeGet
-} from '../utils/typeGuards';
-
-/**
- * Convert an unknown object to a valid InventoryItem
- */
-function ensureValidItem(item: unknown): InventoryItem {
-  // If it's already a valid item, just return it
-  if (isInventoryItem(item)) {
-    return item;
-  }
-
-  // Create a base item with required properties
-  const validItem: InventoryItem = {
-    id: safeGet<string>(item, 'id', `item_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`),
-    name: safeGet<string>(item, 'name', 'Unknown Item'),
-    description: safeGet<string>(item, 'description', ''),
-    quantity: safeGet<number>(item, 'quantity', 1),
-    category: safeGet<ItemCategory>(item, 'category', 'general')
-  };
-
-  // Copy over other optional properties if they exist
-  if (isNonNullObject(item)) {
-    if ('requirements' in item) validItem.requirements = item.requirements as ItemRequirements;
-    if ('effect' in item) validItem.effect = item.effect as ItemEffect;
-    if ('usePrompt' in item) validItem.usePrompt = String(item.usePrompt);
-    if ('weapon' in item) validItem.weapon = item.weapon as Weapon;
-    if ('isEquipped' in item) validItem.isEquipped = Boolean(item.isEquipped);
-  }
-
-  return validItem;
-}
-
-/**
- * Ensures the state has a valid items array of InventoryItem type
- */
-function ensureItemsArray(state: unknown): InventoryState {
-  // If state is null or undefined, use initial state
-  if (!state) {
-    return initialInventoryState;
-  }
-
-  // If state is an array (legacy format), wrap it as items with proper typing
-  if (isArray(state)) {
-    return {
-      items: state.map(item => ensureValidItem(item))
-    };
-  }
-
-  // If state is an object but state.items is missing or not an array, initialize it
-  if (isNonNullObject(state)) {
-    const stateObj = state as Record<string, unknown>;
-
-    if (!('items' in stateObj) || !isArray(stateObj.items)) {
-      return { ...stateObj, items: [] } as InventoryState;
-    }
-
-    // If state.items exists but needs proper typing
-    return {
-      ...stateObj,
-      items: stateObj.items.map(item => ensureValidItem(item))
-    } as InventoryState;
-  }
-
-  // Return initialized state if we reach here somehow
-  return initialInventoryState;
-}
-
-/**
- * Create an InventoryItem from an ADD_ITEM payload
- * Used to ensure consistent creation of items from payloads
- */
-function createItemFromPayload(payload: unknown): InventoryItem {
-  if (isString(payload)) {
-    // If payload is just a string ID
-    return {
-      id: payload,
-      name: 'Unknown Item',
-      description: '',
-      quantity: 1,
-      category: 'general'
-    };
-  }
-
-  if (isNonNullObject(payload)) {
-    // Extract the basic properties we need
-    const item: InventoryItem = {
-      id: safeGet<string>(payload, 'id', `item_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`),
-      name: safeGet<string>(payload, 'name', 'Unknown Item'),
-      description: safeGet<string>(payload, 'description', ''),
-      quantity: safeGet<number>(payload, 'quantity', 1),
-      category: safeGet<ItemCategory>(payload, 'category', 'general')
-    };
-
-    // Copy over other properties if they exist
-    const typedPayload = payload as Record<string, unknown>;
-    if ('requirements' in typedPayload) item.requirements = typedPayload.requirements as ItemRequirements;
-    if ('effect' in typedPayload) item.effect = typedPayload.effect as ItemEffect;
-    if ('usePrompt' in typedPayload) item.usePrompt = String(typedPayload.usePrompt);
-    if ('weapon' in typedPayload) item.weapon = typedPayload.weapon as Weapon;
-    if ('isEquipped' in typedPayload) item.isEquipped = Boolean(typedPayload.isEquipped);
-
-    return item;
-  }
-
-  // Fallback for unexpected payload types
-  return {
-    id: `item_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-    name: 'Unknown Item',
-    description: '',
-    quantity: 1,
-    category: 'general'
-  };
-}
 
 /**
  * Custom type guard for checking if an action has a payload
@@ -133,264 +17,226 @@ function hasPayload<T>(action: GameAction): action is GameAction & { payload: T 
 }
 
 /**
- * Inventory slice reducer
- * Handles all inventory-related state updates
+ * Helper to ensure items are properly formatted
+ */
+function ensureValidItem(item: unknown): InventoryItem {
+  if (!item || typeof item !== 'object') {
+    return {
+      id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: 'Unknown Item',
+      description: 'An unidentified item',
+      quantity: 1,
+      category: 'general'
+    };
+  }
+  
+  const itemObj = item as Record<string, unknown>;
+  
+  return {
+    id: typeof itemObj.id === 'string' ? itemObj.id : `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    name: typeof itemObj.name === 'string' ? itemObj.name : 'Unknown Item',
+    description: typeof itemObj.description === 'string' ? itemObj.description : 'An unidentified item',
+    quantity: typeof itemObj.quantity === 'number' ? itemObj.quantity : 1,
+    category: typeof itemObj.category === 'string' ? itemObj.category : 'general',
+    ...itemObj // Preserve other properties
+  } as InventoryItem;
+}
+
+/**
+ * Inventory Reducer
+ * Processes inventory-related actions and updates state accordingly
  */
 export function inventoryReducer(
   state: InventoryState = initialInventoryState,
   action: GameAction
 ): InventoryState {
-  // Make sure we have a valid state structure before any operations
-  const safeState = ensureItemsArray(state);
-  // Removed logging
-
-  // Use action.type as a string for comparison
+  // Debug log for inventory actions
+  console.log('inventoryReducer received action:', action.type);
+  
   const actionType = action.type as string;
-
-  // ADD_ITEM and inventory/ADD_ITEM
-  if (actionType === 'ADD_ITEM' || actionType === 'inventory/ADD_ITEM') {
-    if (!hasPayload<unknown>(action)) {
-      return safeState;
-    }
-
-    const payload = action.payload;
-    const itemId = isString(payload) ? payload :
-                  isNonNullObject(payload) && 'id' in payload ? String(payload.id) : '';
-
-    if (!itemId) {
-      console.warn('ADD_ITEM action missing item ID'); // Keep warn
-      return safeState;
-    }
-
-    // Check if the item already exists
-    const existingItem = safeState.items.find((item) => item.id === itemId);
-
-    if (existingItem) {
-      // Update existing item
-      return {
-        ...safeState,
-        items: safeState.items.map((item) =>
-          item.id === itemId
-            ? {
-                ...item,
-                ...(isNonNullObject(payload) ? payload : {}),
-                quantity: (item.quantity || 1) + (isNonNullObject(payload) && 'quantity' in payload ? Number(payload.quantity) : 1)
-              }
-            : item
-        )
-      };
-    } else {
-      // Create a new item
-      const newItem = createItemFromPayload(payload);
-
-      // Check for weapon based on name
-      if (newItem.category !== 'weapon' && newItem.name) {
-        const isWeapon = determineIfWeapon(newItem.name);
-        if (isWeapon) {
-          newItem.category = "weapon";
-          const closestWeapon = findClosestWeapon(newItem.name);
-          if (closestWeapon) {
-            newItem.weapon = closestWeapon;
-          }
-        }
+  
+  switch(actionType) {
+    case 'ADD_ITEM':
+    case 'inventory/ADD_ITEM': {
+      if (!hasPayload<unknown>(action)) {
+        return state;
       }
-
-      // Return new state with the item added
-      return {
-        ...safeState,
-        items: [...safeState.items, newItem]
-      };
+      
+      const newItem = ensureValidItem(action.payload);
+      const existingItemIndex = state.items.findIndex(item => item.id === newItem.id);
+      
+      if (existingItemIndex >= 0) {
+        // If item already exists, increase quantity
+        const updatedItems = [...state.items];
+        const existingItem = updatedItems[existingItemIndex];
+        updatedItems[existingItemIndex] = {
+          ...existingItem,
+          quantity: existingItem.quantity + (newItem.quantity || 1)
+        };
+        
+        console.log('inventoryReducer: Updated item quantity:', updatedItems[existingItemIndex]);
+        return { ...state, items: updatedItems };
+      }
+      
+      // Otherwise add as new item
+      console.log('inventoryReducer: Added new item:', newItem);
+      return { ...state, items: [...state.items, newItem] };
     }
-  }
-
-  // REMOVE_ITEM and inventory/REMOVE_ITEM
-  else if (actionType === 'REMOVE_ITEM' || actionType === 'inventory/REMOVE_ITEM') {
-    if (!hasPayload<unknown>(action)) {
-      return safeState;
+    
+    case 'REMOVE_ITEM':
+    case 'inventory/REMOVE_ITEM': {
+      if (!hasPayload<string>(action)) {
+        return state;
+      }
+      
+      const itemId = action.payload;
+      console.log('inventoryReducer: Removing item with ID:', itemId);
+      return { ...state, items: state.items.filter(item => item.id !== itemId) };
     }
-
-    const payload = action.payload;
-    const itemId = isString(payload) ? payload : hasId(payload) ? payload.id : '';
-
-    if (!itemId) {
-      return safeState;
+    
+    case 'USE_ITEM':
+    case 'inventory/USE_ITEM': {
+      if (!hasPayload<string>(action)) {
+        return state;
+      }
+      
+      const itemId = action.payload;
+      const itemIndex = state.items.findIndex(item => item.id === itemId);
+      
+      if (itemIndex < 0) {
+        return state;
+      }
+      
+      const updatedItems = [...state.items];
+      const item = updatedItems[itemIndex];
+      
+      if (item.quantity <= 1) {
+        // Remove item if quantity reaches zero
+        return { ...state, items: updatedItems.filter((_, i) => i !== itemIndex) };
+      }
+      
+      // Decrease quantity otherwise
+      updatedItems[itemIndex] = { ...item, quantity: item.quantity - 1 };
+      console.log('inventoryReducer: Used item, decreased quantity:', updatedItems[itemIndex]);
+      return { ...state, items: updatedItems };
     }
-
-    return {
-      ...safeState,
-      items: safeState.items.filter((item) => item.id !== itemId)
-    };
-  }
-
-  // UPDATE_ITEM_QUANTITY and inventory/UPDATE_ITEM_QUANTITY
-  else if (actionType === 'UPDATE_ITEM_QUANTITY' || actionType === 'inventory/UPDATE_ITEM_QUANTITY') {
-    if (!hasPayload<unknown>(action)) {
-      return safeState;
+    
+    case 'UPDATE_ITEM_QUANTITY':
+    case 'inventory/UPDATE_ITEM_QUANTITY': {
+      if (!hasPayload<{ id: string, quantity: number }>(action)) {
+        return state;
+      }
+      
+      const { id, quantity } = action.payload;
+      const itemIndex = state.items.findIndex(item => item.id === id);
+      
+      if (itemIndex < 0) {
+        return state;
+      }
+      
+      const updatedItems = [...state.items];
+      
+      if (quantity <= 0) {
+        // Remove item if quantity is zero or negative
+        return { ...state, items: updatedItems.filter((_, i) => i !== itemIndex) };
+      }
+      
+      // Update quantity otherwise
+      updatedItems[itemIndex] = { ...updatedItems[itemIndex], quantity };
+      console.log('inventoryReducer: Updated item quantity:', updatedItems[itemIndex]);
+      return { ...state, items: updatedItems };
     }
-
-    const payload = action.payload;
-
-    if (!isNonNullObject(payload)) {
-      return safeState;
+    
+    case 'CLEAN_INVENTORY':
+    case 'inventory/CLEAN_INVENTORY': {
+      // Remove items with quantity zero or less
+      const validItems = state.items.filter(item => item.quantity > 0);
+      console.log('inventoryReducer: Cleaned inventory, remaining items:', validItems.length);
+      return { ...state, items: validItems };
     }
-
-    const itemId = isString(payload) ? payload : hasId(payload) ? payload.id : '';
-
-    if (!itemId) {
-      return safeState;
+    
+    case 'SET_INVENTORY':
+    case 'inventory/SET_INVENTORY': {
+      if (!hasPayload<unknown>(action)) {
+        return state;
+      }
+      
+      const payload = action.payload;
+      
+      // Handle array of items
+      if (Array.isArray(payload)) {
+        const items = payload.map(item => ensureValidItem(item));
+        console.log('inventoryReducer: Set inventory with items array, count:', items.length);
+        return { ...state, items };
+      }
+      
+      // Handle object with items array
+      if (payload && typeof payload === 'object' && 'items' in payload && Array.isArray(payload.items)) {
+        const items = payload.items.map(item => ensureValidItem(item));
+        console.log('inventoryReducer: Set inventory with items object, count:', items.length);
+        return { ...state, items };
+      }
+      
+      return state;
     }
-
-    return {
-      ...safeState,
-      items: safeState.items.map(item =>
-        item.id === itemId
-          ? {
-              ...item,
-              // For non-string payloads, use the quantity field directly
-              quantity: 'quantity' in payload && typeof payload.quantity === 'number'
-                ? payload.quantity
-                : item.quantity
-            }
-          : item
-      )
-    };
-  }
-
-  // USE_ITEM and inventory/USE_ITEM
-  else if (actionType === 'USE_ITEM' || actionType === 'inventory/USE_ITEM') {
-    if (!hasPayload<unknown>(action)) {
-      return safeState;
+    
+    case 'EQUIP_WEAPON':
+    case 'inventory/EQUIP_WEAPON': {
+      if (!hasPayload<string>(action)) {
+        return state;
+      }
+      
+      const itemId = action.payload;
+      const item = state.items.find(i => i.id === itemId);
+      
+      if (!item || item.category !== 'weapon') {
+        return state;
+      }
+      
+      console.log('inventoryReducer: Equipped weapon:', item);
+      return { ...state, equippedWeaponId: itemId };
     }
-
-    const payload = action.payload;
-    const itemId = isString(payload) ? payload : hasId(payload) ? payload.id : '';
-
-    if (!itemId) {
-      return safeState;
+    
+    case 'UNEQUIP_WEAPON':
+    case 'inventory/UNEQUIP_WEAPON': {
+      console.log('inventoryReducer: Unequipped weapon');
+      return { ...state, equippedWeaponId: null };
     }
-
-    const updatedItems = safeState.items
-      .map((item) => {
-        if (item.id === itemId) {
-          return {
-            ...item,
-            quantity: Math.max(0, item.quantity - 1)
-          };
-        }
-        return item;
-      })
-      .filter((item) => item.quantity > 0);
-    // Removed logging
-
-    return {
-      ...safeState,
-      items: updatedItems
-    };
-  }
-
-  // CLEAN_INVENTORY and inventory/CLEAN_INVENTORY
-  else if (actionType === 'CLEAN_INVENTORY' || actionType === 'inventory/CLEAN_INVENTORY') {
-    return {
-      ...safeState,
-      items: safeState.items.filter(item =>
-        item.id &&
-        item.name &&
-        item.quantity > 0 &&
-        !item.name.startsWith('REMOVED_ITEMS:')
-      )
-    };
-  }
-
-  // SET_INVENTORY and inventory/SET_INVENTORY
-  else if (actionType === 'SET_INVENTORY' || actionType === 'inventory/SET_INVENTORY') {
-    if (!hasPayload<unknown>(action)) {
-      return safeState;
-    }
-
-    const payload = action.payload;
-
-    // Handle array format (legacy) or object format with properly typed items
-    if (isArray(payload)) {
-      return {
-        ...safeState,
-        items: payload.map(item => ensureValidItem(item))
-      };
-    }
-
-    // Handle object with items property
-    if (isNonNullObject(payload)) {
-      const typedPayload = payload as { items?: unknown[] };
-      if ('items' in typedPayload && isArray(typedPayload.items)) {
+    
+    case 'SET_STATE': {
+      if (!hasPayload<Record<string, unknown>>(action)) {
+        return state;
+      }
+      
+      const { inventory } = action.payload;
+      
+      if (!inventory) {
+        return state;
+      }
+      
+      // Handle direct inventory state object
+      if (typeof inventory === 'object' && 'items' in inventory && Array.isArray(inventory.items)) {
+        const typedInventory = inventory as unknown as InventoryState;
+        console.log('inventoryReducer: Set state with inventory, items count:', typedInventory.items.length);
         return {
-          ...safeState,
-          items: typedPayload.items.map(item => ensureValidItem(item))
+          items: typedInventory.items.map(ensureValidItem),
+          equippedWeaponId: typedInventory.equippedWeaponId || null
         };
       }
+      
+      // Handle array of items (legacy format)
+      if (Array.isArray(inventory)) {
+        console.log('inventoryReducer: Set state with inventory array, count:', inventory.length);
+        return {
+          ...state,
+          items: inventory.map(ensureValidItem)
+        };
+      }
+      
+      return state;
     }
-
-    // Fallback to current state if payload is invalid
-    return safeState;
+    
+    default:
+      return state;
   }
-
-  // EQUIP_WEAPON and inventory/EQUIP_WEAPON
-  else if (actionType === 'EQUIP_WEAPON' || actionType === 'inventory/EQUIP_WEAPON') {
-    if (!hasPayload<unknown>(action)) {
-      return safeState;
-    }
-
-    const payload = action.payload;
-    const itemId = isString(payload) ? payload : hasId(payload) ? payload.id : '';
-
-    if (!itemId) {
-      return safeState;
-    }
-
-    const weaponItem = safeState.items.find(item => item.id === itemId);
-
-    if (!weaponItem || weaponItem.category !== 'weapon') {
-      return safeState;
-    }
-
-    const updatedItems = safeState.items.map(item => ({
-      ...item,
-      isEquipped: item.id === itemId
-    }));
-
-    return {
-      ...safeState,
-      items: updatedItems
-    };
-  }
-
-  // UNEQUIP_WEAPON and inventory/UNEQUIP_WEAPON
-  else if (actionType === 'UNEQUIP_WEAPON' || actionType === 'inventory/UNEQUIP_WEAPON') {
-    const updatedItems = safeState.items.map(item => ({
-      ...item,
-      isEquipped: false
-    }));
-
-    return {
-      ...safeState,
-      items: updatedItems
-    };
-  }
-
-  // Handle SET_STATE for state restoration
-  else if (actionType === 'SET_STATE') {
-    if (!hasPayload<Partial<Record<string, unknown>>>(action)) {
-      return safeState;
-    }
-
-    const payloadObj = action.payload;
-
-    if (!('inventory' in payloadObj)) {
-      return safeState;
-    }
-
-    // Ensure we have a valid items array in the restored state
-    return ensureItemsArray(payloadObj.inventory);
-  }
-
-  // Default case
-  return safeState;
 }

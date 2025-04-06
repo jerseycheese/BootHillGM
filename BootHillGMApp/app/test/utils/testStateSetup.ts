@@ -204,6 +204,8 @@ export const mockTestData = {
       }
       if (current.inventory) {
         combinedState.inventory = {
+          // Preserve existing equipped weapon ID unless overridden by current state
+          equippedWeaponId: current.inventory?.equippedWeaponId ?? combinedState.inventory?.equippedWeaponId ?? null,
           items: [
             ...(combinedState.inventory?.items || []),
             ...(current.inventory?.items || [])

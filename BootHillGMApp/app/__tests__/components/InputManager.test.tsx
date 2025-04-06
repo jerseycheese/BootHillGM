@@ -79,7 +79,7 @@ describe('InputManager', () => {
     const exploreButton = screen.getByText('Explore town');
     fireEvent.click(exploreButton);
     
-    expect(mockOnSubmit).toHaveBeenCalledWith('Explore town');
+    expect(mockOnSubmit).toHaveBeenCalledWith('Explore town', 'optional');
   });
   
   test('submitting custom input calls onSubmit with input text', () => {
@@ -91,7 +91,7 @@ describe('InputManager', () => {
     fireEvent.change(inputField, { target: { value: 'Draw my weapon' } });
     fireEvent.click(submitButton);
     
-    expect(mockOnSubmit).toHaveBeenCalledWith('Draw my weapon');
+    expect(mockOnSubmit).toHaveBeenCalledWith('Draw my weapon', 'custom');
   });
   
   // Loading state tests

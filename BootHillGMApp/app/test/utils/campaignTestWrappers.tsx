@@ -23,7 +23,7 @@ interface TestCampaignState {
   currentPlayer?: string;
   npcs?: string[]; // Use string[] to match GameState type
   character?: Character | null;
-  inventory?: InventoryItem[] | { items: InventoryItem[] };
+  inventory?: InventoryItem[] | { items: InventoryItem[], equippedWeaponId?: string | null };
   narrative?: Partial<NarrativeState>;
   journal?: JournalEntry[];
   location?: LocationType | null; // Use imported LocationType
@@ -194,6 +194,7 @@ export const TestCampaignStateProvider: React.FC<TestWrapperProps> = ({
   
   // Handle both inventory formats from tests
   let inventoryItems: InventoryItem[] = [];
+  let equippedWeaponId: string | null = null;
   
   // If we have an inventory object from tests
   if (mergedState.inventory) {
@@ -206,12 +207,18 @@ export const TestCampaignStateProvider: React.FC<TestWrapperProps> = ({
       inventoryItems = Array.isArray(mergedState.inventory.items) 
         ? mergedState.inventory.items 
         : [];
+      
+      // Get equipped weapon ID if provided
+      if ('equippedWeaponId' in mergedState.inventory) {
+        equippedWeaponId = mergedState.inventory.equippedWeaponId ?? null;
+      }
     }
   }
   
   // Create properly structured inventory and journal states
   const inventoryState: InventoryState = {
-    items: inventoryItems
+    items: inventoryItems,
+    equippedWeaponId: equippedWeaponId
   };
   
   const journalState: JournalState = {

@@ -16,7 +16,8 @@ export function createBasicMockState(): BaseMockState {
       opponent: null
     },
     inventory: {
-      items: []
+      items: [],
+      equippedWeaponId: null // Added the required equippedWeaponId property
     },
     journal: {
       entries: []

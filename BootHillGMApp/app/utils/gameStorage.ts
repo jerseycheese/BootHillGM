@@ -24,7 +24,8 @@ const GameStorage = {
     CHARACTER_PROGRESS: 'character-creation-progress',
     INITIAL_NARRATIVE: 'initial-narrative',
     COMPLETED_CHARACTER: 'completed-character',
-    LAST_CHARACTER: 'lastCreatedCharacter'
+    LAST_CHARACTER: 'lastCreatedCharacter',
+    CHARACTER_NAME: 'character-name'
   },
   
   // Character-related functions
@@ -40,7 +41,105 @@ const GameStorage = {
   
   // Game state functions
   saveGameState: gameStateStorage.saveGameState,
-  initializeNewGame: gameStateStorage.initializeNewGame
+  initializeNewGame: gameStateStorage.initializeNewGame,
+
+  /**
+   * Get character name from local storage or use default
+   * @returns Character name string
+   */
+  getCharacterName: () => {
+    if (typeof window === 'undefined') return 'Sheriff Wilson';
+    
+    // Try to get from local storage
+    const storedName = localStorage.getItem(GameStorage.keys.CHARACTER_NAME);
+    if (storedName) return storedName;
+    
+    // Try alternate storage locations
+    try {
+      // Check CHARACTER_PROGRESS
+      const characterProgress = localStorage.getItem(GameStorage.keys.CHARACTER_PROGRESS);
+      if (characterProgress) {
+        const progressData = JSON.parse(characterProgress);
+        if (progressData?.character?.name) {
+          return progressData.character.name;
+        }
+      }
+      
+      // Check COMPLETED_CHARACTER
+      const completedCharacter = localStorage.getItem(GameStorage.keys.COMPLETED_CHARACTER);
+      if (completedCharacter) {
+        const characterData = JSON.parse(completedCharacter);
+        if (characterData?.name) {
+          return characterData.name;
+        }
+      }
+      
+      // Check GAME_STATE
+      const gameState = localStorage.getItem(GameStorage.keys.GAME_STATE);
+      if (gameState) {
+        const stateData = JSON.parse(gameState);
+        if (stateData?.character?.player?.name) {
+          return stateData.character.player.name;
+        }
+        if (stateData?.character?.name) {
+          return stateData.character.name;
+        }
+      }
+    } catch (e) {
+      console.error('Error retrieving character name:', e);
+    }
+    
+    // Default name if nothing else found
+    return 'Sheriff Wilson';
+  },
+
+  /**
+   * Get default character with proper name
+   * @returns A basic default character object
+   */
+  getDefaultCharacter: () => {
+    // Try to get from localStorage first
+    const savedCharacter = localStorage.getItem(GameStorage.keys.COMPLETED_CHARACTER);
+    if (savedCharacter) {
+      try {
+        const parsedChar = JSON.parse(savedCharacter);
+        if (parsedChar && parsedChar.name) {
+          return parsedChar;
+        }
+      } catch (error) {
+        console.error('Error parsing saved character:', error);
+      }
+    }
+    
+    // Get the character name
+    const characterName = GameStorage.getCharacterName();
+    
+    // Fallback to a default character
+    return {
+      id: `character_${Date.now()}`,
+      name: characterName,
+      isPlayer: true,
+      isNPC: false,
+      attributes: {
+        speed: 6,
+        gunAccuracy: 7,
+        throwingAccuracy: 5,
+        strength: 8,
+        baseStrength: 8,
+        bravery: 7,
+        experience: 6
+      },
+      wounds: [],
+      isUnconscious: false,
+      inventory: { 
+        items: gameElementsStorage.getDefaultInventoryItems() 
+      },
+      strengthHistory: {
+        baseStrength: 8,
+        changes: []
+      }
+    };
+  }
 };
 
 export { GameStorage };

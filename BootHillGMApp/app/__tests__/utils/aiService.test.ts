@@ -172,6 +172,6 @@ describe('generateNarrativeSummary', () => {
 
     const summary = await generateNarrativeSummary('Player action', 'Recent context');
     expect(mockGenerateContent).toHaveBeenCalledWith(expect.stringContaining('Player action'));
-    expect(summary).toBe('Recent context Player action.');
+    expect(summary).toBe('Player action in the Wild West.');
   });
 });

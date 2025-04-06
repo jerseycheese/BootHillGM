@@ -92,7 +92,7 @@ export function useRecoveryOptions(
             displayMode: 'standard' as NarrativeDisplayMode,
             context: "" // Add missing context property
           },
-          inventory: { items: getStartingInventory() },
+          inventory: { items: getStartingInventory(), equippedWeaponId: null },
           location: { type: 'town' as const, name: 'Boothill' },
           savedTimestamp: Date.now(),
           isClient: true,

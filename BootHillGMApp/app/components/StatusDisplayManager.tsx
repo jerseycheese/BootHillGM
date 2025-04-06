@@ -8,7 +8,7 @@
 
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { Character } from '../types/character';
 import { getCharacterStrength } from '../utils/strengthSystem';
 // Removed import { useCampaignState } from './CampaignStateManager';
@@ -156,6 +156,12 @@ function StatusDisplayManager({ character, location }: StatusDisplayManagerProps
     const currentStrength = getCharacterStrength(character);
     const maxStrength = character.attributes.baseStrength;
     const displayLocation = location;
+    
+    // Debug log to see character data
+    useEffect(() => {
+      console.log('StatusDisplayManager received character:', character);
+      console.log('Character name:', character.name);
+    }, [character]);
 
     const getLocationDisplay = (location: LocationType): string => {
         switch (location.type) {
@@ -191,7 +197,7 @@ function StatusDisplayManager({ character, location }: StatusDisplayManagerProps
       <div id="bhgmStatusDisplayManager" data-testid="status-display-manager" className="wireframe-section space-y-4 bhgm-status-display-manager">
             <div className="border-b pb-2">
                 <h2 className="font-medium text-lg" data-testid="character-name">
-                    {character.name}
+                    {character.name || 'Sheriff Wilson'}
                 </h2>
                 <p className="text-sm text-gray-600" data-testid="character-location">
                     Location: {displayLocation ? getLocationDisplay(displayLocation) : 'Unknown'}

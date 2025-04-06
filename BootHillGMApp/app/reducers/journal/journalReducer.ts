@@ -1,178 +1,81 @@
 import { JournalState, initialJournalState } from '../../types/state/journalState';
 import { GameAction } from '../../types/actions';
-import { JournalEntry, JournalEntryType, BaseJournalEntry } from '../../types/journal';
+import { JournalEntry, JournalEntryType, RawJournalEntry } from '../../types/journal';
 
 /**
- * Helper function to create a valid journal entry with the necessary fields
+ * Validates and converts raw journal entries to properly typed JournalEntry objects.
+ * Ensures entries have required fields and correct types, preserving narrativeSummary.
+ *
+ * @param rawEntry - The potentially untyped journal entry data.
+ * @returns A validated and typed JournalEntry object.
  */
-function createValidJournalEntry(data: Record<string, unknown>): JournalEntry {
-  // Get the type from data or default to 'narrative'
-  const entryType = (data.type as JournalEntryType) || 'narrative';
+/**
+ * Validates and converts raw journal entries to properly typed JournalEntry objects
+ * This ensures that all entries have the correct type and required properties
+ */
+function validateAndConvertEntry(rawEntry: RawJournalEntry): JournalEntry {
+  // Create a unique ID if one wasn't provided
+  const id = rawEntry.id || `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const timestamp = rawEntry.timestamp || Date.now();
+  const content = rawEntry.content || '';
   
-  // Create base entry with required fields
-  const baseEntry: BaseJournalEntry = {
-    id: typeof data.id === 'string' ? data.id : `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    timestamp: typeof data.timestamp === 'number' ? data.timestamp : Date.now(),
-    content: typeof data.content === 'string' ? data.content : '',
-  };
-  
-  // Preserve the title property for backward compatibility
-  if (typeof data.title === 'string') {
-    baseEntry.title = data.title;
+  // Ensure we have a valid entry type or default to narrative
+  let entryType: JournalEntryType = 'narrative';
+  if (rawEntry.type === 'combat' || rawEntry.type === 'inventory' || rawEntry.type === 'quest') {
+    entryType = rawEntry.type;
   }
   
-  if (typeof data.narrativeSummary === 'string') {
-    baseEntry.narrativeSummary = data.narrativeSummary;
-  }
+  // Create the appropriate entry type based on the determined entry type
+  let journalEntry: JournalEntry;
   
-  // Build the entry based on the type
   switch (entryType) {
-    case 'combat': {
-      // Safely handle the combatants object
-      const combatantsObj = (data.combatants && typeof data.combatants === 'object') 
-        ? data.combatants as Record<string, unknown>
-        : {};
-        
-      // Safe type casting for outcome
-      const outcomeValue = typeof data.outcome === 'string' && 
-                        ['victory', 'defeat', 'escape', 'truce'].includes(data.outcome)
-        ? data.outcome as 'victory' | 'defeat' | 'escape' | 'truce'
-        : 'victory';
-        
-      return {
-        ...baseEntry,
+    case 'combat':
+      journalEntry = {
+        id,
+        timestamp,
+        content,
         type: 'combat',
-        combatants: {
-          player: typeof combatantsObj.player === 'string' 
-            ? combatantsObj.player 
-            : 'Unknown Player',
-          opponent: typeof combatantsObj.opponent === 'string' 
-            ? combatantsObj.opponent 
-            : 'Unknown Opponent'
-        },
-        outcome: outcomeValue
+        combatants: rawEntry.combatants || { player: '', opponent: '' },
+        outcome: (rawEntry.outcome as 'victory' | 'defeat' | 'escape' | 'truce') || 'victory'
       };
-    }
-    
-    case 'inventory': {
-      // Safely handle the items object
-      const itemsObj = (data.items && typeof data.items === 'object') 
-        ? data.items as Record<string, unknown>
-        : {};
+      break;
       
-      // Safely cast arrays
-      const acquiredItems = Array.isArray(itemsObj.acquired) 
-        ? itemsObj.acquired.map(String)
-        : [];
-        
-      const removedItems = Array.isArray(itemsObj.removed)
-        ? itemsObj.removed.map(String)
-        : [];
-        
-      return {
-        ...baseEntry,
+    case 'inventory':
+      journalEntry = {
+        id,
+        timestamp,
+        content,
         type: 'inventory',
-        items: {
-          acquired: acquiredItems,
-          removed: removedItems
-        }
+        items: rawEntry.items || { acquired: [], removed: [] }
       };
-    }
+      break;
       
     case 'quest':
-      return {
-        ...baseEntry,
+      journalEntry = {
+        id,
+        timestamp,
+        content,
         type: 'quest',
-        questTitle: typeof data.questTitle === 'string' ? data.questTitle : 'Unknown Quest',
-        status: ['started', 'updated', 'completed', 'failed'].includes(data.status as string)
-          ? data.status as 'started' | 'updated' | 'completed' | 'failed'
-          : 'started'
+        questTitle: rawEntry.questTitle || 'Unknown Quest',
+        status: (rawEntry.status as 'started' | 'updated' | 'completed' | 'failed') || 'started'
       };
+      break;
       
-    case 'narrative':
     default:
-      return {
-        ...baseEntry,
+      journalEntry = {
+        id,
+        timestamp,
+        content,
         type: 'narrative'
       };
   }
-}
-
-/**
- * Converts unknown items to properly typed JournalEntry objects
- */
-function ensureValidEntry(item: unknown): JournalEntry {
-  if (typeof item !== 'object' || item === null) {
-    // Create a default narrative entry if item is not an object
-    return {
-      id: `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      type: 'narrative',
-      timestamp: Date.now(),
-      content: 'Unknown journal entry'
-    };
+  
+  // Add narrativeSummary if it exists in the raw entry
+  if (rawEntry.narrativeSummary) {
+    (journalEntry as JournalEntry & { narrativeSummary?: string }).narrativeSummary = rawEntry.narrativeSummary;
   }
   
-  // Convert the unknown object to a Record<string, unknown>
-  return createValidJournalEntry(item as Record<string, unknown>);
-}
-
-/**
- * Ensures the state has a valid entries array
- */
-function ensureEntriesArray(state: unknown): JournalState {
-  // If state is null or undefined, use initial state
-  if (!state) {
-    return initialJournalState;
-  }
-  
-  if (typeof state !== 'object') {
-    return initialJournalState;
-  }
-  
-  const stateObj = state as Record<string, unknown>;
-  
-  // If state is an array (legacy format), wrap it as entries
-  if (Array.isArray(state)) {
-    return { 
-      entries: state.map(entry => ensureValidEntry(entry))
-    };
-  }
-  
-  // If state has journal object with entries array (new format)
-  if (stateObj.journal && 
-      typeof stateObj.journal === 'object' && 
-      stateObj.journal !== null && 
-      'entries' in stateObj.journal && 
-      Array.isArray((stateObj.journal as Record<string, unknown>).entries)) {
-    
-    const journalEntries = (stateObj.journal as Record<string, unknown>).entries as unknown[];
-    
-    return {
-      entries: journalEntries.map(entry => ensureValidEntry(entry))
-    };
-  }
-  
-  // If state has entries at the root level
-  if ('entries' in stateObj && Array.isArray(stateObj.entries)) {
-    return {
-      entries: (stateObj.entries as unknown[]).map(entry => ensureValidEntry(entry))
-    };
-  }
-  
-  // If state already has entries property (as JournalState type), keep it
-  if ('entries' in stateObj && typeof stateObj.entries === 'object') {
-    return state as JournalState;
-  }
-  
-  // If we can't find entries, return initial state
-  return initialJournalState;
-}
-
-/**
- * Custom type guard for checking if an action has a payload
- */
-function hasPayload<T>(action: GameAction): action is GameAction & { payload: T } {
-  return 'payload' in action && action.payload !== undefined;
+  return journalEntry;
 }
 
 /**
@@ -183,123 +86,153 @@ export function journalReducer(
   state: JournalState = initialJournalState,
   action: GameAction
 ): JournalState {
-  // Make sure we have a valid state structure before any operations
-  const safeState = ensureEntriesArray(state);
-  
-  // Use action.type as a string for comparison
   const actionType = action.type as string;
+  
 
-  // Handle both UPDATE_JOURNAL and journal/UPDATE_JOURNAL
-  if (actionType === 'UPDATE_JOURNAL' || actionType === 'journal/UPDATE_JOURNAL') {
-    if (!hasPayload<unknown>(action)) {
-      return safeState;
-    }
-    
+  // Handle journal/ADD_ENTRY - explicitly handle the narrativeSummary property
+  if (actionType === 'journal/ADD_ENTRY' && 'payload' in action && action.payload) {
+    // Extract the payload
     const payload = action.payload;
     
-    // Handle array replacement
-    if (Array.isArray(payload)) {
-      return {
-        ...safeState,
-        entries: payload.map(entry => ensureValidEntry(entry))
-      };
+    // Enhanced debug logging
+    
+    if (typeof payload !== 'object' || payload === null) {
+      return state;
     }
     
-    // Handle single entry addition
-    if (payload && typeof payload === 'object') {
-      // Create a proper journal entry
-      const newEntry = ensureValidEntry(payload);
+    // Cast payload to a type-safe structure
+    const entryData = payload as RawJournalEntry;
+    
+    // Debug logging for narrativeSummary
+    
+    // Create a properly typed journal entry
+    const newEntry = validateAndConvertEntry(entryData);
+    
+    // Debug the final entry object
+    
+    // Add the entry to the state
+    return {
+      ...state,
+      entries: [...state.entries, newEntry]
+    };
+  }
+  
+  // Handle other action types
+  switch (actionType) {
+    case 'UPDATE_JOURNAL':
+    case 'journal/UPDATE_JOURNAL': {
+      if (!('payload' in action) || !action.payload) {
+        return state;
+      }
+      
+      const payload = action.payload;
+      
+      // Handle array replacement
+      if (Array.isArray(payload)) {
+        // Process each entry to ensure they are properly typed
+        const newEntries = payload.map(entry => validateAndConvertEntry(entry as RawJournalEntry));
+        
+        return {
+          ...state,
+          entries: newEntries
+        };
+      }
+      
+      // Handle single entry addition
+      if (payload && typeof payload === 'object') {
+        const newEntry = validateAndConvertEntry(payload as RawJournalEntry);
+        
+        return {
+          ...state,
+          entries: [...state.entries, newEntry]
+        };
+      }
+      
+      return state;
+    }
+    
+    case 'SET_STATE': {
+      if (!('payload' in action) || !action.payload || typeof action.payload !== 'object') {
+        return state;
+      }
+      
+      const payload = action.payload as Record<string, unknown>;
+      
+      if (!('journal' in payload)) {
+        return state;
+      }
+      
+      const journal = payload.journal;
+      
+      if (typeof journal === 'object' && journal !== null && 'entries' in journal) {
+        const journalObj = journal as Record<string, unknown>;
+        
+        if (Array.isArray(journalObj.entries)) {
+          // Process each entry to ensure they are properly typed
+          const entries = journalObj.entries.map(entry => 
+            validateAndConvertEntry(entry as RawJournalEntry)
+          );
+          
+          return {
+            entries
+          };
+        }
+      }
+      
+      return state;
+    }
+    
+    case 'journal/REMOVE_ENTRY': {
+      if (!('payload' in action) || !action.payload || typeof action.payload !== 'object') {
+        return state;
+      }
+      
+      const payload = action.payload as Record<string, unknown>;
+      
+      if (typeof payload.id !== 'string') {
+        return state;
+      }
       
       return {
-        ...safeState,
-        entries: [...safeState.entries, newEntry]
+        ...state,
+        entries: state.entries.filter(entry => entry.id !== payload.id)
       };
     }
     
-    // Default: return unchanged state
-    return safeState;
+    case 'journal/UPDATE_ENTRY': {
+      if (!('payload' in action) || !action.payload || typeof action.payload !== 'object') {
+        return state;
+      }
+      
+      const payload = action.payload as RawJournalEntry;
+      
+      if (typeof payload.id !== 'string') {
+        return state;
+      }
+      
+      return {
+        ...state,
+        entries: state.entries.map(entry => {
+          if (entry.id === payload.id) {
+            // Create a properly typed updated entry
+            // Start with the existing entry properties
+            const baseEntry = { ...entry };
+            
+            // Create a raw entry with both existing and new properties
+            const combinedRawEntry: RawJournalEntry = {
+              ...baseEntry,
+              ...payload
+            };
+            
+            // Validate and convert to a proper typed entry
+            return validateAndConvertEntry(combinedRawEntry);
+          }
+          return entry;
+        })
+      };
+    }
+    
+    default:
+      return state;
   }
-  
-  // SET_STATE for state restoration
-  else if (actionType === 'SET_STATE') {
-    if (!hasPayload<Record<string, unknown>>(action)) {
-      return safeState;
-    }
-    
-    const payload = action.payload;
-    
-    // If there's no journal in the payload, return current state
-    if (!('journal' in payload)) {
-      return safeState;
-    }
-    
-    // Ensure we have a valid entries array in the restored state
-    return ensureEntriesArray(payload.journal);
-  }
-  
-  // journal/ADD_ENTRY
-  else if (actionType === 'journal/ADD_ENTRY') {
-    if (!hasPayload<unknown>(action)) {
-      return safeState;
-    }
-    
-    const payload = action.payload;
-    
-    if (!payload || typeof payload !== 'object') {
-      return safeState; // Invalid payload
-    }
-    
-    const newEntry = ensureValidEntry(payload);
-    return {
-      ...safeState,
-      entries: [...safeState.entries, newEntry]
-    };
-  }
-
-  // journal/REMOVE_ENTRY
-  else if (actionType === 'journal/REMOVE_ENTRY') {
-    if (!hasPayload<{id?: string}>(action)) {
-      return safeState;
-    }
-    
-    const payload = action.payload;
-    
-    if (!payload || typeof payload !== 'object' || typeof payload.id !== 'string') {
-      return safeState; // Invalid payload
-    }
-    
-    const entryIdToRemove = payload.id;
-    return {
-      ...safeState,
-      entries: safeState.entries.filter(entry => entry.id !== entryIdToRemove)
-    };
-  }
-
-  // journal/UPDATE_ENTRY
-  else if (actionType === 'journal/UPDATE_ENTRY') {
-    if (!hasPayload<{id?: string}>(action)) {
-      return safeState;
-    }
-    
-    const payload = action.payload;
-    
-    if (!payload || typeof payload !== 'object' || typeof payload.id !== 'string') {
-      return safeState; // Invalid payload
-    }
-    
-    const updatedEntryData = payload;
-    return {
-      ...safeState,
-      entries: safeState.entries.map(entry => {
-        if (entry.id === updatedEntryData.id) {
-          // Merge updates, ensuring the result is still a valid JournalEntry
-          return ensureValidEntry({ ...entry, ...updatedEntryData });
-        }
-        return entry;
-      })
-    };
-  }
-
-  // Default case
-  return safeState;
 }

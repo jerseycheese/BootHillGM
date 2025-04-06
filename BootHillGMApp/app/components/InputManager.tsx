@@ -11,7 +11,7 @@ export default function InputManager({
   isLoading, 
   suggestedActions = [] 
 }: { 
-  onSubmit: (input: string) => void;
+  onSubmit: (input: string, actionType?: string) => void;
   isLoading: boolean;
   suggestedActions?: SuggestedAction[];
 }) {
@@ -30,11 +30,12 @@ export default function InputManager({
    * Only processes actions when not in loading state and onSubmit handler exists.
    * 
    * @param text - The action text to submit
+   * @param actionType - Optional action type
    */
-  const handleAction = useCallback((text: string) => {
+  const handleAction = useCallback((text: string, actionType?: string) => {
     if (!isLoading && onSubmit) {
-      // Call onSubmit with the text
-      onSubmit(text);
+      // Call onSubmit with the text and action type
+      onSubmit(text, actionType);
       // Reset input field after submission
       setUserInput('');
     }
@@ -81,7 +82,7 @@ export default function InputManager({
             return (
               <button
                 key={`${action.id || `${action.type}-${index}`}`}
-                onClick={() => handleAction(action.title)}
+                onClick={() => handleAction(action.title, action.type)}
                 disabled={isLoading}
                 className={actionClass(action.type)}
                 title={action.description || action.title}
@@ -97,7 +98,7 @@ export default function InputManager({
       <form 
         onSubmit={(e) => {
           e.preventDefault();
-          if (userInput.trim()) handleAction(userInput);
+          if (userInput.trim()) handleAction(userInput, 'custom');
         }} 
         className="flex flex-col space-y-2"
       >

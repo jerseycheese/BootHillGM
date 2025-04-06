@@ -12,7 +12,8 @@ import { InventoryItem } from '../types/item.types';
  * Initial state for the inventory reducer
  */
 export const initialInventoryState: InventoryState = {
-  items: []
+  items: [],
+  equippedWeaponId: null
 };
 
 /**
@@ -83,6 +84,7 @@ const inventoryReducer = (state: InventoryState = initialInventoryState, action:
       // Equip weapon and unequip others
       return {
         ...state,
+        equippedWeaponId: weaponId,
         items: state.items.map(item => ({
           ...item,
           isEquipped: item.id === weaponId
@@ -98,6 +100,7 @@ const inventoryReducer = (state: InventoryState = initialInventoryState, action:
       // Unequip the specified weapon
       return {
         ...state,
+        equippedWeaponId: state.equippedWeaponId === weaponId ? null : state.equippedWeaponId,
         items: state.items.map(item => 
           item.id === weaponId 
             ? { ...item, isEquipped: false } 

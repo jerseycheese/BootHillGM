@@ -10,6 +10,7 @@ import { ExtendedGameState } from '../types/aiDecisionTypes';
 import { Character } from '../../../types/character';
 import { initialCombatState } from '../../../types/state/combatState'; 
 import { initialUIState } from '../../../types/state/uiState'; 
+import { initialInventoryState } from '../../../types/state/inventoryState';
 import { NarrativeState } from '../../../types/narrative.types';
 
 /**
@@ -65,7 +66,7 @@ export function safeExtendGameState(state: unknown): ExtendedGameState {
   const baseState: ExtendedGameState = {
     character: { player: null, opponent: null },
     combat: { ...initialCombatState, isActive: false, active: false }, // Use initialCombatState
-    inventory: { items: [] },
+    inventory: { ...initialInventoryState }, // Use initialInventoryState which includes equippedWeaponId
     journal: { entries: [] },
     narrative: {
       currentStoryPoint: null,

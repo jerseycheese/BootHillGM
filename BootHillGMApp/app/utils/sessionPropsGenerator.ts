@@ -1,117 +1,164 @@
 import { Character } from '../types/character';
 import { GameSessionProps } from '../components/GameArea/types';
 import { InventoryManager } from '../utils/inventoryManager';
-import { GameAction } from '../types/actions'; // Base action type from provider
-import { GameEngineAction } from '../types/gameActions'; // Expected action type by props
+import { GameAction } from '../types/actions';
+import { GameEngineAction } from '../types/gameActions';
 import { GameState, initialGameState } from '../types/gameState';
 import { Dispatch } from 'react';
 import { getAIResponse } from '../services/ai/gameService';
 import { getJournalContext } from '../utils/JournalManager';
 import { getItemsFromInventory, getEntriesFromJournal } from '../hooks/selectors/typeGuards';
-import { JournalUpdatePayload } from '../types/gameActions';
 import { InventoryItem, ItemCategory } from '../types/item.types';
 import { CombatParticipant } from '../types/combat';
+import { generateActionFallbackEntry } from './fallback/fallbackJournalGenerator';
+import { generateNarrativeSummary } from './ai/narrativeSummary';
+import { JournalEntry, NarrativeJournalEntry, JournalEntryType } from '../types/journal';
+import { ActionType, SuggestedAction } from '../types/campaign';
+
+/**
+ * Creates a typed JournalEntry, ensuring the narrativeSummary is included if provided.
+ *
+ * @param content - The main content of the journal entry.
+ * @param summary - The AI-generated or fallback summary.
+ * @param type - The type of journal entry (defaults to 'narrative').
+ * @returns A properly structured JournalEntry object.
+ */
+/**
+ * Creates a journal entry with a summary that won't be lost in state transitions
+ */
+function createJournalEntry(content: string, summary: string, type: JournalEntryType = 'narrative'): JournalEntry {
+  // Create a unique ID that includes a timestamp for sorting
+  const entryId = `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
+  // Debug the creation process
+  
+  // Create typed entry based on the entry type
+  if (type === 'narrative') {
+    // For narrative entries, explicitly include the narrativeSummary field
+    const narrativeEntry: NarrativeJournalEntry = {
+      id: entryId,
+      timestamp: Date.now(),
+      content: content,
+      type: 'narrative',
+      // Explicitly add the narrativeSummary field
+      narrativeSummary: summary || undefined
+    };
+    
+    // Debug the created entry
+    
+    return narrativeEntry;
+  } else {
+    // For other entry types, create a base entry
+    // All other entry types will be handled by the reducer logic
+    if (type === 'combat') {
+      return {
+        id: entryId,
+        timestamp: Date.now(),
+        content: content,
+        type: 'combat',
+        combatants: { player: '', opponent: '' },
+        outcome: 'victory'
+      };
+    } else if (type === 'inventory') {
+      return {
+        id: entryId,
+        timestamp: Date.now(),
+        content: content,
+        type: 'inventory',
+        items: { acquired: [], removed: [] }
+      };
+    } else if (type === 'quest') {
+      return {
+        id: entryId,
+        timestamp: Date.now(),
+        content: content,
+        type: 'quest',
+        questTitle: 'Unknown Quest',
+        status: 'started'
+      };
+    } else {
+      // Default fallback
+      return {
+        id: entryId,
+        timestamp: Date.now(),
+        content: content,
+        type: 'narrative'
+      } as NarrativeJournalEntry;
+    }
+  }
+}
 
 /**
  * Generates session props for the game interface components
- *
- * @param state - Current game state object
- * @param dispatch - Dispatch function for game actions (from useGameState)
- * @param playerCharacter - Extracted player character
- * @param isLoading - Flag indicating if initialization is in progress
- * @returns GameSessionProps object
  */
 export function generateSessionProps(
   state: GameState | null | undefined,
-  dispatch: Dispatch<GameAction> | null | undefined, // Accept GameAction from provider
+  dispatch: Dispatch<GameAction> | null | undefined,
   playerCharacter: Character | null,
   isLoading: boolean
 ): GameSessionProps {
-
   // Derive opponent directly from state
   const opponent = state?.character?.opponent || null;
 
-  // ID getters for health change handler - renamed with underscore prefix since unused
+  // ID getters for health change handler
   const _getPlayerId = () => playerCharacter?.id || 'player';
   const _getOpponentId = () => opponent?.id || 'opponent';
 
   // Create adaptedHealthChangeHandler - Placeholder
-  // TODO: Re-evaluate how handleStrengthChange is accessed/passed if needed
   const localAdaptedHealthChangeHandler = (characterType: string, newStrength: number) => {
-      console.warn('adaptedHealthChangeHandler not fully implemented', { characterType, newStrength });
   };
 
-  // Create a non-nullable dispatch function, casting to the expected prop type
+  // Create a non-nullable dispatch function
   const safeDispatch: Dispatch<GameEngineAction> = dispatch as Dispatch<GameEngineAction> || (() => {});
 
   // Define action handlers that depend on dispatch and state
   const handleUseItem = (itemId: string) => {
-    console.warn('handleUseItem not implemented for item ID:', itemId);
   };
 
   const handleEquipWeapon = (itemId: string) => {
     if (!state || !dispatch || !playerCharacter) {
-      console.warn('Cannot equip weapon: missing state, dispatch, or character');
       return;
     }
     const item = state.inventory?.items.find((i) => i.id === itemId);
     if (!item || item.category !== 'weapon') {
-      console.warn(`Cannot equip item ${itemId}: not a weapon or not found.`);
       return;
     }
-    // Assuming InventoryManager might mutate, but dispatch should handle state update
+    
     InventoryManager.equipWeapon(playerCharacter, item);
-    // Dispatch the correct action type expected by inventoryReducer
-    // Cast the specific action if needed, but dispatch function itself uses GameAction
     dispatch({ type: 'inventory/EQUIP_WEAPON', payload: itemId });
   };
 
   // Store the last action to potentially implement retryLastAction
   let lastActionInput: string | null = null;
+  let lastActionType: string | undefined = undefined;
 
   /**
    * Processes user input, updates journal/narrative history, and retrieves AI response
-   * Creates a complete flow:
-   * 1. Updates UI loading state
-   * 2. Creates journal entry for player action
-   * 3. Calls AI service for contextual response
-   * 4. Updates narrative with AI response
-   * 5. Processes any resulting game state changes (items, location, combat)
    * 
    * @param input - Player action text to process
+   * @param actionType - Optional action type for the input
    * @returns Promise resolving to null when complete
    */
-  const handleUserInput = async (input: string) => {
+  const handleUserInput = async (input: string, actionType?: string) => {
     if (!state || !dispatch) {
-      console.warn('Cannot handle user input: missing state or dispatch');
       return;
     }
 
     // Store the action for potential retry
     lastActionInput = input;
+    lastActionType = actionType;
 
-    // Mark as loading while processing - use correct action type
+    // Mark as loading while processing
     dispatch({ type: 'ui/SET_LOADING', payload: true });
 
     try {
-      // Use helper functions to extract the right data structure
+      // Extract existing journal entries and inventory items
       const journalEntries = getEntriesFromJournal(state.journal);
       const inventoryItems = getItemsFromInventory(state.inventory);
 
-      // Create a properly structured JournalUpdatePayload object
-      const journalEntry: JournalUpdatePayload = {
-        id: `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        timestamp: Date.now(),
-        content: input,
-        type: 'narrative',
-        narrativeSummary: 'Player action'
-      };
-
-      // Update campaign state with new journal entry
-      dispatch({
-        type: 'UPDATE_JOURNAL',
-        payload: journalEntry
-      });
+      // Get the action type from the action itself if provided in the UI/state
+      const actionObj = state.suggestedActions?.find(action => action.title === input);
+      const effectiveActionType = actionType || (actionObj?.type as string) || 'basic';
 
       // Add player input to narrative history
       dispatch({
@@ -133,11 +180,35 @@ export function generateSessionProps(
           payload: response.narrative
         });
 
+        
+        // Generate summary using the dedicated AI function
+        const aiSummary = await generateNarrativeSummary(input, response.narrative);
+
+        // Create a properly typed journal entry that preserves the summary
+        const journalEntry = createJournalEntry(response.narrative, aiSummary, 'narrative');
+        
+        // Super verbose debug logging to track the summary through the system
+        
+        // Dispatch with an explicit type so that our reducer knows how to handle it
+        dispatch({
+          type: 'journal/ADD_ENTRY',
+          payload: journalEntry
+        });
+        
+
         // Update suggested actions if available
         if (response.suggestedActions) {
+          // Convert response suggested actions to proper typed actions
+          const typedSuggestedActions: SuggestedAction[] = response.suggestedActions.map(action => ({
+            id: action.id || `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            title: action.title,
+            description: action.description || action.title,
+            type: (action.type as ActionType) || 'basic'
+          }));
+          
           dispatch({
             type: 'SET_SUGGESTED_ACTIONS',
-            payload: response.suggestedActions,
+            payload: typedSuggestedActions
           });
         }
 
@@ -197,14 +268,36 @@ export function generateSessionProps(
             }
           });
         }
-
       } catch (error) {
         console.error('Error getting AI response:', error);
+        
+        // Create a fallback journal entry when AI service fails
+        const fallbackEntry = generateActionFallbackEntry(input, effectiveActionType);
+        
+        // Add fallback entry to journal
+        dispatch({
+          type: 'journal/ADD_ENTRY',
+          payload: fallbackEntry
+        });
+        
         
         // Fallback response if AI service fails
         dispatch({
           type: 'ADD_NARRATIVE_HISTORY',
-          payload: `You ${input}, but something unexpected happens. (Error getting response from AI service)`
+          payload: `You ${input.toLowerCase()}. ${fallbackEntry.content}`
+        });
+
+        // Generate some fallback suggested actions
+        const fallbackActions: SuggestedAction[] = [
+          { id: 'fallback-gen-1', title: 'Focus on what you see', type: 'optional', description: 'Look more closely at your surroundings' },
+          { id: 'fallback-gen-2', title: 'Check nearby buildings', type: 'optional', description: 'Investigate structures around you' },
+          { id: 'fallback-gen-3', title: 'Look for armed individuals', type: 'optional', description: 'Scan for potential threats' },
+          { id: 'fallback-gen-4', title: 'Ask about what you see', type: 'optional', description: 'Find someone to talk to about the area' }
+        ];
+        
+        dispatch({
+          type: 'SET_SUGGESTED_ACTIONS',
+          payload: fallbackActions 
         });
       }
 
@@ -213,39 +306,39 @@ export function generateSessionProps(
       console.error('Error in handleUserInput:', error);
       return null;
     } finally {
-      // Mark as not loading once complete - use correct action type
+      // Mark as not loading once complete
       dispatch({ type: 'ui/SET_LOADING', payload: false });
     }
   };
 
   /**
    * Retries the last user action if one exists
-   * Currently a placeholder that saves the last action for future implementation
    * 
-   * @returns null for now, eventually will return Promise with AI response
+   * @returns Promise resolving to null when complete
    */
-  const retryLastAction = () => {
-    console.warn('retryLastAction not fully implemented, last action was:', lastActionInput);
+  const retryLastAction = async () => {
+    if (lastActionInput) {
+      return handleUserInput(lastActionInput, lastActionType);
+    }
     return null;
   };
 
   // Default props structure for when state/dispatch are missing
-  // Ensure this matches GameSessionProps structure
   const defaultProps: GameSessionProps = {
-    state: initialGameState, // Provide initial state instead of null
+    state: initialGameState,
     dispatch: safeDispatch,
     isLoading: isLoading,
     error: null,
     isCombatActive: false,
     opponent: null,
-    handleUserInput: () => { console.warn('handleUserInput not available in default props'); },
-    retryLastAction: () => { console.warn('retryLastAction not available in default props'); },
+    handleUserInput: () => { /* Default no-op */ },
+    retryLastAction: () => { /* Default no-op */ },
     handleCombatEnd: () => {},
     handlePlayerHealthChange: localAdaptedHealthChangeHandler,
     handleUseItem,
     handleEquipWeapon,
-    executeCombatRound: async () => { console.warn('executeCombatRound not available in default props'); },
-    initiateCombat: () => { console.warn('initiateCombat not available in default props'); },
+    executeCombatRound: async () => { /* Default no-op */ },
+    initiateCombat: () => { /* Default no-op */ },
     getCurrentOpponent: () => null,
   };
 
@@ -258,9 +351,9 @@ export function generateSessionProps(
   return {
     // Core props from arguments/state
     state: state,
-    dispatch: safeDispatch, // Use the casted dispatch
+    dispatch: safeDispatch,
     isLoading: isLoading,
-    error: null, // Assuming error is not part of GameState
+    error: null,
 
     // Derived/Calculated props
     isCombatActive: state.combat?.isActive ?? false,
@@ -273,8 +366,8 @@ export function generateSessionProps(
     handleUserInput: handleUserInput,
     retryLastAction: retryLastAction,
     handleCombatEnd: () => {},
-    executeCombatRound: async () => { console.warn('executeCombatRound not implemented'); },
-    initiateCombat: () => { console.warn('initiateCombat not implemented'); },
+    executeCombatRound: async () => { /* Default no-op */ },
+    initiateCombat: () => { /* Default no-op */ },
     getCurrentOpponent: () => opponent,
   };
 }

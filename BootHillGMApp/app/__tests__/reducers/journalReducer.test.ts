@@ -50,7 +50,8 @@ describe('journalReducer', () => {
         id: '2', 
         title: 'Second Entry', 
         content: 'More test content', 
-        timestamp: 1615100000000 
+        timestamp: 1615100000000,
+        type: 'narrative' // Explicitly add type
       }
     } as const;
 
@@ -83,7 +84,8 @@ describe('journalReducer', () => {
       payload: { 
         id: '1', 
         title: 'Updated Title', 
-        content: 'Updated content' 
+        content: 'Updated content',
+        type: 'narrative' // Explicitly add type
       }
     } as const;
 

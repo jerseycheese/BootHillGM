@@ -6,7 +6,8 @@ import { GameState } from "../types/gameState";
 import { initialGameState } from "../types/gameState";
 import { StoryPointType, NarrativeDisplayMode, NarrativeState } from "../types/narrative.types";
 import { getStartingInventory } from "../utils/startingInventory";
-import { Character } from "../types/character"; // Added import
+import { Character } from "../types/character";
+import { generateNarrativeSummary } from "./ai/narrativeSummary";
 
 /**
  * Maximum time to wait for initialization before forcing completion
@@ -35,7 +36,10 @@ export const getItemsFromInventory = (inventory: InventoryState | InventoryItem[
  * @returns A properly structured inventory state
  */
 export const createInventoryState = (items: InventoryItem[]): InventoryState => {
-  return { items };
+  return { 
+    items,
+    equippedWeaponId: null // Add the required property
+  };
 };
 
 /**
@@ -85,13 +89,35 @@ export const processLocation = (location: unknown): LocationType => {
 };
 
 /**
+ * Attempts to generate a narrative summary using the AI model
+ * Falls back to a default if AI generation fails
+ * 
+ * @param content - The narrative content to summarize
+ * @param action - Optional action that led to the narrative
+ * @returns A narrative summary string
+ */
+export const generateNarrativeFallback = async (content: string, action: string = "continue journey"): Promise<string> => {
+  try {
+    // Try to generate an AI summary
+    const summary = await generateNarrativeSummary(action, content);
+    return summary;
+  } catch (error) {
+    console.error("Failed to generate narrative summary:", error);
+    // Return a simple fallback
+    return `${action.charAt(0).toUpperCase() + action.slice(1)} in the Western frontier`;
+  }
+};
+
+/**
  * Creates an emergency recovery state when initialization fails
  * Provides a minimal but functional game state with default values
  * 
  * @returns A complete game state for emergency recovery
  */
-export const createEmergencyState = (): GameState => {
+export const createEmergencyState = async (): Promise<GameState> => {
   console.warn("Creating emergency recovery state");
+  
+  const narrativeContent = "You find yourself in Boothill with a fresh start ahead of you.";
 
   return {
     ...initialGameState,
@@ -124,12 +150,12 @@ export const createEmergencyState = (): GameState => {
         id: 'emergency',
         type: 'exposition' as StoryPointType,
         title: 'Emergency Start',
-        content: "You find yourself in Boothill with a fresh start ahead of you.",
+        content: narrativeContent,
         choices: [],
       },
       availableChoices: [],
       visitedPoints: ['emergency'],
-      narrativeHistory: ["You find yourself in Boothill with a fresh start ahead of you."],
+      narrativeHistory: [narrativeContent],
       displayMode: 'standard' as NarrativeDisplayMode,
       context: "",
     },
@@ -152,11 +178,17 @@ export const createEmergencyState = (): GameState => {
  * @param characterData - The character data from creation or null
  * @returns Fallback game state for a new character
  */
-export const createFallbackNewCharacterState = (characterData: Character | null): GameState => {
+export const createFallbackNewCharacterState = async (characterData: Character | null): Promise<GameState> => {
   const fallbackNarrative = `${characterData?.name || 'You'} arrive in the dusty town of Boothill, ready to make your mark on the frontier.`;
   
+  // Generate a narrative summary using AI
+  const summary = await generateNarrativeFallback(fallbackNarrative, "arrive");
+  
   // Save fallback narrative for reset
-  localStorage.setItem("initial-narrative", JSON.stringify({ narrative: fallbackNarrative }));
+  localStorage.setItem("initial-narrative", JSON.stringify({ 
+    narrative: fallbackNarrative,
+    summary
+  }));
 
   return {
     ...initialGameState,
@@ -198,7 +230,7 @@ export const createFallbackNewCharacterState = (characterData: Character | null)
  * @param state - The current game state
  * @returns Fallback game state for an existing character
  */
-export const createFallbackExistingCharacterState = (state: GameState): GameState => {
+export const createFallbackExistingCharacterState = async (state: GameState): Promise<GameState> => {
   const fallbackNarrative = `${state.character?.player?.name || 'You'} continue your journey through the western frontier.`;
 
   const fallbackNarrativeState: NarrativeState = {
@@ -237,7 +269,7 @@ export const createFallbackExistingCharacterState = (state: GameState): GameStat
  * 
  * @returns A basic game state with a default character
  */
-export const createBasicRecoveryState = (): GameState => {
+export const createBasicRecoveryState = async (): Promise<GameState> => {
   const characterData = {
     isNPC: false,
     isPlayer: true,
@@ -274,6 +306,8 @@ export const createBasicRecoveryState = (): GameState => {
     wounds: [],
     isUnconscious: false,
   };
+  
+  const narrativeContent = `You find yourself in a dusty saloon, trying to remember how you got here. The bartender nods as you approach.`;
 
   return {
     ...initialGameState,
@@ -287,12 +321,12 @@ export const createBasicRecoveryState = (): GameState => {
         id: 'error_recovery',
         type: 'exposition' as StoryPointType,
         title: 'Game Recovery',
-        content: `You find yourself in a dusty saloon, trying to remember how you got here. The bartender nods as you approach.`,
+        content: narrativeContent,
         choices: [],
       },
       availableChoices: [],
       visitedPoints: ['error_recovery'],
-      narrativeHistory: [`You find yourself in a dusty saloon, trying to remember how you got here. The bartender nods as you approach.`],
+      narrativeHistory: [narrativeContent],
       displayMode: 'standard' as NarrativeDisplayMode,
       context: "",
     },
