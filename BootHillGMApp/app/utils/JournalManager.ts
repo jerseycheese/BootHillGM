@@ -74,6 +74,7 @@ export class JournalManager {
       // Create a new narrative journal entry
       const newEntry: NarrativeJournalEntry = {
         id: getUUID(), // Use our safe UUID generator
+        title: 'Narrative Update', // Add default title
         type: 'narrative',
         timestamp: Date.now(),
         content: cleanedContent,
@@ -100,6 +101,7 @@ export class JournalManager {
     // Create a new combat journal entry
     const newEntry: CombatJournalEntry = {
       id: getUUID(), // Use our safe UUID generator
+      title: `Combat: ${playerName} vs ${opponentName}`, // Add title
       type: 'combat',
       timestamp: Date.now(),
       content: cleanedSummary,
@@ -127,6 +129,7 @@ export class JournalManager {
     // Create a new inventory journal entry
     const newEntry: InventoryJournalEntry = {
       id: getUUID(), // Use our safe UUID generator
+      title: 'Inventory Update', // Add title
       type: 'inventory',
       timestamp: Date.now(),
       content: cleanText(context),

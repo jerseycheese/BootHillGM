@@ -8,6 +8,7 @@ type StoryRenderFn = () => ReactElement;
 // Mock entries for stories
 const mockNarrativeEntry: JournalEntry = {
   id: 'narrative-1',
+  title: 'Arrival in Deadwood', // Add title
   type: 'narrative',
   timestamp: Date.now() - 86400000, // Yesterday
   content: 'Arrived in Deadwood after a long journey.',
@@ -15,6 +16,7 @@ const mockNarrativeEntry: JournalEntry = {
 };
 const mockCombatEntry: JournalEntry = {
   id: 'combat-1',
+  title: 'Shootout Victory', // Add title
   type: 'combat',
   timestamp: Date.now() - 43200000, // 12 hours ago
   content: 'Engaged in a shootout with a local bandit.',
@@ -27,6 +29,7 @@ const mockCombatEntry: JournalEntry = {
 };
 const mockInventoryEntry: JournalEntry = {
   id: 'inventory-1',
+  title: 'Inventory Update Post-Fight', // Add title
   type: 'inventory',
   timestamp: Date.now() - 21600000, // 6 hours ago
   content: 'Updated inventory after the fight.',
@@ -37,6 +40,7 @@ const mockInventoryEntry: JournalEntry = {
 };
 const mockQuestEntry: JournalEntry = {
   id: 'quest-1',
+  title: 'Quest Started: Bandit Leader', // Add title
   type: 'quest',
   timestamp: Date.now() - 10800000, // 3 hours ago
   content: 'Started tracking down the leader of the bandit gang.',

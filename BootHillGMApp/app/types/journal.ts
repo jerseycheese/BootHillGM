@@ -2,7 +2,7 @@ export type JournalEntryType = 'narrative' | 'combat' | 'inventory' | 'quest';
 
 export interface BaseJournalEntry {
   id: string;
-  title?: string; // Added for test compatibility
+  title: string; // Title is now always assigned by the reducer
   timestamp: number;
   content: string;
   narrativeSummary?: string; // Make sure this is defined in the base interface
@@ -46,6 +46,7 @@ export type JournalEntry =
 export interface RawJournalEntry {
   id?: string;
   timestamp?: number;
+  title?: string; // Add optional title to raw type
   content?: string;
   type?: string;
   narrativeSummary?: string;

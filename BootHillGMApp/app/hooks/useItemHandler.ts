@@ -104,20 +104,21 @@ export const useItemHandler = (
       const narrativeText = response.narrative || `You use the ${item.name}.`;
       
       // Generate a narrative summary for the journal entry
-      console.log('[ITEM-USE] Generating narrative summary for item use');
+      // Removed console log
       const narrativeSummary = await generateNarrativeSummary(actionText, narrativeText);
-      console.log('[ITEM-USE] Generated narrative summary:', narrativeSummary);
+      // Removed console log
       
       // Create a properly typed journal entry
       const journalEntry: NarrativeJournalEntry = {
         id: `item-use-${Date.now()}`,
+        title: `Used ${item.name}`, // Add title based on item name
         timestamp: Date.now(),
         content: narrativeText,
         type: 'narrative',
         narrativeSummary: narrativeSummary
       };
       
-      console.log('[ITEM-USE] Adding journal entry with summary:', journalEntry);
+      // Removed console log
       
       // Use the standard journal/ADD_ENTRY action 
       dispatch({
@@ -154,6 +155,7 @@ export const useItemHandler = (
       // Create a fallback journal entry with a basic summary
       const fallbackEntry: NarrativeJournalEntry = {
         id: `item-use-fallback-${Date.now()}`,
+        title: 'Item Use Attempt Failed', // Add title for fallback
         timestamp: Date.now(),
         content: `You attempted to use an item.`,
         type: 'narrative',

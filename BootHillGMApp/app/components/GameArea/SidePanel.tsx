@@ -11,7 +11,7 @@ import { Inventory } from '../Inventory';
 import JournalViewer from '../JournalViewer';
 import type { GameSessionProps } from './types';
 import { Character } from '../../types/character';
-import { JournalEntry, JournalEntryType, RawJournalEntry, EnhancedJournalEntry } from '../../types/journal';
+import { JournalEntry, JournalEntryType, RawJournalEntry } from '../../types/journal'; // Removed EnhancedJournalEntry
 import GameStorage from '../../utils/gameStorage';
 
 /**
@@ -41,17 +41,18 @@ const getPlayerFromState = (s: GameSessionProps['state']): Character | null => {
  * @returns An array of validated and typed JournalEntry objects.
  */
 // Helper function to ensure journal entries maintain all properties
-const processJournalEntries = (entries: RawJournalEntry[]): JournalEntry[] => {
+const processJournalEntries = (entries: Array<JournalEntry | RawJournalEntry>): JournalEntry[] => {
   if (!Array.isArray(entries)) return [];
   
-  return entries.map(entry => {
+  return entries.map(rawOrTypedEntry => {
+    // Treat the input as RawJournalEntry to handle potentially missing fields
+    const entry = rawOrTypedEntry as RawJournalEntry;
     // Basic validation check
     if (!entry || typeof entry !== 'object') {
       return null;
     }
     
-    // First debug the incoming entry
-    
+    // Removed debug comment
     // Check for narrativeSummary specifically before processing
     const hasNarrativeSummary = 'narrativeSummary' in entry && entry.narrativeSummary;
     
@@ -73,6 +74,7 @@ const processJournalEntries = (entries: RawJournalEntry[]): JournalEntry[] => {
       case 'combat':
         processedEntry = {
           id: entry.id || `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          title: entry.title || 'Combat Encounter', // Add title
           timestamp: entry.timestamp || Date.now(),
           content: entry.content || '',
           type: 'combat',
@@ -84,6 +86,7 @@ const processJournalEntries = (entries: RawJournalEntry[]): JournalEntry[] => {
       case 'inventory':
         processedEntry = {
           id: entry.id || `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          title: entry.title || 'Inventory Update', // Add title
           timestamp: entry.timestamp || Date.now(),
           content: entry.content || '',
           type: 'inventory',
@@ -94,6 +97,7 @@ const processJournalEntries = (entries: RawJournalEntry[]): JournalEntry[] => {
       case 'quest':
         processedEntry = {
           id: entry.id || `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          title: entry.title || entry.questTitle || 'Quest Update', // Add title (use questTitle if available)
           timestamp: entry.timestamp || Date.now(),
           content: entry.content || '',
           type: 'quest',
@@ -106,6 +110,7 @@ const processJournalEntries = (entries: RawJournalEntry[]): JournalEntry[] => {
         // Default to narrative entry
         processedEntry = {
           id: entry.id || `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          title: entry.title || 'Narrative Update', // Add title
           timestamp: entry.timestamp || Date.now(),
           content: entry.content || '',
           type: 'narrative',
@@ -117,8 +122,7 @@ const processJournalEntries = (entries: RawJournalEntry[]): JournalEntry[] => {
       (processedEntry as JournalEntry & { narrativeSummary?: string }).narrativeSummary = narrativeSummary;
     }
     
-    // Final check of processed entry
-    
+    // Removed debug comment
     return processedEntry;
   }).filter(Boolean) as JournalEntry[]; // Remove any null entries
 };
@@ -147,12 +151,12 @@ export function SidePanel({
     if (!state) return;
     
     
-    let sourceEntries: RawJournalEntry[] = [];
+    let sourceEntries: Array<JournalEntry | RawJournalEntry> = []; // Allow both types
     
     // Process journal entries from state if available
     if (state.journal) {
       if (typeof state.journal === 'object' && 'entries' in state.journal && Array.isArray(state.journal.entries)) {
-        sourceEntries = state.journal.entries as RawJournalEntry[];
+        sourceEntries = state.journal.entries; // Remove incorrect cast
       } else if (Array.isArray(state.journal)) {
         sourceEntries = state.journal as RawJournalEntry[];
       }
@@ -160,25 +164,23 @@ export function SidePanel({
     
     // If there are entries in state.entries as fallback
     if (sourceEntries.length === 0 && state.journal?.entries && Array.isArray(state.journal.entries)) {
-      sourceEntries = state.journal.entries as RawJournalEntry[];
+      sourceEntries = state.journal.entries; // Remove incorrect cast
     }
     
     // Process entries to ensure narrativeSummary is preserved
     if (sourceEntries.length > 0) {
-      // DEBUGGING: Check each entry for narrativeSummary
-      
+      // Removed debug comment
       // Process entries to ensure all properties are maintained
       const processedEntries = processJournalEntries(sourceEntries);
       
       
-      // DEBUGGING: Check processed entries for narrativeSummary
-      
+      // Removed debug comment
       setJournalEntries(processedEntries);
     } else {
       // Fallback to storage only if we have no entries yet
       const storageEntries = GameStorage.getJournalEntries();
       if (storageEntries.length > 0) {
-        const processedStorageEntries = processJournalEntries(storageEntries as RawJournalEntry[]);
+        const processedStorageEntries = processJournalEntries(storageEntries); // Remove incorrect cast (processJournalEntries handles raw/typed)
         setJournalEntries(processedStorageEntries);
       }
     }
@@ -190,7 +192,7 @@ export function SidePanel({
     if (state?.inventory?.items) {
     } else if (inventoryItems.length === 0) {
       // If no inventory items in state, try to get default items
-      const defaultItems = GameStorage.getDefaultInventoryItems();
+      // const defaultItems = GameStorage.getDefaultInventoryItems(); // Removed unused variable
     }
   }, [state, inventoryItems.length]);
   
@@ -229,10 +231,7 @@ export function SidePanel({
     );
   }
 
-  // Debug log for journal entries before render
-  
-  // DEBUGGING: Check all journal entries right before passing to JournalViewer
-
+  // Removed debug comments
   // Main content render when character data is available
   return (
     <div className="h-full flex flex-col" data-testid="side-panel">

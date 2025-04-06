@@ -84,10 +84,10 @@ const JournalViewer: React.FC<JournalViewerProps> = ({ entries }) => {
   useEffect(() => {
     if (Array.isArray(entries)) {
       // Show a sample of entries with summaries
-      const entriesWithSummary = entries.filter(hasNarrativeSummary);
+      // const entriesWithSummary = entries.filter(hasNarrativeSummary); // Removed unused variable
       
       // Show first 3 entries for debugging
-      entries.slice(0, 3).forEach((entry, idx) => {
+      entries.slice(0, 3).forEach((_entry, _idx) => { // Prefix unused args
 /**
  * Displays a list of journal entries, sorted by timestamp (newest first).
  * Prioritizes displaying AI-generated summaries (`narrativeSummary`) over full content.

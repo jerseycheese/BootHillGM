@@ -26,17 +26,17 @@ import { ActionType, SuggestedAction } from '../types/campaign';
 /**
  * Creates a journal entry with a summary that won't be lost in state transitions
  */
-function createJournalEntry(content: string, summary: string, type: JournalEntryType = 'narrative'): JournalEntry {
+function createJournalEntry(title: string, content: string, summary: string, type: JournalEntryType = 'narrative'): JournalEntry { // Add title param
   // Create a unique ID that includes a timestamp for sorting
   const entryId = `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   
-  // Debug the creation process
-  
+  // Removed debug comment
   // Create typed entry based on the entry type
   if (type === 'narrative') {
     // For narrative entries, explicitly include the narrativeSummary field
     const narrativeEntry: NarrativeJournalEntry = {
       id: entryId,
+      title: title, // Use title param
       timestamp: Date.now(),
       content: content,
       type: 'narrative',
@@ -44,8 +44,7 @@ function createJournalEntry(content: string, summary: string, type: JournalEntry
       narrativeSummary: summary || undefined
     };
     
-    // Debug the created entry
-    
+    // Removed debug comment
     return narrativeEntry;
   } else {
     // For other entry types, create a base entry
@@ -53,6 +52,7 @@ function createJournalEntry(content: string, summary: string, type: JournalEntry
     if (type === 'combat') {
       return {
         id: entryId,
+        title: title, // Use title param
         timestamp: Date.now(),
         content: content,
         type: 'combat',
@@ -62,6 +62,7 @@ function createJournalEntry(content: string, summary: string, type: JournalEntry
     } else if (type === 'inventory') {
       return {
         id: entryId,
+        title: title, // Use title param
         timestamp: Date.now(),
         content: content,
         type: 'inventory',
@@ -70,20 +71,22 @@ function createJournalEntry(content: string, summary: string, type: JournalEntry
     } else if (type === 'quest') {
       return {
         id: entryId,
+        title: title, // Use title param
         timestamp: Date.now(),
         content: content,
         type: 'quest',
-        questTitle: 'Unknown Quest',
+        questTitle: 'Unknown Quest', // Note: title and questTitle might be redundant here
         status: 'started'
       };
     } else {
       // Default fallback
       return {
         id: entryId,
+        title: title, // Use title param
         timestamp: Date.now(),
         content: content,
         type: 'narrative'
-      } as NarrativeJournalEntry;
+      }; // Cast removed as it's now correctly typed
     }
   }
 }
@@ -105,14 +108,14 @@ export function generateSessionProps(
   const _getOpponentId = () => opponent?.id || 'opponent';
 
   // Create adaptedHealthChangeHandler - Placeholder
-  const localAdaptedHealthChangeHandler = (characterType: string, newStrength: number) => {
+  const localAdaptedHealthChangeHandler = (_characterType: string, _newStrength: number) => { // Prefix unused args
   };
 
   // Create a non-nullable dispatch function
   const safeDispatch: Dispatch<GameEngineAction> = dispatch as Dispatch<GameEngineAction> || (() => {});
 
   // Define action handlers that depend on dispatch and state
-  const handleUseItem = (itemId: string) => {
+  const handleUseItem = (_itemId: string) => { // Prefix unused arg
   };
 
   const handleEquipWeapon = (itemId: string) => {
@@ -185,10 +188,9 @@ export function generateSessionProps(
         const aiSummary = await generateNarrativeSummary(input, response.narrative);
 
         // Create a properly typed journal entry that preserves the summary
-        const journalEntry = createJournalEntry(response.narrative, aiSummary, 'narrative');
+        const journalEntry = createJournalEntry(input, response.narrative, aiSummary, 'narrative'); // Pass user input as title
         
-        // Super verbose debug logging to track the summary through the system
-        
+        // Removed debug comment
         // Dispatch with an explicit type so that our reducer knows how to handle it
         dispatch({
           type: 'journal/ADD_ENTRY',

@@ -27,6 +27,7 @@ export function generateActionFallbackEntry(action: string, actionType?: string)
   
   return {
     id,
+    title: action, // Use action as title
     type: 'narrative',
     timestamp,
     content,
@@ -96,6 +97,7 @@ export function generateCombatFallbackEntry(
   
   return {
     id,
+    title: `Combat: ${playerName} vs ${opponentName}`, // Add combat title
     type: 'combat',
     timestamp,
     content,
@@ -134,6 +136,7 @@ export function generateInventoryFallbackEntry(
   
   return {
     id,
+    title: 'Inventory Update', // Add inventory title
     type: 'inventory',
     timestamp,
     content,
@@ -177,6 +180,7 @@ export function generateQuestFallbackEntry(
   
   return {
     id,
+    title: `Quest: ${questTitle} - ${status}`, // Add quest title
     type: 'quest',
     timestamp,
     content,

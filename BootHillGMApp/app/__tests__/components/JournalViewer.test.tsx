@@ -6,6 +6,7 @@ import { NarrativeJournalEntry, CombatJournalEntry } from '../../types/journal';
 describe('JournalViewer', () => {
   const mockNarrativeEntry: NarrativeJournalEntry = {
     id: 'narrative-1',
+    title: 'Journey Start', // Add title
     type: 'narrative',
     timestamp: 1617235200000,
     content: 'Started the journey',
@@ -14,6 +15,7 @@ describe('JournalViewer', () => {
 
   const mockCombatEntry: CombatJournalEntry = {
     id: 'combat-1',
+    title: 'Bandit Fight', // Add title
     type: 'combat',
     timestamp: 1617321600000,
     content: 'Combat occurred',
@@ -56,6 +58,7 @@ describe('JournalViewer', () => {
   test('handles invalid timestamps gracefully', () => {
     const entryWithInvalidDate: NarrativeJournalEntry = {
       id: 'invalid-timestamp',
+      title: 'Invalid Date Entry', // Add title
       type: 'narrative',
       timestamp: NaN,
       content: 'Invalid date entry'

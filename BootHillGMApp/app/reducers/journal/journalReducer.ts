@@ -18,6 +18,7 @@ function validateAndConvertEntry(rawEntry: RawJournalEntry): JournalEntry {
   const id = rawEntry.id || `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const timestamp = rawEntry.timestamp || Date.now();
   const content = rawEntry.content || '';
+  const title = rawEntry.title || 'Untitled Entry'; // Ensure title is included
   
   // Ensure we have a valid entry type or default to narrative
   let entryType: JournalEntryType = 'narrative';
@@ -32,6 +33,7 @@ function validateAndConvertEntry(rawEntry: RawJournalEntry): JournalEntry {
     case 'combat':
       journalEntry = {
         id,
+        title, // Add title
         timestamp,
         content,
         type: 'combat',
@@ -43,6 +45,7 @@ function validateAndConvertEntry(rawEntry: RawJournalEntry): JournalEntry {
     case 'inventory':
       journalEntry = {
         id,
+        title, // Add title
         timestamp,
         content,
         type: 'inventory',
@@ -53,6 +56,7 @@ function validateAndConvertEntry(rawEntry: RawJournalEntry): JournalEntry {
     case 'quest':
       journalEntry = {
         id,
+        title, // Add title
         timestamp,
         content,
         type: 'quest',
@@ -61,9 +65,10 @@ function validateAndConvertEntry(rawEntry: RawJournalEntry): JournalEntry {
       };
       break;
       
-    default:
+    default: // narrative
       journalEntry = {
         id,
+        title, // Add title
         timestamp,
         content,
         type: 'narrative'
@@ -94,8 +99,7 @@ export function journalReducer(
     // Extract the payload
     const payload = action.payload;
     
-    // Enhanced debug logging
-    
+    // Removed debug logging comment
     if (typeof payload !== 'object' || payload === null) {
       return state;
     }
@@ -103,13 +107,11 @@ export function journalReducer(
     // Cast payload to a type-safe structure
     const entryData = payload as RawJournalEntry;
     
-    // Debug logging for narrativeSummary
-    
+    // Removed debug logging comment
     // Create a properly typed journal entry
     const newEntry = validateAndConvertEntry(entryData);
     
-    // Debug the final entry object
-    
+    // Removed debug logging comment
     // Add the entry to the state
     return {
       ...state,

@@ -93,6 +93,7 @@ export function useGameInitialization() {
           // Create the journal entry with the AI-generated summary
           const initialNarrativeEntry: NarrativeJournalEntry = {
             id: `entry_narrative_${Date.now()}`,
+            title: 'Adventure Begins', // Add title
             type: 'narrative',
             timestamp: Date.now(),
             content: initialNarrativeContent,
@@ -103,12 +104,13 @@ export function useGameInitialization() {
             type: 'journal/ADD_ENTRY',
             payload: initialNarrativeEntry
           });
-          
-        } catch (error) {
+          } catch { // Remove unused error variable
+            
           
           // Fallback to a simple summary if AI generation fails
           const initialNarrativeEntry: NarrativeJournalEntry = {
             id: `entry_narrative_${Date.now()}`,
+            title: 'Adventure Begins', // Add title
             type: 'narrative',
             timestamp: Date.now(),
             content: initialNarrativeContent,
@@ -130,7 +132,7 @@ export function useGameInitialization() {
         
         // Finish initialization
         setIsInitializing(false);
-      } catch (error) {
+      } catch { // Remove unused error variable
         setIsInitializing(false);
       }
     };

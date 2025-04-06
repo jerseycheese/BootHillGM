@@ -51,7 +51,7 @@ export async function generateNarrativeSummary(action: string, context: string):
     // If something went wrong, return a simple fallback summary
     const fallbackSummary = `${action} and observed the surroundings.`;
     return fallbackSummary;
-  } catch (error) {
+  } catch { // Remove unused error variable
     
     // Return a simple fallback summary on error
     const errorFallbackSummary = `${action} in the Wild West.`;

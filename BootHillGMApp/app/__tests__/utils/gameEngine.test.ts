@@ -129,6 +129,7 @@ describe('gameReducer', () => {
   it('should update journal', () => {
     const newEntry: NarrativeJournalEntry = {
       id: `entry_${Date.now()}`, // Add missing ID
+      title: 'Untitled Entry', // Add the expected default title
       type: 'narrative',
       timestamp: Date.now(),
       content: 'Started the journey',
@@ -202,7 +203,7 @@ describe('gameReducer', () => {
     // Create a clean initial state (ExtendedGameState)
     const testState: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [] }
+      inventory: { items: [], equippedWeaponId: null } // Add missing property
     };
     
     const newState = gameReducer(testState, action);
@@ -217,7 +218,7 @@ describe('gameReducer', () => {
     // Create a state with the item already in inventory (ExtendedGameState)
     const stateWithItem: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [item] }
+      inventory: { items: [item], equippedWeaponId: null } // Add missing property
     };
     
     const action: GameEngineAction = { type: 'REMOVE_ITEM', payload: '1' };
@@ -233,7 +234,7 @@ describe('gameReducer', () => {
     // Create a state with the item already in inventory (ExtendedGameState)
     const stateWithItem: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [existingItem] }
+      inventory: { items: [existingItem], equippedWeaponId: null } // Add missing property
     };
     
     const action: GameEngineAction = { type: 'ADD_ITEM', payload: { ...existingItem, quantity: 2 } };
@@ -249,7 +250,7 @@ describe('gameReducer', () => {
     // Create a state with the item already in inventory (ExtendedGameState)
     const stateWithItem: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [item] }
+      inventory: { items: [item], equippedWeaponId: null } // Add missing property
     };
     
     const action: GameEngineAction = { type: 'USE_ITEM', payload: '1' };
@@ -265,7 +266,7 @@ describe('gameReducer', () => {
     // Create a state with the item already in inventory (ExtendedGameState)
     const stateWithItem: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [item] }
+      inventory: { items: [item], equippedWeaponId: null } // Add missing property
     };
     
     const action: GameEngineAction = { type: 'USE_ITEM', payload: '1' };
@@ -281,7 +282,7 @@ describe('gameReducer', () => {
     // Create a state with the item already in inventory (ExtendedGameState)
     const stateWithItem: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [item] }
+      inventory: { items: [item], equippedWeaponId: null } // Add missing property
     };
     
     const action: GameEngineAction = { type: 'UPDATE_ITEM_QUANTITY', payload: { id: '1', quantity: 5 } };
@@ -298,7 +299,7 @@ describe('gameReducer', () => {
     // Create a state with both valid and invalid items (ExtendedGameState)
     const stateWithItems: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [validItem, invalidItem] }
+      inventory: { items: [validItem, invalidItem], equippedWeaponId: null } // Add missing property
     };
     
     const action: GameEngineAction = { type: 'CLEAN_INVENTORY' };

@@ -64,6 +64,7 @@ export const ensureJournalEntry = (entry: unknown): JournalEntry => {
     // Return a default narrative entry if the entry is invalid
     return {
       id: getUUID(),
+      title: 'Invalid Entry Data', // Add default title
       type: 'narrative',
       timestamp: Date.now(),
       content: 'Missing journal content',
@@ -76,6 +77,7 @@ export const ensureJournalEntry = (entry: unknown): JournalEntry => {
     // Add missing required properties
     return {
       id: entryObj.id || getUUID(),
+      title: entryObj.title || 'Restored Entry', // Add title (use existing if possible)
       type: 'narrative', // Default to narrative if type is missing
       timestamp: entryObj.timestamp || Date.now(),
       content: entryObj.content || 'Missing journal content',
