@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useGameState } from '../context/GameStateProvider';
 import { GameStorage } from '../utils/gameStorage';
-import { generateNarrativeSummary } from '../utils/ai/narrativeSummary';
+import { getAIResponse } from '../services/ai/gameService'; // Import gameService
+import { generateNarrativeSummary } from '../utils/ai/narrativeSummary'; // Re-import summary generator
 import { NarrativeJournalEntry } from '../types/journal';
+import { SuggestedAction } from '../types/campaign'; // Import SuggestedAction type
 
 /**
  * useGameInitialization hook
@@ -76,53 +78,85 @@ export function useGameInitialization() {
               payload: item
             });
           }
-        }
+          // --- Generate Initial Narrative & Actions via AI ---
+          try {
+            const initialAIResponse = await getAIResponse({
+              prompt: "Begin the adventure in Boot Hill",
+              journalContext: "The player character has just arrived in the frontier town of Boot Hill.",
+              inventory: defaultItems,
+              // No story progression, narrative context, or lore store initially
+            });
+
+            // Create and dispatch initial narrative entry
+            if (initialAIResponse.narrative) {
+              let summary = 'Arrived in Boot Hill.'; // Default fallback summary
+              try {
+                // Attempt to generate summary from the AI narrative content
+                summary = await generateNarrativeSummary(
+                  "Summarize the start of the adventure", // Context for summary generation
+                  initialAIResponse.narrative
+                );
+              } catch (summaryError) {
+                console.error("Failed to generate narrative summary:", summaryError);
+                // Keep the default fallback summary if generation fails
+              }
+
+              const initialNarrativeEntry: NarrativeJournalEntry = {
+                id: `entry_narrative_${Date.now()}`,
+                title: 'Adventure Begins',
+                type: 'narrative',
+                timestamp: Date.now(),
+                content: initialAIResponse.narrative, // Use AI narrative
+                narrativeSummary: summary // Use generated summary or fallback
+              };
+              dispatch({
+                type: 'journal/ADD_ENTRY',
+                payload: initialNarrativeEntry
+              });
+            } else {
+               console.warn("AI response missing narrative content.");
+            }
+
+            // Dispatch suggested actions
+            if (initialAIResponse.suggestedActions && initialAIResponse.suggestedActions.length > 0) {
+               // Ensure payload matches expected type for the reducer
+               const actionsPayload: SuggestedAction[] = initialAIResponse.suggestedActions.map(action => ({
+                 id: action.id || `action-${Date.now()}-${Math.random()}`, // Ensure ID exists
+                 title: action.title || 'Unnamed Action',
+                 description: action.description || '',
+                 type: action.type || 'optional' // Ensure type exists and is valid
+               }));
+
+              dispatch({
+                type: 'SET_SUGGESTED_ACTIONS', // Use the correct action type
+                payload: actionsPayload
+              });
+            } else {
+               console.warn("AI response missing suggested actions.");
+            }
+
+          } catch (aiError) {
+            // console.error("Failed to get initial AI response:", aiError); // Keep error log for production issues
+            // Fallback: Add a simple default narrative entry if AI fails
+            const fallbackNarrativeEntry: NarrativeJournalEntry = {
+              id: `entry_narrative_fallback_${Date.now()}`,
+              title: 'Adventure Begins (Fallback)',
+              type: 'narrative',
+              timestamp: Date.now(),
+              content: 'Your adventure begins in the rugged frontier town of Boot Hill. The AI game master seems to be unavailable.',
+              narrativeSummary: 'Arrived in Boot Hill, AI unavailable.'
+            };
+            dispatch({
+              type: 'journal/ADD_ENTRY',
+              payload: fallbackNarrativeEntry
+            });
+             // Optionally dispatch default suggested actions as fallback?
+             // dispatch({ type: 'SET_SUGGESTED_ACTIONS', payload: [...] });
+          }
+          // --- End AI Generation ---
+
+        } // End of else block (!savedState)
         
-        // Add initial narrative entry for game start if no journal entries exist
-        // Create the initial narrative content
-        const initialNarrativeContent = 'Your adventure begins in the rugged frontier town of Boot Hill. The air is thick with dust and tension, as you stand ready to write your own legend in this untamed land.';
-        
-        try {
-          // Generate a summary using the AI model
-          const narrativeSummary = await generateNarrativeSummary(
-            "begin adventure", 
-            initialNarrativeContent
-          );
-          
-          
-          // Create the journal entry with the AI-generated summary
-          const initialNarrativeEntry: NarrativeJournalEntry = {
-            id: `entry_narrative_${Date.now()}`,
-            title: 'Adventure Begins', // Add title
-            type: 'narrative',
-            timestamp: Date.now(),
-            content: initialNarrativeContent,
-            narrativeSummary: narrativeSummary
-          };
-          
-          dispatch({
-            type: 'journal/ADD_ENTRY',
-            payload: initialNarrativeEntry
-          });
-          } catch { // Remove unused error variable
-            
-          
-          // Fallback to a simple summary if AI generation fails
-          const initialNarrativeEntry: NarrativeJournalEntry = {
-            id: `entry_narrative_${Date.now()}`,
-            title: 'Adventure Begins', // Add title
-            type: 'narrative',
-            timestamp: Date.now(),
-            content: initialNarrativeContent,
-            narrativeSummary: 'Arrived in Boot Hill to begin your adventure'
-          };
-          
-          dispatch({
-            type: 'journal/ADD_ENTRY',
-            payload: initialNarrativeEntry
-          });
-          
-        }
         
         // After all state has been set, set character one more time to ensure it sticks
         dispatch({ 

@@ -9,6 +9,7 @@
 import { GameState } from '../../types/gameState';
 import { CharacterState } from '../../types/state/characterState';
 import { NarrativeState } from '../../types/narrative.types';
+import { SuggestedAction } from '../../types/campaign';
 import { gameElementsStorage } from './gameElementsStorage';
 
 // Module constants
@@ -100,7 +101,7 @@ const initializeNewGame = (): Partial<GameState> => {
     const narrativeState = createDefaultNarrativeState();
     
     // Default suggested actions - using the correct function
-    const suggestedActions = gameElementsStorage.getDefaultSuggestedActions();
+    const suggestedActions: SuggestedAction[] = []; // Initialize as empty array
     
     // Create partial game state with all critical components
     const newGameState: Partial<GameState> = {
@@ -234,11 +235,7 @@ const createDefaultNarrativeState = (): NarrativeState => {
     currentStoryPoint: null,
     visitedPoints: [],
     availableChoices: [],
-    narrativeHistory: [
-      'Your adventure begins in the rugged frontier town of Boot Hill...',
-      'The dusty streets are lined with wooden buildings, a saloon, and a general store.',
-      'What would you like to do?'
-    ],
+    narrativeHistory: [], // Initialize as empty array
     displayMode: 'standard',
     context: '',
     needsInitialGeneration: true,

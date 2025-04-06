@@ -5,7 +5,7 @@
  */
 'use client';
 
-import { useMemo } from 'react'; // Import useMemo
+import { useMemo } from 'react';
 import NarrativeWithDecisions from '../narrative/NarrativeWithDecisions';
 import { GameplayControls } from './GameplayControls';
 import type { GameSessionProps } from './types';
@@ -23,25 +23,29 @@ export function MainGameArea({
   handleCombatEnd,
   handlePlayerHealthChange,
 }: GameSessionProps) {
-  // Default narrative text to use as fallback
-  const defaultNarrative = 'Your adventure begins in the rugged frontier town of Boot Hill...';
-  
   // Get narrative text with proper memoization - always call useMemo
   const narrativeToDisplay = useMemo(() => {
-    if (!state || !state.narrative) {
-      console.log('MainGameArea: Falling back to GameStorage for narrative (no state)');
-      return GameStorage.getNarrativeText() || defaultNarrative;
+    // Check the correct state path: state.journal.entries
+    if (!state?.journal?.entries || !Array.isArray(state.journal.entries) || state.journal.entries.length === 0) {
+      return ''; // Return empty if journal entries aren't ready or empty
     }
     
-    const history = state.narrative.narrativeHistory;
+    // Read from the correct state path: state.journal.entries
+    const history = state.journal.entries as Array<{ content?: string }>;
+    let calculatedNarrative = ''; // Initialize variable
+
     if (history && Array.isArray(history) && history.length > 0) {
-      return history.join('\n');
+      // Filter for entries with content and join them
+      calculatedNarrative = history
+        .map(entry => entry?.content || '') // Extract content, default to empty string if missing
+        .filter(content => content) // Remove empty strings
+        .join('\n'); // Join with single newline for separation to match test mock
+    } else {
+      calculatedNarrative = ''; // Explicitly set to empty if no history
     }
-    
-    // Fallback if narrative history is empty or invalid
-    console.log('MainGameArea: Falling back to GameStorage for narrative (empty history)');
-    return GameStorage.getNarrativeText() || defaultNarrative;
-  }, [state]); // Depend on state, not nested properties
+
+    return calculatedNarrative; // Return the calculated value
+  }, [state]); // Revert dependency to [state] for testing stability
   
   // If the game is initializing, show a loading state
   if (isLoading) {

@@ -15,6 +15,7 @@ interface NarrativeWithDecisionsProps {
   "data-testid"?: string;
 }
 
+
 /**
  * Component that integrates narrative display with decision cards
  * Handles the flow between narrative and decision states.
@@ -34,7 +35,8 @@ const NarrativeWithDecisions: React.FC<NarrativeWithDecisionsProps> = ({
   id,
   "data-testid": dataTestId
 }) => {
-  const { 
+
+  const {
     currentDecision, 
     hasActiveDecision, 
     recordPlayerDecision,

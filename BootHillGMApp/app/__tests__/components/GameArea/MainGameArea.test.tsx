@@ -2,24 +2,22 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MainGameArea } from '../../../components/GameArea/MainGameArea';
-import { GameState } from '../../../types/campaign';
+import { GameState } from '../../../types/gameState'; // Corrected import path
 // Update the import path for NarrativeProvider
 import { NarrativeProvider } from '../../../hooks/narrative/NarrativeProvider';
 
 // Mock NarrativeWithDecisions with proper rendering of newlines
 jest.mock('../../../components/narrative/NarrativeWithDecisions', () => {
-  return function MockNarrativeWithDecisions({ narrative, error, onRetry }) {
-    // Split the narrative by newlines and join with <br/> elements to preserve line breaks
-    const narrativeWithBreaks = narrative.split('\n').map((line, i) => (
-      <React.Fragment key={i}>
-        {line}
-        {i < narrative.split('\n').length - 1 && <br />}
-      </React.Fragment>
-    ));
+  // Added types for props
+  return function MockNarrativeWithDecisions({ narrative, error, onRetry }: { narrative: string; error?: string | null; onRetry?: () => void }) {
+    // Simplify mock: Render the raw narrative string directly
+    // This avoids issues with <br> tags and complex fragments in textContent assertion
+    // const narrativeWithBreaks = narrative; // Use the raw string (Removed this intermediate step)
 
     return (
       <div data-testid="mock-narrative-with-decisions">
-        <div data-testid="narrative-prop">{narrativeWithBreaks}</div>
+        {/* Render the raw narrative string directly */}
+        <div data-testid="narrative-prop">{narrative}</div>
         {error && <div data-testid="error-prop">{error}</div>}
         {onRetry && (
           <button data-testid="retry-button" onClick={onRetry}>
@@ -39,7 +37,8 @@ jest.mock('../../../components/GameArea/GameplayControls', () => ({
 }));
 
 // Wrap component with NarrativeProvider for testing
-const renderWithNarrativeProvider = (ui) => {
+// Added type for ui parameter
+const renderWithNarrativeProvider = (ui: React.ReactElement) => {
   return render(
     <NarrativeProvider>
       {ui}
@@ -48,11 +47,61 @@ const renderWithNarrativeProvider = (ui) => {
 };
 
 describe('MainGameArea', () => {
-  const mockState = {
-    narrative: {
-      narrativeHistory: ['Line 1', 'Line 2', 'Line 3']
-    }
-  } as unknown as GameState;
+  // Create a more complete mock state based on initial state structure
+  const mockState: GameState = {
+    character: null, // Add other initial state parts
+    combat: { // Use properties from initialCombatState or CombatState definition
+      isActive: false,
+      combatType: 'brawling', // Use initial value
+      rounds: 0,
+      playerTurn: true,
+      playerCharacterId: '',
+      opponentCharacterId: '',
+      combatLog: [], // Correct property name
+      roundStartTime: 0,
+      modifiers: { player: 0, opponent: 0 },
+      currentTurn: null,
+      winner: null,
+      participants: []
+    },
+    inventory: { items: [], equippedWeaponId: null }, // Example initial inventory state
+    journal: { // Override journal entries for the test
+      entries: [
+        { id: 'entry1', type: 'narrative', timestamp: 1, content: 'Line 1', title: 'Entry 1' }, // Added title
+        { id: 'entry2', type: 'narrative', timestamp: 2, content: 'Line 2', title: 'Entry 2' }, // Added title
+        { id: 'entry3', type: 'narrative', timestamp: 3, content: 'Line 3', title: 'Entry 3' }, // Added title
+      ]
+    },
+    narrative: { // Add initial narrative state parts
+        currentStoryPoint: null,
+        visitedPoints: [],
+        availableChoices: [],
+        narrativeHistory: [], // Keep this empty as MainGameArea reads from journal
+        displayMode: 'standard',
+        context: '',
+        needsInitialGeneration: false, // Assume false for this test context
+        lore: undefined,
+        storyProgression: undefined,
+        currentDecision: undefined,
+        error: null,
+        selectedChoice: undefined,
+        narrativeContext: undefined,
+    },
+    ui: { // Use properties from initialUIState or UIState definition
+      isLoading: false,
+      modalOpen: null,
+      notifications: [],
+      activeTab: 'character' // Use initial value
+    },
+    currentPlayer: 'Test Player',
+    npcs: [],
+    location: { type: 'town', name: 'Test Town' }, // Example location
+    quests: [],
+    gameProgress: 0,
+    savedTimestamp: Date.now(),
+    isClient: true,
+    suggestedActions: []
+  };
 
   const defaultProps = {
     state: mockState,
@@ -65,6 +114,9 @@ describe('MainGameArea', () => {
     retryLastAction: jest.fn(),
     handleCombatEnd: jest.fn(),
     handlePlayerHealthChange: jest.fn(),
+    // Add missing mock functions required by GameSessionProps
+    handleUseItem: jest.fn(),
+    handleEquipWeapon: jest.fn(),
   };
 
   beforeEach(() => {
