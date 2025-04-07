@@ -16,18 +16,24 @@ export async function generateCompleteCharacter(): Promise<Character> {
   const logger = new CharacterLogger('generation');
   
   try {
+    // NOTE: The prompt explicitly requests a nested 'attributes' object and proper escaping
+    // for quotes within the name string. This structure is crucial for successful parsing
+    // and validation by downstream functions (parseCharacterData, validateCharacter).
     const prompt = `
-      Generate a complete character for the Boot Hill RPG. Provide values for the following attributes:
-      - Name
-      - Speed (1-20)
-      - GunAccuracy (1-20)
-      - ThrowingAccuracy (1-20)
-      - Strength (8-20)
-      - BaseStrength (8-20)
-      - Bravery (1-20)
-      - Experience (0-11)
+      Generate a complete character for the Boot Hill RPG. Respond with a valid JSON object containing:
+      - A top-level "name" property (string). Ensure the generated name is distinct and fitting for a character in the American Old West. IMPORTANT: If the name includes quotes (like nicknames), they MUST be properly escaped with a backslash (e.g., "Clayton \\"Cutter\\" McBride"). Do not include unescaped quotes within the name string.
+      - A nested "attributes" object containing the following numeric properties:
+        - speed (1-20)
+        - gunAccuracy (1-20)
+        - throwingAccuracy (1-20)
+        - strength (8-20)
+        - baseStrength (8-20, should generally match strength)
+        - bravery (1-20)
+        - experience (0-11)
 
-      Respond with a valid JSON object. No additional text or formatting.
+      Example structure: { "name": "...", "attributes": { "speed": ..., "gunAccuracy": ..., ... } }
+      
+      Ensure the response is ONLY the JSON object, with no additional text or formatting.
     `;
 
     const model = getAIModel();

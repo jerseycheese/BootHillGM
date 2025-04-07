@@ -20,37 +20,68 @@ export function validateCharacter(character: Character): ValidationResult {
       code: 'ATTRIBUTES_REQUIRED'
     });
   } else {
-    const { speed, gunAccuracy, throwingAccuracy, strength } = character.attributes;
+    const { speed, gunAccuracy, throwingAccuracy, strength, baseStrength, bravery, experience } = character.attributes;
     
-    if (speed < 1 || speed > 10) {
+    // Validate Speed (1-20)
+    if (typeof speed !== 'number' || speed < 1 || speed > 20) {
       errors.push({
         field: 'speed',
-        message: 'Speed must be between 1 and 10',
+        message: 'Speed must be a number between 1 and 20',
         code: 'INVALID_SPEED'
       });
     }
     
-    if (gunAccuracy < 1 || gunAccuracy > 10) {
+    // Validate Gun Accuracy (1-20)
+    if (typeof gunAccuracy !== 'number' || gunAccuracy < 1 || gunAccuracy > 20) {
       errors.push({
         field: 'gunAccuracy',
-        message: 'Gun accuracy must be between 1 and 10',
+        message: 'Gun accuracy must be a number between 1 and 20',
         code: 'INVALID_GUN_ACCURACY'
       });
     }
     
-    if (throwingAccuracy < 1 || throwingAccuracy > 10) {
+    // Validate Throwing Accuracy (1-20)
+    if (typeof throwingAccuracy !== 'number' || throwingAccuracy < 1 || throwingAccuracy > 20) {
       errors.push({
         field: 'throwingAccuracy',
-        message: 'Throwing accuracy must be between 1 and 10',
+        message: 'Throwing accuracy must be a number between 1 and 20',
         code: 'INVALID_THROWING_ACCURACY'
       });
     }
     
-    if (strength < 1 || strength > 10) {
+    // Validate Strength (8-20)
+    if (typeof strength !== 'number' || strength < 8 || strength > 20) {
       errors.push({
         field: 'strength',
-        message: 'Strength must be between 1 and 10',
+        message: 'Strength must be a number between 8 and 20',
         code: 'INVALID_STRENGTH'
+      });
+    }
+
+    // Validate Base Strength (8-20) - Should match Strength
+    if (typeof baseStrength !== 'number' || baseStrength < 8 || baseStrength > 20) {
+      errors.push({
+        field: 'baseStrength',
+        message: 'Base Strength must be a number between 8 and 20',
+        code: 'INVALID_BASE_STRENGTH'
+      });
+    }
+    
+    // Validate Bravery (1-20)
+    if (typeof bravery !== 'number' || bravery < 1 || bravery > 20) {
+      errors.push({
+        field: 'bravery',
+        message: 'Bravery must be a number between 1 and 20',
+        code: 'INVALID_BRAVERY'
+      });
+    }
+    
+    // Validate Experience (0-11)
+    if (typeof experience !== 'number' || experience < 0 || experience > 11) {
+      errors.push({
+        field: 'experience',
+        message: 'Experience must be a number between 0 and 11',
+        code: 'INVALID_EXPERIENCE'
       });
     }
   }

@@ -3,7 +3,7 @@ title: Character Creation Prompt Engineering
 aliases: [Character Prompts, Player Creation Guidelines]
 tags: [ai, prompts, character, creation, integration]
 created: 2024-12-28
-updated: 2024-12-28
+updated: 2025-04-07
 ---
 
 # Character Creation Prompt Engineering
@@ -72,6 +72,29 @@ Generate personality traits that:
 4. Enable character growth
 `;
 ```
+
+### Attribute Generation (`characterService.ts`)
+This prompt is used by `generateCompleteCharacter` to get the core numerical attributes and name.
+```typescript
+const attributePrompt = `
+  Generate a complete character for the Boot Hill RPG. Respond with a valid JSON object containing:
+  - A top-level "name" property (string). Ensure the generated name is distinct and fitting for a character in the American Old West. IMPORTANT: If the name includes quotes (like nicknames), they MUST be properly escaped with a backslash (e.g., "Clayton \\"Cutter\\" McBride"). Do not include unescaped quotes within the name string.
+  - A nested "attributes" object containing the following numeric properties:
+    - speed (1-20)
+    - gunAccuracy (1-20)
+    - throwingAccuracy (1-20)
+    - strength (8-20)
+    - baseStrength (8-20, should generally match strength)
+    - bravery (1-20)
+    - experience (0-11)
+
+  Example structure: { "name": "...", "attributes": { "speed": ..., "gunAccuracy": ..., ... } }
+  
+  Ensure the response is ONLY the JSON object, with no additional text or formatting.
+`;
+```
+**Note:** The specific structure (nested `attributes`) and the requirement for escaped quotes are crucial for successful parsing and validation in the `characterService.ts` implementation.
+
 
 ## Integration Points
 
