@@ -48,13 +48,12 @@ export default function NarrativeOptimizationProvider({
     // Register debugging tools for development
     if (process.env.NODE_ENV !== 'production') {
       registerNarrativeContextDebugTools();
+      // Required for NarrativeOptimizationProvider.test.tsx initialization check
+      console.info('Narrative context optimization initialized');
     }
     
     // Setup optimization telemetry
     setupOptimizationTelemetry();
-    
-    // Log success message
-    console.info('📚 Narrative context optimization initialized');
   }, []);
   
   /**

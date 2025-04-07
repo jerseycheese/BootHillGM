@@ -81,7 +81,6 @@ export function initializeDecisionDebugTools(): void {
     }
     
     if (process.env.NODE_ENV !== 'production') {
-      console.debug('Decision debug tools initialized');
     }
   }
 }

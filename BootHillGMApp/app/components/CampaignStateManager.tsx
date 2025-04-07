@@ -196,7 +196,6 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
       // Try to fix the state by combining data from different sources
       const fixedState = fixCampaignState();
       if (fixedState) {
-        console.log('Fixed campaign state');
         fixedStateRef.current = fixedState;
         return fixedState;
       }
@@ -208,7 +207,6 @@ export const CampaignStateProvider: React.FC<{ children: React.ReactNode }> = ({
   // Only log in development mode and in the browser
   useEffect(() => {
     if (isBrowser && process.env.NODE_ENV === 'development') {
-      console.log('CampaignStateManager: Reading campaignState from localStorage:', savedStateJSON);
     }
   }, [savedStateJSON]);
 

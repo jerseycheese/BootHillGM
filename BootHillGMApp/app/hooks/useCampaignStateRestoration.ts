@@ -144,7 +144,6 @@ export const useCampaignStateRestoration = ({
     
     // If character state is still null, try to recover from localStorage
     if (!characterState || !characterState.player) {
-      console.log('Character state missing or invalid, attempting recovery from localStorage');
       characterState = GameStorage.getCharacter();
     }
     

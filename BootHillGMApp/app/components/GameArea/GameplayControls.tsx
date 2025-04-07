@@ -35,7 +35,6 @@ export function GameplayControls({
     }
     
     // Fallback if state actions are empty or invalid
-    console.log('GameplayControls: Falling back to GameStorage for suggested actions');
     return GameStorage.getSuggestedActions();
   }, [state]); // Only depend on state
   

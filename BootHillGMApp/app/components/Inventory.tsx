@@ -54,8 +54,6 @@ export const Inventory: React.FC<InventoryProps<string>> = ({
   const inventoryItems = propItems || contextItems;
   
   // Debug log
-  console.log('Inventory component received items:', 
-              inventoryItems ? `${inventoryItems.length} items` : 'undefined/null');
 
   // Callback handlers for item actions
   const handleEquipWeaponClick = useCallback((itemId: string) => {

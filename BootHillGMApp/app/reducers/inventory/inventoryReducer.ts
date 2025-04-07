@@ -51,7 +51,6 @@ export function inventoryReducer(
   action: GameAction
 ): InventoryState {
   // Debug log for inventory actions
-  console.log('inventoryReducer received action:', action.type);
   
   const actionType = action.type as string;
   
@@ -74,12 +73,10 @@ export function inventoryReducer(
           quantity: existingItem.quantity + (newItem.quantity || 1)
         };
         
-        console.log('inventoryReducer: Updated item quantity:', updatedItems[existingItemIndex]);
         return { ...state, items: updatedItems };
       }
       
       // Otherwise add as new item
-      console.log('inventoryReducer: Added new item:', newItem);
       return { ...state, items: [...state.items, newItem] };
     }
     
@@ -90,7 +87,6 @@ export function inventoryReducer(
       }
       
       const itemId = action.payload;
-      console.log('inventoryReducer: Removing item with ID:', itemId);
       return { ...state, items: state.items.filter(item => item.id !== itemId) };
     }
     
@@ -117,7 +113,6 @@ export function inventoryReducer(
       
       // Decrease quantity otherwise
       updatedItems[itemIndex] = { ...item, quantity: item.quantity - 1 };
-      console.log('inventoryReducer: Used item, decreased quantity:', updatedItems[itemIndex]);
       return { ...state, items: updatedItems };
     }
     
@@ -143,7 +138,6 @@ export function inventoryReducer(
       
       // Update quantity otherwise
       updatedItems[itemIndex] = { ...updatedItems[itemIndex], quantity };
-      console.log('inventoryReducer: Updated item quantity:', updatedItems[itemIndex]);
       return { ...state, items: updatedItems };
     }
     
@@ -151,7 +145,6 @@ export function inventoryReducer(
     case 'inventory/CLEAN_INVENTORY': {
       // Remove items with quantity zero or less
       const validItems = state.items.filter(item => item.quantity > 0);
-      console.log('inventoryReducer: Cleaned inventory, remaining items:', validItems.length);
       return { ...state, items: validItems };
     }
     
@@ -166,14 +159,12 @@ export function inventoryReducer(
       // Handle array of items
       if (Array.isArray(payload)) {
         const items = payload.map(item => ensureValidItem(item));
-        console.log('inventoryReducer: Set inventory with items array, count:', items.length);
         return { ...state, items };
       }
       
       // Handle object with items array
       if (payload && typeof payload === 'object' && 'items' in payload && Array.isArray(payload.items)) {
         const items = payload.items.map(item => ensureValidItem(item));
-        console.log('inventoryReducer: Set inventory with items object, count:', items.length);
         return { ...state, items };
       }
       
@@ -193,13 +184,11 @@ export function inventoryReducer(
         return state;
       }
       
-      console.log('inventoryReducer: Equipped weapon:', item);
       return { ...state, equippedWeaponId: itemId };
     }
     
     case 'UNEQUIP_WEAPON':
     case 'inventory/UNEQUIP_WEAPON': {
-      console.log('inventoryReducer: Unequipped weapon');
       return { ...state, equippedWeaponId: null };
     }
     
@@ -217,7 +206,6 @@ export function inventoryReducer(
       // Handle direct inventory state object
       if (typeof inventory === 'object' && 'items' in inventory && Array.isArray(inventory.items)) {
         const typedInventory = inventory as unknown as InventoryState;
-        console.log('inventoryReducer: Set state with inventory, items count:', typedInventory.items.length);
         return {
           items: typedInventory.items.map(ensureValidItem),
           equippedWeaponId: typedInventory.equippedWeaponId || null
@@ -226,7 +214,6 @@ export function inventoryReducer(
       
       // Handle array of items (legacy format)
       if (Array.isArray(inventory)) {
-        console.log('inventoryReducer: Set state with inventory array, count:', inventory.length);
         return {
           ...state,
           items: inventory.map(ensureValidItem)

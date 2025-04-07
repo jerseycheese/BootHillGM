@@ -59,7 +59,6 @@ const NarrativeWithDecisions: React.FC<NarrativeWithDecisionsProps> = ({
       EVENTS.DECISION_READY, 
       (decision) => {
         if (decision && isMounted.current) {
-          console.log('NarrativeWithDecisions: Decision ready event received', decision.id);
           setShowDecision(true);
           setLastProcessedDecisionId(decision.id);
           setIsTransitioning(false);
@@ -72,7 +71,6 @@ const NarrativeWithDecisions: React.FC<NarrativeWithDecisionsProps> = ({
       EVENTS.DECISION_CLEARED, 
       () => {
         if (isMounted.current) {
-          console.log('NarrativeWithDecisions: Decision cleared event received');
           setShowDecision(false);
           setLastProcessedDecisionId(null);
           setIsTransitioning(false);

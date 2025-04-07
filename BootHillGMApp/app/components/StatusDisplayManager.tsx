@@ -159,8 +159,6 @@ function StatusDisplayManager({ character, location }: StatusDisplayManagerProps
     
     // Debug log to see character data
     useEffect(() => {
-      console.log('StatusDisplayManager received character:', character);
-      console.log('Character name:', character.name);
     }, [character]);
 
     const getLocationDisplay = (location: LocationType): string => {

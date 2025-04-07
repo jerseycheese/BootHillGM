@@ -19,10 +19,6 @@ export default function InputManager({
 
   // Debug: Log the suggested actions and their types on component mount and when they change
   useEffect(() => {
-    console.log('Suggested Actions:', suggestedActions);
-    suggestedActions.forEach((action, index) => {
-      console.log(`Action ${index}: ${action.title}, type: ${action.type}, id: ${action.id}`);
-    });
   }, [suggestedActions]);
 
   /**
@@ -63,7 +59,6 @@ export default function InputManager({
     };
     
     // Debug: Log the type and the class being used
-    console.log(`Action type: ${type}, CSS class: ${typeClasses[type as keyof typeof typeClasses] || 'bg-gray-500'}`);
     
     // Use the mapped class or default to gray for unknown types
     const bgClass = typeClasses[type as keyof typeof typeClasses] || 'bg-gray-500';
@@ -77,7 +72,6 @@ export default function InputManager({
         <div className="flex flex-wrap gap-2">
           {suggestedActions.map((action, index) => {
             // Always log action type for debugging
-            console.log(`Rendering action ${index}: ${action.title}, type: ${action.type}`);
             
             return (
               <button

@@ -17,7 +17,6 @@ export async function retryWithExponentialBackoff<T>(
   
   for (let i = 0; i < maxRetries; i++) {
     try {
-      console.log(`Attempt ${i + 1}/${maxRetries}`);
       const result = await fn();
       return result;
     } catch (error) {
@@ -37,7 +36,6 @@ export async function retryWithExponentialBackoff<T>(
       const jitter = Math.random() * 0.3 * exponentialDelay; // 0-30% jitter
       const delay = exponentialDelay + jitter;
       
-      console.log(`Retrying after ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }

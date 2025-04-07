@@ -20,8 +20,6 @@ export const initialJournalState: JournalState = {
  */
 function createTypedJournalEntry(entry: Partial<JournalEntry>): JournalEntry {
   // Debug the entry coming in
-  console.log('[JOURNAL-REDUCER] Creating typed entry with keys:', Object.keys(entry));
-  console.log('[JOURNAL-REDUCER] Entry has narrativeSummary:', 'narrativeSummary' in entry);
   
   // Ensure we have required base fields
   const baseEntry = {
@@ -33,8 +31,6 @@ function createTypedJournalEntry(entry: Partial<JournalEntry>): JournalEntry {
     ...(entry.narrativeSummary ? { narrativeSummary: entry.narrativeSummary } : {})
   };
   
-  console.log('[JOURNAL-REDUCER] Base entry created with keys:', Object.keys(baseEntry));
-  console.log('[JOURNAL-REDUCER] Base entry has narrativeSummary:', 'narrativeSummary' in baseEntry);
   
   // Create a properly typed entry based on the type field
   let typedEntry: JournalEntry;
@@ -101,11 +97,6 @@ function createTypedJournalEntry(entry: Partial<JournalEntry>): JournalEntry {
   }
   
   // Final verification check
-  console.log('[JOURNAL-REDUCER] Final typed entry has keys:', Object.keys(typedEntry));
-  console.log('[JOURNAL-REDUCER] Final entry has narrativeSummary:', 'narrativeSummary' in typedEntry);
-  if ('narrativeSummary' in typedEntry) {
-    console.log('[JOURNAL-REDUCER] Summary value:', typedEntry.narrativeSummary);
-  }
   
   return typedEntry;
 }
@@ -121,8 +112,6 @@ const journalReducer = (state: JournalState = initialJournalState, action: GameA
       const entryData = action.payload as Partial<JournalEntry>;
       if (!entryData) return state;
       
-      console.log('[JOURNAL-REDUCER] ADD_ENTRY with data:', entryData);
-      console.log('[JOURNAL-REDUCER] Entry has narrativeSummary?', 'narrativeSummary' in entryData);
       
       // Create a properly typed entry
       const typedEntry = createTypedJournalEntry(entryData);
@@ -153,8 +142,6 @@ const journalReducer = (state: JournalState = initialJournalState, action: GameA
       const updateData = action.payload as Partial<JournalEntry> & { id: string };
       if (!updateData || !updateData.id) return state;
       
-      console.log('[JOURNAL-REDUCER] UPDATE_ENTRY with data:', updateData);
-      console.log('[JOURNAL-REDUCER] Update has narrativeSummary?', 'narrativeSummary' in updateData);
       
       // Update entry
       return {
@@ -182,7 +169,6 @@ const journalReducer = (state: JournalState = initialJournalState, action: GameA
       const entriesData = action.payload as JournalEntry[];
       if (!entriesData) return state;
       
-      console.log('[JOURNAL-REDUCER] SET_ENTRIES with count:', entriesData.length);
       
       // Ensure all entries are properly typed
       const typedEntries = entriesData.map(entry => 

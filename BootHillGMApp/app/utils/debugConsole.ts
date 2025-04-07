@@ -15,9 +15,9 @@ import '../types/global.d';
 const debugLog = (message: string, data?: DebugCommandData | GameState | string | Error | undefined): void => {
   if (process.env.NODE_ENV !== 'production') {
     if (data !== undefined) {
-      console.log(message, data);
+      // console.log(message, data); // Removed log
     } else {
-      console.log(message);
+      // console.log(message); // Removed log
     }
   }
 };

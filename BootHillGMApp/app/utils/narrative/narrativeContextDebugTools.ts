@@ -55,11 +55,8 @@ export function registerNarrativeContextDebugTools(): void {
         // Build and show optimized context
         const result = buildNarrativeContext(state.narrative);
         
-        console.log('Optimized Context:');
-        console.log(result.formattedContext);
-        
-        console.log('\nStats:');
-        console.table({
+        // Display stats in a structured way if needed, or return them
+        console.table({ // Example: Removed table logging
           'Token Estimate': result.tokenEstimate,
           'History Entries': result.includedElements.historyEntries,
           'Decisions': result.includedElements.decisions,
@@ -106,17 +103,6 @@ export function registerNarrativeContextDebugTools(): void {
         });
         
         console.group('Compression Test Results');
-        
-        results.forEach(result => {
-          console.log(`Level: ${result.level}`);
-          console.log('Original:', text);
-          console.log('Compressed:', result.compressed);
-          console.log(`Original Length: ${result.originalLength}`);
-          console.log(`Compressed Length: ${result.compressed.length}`);
-          console.log(`Reduction: ${Math.round((1 - result.compressed.length / result.originalLength) * 100)}%`);
-          console.log('-----');
-        });
-        
         console.groupEnd();
         
         return results;
@@ -145,7 +131,8 @@ export function registerNarrativeContextDebugTools(): void {
             (basicEstimate > 0 ? basicEstimate : 1) * 100)}%`
         };
         
-        console.table(result);
+        // Log comparison result if needed
+        // Example: Removed table logging
         
         return result;
       } catch (error) {
@@ -208,7 +195,8 @@ export function registerNarrativeContextDebugTools(): void {
           });
         });
         
-        console.table(results);
+        // Log benchmark results if needed
+        // Example: Removed table logging
         
         return results;
       } catch (error) {
