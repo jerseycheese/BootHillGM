@@ -17,7 +17,7 @@ jest.mock('../../../components/narrative/NarrativeWithDecisions', () => {
     return (
       <div data-testid="mock-narrative-with-decisions">
         {/* Render the raw narrative string directly */}
-        <div data-testid="narrative-prop">{narrative}</div>
+        <div data-testid="narrative-prop" style={{ whiteSpace: 'pre-wrap' }}>{narrative}</div>
         {error && <div data-testid="error-prop">{error}</div>}
         {onRetry && (
           <button data-testid="retry-button" onClick={onRetry}>
@@ -148,7 +148,7 @@ describe('MainGameArea', () => {
 
     // Check the text content of the element holding the prop
     // It should be the joined string from narrativeHistory
-    expect(narrativePropElement).toHaveTextContent('Initial Narrative Line.\n\nPlayer: Test Action\n\nAI Response Line.');
+    expect(narrativePropElement).toHaveTextContent('Initial Narrative Line. Player: Test Action AI Response Line.');
   });
 
   it('renders the MainGameArea with NarrativeWithDecisions', () => {
