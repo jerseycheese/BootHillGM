@@ -12,8 +12,9 @@ import GameStorage from '../../utils/gameStorage';
 import { GameState } from '../../types/gameState';
 import { initialState } from '../../types/initialState';
 import { 
-  gameStateUtils 
+  gameStateUtils
 } from '../../test/utils';
+import { GameSessionProps } from '../../components/GameArea/types';
 
 // Mock the GameStorage utility
 jest.mock('../../utils/gameStorage', () => ({
@@ -26,19 +27,33 @@ jest.mock('../../utils/gameStorage', () => ({
   getDefaultInventoryItems: jest.fn()
 }));
 
-// Import MainGameArea or mock it
-const MainGameArea = () => (
-  <div data-testid="main-game-area">Main Game Area Mock</div>
-);
+// Import the actual MainGameArea component
+import { MainGameArea } from '../../components/GameArea/MainGameArea';
 
-// Mock the NarrativeWithDecisions component
-jest.mock('../../components/narrative/NarrativeWithDecisions', () => {
-  const Mock = () => <div data-testid="narrative-with-decisions">Narrative Content</div>;
-  Mock.displayName = 'MockNarrativeWithDecisions';
-  return Mock;
-});
+// Mock the NarrativeWithDecisions component and keep a reference to it
+import NarrativeWithDecisions from '../../components/narrative/NarrativeWithDecisions';
+jest.mock('../../components/narrative/NarrativeWithDecisions');
+const MockNarrativeWithDecisions = NarrativeWithDecisions as jest.MockedFunction<typeof NarrativeWithDecisions>;
 
 describe('MainGameArea Component', () => {
+  // Default props for MainGameArea in tests
+  const defaultTestProps: Omit<GameSessionProps, 'state'> = { // Omit state as it's provided per test
+    dispatch: jest.fn(),
+    isLoading: false,
+    error: null,
+    isCombatActive: false,
+    opponent: null,
+    handleUserInput: jest.fn(),
+    retryLastAction: jest.fn(),
+    handleCombatEnd: jest.fn(),
+    handlePlayerHealthChange: jest.fn(),
+    handleUseItem: jest.fn(),
+    handleEquipWeapon: jest.fn(),
+    executeCombatRound: jest.fn(),
+    initiateCombat: jest.fn(),
+    getCurrentOpponent: jest.fn(() => null),
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     gameStateUtils.mockLocalStorage.clear();
@@ -51,14 +66,28 @@ describe('MainGameArea Component', () => {
         ...initialState.narrative,
         narrativeHistory: [
           'This is the narrative from state.',
+          'Player: Do something', // Add player action
           'Second line of narrative.'
         ]
       }
     });
     
-    gameStateUtils.renderWithGameProvider(<MainGameArea />, mockState);
+    gameStateUtils.renderWithGameProvider(<MainGameArea {...defaultTestProps} state={mockState} />, mockState);
     
-    expect(screen.getByTestId('main-game-area')).toBeInTheDocument();
+    // Check that the component renders its container
+    // Check that the component renders its container
+    expect(screen.getByTestId('main-game-area-container')).toBeInTheDocument();
+    
+    // Check that NarrativeWithDecisions received the correct narrative prop including the player action
+    expect(MockNarrativeWithDecisions).toHaveBeenCalled();
+    const narrativeProp = MockNarrativeWithDecisions.mock.calls[0][0].narrative;
+    expect(narrativeProp).toContain('This is the narrative from state.');
+    expect(narrativeProp).toContain('Player: Do something'); // Verify player action is included
+    expect(narrativeProp).toContain('Second line of narrative.');
+    
+    // Check that the narrative is joined correctly (using the double newline from the fix)
+    expect(narrativeProp).toBe('This is the narrative from state.\n\nPlayer: Do something\n\nSecond line of narrative.');
+    
     expect(GameStorage.getNarrativeText).not.toHaveBeenCalled(); // Should not use fallback
   });
   
@@ -68,9 +97,9 @@ describe('MainGameArea Component', () => {
       narrative: null as unknown as typeof initialState.narrative
     };
     
-    gameStateUtils.renderWithGameProvider(<MainGameArea />, mockState);
+    gameStateUtils.renderWithGameProvider(<MainGameArea {...defaultTestProps} state={mockState} />, mockState);
     
-    expect(screen.getByTestId('main-game-area')).toBeInTheDocument();
+    expect(screen.getByTestId('main-game-area-container')).toBeInTheDocument();
   });
   
   test('renders with default narrative when all sources fail', () => {
@@ -82,19 +111,22 @@ describe('MainGameArea Component', () => {
     // Override the GameStorage mock to return empty string
     (GameStorage.getNarrativeText as jest.Mock).mockReturnValue('');
     
-    gameStateUtils.renderWithGameProvider(<MainGameArea />, mockState);
+    gameStateUtils.renderWithGameProvider(<MainGameArea {...defaultTestProps} state={mockState} />, mockState);
     
-    expect(screen.getByTestId('main-game-area')).toBeInTheDocument();
+    expect(screen.getByTestId('main-game-area-container')).toBeInTheDocument();
   });
   
   test('renders initialize new game button when state is null', () => {
-    const providerState: GameState = {
-      ...initialState,
-      character: null
-    };
+    // Test rendering when state is null (should show loading/recovery)
+    // Note: MainGameArea itself handles null state internally now
+    // Pass undefined to the provider to simulate no initial state override
+    gameStateUtils.renderWithGameProvider(<MainGameArea {...defaultTestProps} state={initialState} />, undefined);
+    // Note: MainGameArea receives initialState here, but the test setup simulates the provider starting empty.
+    // If MainGameArea truly needs to handle receiving null/undefined state prop, its type definition needs update.
+    // For now, we test the provider starting empty.
     
-    gameStateUtils.renderWithGameProvider(<MainGameArea />, providerState);
-    
-    expect(screen.getByTestId('main-game-area')).toBeInTheDocument();
+    // Check for the loading state or recovery options container
+    expect(screen.getByTestId('main-game-area-container')).toBeInTheDocument();
+    // Further assertions could check for specific loading text or recovery buttons if needed
   });
 });

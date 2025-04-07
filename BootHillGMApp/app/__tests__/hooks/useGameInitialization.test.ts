@@ -93,8 +93,8 @@ describe('useGameInitialization Hook', () => {
      // Verify the total number of dispatch calls matches expectations
      // Adjust count based on exact dispatch calls in the hook (SET_STATE, SET_CHARACTER x2, SET_INVENTORY, ADD_ITEM xN, ADD_ENTRY, SET_SUGGESTED_ACTIONS)
      // Example: If 1 item in default inventory -> 1 SET_INVENTORY + 1 ADD_ITEM = 2 inventory calls
-     // Total = 1(SET_STATE) + 2(SET_CHAR) + 2(INV) + 1(JOURNAL) + 1(ACTIONS) = 7
-     expect(mockDispatch).toHaveBeenCalledTimes(7); // Adjust this count precisely
+     // Total = 1(SET_STATE) + 2(SET_CHAR) + 2(INV) + 1(JOURNAL) + 1(ACTIONS) + 1(NARRATIVE_HISTORY) = 8
+     expect(mockDispatch).toHaveBeenCalledTimes(8); // Updated count due to added ADD_NARRATIVE_HISTORY dispatch
   });
 
   it('should load from localStorage and NOT call AI services if saved state exists', async () => {

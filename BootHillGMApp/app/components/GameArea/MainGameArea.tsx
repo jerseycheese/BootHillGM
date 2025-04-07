@@ -25,27 +25,28 @@ export function MainGameArea({
 }: GameSessionProps) {
   // Get narrative text with proper memoization - always call useMemo
   const narrativeToDisplay = useMemo(() => {
-    // Check the correct state path: state.journal.entries
-    if (!state?.journal?.entries || !Array.isArray(state.journal.entries) || state.journal.entries.length === 0) {
-      return ''; // Return empty if journal entries aren't ready or empty
+    // Check if narrative history exists and is an array
+    if (!state?.narrative?.narrativeHistory || !Array.isArray(state.narrative.narrativeHistory)) {
+      return ''; // Return empty if narrative history isn't ready or not an array
     }
     
-    // Read from the correct state path: state.journal.entries
-    const history = state.journal.entries as Array<{ content?: string }>;
+    // Read from the correct state path: state.narrative.narrativeHistory
+    const history = state.narrative.narrativeHistory as string[]; // History is now an array of strings
     let calculatedNarrative = ''; // Initialize variable
 
-    if (history && Array.isArray(history) && history.length > 0) {
-      // Filter for entries with content and join them
+    if (history.length > 0) {
+      // Join the narrative history strings
+      // Add styling for player actions if needed (future enhancement)
+      // For now, just join them. Add logic here to differentiate player actions later.
       calculatedNarrative = history
-        .map(entry => entry?.content || '') // Extract content, default to empty string if missing
-        .filter(content => content) // Remove empty strings
-        .join('\n'); // Join with single newline for separation to match test mock
+        .filter(entry => typeof entry === 'string' && entry.trim() !== '') // Ensure entries are non-empty strings
+        .join('\n\n'); // Join with double newline for better separation
     } else {
       calculatedNarrative = ''; // Explicitly set to empty if no history
     }
 
     return calculatedNarrative; // Return the calculated value
-  }, [state]); // Revert dependency to [state] for testing stability
+  }, [state?.narrative?.narrativeHistory]); // Depend on narrativeHistory specifically
   
   // If the game is initializing, show a loading state
   if (isLoading) {
@@ -93,7 +94,6 @@ export function MainGameArea({
           narrative={narrativeToDisplay}
           error={error}
           onRetry={retryLastAction}
-          className="flex-1"
         />
         <GameplayControls
           id="bhgmGameplayControls"

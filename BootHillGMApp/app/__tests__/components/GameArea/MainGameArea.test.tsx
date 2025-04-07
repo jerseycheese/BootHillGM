@@ -123,16 +123,39 @@ describe('MainGameArea', () => {
     jest.clearAllMocks();
   });
 
+
+  it('constructs narrative prop from narrativeHistory', () => {
+    const historyState: GameState = {
+      ...mockState,
+      narrative: {
+        ...mockState.narrative,
+        narrativeHistory: [
+          'Initial Narrative Line.',
+          'Player: Test Action',
+          'AI Response Line.'
+        ]
+      }
+    };
+    const props = { ...defaultProps, state: historyState };
+
+    renderWithNarrativeProvider(<MainGameArea {...props} />);
+
+    // Get the mock component instance
+    // Get the mock component instance (variable removed as it's unused)
+    // const mockNarrativeInstance = screen.getByTestId('mock-narrative-with-decisions');
+    // Find the element holding the narrative prop within the mock
+    const narrativePropElement = screen.getByTestId('narrative-prop'); 
+
+    // Check the text content of the element holding the prop
+    // It should be the joined string from narrativeHistory
+    expect(narrativePropElement).toHaveTextContent('Initial Narrative Line.\n\nPlayer: Test Action\n\nAI Response Line.');
+  });
+
   it('renders the MainGameArea with NarrativeWithDecisions', () => {
     renderWithNarrativeProvider(<MainGameArea {...defaultProps} />);
     
     // Check if NarrativeWithDecisions is rendered
     expect(screen.getByTestId('mock-narrative-with-decisions')).toBeInTheDocument();
-    
-    // Check for each line separately instead of expecting newlines in content
-    expect(screen.getByTestId('narrative-prop')).toHaveTextContent('Line 1');
-    expect(screen.getByTestId('narrative-prop')).toHaveTextContent('Line 2');
-    expect(screen.getByTestId('narrative-prop')).toHaveTextContent('Line 3');
     
     // Check if GameplayControls is rendered
     expect(screen.getByTestId('mock-gameplay-controls')).toBeInTheDocument();

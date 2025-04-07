@@ -18,7 +18,7 @@ import { SuggestedAction } from '../types/campaign'; // Import SuggestedAction t
  */
 export function useGameInitialization() {
   // Get state and dispatch from the game state context
-  const { state: _state, dispatch } = useGameState(); // Use _state to indicate it's unused for now
+  const { dispatch } = useGameState(); // state is not directly used in this hook
   const [isInitializing, setIsInitializing] = useState(true);
   const [isClient, setIsClient] = useState(false);
 
@@ -113,6 +113,11 @@ export function useGameInitialization() {
                 type: 'journal/ADD_ENTRY',
                 payload: initialNarrativeEntry
               });
+              // ALSO add the narrative content to the history for display
+              dispatch({
+                type: 'ADD_NARRATIVE_HISTORY',
+                payload: initialAIResponse.narrative
+              });
             } else {
                console.warn("AI response missing narrative content.");
             }
@@ -135,7 +140,7 @@ export function useGameInitialization() {
                console.warn("AI response missing suggested actions.");
             }
 
-          } catch (aiError) {
+          } catch {
             // console.error("Failed to get initial AI response:", aiError); // Keep error log for production issues
             // Fallback: Add a simple default narrative entry if AI fails
             const fallbackNarrativeEntry: NarrativeJournalEntry = {
@@ -149,10 +154,15 @@ export function useGameInitialization() {
             dispatch({
               type: 'journal/ADD_ENTRY',
               payload: fallbackNarrativeEntry
-            });
-             // Optionally dispatch default suggested actions as fallback?
-             // dispatch({ type: 'SET_SUGGESTED_ACTIONS', payload: [...] });
-          }
+          });
+          // ALSO add the fallback narrative content to the history for display
+          dispatch({
+            type: 'ADD_NARRATIVE_HISTORY',
+            payload: fallbackNarrativeEntry.content
+          });
+           // Optionally dispatch default suggested actions as fallback?
+           // dispatch({ type: 'SET_SUGGESTED_ACTIONS', payload: [...] });
+        }
           // --- End AI Generation ---
 
         } // End of else block (!savedState)
