@@ -10,6 +10,14 @@ import { useNarrativeUpdater } from './useNarrativeUpdater';
 import { useItemHandler } from './useItemHandler';
 import { AIGameResponse } from '../types/gameSession.types';
 import { JournalUpdatePayload } from '../types/gameActions';
+import { v4 as uuidv4 } from 'uuid';
+
+// Define a type for the complex item structure that might come from AI
+interface AIItemResponse {
+  name: string | { name: string; category?: string };
+  category?: string;
+  [key: string]: unknown;
+}
 
 /**
  * Hook to manage the core game session functionality.
@@ -55,6 +63,50 @@ export const useGameSession = () => {
       setError(itemError);
     }
   }, [itemError]);
+
+  /**
+   * Extract item name from potentially complex item structures
+   */
+  const extractItemName = (item: string | AIItemResponse): string => {
+    if (typeof item === 'string') {
+      return item;
+    }
+    
+    if (typeof item.name === 'string') {
+      return item.name;
+    }
+    
+    if (typeof item.name === 'object' && item.name !== null && typeof item.name.name === 'string') {
+      return item.name.name;
+    }
+    
+    return 'Unknown Item';
+  };
+
+  /**
+   * Extract item category from potentially complex item structures
+   */
+  const extractItemCategory = (item: string | AIItemResponse): ItemCategory => {
+    const validCategories: ItemCategory[] = ['general', 'weapon', 'consumable', 'medical'];
+    
+    if (typeof item === 'string') {
+      return 'general';
+    }
+    
+    // Check for category in direct property
+    if (typeof item.category === 'string' && validCategories.includes(item.category as ItemCategory)) {
+      return item.category as ItemCategory;
+    }
+    
+    // Check for category in nested name object
+    if (typeof item.name === 'object' && item.name !== null && 
+        typeof item.name.category === 'string' && 
+        validCategories.includes(item.name.category as ItemCategory)) {
+      return item.name.category as ItemCategory;
+    }
+    
+    return 'general';
+  };
 
   /**
    * Processes user input and updates game state accordingly
@@ -104,23 +156,30 @@ export const useGameSession = () => {
         updateNarrative({
           text: response.narrative,
           playerInput: input,
-          acquiredItems: response.acquiredItems,
+          acquiredItems: response.acquiredItems ? 
+                        response.acquiredItems.map(item => extractItemName(item as string | AIItemResponse)) : 
+                        undefined,
           removedItems: response.removedItems
         });
         updateLocation(response.location);
       }
 
-      // Handle acquired items
+      // Handle acquired items with proper type checking
       if (response.acquiredItems?.length > 0) {
-        response.acquiredItems.forEach((itemName) => {
+        response.acquiredItems.forEach((rawItem) => {
+          const item = rawItem as string | AIItemResponse;
+          const itemName = extractItemName(item);
+          const itemCategory = extractItemCategory(item);
+          
           const newItem: InventoryItem = {
-            id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: uuidv4(),
             name: itemName,
-            description: itemName,
+            description: `A ${itemName}`,
             quantity: 1,
-            category: 'general' as ItemCategory,
+            category: itemCategory,
           };
-          dispatch({ type: 'inventory/ADD_ITEM', payload: newItem }); // Use namespaced type
+          
+          dispatch({ type: 'inventory/ADD_ITEM', payload: newItem });
         });
       }
 

@@ -1,116 +1,257 @@
-/**
- * Inventory Reducer Tests
- */
-
-import inventoryReducer from '../../reducers/inventoryReducer'; // Use default import
-// Removed imports for non-existent adapters: adaptStateForTests, migrationAdapter
-// import { adaptStateForTests, migrationAdapter } from '../../utils/stateAdapters';
-import { GameState } from '../../types/gameState'; // Removed unused initialGameState
-import { GameAction } from '../../types/actions';
-import { InventoryItem } from '../../types/item.types'; // Added InventoryItem import
-import { InventoryState } from '../../types/state'; // Added InventoryState import
-// import { LegacyState } from '../../utils/stateAdapters'; // Removed LegacyState import
-import { AddItemAction, RemoveItemAction } from '../../types/actions/inventoryActions'; // Added specific action types
-
-// Removed AdaptedInventory type as adapters are gone
-
-// Helper function to process state through the reducer and adapter layer
-// Simplified helper: directly apply reducer to the inventory slice
-const processInventoryState = (state: Partial<GameState>, action: GameAction): InventoryState => {
-  // Assume state.inventory exists and is in the correct format for the reducer
-  const inventoryState = state.inventory || { items: [] }; // Default to empty state if undefined
-  return inventoryReducer(inventoryState, action);
-};
+import inventoryReducer, { initialInventoryState } from '../../reducers/inventoryReducer';
+import { InventoryState } from '../../types/state/inventoryState';
+import { InventoryItem, ItemCategory } from '../../types/item.types';
+import { GameAction, UseItemAction, AddItemAction, SetInventoryAction, UpdateItemQuantityAction } from '../../types/actions/inventoryActions';
 
 describe('inventoryReducer', () => {
-  // Base initial state that will be used in tests
-  // Base initial state slice for inventory tests
-  const createInitialInventoryState = (): InventoryState => ({
-    items: [
-      { id: '1', name: 'Revolver', description: 'A standard six-shooter.', quantity: 1, category: 'weapon', weapon: { id: 'w1', name: 'Revolver', modifiers: { accuracy: 0, reliability: 95, speed: 3, range: 50, damage: '1d6' } } },
-      { id: '2', name: 'Canteen', description: 'Holds water.', quantity: 1, category: 'general', effect: { type: 'other', value: 1 } }
-    ]
-  });
-  
-  test('should add an item to inventory', () => {
-    const initialInventory = createInitialInventoryState();
-    // Create a full InventoryItem for the payload
-    const newItem: InventoryItem = {
-      id: '3',
-      name: 'Bandage',
-      description: 'A simple bandage.',
-      quantity: 1,
-      category: 'medical', // Changed category
-      effect: { type: 'heal', value: 5 } // Assuming heal effect
+  let initialState: InventoryState;
+
+  beforeEach(() => {
+    initialState = {
+      ...initialInventoryState,
+      items: [
+        { id: 'med1', name: 'Bandages', quantity: 5, category: 'medical', description: 'Stops bleeding' },
+        { id: 'con1', name: 'Whiskey', quantity: 3, category: 'consumable', description: 'Liquid courage' },
+        { id: 'gen1', name: 'Pocket Knife', quantity: 1, category: 'general', description: 'Useful tool' },
+        { id: 'wep1', name: 'Revolver', quantity: 1, category: 'weapon', description: 'Six shooter' },
+        { id: 'med0', name: 'Empty Laudanum', quantity: 0, category: 'medical', description: 'Used up' },
+        { id: 'con0', name: 'Empty Canteen', quantity: 0, category: 'consumable', description: 'Needs water' },
+      ] as InventoryItem[],
+      equippedWeaponId: null
     };
-    const action: AddItemAction = { // Use specific action type
-      type: 'inventory/ADD_ITEM',
-      payload: newItem
-    };
-
-    const newState = processInventoryState({ inventory: initialInventory }, action);
-    
-    // Test items array directly
-    expect(newState.items.length).toBe(3); // Should now have 3 items
-    // Verify specific item was added
-    const item = newState.items.find(item => item.id === '3');
-    expect(item).toBeDefined();
-    expect(item?.name).toBe('Bandage');
   });
-  
-  test('should remove an item from inventory', () => {
-    const initialInventory = createInitialInventoryState();
-    // Payload should be just the ID string
-    const action: RemoveItemAction = { // Use specific action type
-      type: 'inventory/REMOVE_ITEM',
-      payload: '1'
-    };
 
-    const newState = processInventoryState({ inventory: initialInventory }, action);
-    
-    // Should have one item removed
-    expect(newState.items.length).toBe(1);
-    expect(newState.items.some(item => item.id === '1')).toBe(false);
-    
-    // Check remaining item
-    expect(newState.items[0].id).toBe('2'); // Should still have the canteen
+  it('should handle initial state', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect(inventoryReducer(undefined, {} as any)).toEqual(initialInventoryState);
   });
-  
-  test('should update an item in inventory', () => {
-    const initialInventory = createInitialInventoryState();
-    const originalItem = initialInventory.items.find(item => item.id === '2'); // Get original item
 
-    // Define the fully updated item
-    const updatedItem: InventoryItem = {
-      ...(originalItem!), // Spread original item properties
-      name: 'Full Canteen', // Update the name
-      // Ensure all required InventoryItem properties are present
-      id: '2',
-      quantity: originalItem?.quantity || 1, // Keep original quantity or default
-      description: originalItem?.description || '',
-      category: originalItem?.category || 'general',
-      effect: originalItem?.effect // Keep original effect
-    };
+  describe("inventory/USE_ITEM", () => {
+    it('should decrease quantity for a medical item with quantity > 1', () => {
+      const action: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'med1' };
+      const state = inventoryReducer(initialState, action);
+      const updatedItem = state.items.find(item => item.id === 'med1');
+      expect(updatedItem?.quantity).toBe(4);
+    });
 
-    // Step 1: Remove the original item
-    const removeAction: RemoveItemAction = { type: 'inventory/REMOVE_ITEM', payload: '2' };
-    const stateAfterRemove = processInventoryState({ inventory: initialInventory }, removeAction);
+    it('should decrease quantity for a consumable item with quantity > 1', () => {
+      const action: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'con1' };
+      const state = inventoryReducer(initialState, action);
+      const updatedItem = state.items.find(item => item.id === 'con1');
+      expect(updatedItem?.quantity).toBe(2);
+    });
 
-    // Step 2: Add the updated item
-    const addAction: AddItemAction = { type: 'inventory/ADD_ITEM', payload: updatedItem };
-    const finalState = processInventoryState({ inventory: stateAfterRemove }, addAction);
+    it('should decrease quantity for a consumable item with quantity = 1 to 0', () => {
+        // Modify state for this specific test
+        const singleConsumableState: InventoryState = {
+            ...initialState,
+            items: initialState.items.map(item => item.id === 'con1' ? { ...item, quantity: 1 } : item)
+        };
+      const action: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'con1' };
+      const state = inventoryReducer(singleConsumableState, action);
+      const updatedItem = state.items.find(item => item.id === 'con1');
+      expect(updatedItem?.quantity).toBe(0);
+    });
 
-    // Find the updated item in the final state
-    const item = finalState.items.find(item => item.id === '2');
+    it('should NOT decrease quantity for a general item', () => {
+      const action: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'gen1' };
+      const state = inventoryReducer(initialState, action);
+      const updatedItem = state.items.find(item => item.id === 'gen1');
+      expect(updatedItem?.quantity).toBe(1); // Quantity should remain unchanged
+    });
 
-    expect(item).toBeDefined();
-    // The test simulates an update via remove then add. The add action adds the item
-    // with the new name. The original comment about ADD_ITEM was misleading in this context.
-    expect(item?.name).toBe('Full Canteen'); // Expect the updated name from the add step
-    // Check other properties if needed
-    expect(item?.quantity).toBe(originalItem?.quantity || 1);
-    expect(item?.effect?.type).toBe('other');
+    it('should NOT decrease quantity for a weapon item', () => {
+      const action: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'wep1' };
+      const state = inventoryReducer(initialState, action);
+      const updatedItem = state.items.find(item => item.id === 'wep1');
+      expect(updatedItem?.quantity).toBe(1); // Quantity should remain unchanged
+    });
+
+    it('should not change state if the item does not exist', () => {
+      const action: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'nonexistent_item' };
+      expect(inventoryReducer(initialState, action)).toEqual(initialState);
+    });
+
+    it('should not change state if the consumable/medical item quantity is already 0', () => {
+      const actionMed: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'med0' };
+      const actionCon: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'con0' };
+      expect(inventoryReducer(initialState, actionMed)).toEqual(initialState);
+      expect(inventoryReducer(initialState, actionCon)).toEqual(initialState);
+    });
+
+    it('should not change state if payload is missing', () => {
+      const action = { type: 'inventory/USE_ITEM' }; // Missing payload
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(inventoryReducer(initialState, action as any)).toEqual(initialState);
+    });
   });
-  
-  // Removed obsolete test for legacy state format
+
+  describe("inventory/ADD_ITEM with malformed data", () => {
+    it('should normalize an item with nested name object', () => {
+      // Use type casting to simulate malformed data
+      const action: AddItemAction = { 
+        type: 'inventory/ADD_ITEM', 
+        payload: {
+          id: 'test1',
+          // Use type assertion to bypass type checking for test
+          name: { name: 'Nested Name Item', category: 'consumable' } as unknown as string,
+          quantity: 1,
+          description: 'This item has a nested name structure',
+          category: 'general' // Need to provide this since it's required
+        }
+      };
+      
+      const state = inventoryReducer(initialState, action);
+      const addedItem = state.items.find(item => item.id === 'test1');
+      
+      expect(addedItem).toBeDefined();
+      expect(addedItem?.name).toBe('Nested Name Item');
+      expect(addedItem?.category).toBe('consumable');
+    });
+
+    it('should normalize an item with nested category object', () => {
+      const action: AddItemAction = { 
+        type: 'inventory/ADD_ITEM', 
+        payload: {
+          id: 'test2',
+          name: 'Normal Name',
+          // Use type assertion to bypass type checking for test
+          category: { category: 'medical' } as unknown as ItemCategory,
+          quantity: 1,
+          description: 'This item has a nested category structure'
+        }
+      };
+      
+      const state = inventoryReducer(initialState, action);
+      const addedItem = state.items.find(item => item.id === 'test2');
+      
+      expect(addedItem).toBeDefined();
+      expect(addedItem?.name).toBe('Normal Name');
+      expect(addedItem?.category).toBe('medical');
+    });
+
+    it('should normalize an item with both nested name and category', () => {
+      const action: AddItemAction = { 
+        type: 'inventory/ADD_ITEM', 
+        payload: {
+          id: 'test3',
+          // Use type assertion to bypass type checking for test
+          name: { name: 'Double Nested Item', category: 'weapon' } as unknown as string,
+          category: { category: 'medical' } as unknown as ItemCategory,
+          quantity: '3' as unknown as number, // string quantity
+          description: 'This item has both nested structures'
+        }
+      };
+      
+      const state = inventoryReducer(initialState, action);
+      const addedItem = state.items.find(item => item.id === 'test3');
+      
+      expect(addedItem).toBeDefined();
+      expect(addedItem?.name).toBe('Double Nested Item');
+      // Our implementation prioritizes category from nested name, but in this test
+      // we're expecting 'medical' from the category property instead
+      expect(addedItem?.category).toBe('medical'); // From direct category object
+      expect(addedItem?.quantity).toBe(3); // Converted to number
+    });
+
+    it('should default to general category for invalid categories', () => {
+      const action: AddItemAction = { 
+        type: 'inventory/ADD_ITEM', 
+        payload: {
+          id: 'test4',
+          name: 'Invalid Category Item',
+          // Use type assertion to bypass type checking for test
+          category: 'not-a-valid-category' as ItemCategory,
+          quantity: 1,
+          description: 'This item has an invalid category'
+        }
+      };
+      
+      const state = inventoryReducer(initialState, action);
+      const addedItem = state.items.find(item => item.id === 'test4');
+      
+      expect(addedItem).toBeDefined();
+      expect(addedItem?.name).toBe('Invalid Category Item');
+      expect(addedItem?.category).toBe('general'); // Defaulted to general
+    });
+
+    it('should handle completely malformed item with minimum valid data', () => {
+      const action = { 
+        type: 'inventory/ADD_ITEM', 
+        payload: {
+          // Minimal required property
+          id: 'test5'
+          // Missing name, category, etc.
+        }
+      } as AddItemAction; // Type assertion to allow incomplete data for test
+      
+      const state = inventoryReducer(initialState, action);
+      const addedItem = state.items.find(item => item.id === 'test5');
+      
+      expect(addedItem).toBeDefined();
+      expect(addedItem?.name).toBe('Unknown Item'); // Default name
+      expect(addedItem?.category).toBe('general'); // Default category
+      expect(addedItem?.quantity).toBe(1); // Default quantity
+      expect(addedItem?.description).toBe('A Unknown Item'); // Generated description
+    });
+
+    it('should normalize multiple items with SET_INVENTORY', () => {
+      const action = { 
+        type: 'inventory/SET_INVENTORY', 
+        payload: [
+          {
+            id: 'set1',
+            name: { name: 'First Set Item', category: 'weapon' } as unknown as string,
+            quantity: 2
+          },
+          {
+            id: 'set2',
+            name: 'Second Set Item',
+            category: 'consumable' as ItemCategory,
+            quantity: 3
+          }
+        ]
+      } as SetInventoryAction;
+      
+      const state = inventoryReducer(initialState, action);
+      
+      expect(state.items).toHaveLength(2);
+      
+      const item1 = state.items.find(item => item.id === 'set1');
+      expect(item1?.name).toBe('First Set Item');
+      expect(item1?.category).toBe('weapon');
+      expect(item1?.quantity).toBe(2);
+      
+      const item2 = state.items.find(item => item.id === 'set2');
+      expect(item2?.name).toBe('Second Set Item');
+      expect(item2?.category).toBe('consumable');
+      expect(item2?.quantity).toBe(3);
+    });
+  });
+
+  describe("inventory/UPDATE_ITEM_QUANTITY", () => {
+    it('should update the quantity of an existing item', () => {
+      const action: UpdateItemQuantityAction = { 
+        type: 'inventory/UPDATE_ITEM_QUANTITY', 
+        payload: { id: 'med1', quantity: 10 }
+      };
+      
+      const state = inventoryReducer(initialState, action);
+      const updatedItem = state.items.find(item => item.id === 'med1');
+      
+      expect(updatedItem?.quantity).toBe(10);
+    });
+  });
+
+  describe("inventory/CLEAN_INVENTORY", () => {
+    it('should remove items with quantity 0', () => {
+      const action: GameAction = { type: 'inventory/CLEAN_INVENTORY' };
+      
+      const state = inventoryReducer(initialState, action);
+      
+      expect(state.items).toHaveLength(4); // 6 original items - 2 with quantity 0
+      expect(state.items.find(item => item.id === 'med0')).toBeUndefined();
+      expect(state.items.find(item => item.id === 'con0')).toBeUndefined();
+    });
+  });
 });

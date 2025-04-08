@@ -5,7 +5,7 @@ import { useGameSession } from '../hooks/useGameSession';
 import { useAIWithOptimizedContext } from '../utils/narrative';
 import { AIRequestResult } from '../types/ai.types';
 import { LocationType } from '../services/locationService';
-import { InventoryItem } from '../types/item.types';
+import { InventoryItem, ItemCategory } from '../types/item.types'; // Import ItemCategory
 import { Character } from '../types/character';
 import { JournalUpdatePayload } from '../types/gameActions';
 import { v4 as uuidv4 } from 'uuid';
@@ -156,16 +156,50 @@ export default function GamePromptWithOptimizedContext() {
     }
     
     if (response.acquiredItems && response.acquiredItems.length > 0) {
-      response.acquiredItems.forEach((itemName: string) => {
+      // Handle potentially nested acquiredItems structure using type guards
+      response.acquiredItems.forEach((acquiredItemData: unknown) => {
+        let itemName: string | undefined;
+        let itemCategory: ItemCategory | undefined;
+        const validCategories: ItemCategory[] = ['general', 'weapon', 'consumable', 'medical'];
+
+        // Type guard for expected structure: { name: string; category?: ItemCategory }
+        if (typeof acquiredItemData === 'object' && acquiredItemData !== null && 'name' in acquiredItemData && typeof acquiredItemData.name === 'string') {
+          itemName = acquiredItemData.name;
+          if ('category' in acquiredItemData && typeof acquiredItemData.category === 'string' && validCategories.includes(acquiredItemData.category as ItemCategory)) {
+            itemCategory = acquiredItemData.category as ItemCategory;
+          }
+        }
+        // Type guard for observed nested structure: { name: { name: string; category: string }; ... }
+        else if (typeof acquiredItemData === 'object' && acquiredItemData !== null && 'name' in acquiredItemData && typeof acquiredItemData.name === 'object' && acquiredItemData.name !== null && 'name' in acquiredItemData.name && typeof acquiredItemData.name.name === 'string') {
+          itemName = acquiredItemData.name.name;
+          if ('category' in acquiredItemData.name && typeof acquiredItemData.name.category === 'string' && validCategories.includes(acquiredItemData.name.category as ItemCategory)) {
+            itemCategory = acquiredItemData.name.category as ItemCategory;
+          }
+        }
+        // Type guard for string fallback (old format)
+        else if (typeof acquiredItemData === 'string') {
+          itemName = acquiredItemData;
+          itemCategory = undefined; // No category info from string
+        }
+
+        // If we couldn't extract a valid name, skip this item
+        if (typeof itemName !== 'string') {
+          console.warn('[GamePrompt] Could not extract valid item name from acquiredItem structure:', acquiredItemData);
+          return;
+        }
+
+        // Default category if not found/invalid
+        const category = itemCategory ?? 'general';
+
         const inventoryItem: InventoryItem = {
-          id: uuidv4(), 
+          id: uuidv4(),
           name: itemName,
           quantity: 1,
           description: `A ${itemName}`,
-          category: 'general'
+          category: category
         };
-        
-        dispatch({ 
+
+        dispatch({
           type: 'inventory/ADD_ITEM', // Use namespaced type
           payload: inventoryItem
         });

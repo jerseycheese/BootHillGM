@@ -101,10 +101,7 @@ export const useGameSession = (): { isInitializing: boolean; isClient: boolean }
         // Handle errors gracefully with fallback suggestions
         console.error("Error initializing game session:", error);
         return handleErrorRecovery(state);
-      } // REMOVED finally block that set isInitializing false too early
-      // finally {
-      //   setIsInitializing(false);
-      // }
+      }
     },
     [
       state,
@@ -150,27 +147,23 @@ export const useGameSession = (): { isInitializing: boolean; isClient: boolean }
           lastSavedTimestampRef.current = initializedState.savedTimestamp;
           hasInitializedRef.current = true;
 
-          // REMOVED requestAnimationFrame wrapper to attempt more synchronous update
-          // requestAnimationFrame(() => {
-            try {
-              // We know initializedState is a proper GameState at this point
-              // Removed log
-              dispatch({ type: 'SET_STATE', payload: initializedState });
+          try {
+            // We know initializedState is a proper GameState at this point
+            dispatch({ type: 'SET_STATE', payload: initializedState });
 
-              // Add safety check before saving
-              if (saveGame) {
-                saveGame(initializedState);
-              }
-              // Set initializing false AFTER dispatch and save
-              setIsInitializing(false);
-            } catch (dispatchError) {
-              console.error("Error dispatching initialized state:", dispatchError);
-              setIsInitializing(false); // Also set false on error
-            } finally {
-              // Ensure initProcessingRef is set regardless of rAF
-              initProcessingRef.current = false;
+            // Add safety check before saving
+            if (saveGame) {
+              saveGame(initializedState);
             }
-          // }); // End of removed rAF
+            // Set initializing false AFTER dispatch and save
+            setIsInitializing(false);
+          } catch (dispatchError) {
+            console.error("Error dispatching initialized state:", dispatchError);
+            setIsInitializing(false); // Also set false on error
+          } finally {
+            // Ensure initProcessingRef is set regardless
+            initProcessingRef.current = false;
+          }
         } else {
           console.error("Game initialization failed - no state returned");
           initProcessingRef.current = false;

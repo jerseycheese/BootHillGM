@@ -7,7 +7,7 @@
 
 import { getAIResponse as originalGetAIResponse } from './gameService';
 import { getOptimizedContextForAI } from '../../utils/narrative';
-import { InventoryItem } from '../../types/item.types';
+import { InventoryItem, ItemCategory } from '../../types/item.types';
 import { NarrativeContext, StoryProgressionData, PlayerDecision, NarrativeState, initialNarrativeState } from '../../types/narrative.types';
 import { Character } from '../../types/character';
 import { LocationType } from '../locationService';
@@ -18,14 +18,23 @@ import { NarrativeContextDebugTools } from '../../types/global.d';
 let isPatchApplied = false;
 
 /**
- * Type alias matching the return type of the original getAIResponse function
+ * Type for complex item objects that might be in the AI response
+ */
+interface AIItemResponse {
+  name: string;
+  category?: ItemCategory;
+  [key: string]: unknown;
+}
+
+/**
+ * Updated type alias matching the return type that includes complex item structures
  */
 type AIResponseResult = {
   narrative: string;
   location: LocationType;
   combatInitiated?: boolean;
   opponent?: Character | null;
-  acquiredItems: string[];
+  acquiredItems: (string | AIItemResponse)[];
   removedItems: string[];
   suggestedActions: SuggestedAction[];
   storyProgression?: StoryProgressionData;
@@ -84,26 +93,32 @@ export const optimizedGetAIResponse = async function(
     }
     
     // Call original method with optimized context
-    return originalGetAIResponse({
+    const response = await originalGetAIResponse({
       prompt,
       journalContext: optimizedContext, // Replace journal context with optimized context
       inventory,
       storyProgressionContext,
       narrativeContext
     });
+    
+    // Convert response to expected AIResponseResult type
+    return response as unknown as AIResponseResult;
   } catch (error) {
     // If optimization fails, fall back to original implementation with warning
     if (process.env.NODE_ENV !== 'production') {
       console.warn('Context optimization failed, falling back to original context:', error);
     }
     
-    return originalGetAIResponse({
+    const response = await originalGetAIResponse({
       prompt,
       journalContext,
       inventory,
       storyProgressionContext,
       narrativeContext
     });
+    
+    // Convert response to expected AIResponseResult type
+    return response as unknown as AIResponseResult;
   }
 };
 
@@ -118,9 +133,18 @@ export const getAIResponse = (
   narrativeContext?: NarrativeContext
 ): Promise<AIResponseResult> => {
   // If patch is applied, use optimized version, otherwise use original
-  return isPatchApplied 
-    ? optimizedGetAIResponse(prompt, journalContext, inventory, storyProgressionContext, narrativeContext)
-    : originalGetAIResponse({ prompt, journalContext, inventory, storyProgressionContext, narrativeContext });
+  if (isPatchApplied) {
+    return optimizedGetAIResponse(prompt, journalContext, inventory, storyProgressionContext, narrativeContext);
+  } else {
+    const response = originalGetAIResponse({ 
+      prompt, 
+      journalContext, 
+      inventory, 
+      storyProgressionContext, 
+      narrativeContext 
+    });
+    return response as unknown as Promise<AIResponseResult>;
+  }
 };
 
 /**

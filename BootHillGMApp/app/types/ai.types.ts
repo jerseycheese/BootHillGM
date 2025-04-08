@@ -10,6 +10,7 @@ import { NarrativeContext } from './narrative.types';
 import { Character } from './character'; 
 import { SuggestedAction } from './campaign'; 
 import { StoryProgressionData, PlayerDecision } from './narrative.types';
+import { ItemCategory } from './item.types'; // Import ItemCategory
 
 /**
  * Opponent information in an AI response
@@ -39,7 +40,7 @@ export interface AIResponseRaw {
   location: LocationType;
   combatInitiated?: boolean;
   opponent?: Character | null; 
-  acquiredItems: string[];
+  acquiredItems: { name: string; category?: ItemCategory }[]; // Match GameServiceResponse
   removedItems: string[];
   suggestedActions: SuggestedAction[];
   storyProgression?: StoryProgressionData;
@@ -95,7 +96,7 @@ export interface AIRequestResult extends Omit<AIResponseRaw, 'opponent' | 'narra
     buildTimeMs: number;
   };
 
-  acquiredItems: string[]; 
+  acquiredItems: { name: string; category?: ItemCategory }[]; // Match GameServiceResponse and AIResponseRaw change
   removedItems: string[];
   suggestedActions: SuggestedAction[];
   storyProgression?: StoryProgressionData; 

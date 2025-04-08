@@ -151,7 +151,14 @@ const getDefaultInventoryItems = (): InventoryItem[] => {
       description: "A small pouch of gold coins",
       quantity: 25,
       category: "general" // Changed from "currency"
-    }
+    }, // Add comma after the last existing item
+    {
+      id: `item-${timestamp}-7`,
+      name: "Hardtack Biscuit",
+      description: "A very hard, dry biscuit. Lasts forever.",
+      quantity: 3,
+      category: "consumable"
+    } // New item added here
   ];
 };
 

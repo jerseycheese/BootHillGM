@@ -8,6 +8,7 @@ import {
   NarrativeContext,
   LoreStore
 } from '../../../types/narrative.types';
+import { ItemCategory } from '../../../types/item.types'; // Import ItemCategory
 
 /**
  * Defines the structure for AI Game Service response
@@ -30,7 +31,7 @@ export interface GameServiceResponse {
   opponent?: Character | null;
   
   /** Items acquired during this interaction */
-  acquiredItems: string[];
+  acquiredItems: { name: string; category?: ItemCategory }[]; // Changed to array of objects
   
   /** Items removed from inventory during this interaction */
   removedItems: string[];
@@ -107,7 +108,7 @@ export interface FallbackResponse {
   opponent: null;
   
   /** Empty in fallback responses */
-  acquiredItems: string[];
+  acquiredItems: { name: string; category?: ItemCategory }[]; // Match the main interface change
   
   /** Empty in fallback responses */
   removedItems: string[];

@@ -17,9 +17,13 @@ function hasPayload<T>(action: GameAction): action is GameAction & { payload: T 
 }
 
 /**
- * Helper to ensure items are properly formatted
+ * Normalizes an item object to ensure it conforms to the InventoryItem interface
+ * Handles potentially complex or malformed item structures from AI responses
+ * 
+ * @param item - The item to normalize, potentially from an AI response
+ * @returns A properly formatted InventoryItem object
  */
-function ensureValidItem(item: unknown): InventoryItem {
+function normalizeItem(item: unknown): InventoryItem {
   if (!item || typeof item !== 'object') {
     return {
       id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -50,8 +54,6 @@ export function inventoryReducer(
   state: InventoryState = initialInventoryState,
   action: GameAction
 ): InventoryState {
-  // Debug log for inventory actions
-  
   const actionType = action.type as string;
   
   switch(actionType) {
@@ -61,7 +63,7 @@ export function inventoryReducer(
         return state;
       }
       
-      const newItem = ensureValidItem(action.payload);
+      const newItem = normalizeItem(action.payload);
       const existingItemIndex = state.items.findIndex(item => item.id === newItem.id);
       
       if (existingItemIndex >= 0) {
@@ -158,13 +160,13 @@ export function inventoryReducer(
       
       // Handle array of items
       if (Array.isArray(payload)) {
-        const items = payload.map(item => ensureValidItem(item));
+        const items = payload.map(item => normalizeItem(item));
         return { ...state, items };
       }
       
       // Handle object with items array
       if (payload && typeof payload === 'object' && 'items' in payload && Array.isArray(payload.items)) {
-        const items = payload.items.map(item => ensureValidItem(item));
+        const items = payload.items.map(item => normalizeItem(item));
         return { ...state, items };
       }
       
@@ -207,7 +209,7 @@ export function inventoryReducer(
       if (typeof inventory === 'object' && 'items' in inventory && Array.isArray(inventory.items)) {
         const typedInventory = inventory as unknown as InventoryState;
         return {
-          items: typedInventory.items.map(ensureValidItem),
+          items: typedInventory.items.map(normalizeItem),
           equippedWeaponId: typedInventory.equippedWeaponId || null
         };
       }
@@ -216,7 +218,7 @@ export function inventoryReducer(
       if (Array.isArray(inventory)) {
         return {
           ...state,
-          items: inventory.map(ensureValidItem)
+          items: inventory.map(normalizeItem)
         };
       }
       

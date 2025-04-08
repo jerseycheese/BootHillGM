@@ -14,29 +14,36 @@ import { generateActionFallbackEntry } from './fallback/fallbackJournalGenerator
 import { generateNarrativeSummary } from './ai/narrativeSummary';
 import { JournalEntry, NarrativeJournalEntry, JournalEntryType } from '../types/journal';
 import { ActionType, SuggestedAction } from '../types/campaign';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Creates a typed JournalEntry, ensuring the narrativeSummary is included if provided.
- *
- * @param content - The main content of the journal entry.
- * @param summary - The AI-generated or fallback summary.
- * @param type - The type of journal entry (defaults to 'narrative').
- * @returns A properly structured JournalEntry object.
+ * Type for complex item objects that might be in the AI response
  */
+interface AIItemResponse {
+  name: string;
+  category?: ItemCategory;
+  [key: string]: unknown;
+}
+
 /**
  * Creates a journal entry with a summary that won't be lost in state transitions
+ * 
+ * @param title - The title of the journal entry
+ * @param content - The main content of the journal entry
+ * @param summary - The AI-generated or fallback summary
+ * @param type - The type of journal entry (defaults to 'narrative')
+ * @returns A properly structured JournalEntry object
  */
-function createJournalEntry(title: string, content: string, summary: string, type: JournalEntryType = 'narrative'): JournalEntry { // Add title param
+function createJournalEntry(title: string, content: string, summary: string, type: JournalEntryType = 'narrative'): JournalEntry {
   // Create a unique ID that includes a timestamp for sorting
   const entryId = `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   
-  // Removed debug comment
   // Create typed entry based on the entry type
   if (type === 'narrative') {
     // For narrative entries, explicitly include the narrativeSummary field
     const narrativeEntry: NarrativeJournalEntry = {
       id: entryId,
-      title: title, // Use title param
+      title: title,
       timestamp: Date.now(),
       content: content,
       type: 'narrative',
@@ -44,7 +51,6 @@ function createJournalEntry(title: string, content: string, summary: string, typ
       narrativeSummary: summary || undefined
     };
     
-    // Removed debug comment
     return narrativeEntry;
   } else {
     // For other entry types, create a base entry
@@ -52,7 +58,7 @@ function createJournalEntry(title: string, content: string, summary: string, typ
     if (type === 'combat') {
       return {
         id: entryId,
-        title: title, // Use title param
+        title: title,
         timestamp: Date.now(),
         content: content,
         type: 'combat',
@@ -62,7 +68,7 @@ function createJournalEntry(title: string, content: string, summary: string, typ
     } else if (type === 'inventory') {
       return {
         id: entryId,
-        title: title, // Use title param
+        title: title,
         timestamp: Date.now(),
         content: content,
         type: 'inventory',
@@ -71,24 +77,64 @@ function createJournalEntry(title: string, content: string, summary: string, typ
     } else if (type === 'quest') {
       return {
         id: entryId,
-        title: title, // Use title param
+        title: title,
         timestamp: Date.now(),
         content: content,
         type: 'quest',
-        questTitle: 'Unknown Quest', // Note: title and questTitle might be redundant here
+        questTitle: 'Unknown Quest',
         status: 'started'
       };
     } else {
       // Default fallback
       return {
         id: entryId,
-        title: title, // Use title param
+        title: title,
         timestamp: Date.now(),
         content: content,
         type: 'narrative'
-      }; // Cast removed as it's now correctly typed
+      };
     }
   }
+}
+
+/**
+ * Extracts a proper string item name from various possible structures
+ * Handles both string items and complex AIItemResponse objects
+ * 
+ * @param item - The item data from AI response, either a string or object
+ * @returns A string representing the item name
+ */
+function extractItemName(item: string | AIItemResponse): string {
+  if (typeof item === 'string') {
+    return item;
+  }
+  
+  if (typeof item === 'object' && item !== null) {
+    return item.name;
+  }
+  
+  return 'Unknown Item';
+}
+
+/**
+ * Extracts a valid category from various possible item structures
+ * Provides a default category of 'general' when none is specified
+ * 
+ * @param item - The item data from AI response, either a string or object
+ * @returns A valid ItemCategory string
+ */
+function extractItemCategory(item: string | AIItemResponse): ItemCategory {
+  if (typeof item === 'string') {
+    return 'general';
+  }
+  
+  if (typeof item === 'object' && item !== null && 
+      typeof item.category === 'string' && 
+      ['general', 'weapon', 'consumable', 'medical'].includes(item.category)) {
+    return item.category as ItemCategory;
+  }
+  
+  return 'general';
 }
 
 /**
@@ -188,9 +234,8 @@ export function generateSessionProps(
         const aiSummary = await generateNarrativeSummary(input, response.narrative);
 
         // Create a properly typed journal entry that preserves the summary
-        const journalEntry = createJournalEntry(input, response.narrative, aiSummary, 'narrative'); // Pass user input as title
+        const journalEntry = createJournalEntry(input, response.narrative, aiSummary, 'narrative');
         
-        // Removed debug comment
         // Dispatch with an explicit type so that our reducer knows how to handle it
         dispatch({
           type: 'journal/ADD_ENTRY',
@@ -216,14 +261,22 @@ export function generateSessionProps(
 
         // Handle acquired items
         if (response.acquiredItems?.length > 0) {
-          response.acquiredItems.forEach((itemName) => {
+          response.acquiredItems.forEach((rawItem) => {
+            // Treat as potentially complex item structure
+            const itemData = rawItem as string | AIItemResponse;
+            
+            // Extract string name and category from potentially complex structure
+            const itemName = extractItemName(itemData);
+            const itemCategory = extractItemCategory(itemData);
+            
             const newItem: InventoryItem = {
-              id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              id: uuidv4(),
               name: itemName,
-              description: itemName,
+              description: `A ${itemName}`,
               quantity: 1,
-              category: 'general' as ItemCategory,
+              category: itemCategory,
             };
+            
             dispatch({ type: 'inventory/ADD_ITEM', payload: newItem });
           });
         }

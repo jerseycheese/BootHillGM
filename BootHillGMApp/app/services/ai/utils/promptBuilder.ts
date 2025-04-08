@@ -84,7 +84,7 @@ export function buildAIPrompt(
       "location": { "...": "..." },
       "combatInitiated": false,
       "opponent": null,
-      "acquiredItems": [],
+      "acquiredItems": [ { "name": "Item Name", "category": "general|weapon|consumable|medical" } ], // Example: { "name": "Whiskey Bottle", "category": "consumable" }
       "removedItems": [],
       "suggestedActions": [
         { "id": "action-id-1", "title": "Action Title 1", "description": "Action Description 1", "type": "optional" },
@@ -113,6 +113,7 @@ export function buildAIPrompt(
       - Set importance to: critical (major story impact), significant (important), moderate (medium impact), or minor (small impact)
       - Not every response needs a decision point - only include when meaningful choices arise
       - When creating decision options, reference relevant past player decisions to show continuity
+      - For acquiredItems: Provide the item name and its category ('general', 'weapon', 'consumable', 'medical'). If unsure, use 'general'.
     
     ${storyPointPrompt}
 
