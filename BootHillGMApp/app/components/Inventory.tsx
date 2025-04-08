@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { ErrorDisplay } from './ErrorDisplay';
 import { InventoryList } from './InventoryList';
 import ErrorBoundary from './ErrorBoundary';
 import { useGameSession } from '../hooks/useGameSession';
@@ -44,7 +43,7 @@ export const Inventory: React.FC<InventoryProps<string>> = ({
   items: propItems,
 }) => {
   // Use the game session for actions
-  const { retryLastAction, isUsingItem, isLoading, handleUseItem, error } = useGameSession();
+  const { isUsingItem, isLoading, handleUseItem, error } = useGameSession();
   
   // Use the inventory selector hook to access inventory items
   // This is memoized and will only trigger re-renders when the inventory changes
@@ -83,7 +82,12 @@ export const Inventory: React.FC<InventoryProps<string>> = ({
     <ErrorBoundary>
       <div id="bhgmInventory" data-testid="inventory" className="wireframe-section bhgm-inventory">
         <h2 className="wireframe-subtitle">Inventory</h2>
-        <ErrorDisplay error={error ? { reason: error } : null} onRetry={retryLastAction} />
+        
+        {error && (
+          <div className="text-red-600 mb-2" role="alert" data-testid="error-display">
+            <span>{typeof error === 'string' ? error : (error as { reason?: string })?.reason || 'Unknown error'}</span>
+          </div>
+        )}
         
         {filteredInventory.length === 0 ? (
           <p className="wireframe-text mt-2">Your inventory is empty.</p>
