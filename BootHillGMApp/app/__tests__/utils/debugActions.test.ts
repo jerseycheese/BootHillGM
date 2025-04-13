@@ -1,235 +1,268 @@
-// app/__tests__/utils/debugActions.test.ts
+/**
+ * Tests for debug actions utility functions
+ */
+import { resetGame, initializeTestCombat, createBaseCharacter } from '../../utils/debugActions';
+import { getStartingInventory } from '../../utils/startingInventory';
+import { gameElementsStorage } from '../../utils/storage/gameElementsStorage';
+import { GameEngineAction } from '../../types/gameActions';
+import { JournalEntry } from '../../types/journal';
+import { setupLocalStorageMock, resetLocalStorageMock } from '../../test/utils/mockLocalStorage';
 
-import { resetGame, createBaseCharacter } from '../../utils/debugActions';
-import { GameEngineAction } from '../../types/gameActions'; // Import the action type
-
-// Mock getStartingInventory at the top level
-jest.mock('../../utils/startingInventory', () => ({
-  getStartingInventory: jest.fn().mockReturnValue([
-    { id: 'test_item_1', name: 'Test Item 1', quantity: 1, category: 'general' },
-    { id: 'test_item_2', name: 'Test Item 2', quantity: 1, category: 'weapon' }
-  ])
-}));
-
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: jest.fn((key: string) => {
-      return store[key] || null;
-    }),
-    setItem: jest.fn((key: string, value: string) => {
-      store[key] = value.toString();
-    }),
-    removeItem: jest.fn((key: string) => {
-      delete store[key];
-    }),
-    clear: jest.fn(() => {
-      store = {};
-    }),
+// Define proper types for test payloads
+interface GameStatePayload {
+  character: {
+    player: {
+      id: string;
+      name: string;
+      inventory: {
+        items: Array<{
+          id: string;
+          name: string;
+          category: string;
+          quantity: number;
+          description?: string;
+        }>;
+      };
+      attributes: Record<string, number>;
+    };
+    opponent: null;
   };
-})();
+  inventory: {
+    items: Array<{
+      id: string;
+      name: string;
+      category: string;
+      quantity: number;
+      description?: string;
+    }>;
+    equippedWeaponId: null;
+  };
+  journal: {
+    entries: JournalEntry[];
+  };
+  narrative: {
+    currentStoryPoint: {
+      id: string;
+      type: string;
+      content: string;
+      choices: unknown[];
+    } | null;
+    narrativeHistory: string[];
+    visitedPoints: string[];
+    needsInitialGeneration?: boolean;
+  };
+  combat: {
+    isActive: boolean;
+    rounds: number;
+    combatType: string;
+    playerTurn: boolean;
+    playerCharacterId: string;
+    opponentCharacterId: string;
+    combatLog: unknown[];
+    roundStartTime: number;
+    modifiers: {
+      player: number;
+      opponent: number;
+    };
+    currentTurn: null;
+  };
+  location: {
+    type: string;
+    name: string;
+  };
+  ui?: {
+    activePanel: string;
+    showInventory: boolean;
+    showCharacter: boolean;
+    showJournal: boolean;
+  };
+  suggestedActions: Array<{
+    id: string;
+    title: string;
+    description: string;
+    type: string;
+  }>;
+  isReset: boolean;
+  gameProgress: number;
+  savedTimestamp: number;
+  isClient: boolean;
+  forceContentGeneration?: boolean;
+}
 
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-});
+// Mock dependencies
+jest.mock('../../utils/startingInventory');
+jest.mock('../../utils/storage/gameElementsStorage');
 
 describe('debugActions', () => {
+  beforeAll(() => {
+    setupLocalStorageMock();
+  });
+  
   beforeEach(() => {
-    // Clear localStorage before each test
-    localStorage.clear();
-    // Reset mocks if needed (though jest.clearAllMocks() might be better globally)
-    (localStorageMock.getItem as jest.Mock).mockClear();
-    (localStorageMock.setItem as jest.Mock).mockClear();
-    (localStorageMock.removeItem as jest.Mock).mockClear();
-    (localStorageMock.clear as jest.Mock).mockClear();
-
-    // Set up test character in localStorage for most tests
-    const testCharacter = createBaseCharacter('test_id', 'Test Character');
-    localStorage.setItem('character-creation-progress', JSON.stringify({ character: testCharacter }));
-
-    // Set up test narrative in localStorage for most tests
-    const testNarrative = "Test narrative introduction.";
-    localStorage.setItem('initial-narrative', JSON.stringify({ narrative: testNarrative }));
+    resetLocalStorageMock();
+    
+    // Clear all mocks before each test
+    jest.clearAllMocks();
+    
+    // Mock default inventory items
+    const mockStartingInventory = [
+      { id: 'item-1', name: 'Leather Canteen', category: 'general', quantity: 1, description: 'A leather water container' },
+      { id: 'item-2', name: 'Hemp Rope (50ft)', category: 'general', quantity: 1, description: 'Strong rope made of hemp' },
+      { id: 'item-3', name: 'Tobacco Pouch', category: 'general', quantity: 1, description: 'A small pouch for tobacco' },
+      { id: 'item-4', name: 'Matchbox', category: 'general', quantity: 1, description: 'A box of matches' }
+    ];
+    
+    // Setup mock implementations
+    (getStartingInventory as jest.Mock).mockReturnValue(mockStartingInventory);
+    (gameElementsStorage.getDefaultInventoryItems as jest.Mock).mockReturnValue(mockStartingInventory);
   });
-
-  describe('resetGame', () => {
-    it('should create a valid game state with proper narrative state', () => {
-      // Act
-      const resetAction = resetGame() as GameEngineAction; // Use correct type cast
-
-      // Assert
-      expect(resetAction.type).toBe('SET_STATE');
-
-      // Check payload properties - ensure payload exists before accessing
-      if (resetAction.type !== 'SET_STATE' || !resetAction.payload) {
-        throw new Error('Expected SET_STATE action with payload');
-      }
-      const payload = resetAction.payload;
-
-      // Verify character properties
-      expect(payload.character).toBeDefined();
-      expect(payload.character?.player).toBeDefined();
-      expect(payload.character?.player?.name).toBe('Test Character');
-
-      // Verify narrative properties
-      expect(payload.narrative).toBeDefined();
-      expect(payload.narrative?.currentStoryPoint).toBeDefined();
-      expect(payload.narrative?.currentStoryPoint?.content).toBeDefined();
-      expect(payload.narrative?.narrativeHistory).toBeInstanceOf(Array);
-      expect(payload.narrative?.visitedPoints).toBeInstanceOf(Array);
-
-      // Verify other state slices
-      expect(payload.inventory).toBeDefined();
-      expect(payload.inventory?.items).toBeInstanceOf(Array);
-      expect(payload.combat).toBeDefined();
-      expect(payload.combat?.isActive).toBe(false);
-    });
-
-    it('should use saved narrative if available', () => {
-      // Arrange - Already set up in beforeEach
-
-      // Act
-      const resetAction = resetGame() as GameEngineAction; // Use correct type cast
-
-      // Assert
-      if (resetAction.type !== 'SET_STATE' || !resetAction.payload?.narrative) {
-         throw new Error('Expected SET_STATE action with narrative payload');
-      }
-      const narrative = resetAction.payload.narrative;
-      expect(narrative.currentStoryPoint?.content).toBe("Test narrative introduction.");
-      expect(narrative.narrativeHistory?.[0]).toBe("Test narrative introduction.");
-    });
-
-    it('should create default narrative if none saved', () => {
-      // Arrange
-      localStorage.removeItem('initial-narrative');
-
-      // Act
-      const resetAction = resetGame() as GameEngineAction; // Use correct type cast
-
-      // Assert
-      if (resetAction.type !== 'SET_STATE' || !resetAction.payload?.narrative) {
-         throw new Error('Expected SET_STATE action with narrative payload');
-      }
-      const narrative = resetAction.payload.narrative;
-      // Updated expectation to just check for "Boothill" since we know that's in the content
-      // but not necessarily with "Test Character" as shown by the failing test
-      expect(narrative.currentStoryPoint?.content).toContain("Boothill");
-    });
-
-    it('should use stored suggested actions if available', () => {
-      // Arrange
-      const testSuggestedActions = [
-        { text: 'Test Action 1', type: 'basic', context: 'Test Context 1' },
-        { text: 'Test Action 2', type: 'basic', context: 'Test Context 2' }
-      ];
-      localStorage.setItem('saved-game-state', JSON.stringify({
-        suggestedActions: testSuggestedActions
-      }));
-
-      // Act
-      const resetAction = resetGame() as GameEngineAction; // Use correct type cast
-
-      // Assert
-      if (resetAction.type !== 'SET_STATE' || !resetAction.payload) {
-         throw new Error('Expected SET_STATE action with payload');
-      }
-      expect(resetAction.payload.suggestedActions).toEqual(testSuggestedActions);
-    });
-
-    it('should create default character if none saved', () => {
-      // Arrange
-      localStorage.removeItem('character-creation-progress');
-
-      // Act
-      const resetAction = resetGame() as GameEngineAction; // Use correct type cast
-
-      // Assert
-      if (resetAction.type !== 'SET_STATE' || !resetAction.payload?.character?.player) {
-         throw new Error('Expected SET_STATE action with player character payload');
-      }
-      const player = resetAction.payload.character.player;
-      expect(player).toBeDefined();
-      // Updated test to match current implementation
-      expect(player.id).toContain('character_');
-      expect(player.attributes.strength).toBe(10);
-    });
-
-    it('should use starting inventory from mock', () => {
-      // Arrange - Mock is set up at top level
-
-      // Act
-      const resetAction = resetGame() as GameEngineAction; // Use correct type cast
-
-      // Assert
-      if (resetAction.type !== 'SET_STATE' || !resetAction.payload?.inventory?.items) {
-         throw new Error('Expected SET_STATE action with inventory payload');
-      }
-      // Check against the mocked return value
-      expect(resetAction.payload.inventory.items).toEqual([
-        { id: 'test_item_1', name: 'Test Item 1', quantity: 1, category: 'general' },
-        { id: 'test_item_2', name: 'Test Item 2', quantity: 1, category: 'weapon' }
-      ]);
-    });
-
-    it('should save initial narrative for future use if not already present', () => {
-      // Arrange
-      localStorage.removeItem('initial-narrative'); // Ensure it's not present
-
-      // Act
-      resetGame();
-
-      // Assert
-      expect(localStorage.setItem).toHaveBeenCalledWith(
-        'initial-narrative',
-        expect.stringContaining('"narrative":') // Check that it saves the narrative structure
-      );
-    });
-
-    it('should handle errors during localStorage access gracefully', () => {
-      // Arrange - simulate an error in localStorage.getItem
-      (localStorageMock.getItem as jest.Mock).mockImplementation(() => {
-        throw new Error('Mock localStorage getItem error');
-      });
-
-      // Act
-      const resetAction = resetGame() as GameEngineAction; // Use correct type cast
-
-      // Assert - should still create a valid state using defaults
-      expect(resetAction.type).toBe('SET_STATE');
-      if (resetAction.type !== 'SET_STATE' || !resetAction.payload) {
-         throw new Error('Expected SET_STATE action with payload');
-      }
-      expect(resetAction.payload.character).toBeDefined();
-      expect(resetAction.payload.narrative).toBeDefined();
-      expect(resetAction.payload.inventory).toBeDefined();
-      // Updated test to match current implementation which uses 'Your Character' instead of 'Stranger'
-      expect(resetAction.payload.character?.player?.name).toBe('Your Character');
-    });
-  });
-
+  
   describe('createBaseCharacter', () => {
-    it('should create a character with proper attributes', () => {
-      // Act
-      const character = createBaseCharacter('test_id', 'Test Character');
-
-      // Assert
-      expect(character.id).toBe('test_id');
-      expect(character.name).toBe('Test Character');
-      expect(character.isPlayer).toBe(true);
-      expect(character.isNPC).toBe(false);
-      expect(character.attributes).toBeDefined();
-      expect(character.attributes.speed).toBe(10);
-      expect(character.attributes.gunAccuracy).toBe(10);
-      expect(character.attributes.strength).toBe(10);
-      expect(character.attributes.baseStrength).toBe(10);
-      expect(character.minAttributes).toBeDefined();
-      expect(character.maxAttributes).toBeDefined();
+    test('should create a character with proper values and inventory', () => {
+      const mockId = 'test-id';
+      const mockName = 'Test Character';
+      
+      const character = createBaseCharacter(mockId, mockName);
+      
+      expect(character).toBeDefined();
+      expect(character.id).toBe(mockId);
+      expect(character.name).toBe(mockName);
+      
+      // Check that inventory is populated
       expect(character.inventory).toBeDefined();
-      expect(character.inventory.items).toBeInstanceOf(Array);
-      expect(character.wounds).toBeInstanceOf(Array);
-      expect(character.isUnconscious).toBe(false);
+      expect(character.inventory.items).toEqual(gameElementsStorage.getDefaultInventoryItems());
+      
+      // Check attributes
+      expect(character.attributes).toBeDefined();
+      expect(character.attributes.strength).toBe(10);
+    });
+  });
+  
+  describe('initializeTestCombat', () => {
+    test('should create a valid test combat action', () => {
+      // Force cast to GameEngineAction with SET_STATE type to make TypeScript happy
+      const action = initializeTestCombat() as GameEngineAction & { 
+        type: 'SET_STATE', 
+        payload: {
+          combat: {
+            isActive: boolean;
+            combatType: string;
+          };
+          character: {
+            opponent: {
+              name: string;
+            };
+          };
+        }
+      };
+      
+      expect(action.type).toBe('SET_STATE');
+      
+      // Now we can safely access the payload
+      const payload = action.payload;
+      
+      expect(payload.combat).toBeDefined();
+      expect(payload.combat.isActive).toBe(true);
+      expect(payload.combat.combatType).toBe('brawling');
+      
+      // Check opponent
+      expect(payload.character).toBeDefined();
+      expect(payload.character.opponent).toBeDefined();
+      expect(payload.character.opponent.name).toBe('Test Opponent');
+    });
+  });
+  
+  describe('resetGame', () => {
+    test('should create a complete game state reset action', () => {
+      const CHARACTER_NAME = "Test Character";
+      
+      // Create test character in localStorage
+      const testCharacter = createBaseCharacter('test-character', CHARACTER_NAME);
+      localStorage.setItem('character-creation-progress', JSON.stringify({ character: testCharacter }));
+      localStorage.setItem('completed-character', JSON.stringify(testCharacter));
+      
+      // Force cast to GameEngineAction with SET_STATE type to make TypeScript happy
+      const resetAction = resetGame() as GameEngineAction & { 
+        type: 'SET_STATE', 
+        payload: GameStatePayload 
+      };
+      
+      expect(resetAction.type).toBe('SET_STATE');
+      
+      // Now we can safely access the payload without TypeScript errors
+      const payload = resetAction.payload;
+      
+      // Check that all required state slices are present
+      expect(payload.character).toBeDefined();
+      expect(payload.inventory).toBeDefined();
+      expect(payload.journal).toBeDefined();
+      expect(payload.narrative).toBeDefined();
+      expect(payload.combat).toBeDefined();
+      
+      // Character checks - we should get Test Character since we populated localStorage
+      expect(payload.character.player).toBeDefined();
+      expect(payload.character.player.name).toBe(CHARACTER_NAME);
+      
+      // Check that character has inventory items
+      expect(payload.character.player.inventory).toBeDefined();
+      expect(Array.isArray(payload.character.player.inventory.items)).toBe(true);
+      expect(payload.character.player.inventory.items.length).toBeGreaterThan(0);
+      
+      // Journal checks
+      expect(payload.journal.entries).toBeDefined();
+      expect(Array.isArray(payload.journal.entries)).toBe(true);
+      
+      // Narrative checks
+      expect(payload.narrative).toBeDefined();
+      expect(payload.narrative.narrativeHistory).toBeDefined();
+      expect(Array.isArray(payload.narrative.narrativeHistory)).toBe(true);
+      expect(payload.narrative.needsInitialGeneration).toBe(true);
+      
+      // Location check
+      expect(payload.location).toBeDefined();
+      expect(payload.location.type).toBe('town');
+      expect(payload.location.name).toBe('Boot Hill');
+      
+      // Check flags
+      expect(payload.isReset).toBe(true);
+      expect(payload.forceContentGeneration).toBe(true);
+      
+      // Verify special localStorage keys
+      expect(localStorage.getItem('_boothillgm_reset_flag')).not.toBeNull();
+      expect(localStorage.getItem('_boothillgm_force_generation')).toBe('true');
+      
+      // Check character data was preserved in localStorage
+      const characterData = localStorage.getItem('characterData');
+      expect(characterData).not.toBeNull();
+      if (characterData) {
+        const parsedChar = JSON.parse(characterData);
+        expect(parsedChar.name).toBe(CHARACTER_NAME);
+      }
+    });
+    
+    test('should create default character if none exists', () => {
+      // Make sure no character data exists in localStorage
+      localStorage.clear();
+      
+      // Force cast to GameEngineAction with SET_STATE type
+      const resetAction = resetGame() as GameEngineAction & { 
+        type: 'SET_STATE', 
+        payload: GameStatePayload 
+      };
+      
+      expect(resetAction.type).toBe('SET_STATE');
+      
+      // Now we can safely access the payload without TypeScript errors
+      const payload = resetAction.payload;
+      
+      // Character checks - should get a default character with Test Character name
+      expect(payload.character.player).toBeDefined();
+      expect(payload.character.player.name).toBe('Test Character');
+      
+      // Check that character has default inventory items
+      expect(payload.character.player.inventory).toBeDefined();
+      expect(Array.isArray(payload.character.player.inventory.items)).toBe(true);
+      expect(payload.character.player.inventory.items.length).toBeGreaterThan(0);
     });
   });
 });

@@ -1,6 +1,6 @@
 import { WeaponCombatAction, WeaponCombatState } from '../types/combat';
 import { Character } from '../types/character';
-import { GameEngineAction } from '../types/gameActions';
+import { GameAction } from '../types/actions'; // Use main GameAction type
 import { CombatState } from '../types/combat';
 import { processPlayerAction, processOpponentAction } from './weaponCombatActions';
 import { updateWeaponState } from './weaponCombatState';
@@ -12,7 +12,7 @@ interface ProcessTurnParams {
   opponent: Character;
   weaponState: WeaponCombatState;
   aimBonus: number;
-  dispatch: React.Dispatch<GameEngineAction>;
+  dispatch: React.Dispatch<GameAction>; // Use main GameAction type
   combatState: CombatState;
   setWeaponState: (state: WeaponCombatState | ((prev: WeaponCombatState) => WeaponCombatState)) => void;
   setCurrentOpponent: (opponent: Character) => void;

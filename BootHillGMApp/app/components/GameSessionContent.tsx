@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useGameInitialization } from "../hooks/useGameInitialization";
 // Removed useGameSession import as state/dispatch come from useGameState now
-// import { useGameSession } from "../hooks/useGameSession";
+import { useGameSession } from "../hooks/useGameSession";
 import { useGameState } from "../context/GameStateProvider"; // Import useGameState
 import { useCombatStateRestoration } from "../hooks/useCombatStateRestoration";
 import { useCharacterExtraction } from "../hooks/useCharacterExtraction";
@@ -13,7 +13,6 @@ import { MainGameArea } from "./GameArea/MainGameArea";
 import { SidePanel } from "./GameArea/SidePanel";
 import DevToolsPanel from "./Debug/DevToolsPanel";
 import { generateSessionProps } from "../utils/sessionPropsGenerator";
-import { createCombatInitiator } from "../utils/combatInitiatorGenerator";
 import { useCampaignStateAdapter } from "../hooks/useCampaignStateAdapter";
 import { RecoveryOptions } from "./GameArea/RecoveryOptions";
 // Removed GameSessionType import as it's no longer used directly
@@ -61,17 +60,15 @@ export default function GameSessionContent(): JSX.Element {
     dispatch, // Use direct dispatch
     state      // Use direct state
   );
+  const gameSession = useGameSession(); // Get full game session
   
   // Removed typedGameSession cast
   
   // Generate session props using direct state and dispatch
   const sessionProps = generateSessionProps(state, dispatch, playerCharacter, isInitializing);
-  // Update createCombatInitiator if its signature changed, assuming it needs state/dispatch now
-  // TODO: Verify createCombatInitiator signature if errors occur
-  const combatInitiator = createCombatInitiator(state, dispatch, sessionProps); // Pass state and dispatch directly
   
   // Restore combat state if needed
-  useCombatStateRestoration(state || null, combatInitiator); // Use direct state
+  useCombatStateRestoration(state || null, gameSession); // Pass full game session
   
   // Initialize AI narrative generation if needed
   useNarrativeInitialization();

@@ -1,6 +1,6 @@
 # Component-Based Hook Testing
 
-This guide explains the component-based approach to testing React hooks in the BootHill GM application.
+This guide explains the component-based approach to testing React hooks in the Boot Hill GM application.
 
 ## Overview
 

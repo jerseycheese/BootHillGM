@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useGameInitialization } from "../hooks/useGameInitialization";
 import { useGameSession } from "../hooks/useGameSession";
 import { useCombatStateRestoration, adaptHealthChangeHandler } from "../hooks/useCombatStateRestoration";
@@ -7,12 +7,8 @@ import { MainGameArea } from "./GameArea/MainGameArea";
 import { SidePanel } from "./GameArea/SidePanel";
 import { InventoryManager } from "../utils/inventoryManager";
 import DevToolsPanel from "./Debug/DevToolsPanel";
-// Removed unused imports: GameAction, GameEngineAction, Dispatch
-// Removed unused import: LocationService
 import { Character } from "../types/character";
 import { InventoryItem } from "../types/item.types";
-// Removed unused imports: CombatState, JournalEntry
-import { CombatInitiator } from "../types/combatStateAdapter";
 
 // Removed unused interface: ExtendedState
 export default function GameSession() {
@@ -20,6 +16,26 @@ export default function GameSession() {
   const gameSession = useGameSession();
   const { state, dispatch, executeCombatRound, getCurrentOpponent } = gameSession;
   
+  // Check for skip loading flag during reset
+  const [skipLoadingScreen, setSkipLoadingScreen] = useState(false);
+  
+  useEffect(() => {
+    // Check for skip loading flag in localStorage
+    const skipLoading = localStorage.getItem('_boothillgm_skip_loading');
+    const isReset = localStorage.getItem('_boothillgm_reset_flag');
+    
+    if (skipLoading === 'true' || isReset) {
+      setSkipLoadingScreen(true);
+      
+      // Clean up after a short delay to allow state to be processed
+      const timer = setTimeout(() => {
+        localStorage.removeItem('_boothillgm_skip_loading');
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   // Get LocationService singleton instance for parsing locations
   // Removed unused locationService variable
 
@@ -110,49 +126,27 @@ export default function GameSession() {
     isCombatActive: state.combat?.isActive || false // Add isCombatActive from combat slice
   };
 
-  // Create a properly typed combat initiator object
-  // Put explicit properties first, then spread gameSession to avoid overrides
-  const combatInitiator: CombatInitiator = {
-    // Core combat functions
-    initiateCombat: gameSession.initiateCombat,
-    executeCombatRound: gameSession.executeCombatRound || (() => {}),
-    handleCombatAction,
-    handlePlayerHealthChange: adaptedHealthChangeHandler,
-    
-    // Equipment & character management
-    onEquipWeapon: handleEquipWeapon,
-    getCurrentOpponent: gameSession.getCurrentOpponent || (() => null),
-    opponent,
-    
-    // State management
-    // Access combat status via the combat slice
-    isCombatActive: state?.combat?.isActive || false,
-    dispatch,
-    
-    // Additional properties - using optional chaining to handle properties that may not exist
-    isLoading: gameSession.isLoading || false,
-    error: gameSession.error || null,
-    handleUserInput: gameSession.handleUserInput,
-    retryLastAction: gameSession.retryLastAction,
-    
-    // Optional properties - these might not exist in gameSession
-    handleDebug: undefined,  // Optional property in CombatInitiator
-    handleSave: undefined,   // Optional property in CombatInitiator
-    handleLoad: undefined    // Optional property in CombatInitiator
-  };
 
   // Always call hooks at the top level - pass null if data isn't available yet
-  useCombatStateRestoration(state || null, state ? combatInitiator : null);
+  useCombatStateRestoration(state || null, gameSession || null); // Pass the gameSession object
 
-  // Early return if any required data is missing
-  if (!isClient || !gameSession || !state) {
-    return <LoadingScreen type="session" />;
-  }
+  // Skip loading screen during reset
+  if (skipLoadingScreen) {
+    // Just render a minimal placeholder until state is ready
+    if (!isClient || !gameSession || !state) {
+      return <div data-testid="loading-placeholder"></div>;
+    }
+  } else {
+    // Early return if any required data is missing
+    if (!isClient || !gameSession || !state) {
+      return <LoadingScreen type="session" />;
+    }
 
-  // Check for initialized character (this is separate from the isInitializing check)
-  // This handles the error from GameSession.test.tsx
-  if (isInitializing || !state.character) {
-    return <LoadingScreen type="session" />;
+    // Check for initialized character (this is separate from the isInitializing check)
+    // This handles the error from GameSession.test.tsx
+    if (isInitializing || !state.character) {
+      return <LoadingScreen type="session" />;
+    }
   }
 
   // Create a type guard for checking if an object is a Character
@@ -199,6 +193,12 @@ export default function GameSession() {
     getPlayerCharacter(); // Call function but don't assign to unused variable
   } catch (error) {
     console.error('Failed to extract player character:', error);
+    
+    // Skip error screen during reset
+    if (skipLoadingScreen) {
+      return <div data-testid="error-placeholder"></div>;
+    }
+    
     // Use the LoadingScreen with a custom error message instead of an invalid type
     return <LoadingScreen 
       type="session" 
@@ -214,12 +214,8 @@ export default function GameSession() {
   return (
     <div className="wireframe-container" data-testid="game-container">
       <div className="grid grid-cols-[1fr_300px] gap-4">
-        {/* Temporarily cast dispatch prop until MainGameArea/SidePanel props are updated */}
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-        <MainGameArea {...sessionProps} dispatch={sessionProps.dispatch as any} />
-        {/* Temporarily cast dispatch prop until MainGameArea/SidePanel props are updated */}
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-        <SidePanel {...sessionProps} dispatch={sessionProps.dispatch as any} />
+        <MainGameArea {...sessionProps} />
+        <SidePanel {...sessionProps} />
       </div>
       <DevToolsPanel 
         // Pass the current GameState directly to DevToolsPanel

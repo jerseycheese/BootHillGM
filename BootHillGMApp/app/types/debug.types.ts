@@ -34,6 +34,8 @@ export interface GameControlSectionProps {
   loading: string | null;
   setLoading: (state: string | null) => void;
   setError: (error: string | null) => void;
+  setLoadingIndicator: (state: string | null) => void;
+  gameState: GameState;
 }
 
 export interface GameStateDisplayProps {

@@ -54,10 +54,11 @@ export const useCurrentScene = () => {
       return narrativeState.currentStoryPoint;
     }
     
-    // Then try legacy property name for tests
+    // Then try legacy property name for test compatibility.
+    // TODO: Remove this fallback once all tests use the 'currentStoryPoint' property.
     if (hasLegacyScene(state)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (narrativeState as NarrativeState & { currentScene?: any }).currentScene || null;
+      return (narrativeState as NarrativeState & { currentScene?: unknown }).currentScene || null;
     }
     
     return null;
@@ -79,10 +80,11 @@ export const useNarrativeContext = () => {
       return narrativeState.narrativeContext;
     }
     
-    // Then try legacy property name for tests
+    // Then try legacy property name for test compatibility.
+    // TODO: Remove this fallback once all tests use the 'narrativeContext' property.
     if (hasLegacyContext(state)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (narrativeState as NarrativeState & { context?: any }).context;
+      return (narrativeState as NarrativeState & { context?: unknown }).context;
     }
     
     return undefined;
@@ -146,8 +148,7 @@ export function createStateHook<T>(
       () => {
         return selector(state);
       },
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      [state, ...deps] // Include state object reference AND specific dependencies
+      deps // Only include specific dependencies calculated by the dependencies function
     );
   };
 }

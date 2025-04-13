@@ -1,166 +1,123 @@
-import React, { memo, useMemo, useEffect } from 'react';
-import type { JournalEntry, JournalEntryWithSummary, BaseJournalEntry } from '../types/journal';
-import { isNarrativeEntry, isCombatEntry, isInventoryEntry, isQuestEntry } from '../types/journal';
+/**
+ * JournalViewer component displays the player's journal entries
+ * in a chronological order with formatting based on entry type.
+ * 
+ * Features:
+ * - Displays journal entries with timestamps
+ * - Supports multiple entry types (narrative, combat, inventory)
+ * - Shows condensed summaries with expandable details
+ * - Provides entry filtering options
+ */
+import React, { useState } from 'react';
+import { JournalEntry } from '../types/journal';
+import { formatDate } from '../utils/dateUtils';
 
 interface JournalViewerProps {
   entries: JournalEntry[];
+  maxEntries?: number;
 }
 
 /**
- * Type guard to check if a JournalEntry has a narrativeSummary property.
- *
- * @param entry - The journal entry to check.
- * @returns True if the entry has a non-empty narrativeSummary string, false otherwise.
+ * JournalViewer component displays the player's journal entries
+ * 
+ * @param entries Array of journal entries to display
+ * @param maxEntries Optional maximum number of entries to show
  */
-// Type guard to check if entry has a narrativeSummary property
-const hasNarrativeSummary = (entry: JournalEntry): entry is JournalEntry & JournalEntryWithSummary => {
-  return 'narrativeSummary' in entry && typeof (entry as JournalEntry & { narrativeSummary?: string }).narrativeSummary === 'string';
-};
-
-/**
- * Memoized component for rendering a single journal entry.
- * Prioritizes displaying `narrativeSummary` if available.
- *
- * @param entry - The journal entry data.
- * @param formatDate - Function to format the timestamp.
- * @returns A list item element representing the journal entry.
- */
-// Component for rendering a single journal entry
-const JournalEntry = memo(({ entry, formatDate }: { 
-  entry: JournalEntry;
-  formatDate: (timestamp: number) => string;
+const JournalViewer: React.FC<JournalViewerProps> = ({ 
+  entries, 
+  maxEntries 
 }) => {
-  // Get the appropriate content for display - PRIORITIZE summaries
-  const displayContent = useMemo(() => {
-    // Debug the entry
-    
-    if (hasNarrativeSummary(entry)) {
-      
-      // First priority: Use narrativeSummary if available and not empty
-      if (entry.narrativeSummary.trim() !== '') {
-        return entry.narrativeSummary;
-      }
-    }
-    
-    // Second priority: Type-specific display formats
-    if (isNarrativeEntry(entry)) {
-      // Only truncate content if there's no summary
-      const maxContentLength = 50; // Reduced for better readability
-      if (entry.content && entry.content.length > maxContentLength) {
-        return `${entry.content.substring(0, maxContentLength)}...`;
-      }
-      return entry.content || '';
-    } 
-    else if (isCombatEntry(entry)) {
-      return `${entry.combatants.player} vs ${entry.combatants.opponent}: ${entry.outcome}`;
-    } 
-    else if (isInventoryEntry(entry)) {
-      const acquired = entry.items.acquired.length ? `Acquired: ${entry.items.acquired.join(', ')}` : '';
-      const removed = entry.items.removed.length ? `Removed: ${entry.items.removed.join(', ')}` : '';
-      return [acquired, removed].filter(Boolean).join(' | ');
-    } 
-    else if (isQuestEntry(entry)) {
-      return `${entry.questTitle}: ${entry.status}`;
-    }
-    
-    // If we get here, we have a JournalEntry but couldn't determine its specific type
-    // BaseJournalEntry guarantees a 'content' property
-    
-    // Explicit cast to BaseJournalEntry which ensures 'content' exists
-    return (entry as BaseJournalEntry).content || 'No content available';
-  }, [entry]);
+  const [expandedEntryId, setExpandedEntryId] = useState<string | null>(null);
 
-  return (
-    <li className="wireframe-text mb-2">
-      <strong>{formatDate(entry.timestamp)}</strong>: {displayContent}
-    </li>
-  );
-});
-
-JournalEntry.displayName = 'JournalEntry';
-
-const JournalViewer: React.FC<JournalViewerProps> = ({ entries }) => {
-  // Debug the entries received
-  useEffect(() => {
-    if (Array.isArray(entries)) {
-      // Show a sample of entries with summaries
-      // const entriesWithSummary = entries.filter(hasNarrativeSummary); // Removed unused variable
-      
-      // Show first 3 entries for debugging
-      entries.slice(0, 3).forEach((_entry, _idx) => { // Prefix unused args
-/**
- * Displays a list of journal entries, sorted by timestamp (newest first).
- * Prioritizes displaying AI-generated summaries (`narrativeSummary`) over full content.
- *
- * @param entries - An array of JournalEntry objects.
- * @returns A component rendering the journal list.
- */
-      });
-    }
-  }, [entries]);
-
-  // Sort entries by timestamp (newest first)
-  const sortedEntries = useMemo(() => {
-    // Ensure entries is a valid array
-    const entriesArray = Array.isArray(entries) ? entries : [];
-    
-    // Filter out invalid entries before sorting
-    const validEntries = entriesArray.filter(entry => 
-      entry && typeof entry === 'object' && 'timestamp' in entry
-    );
-    
-    // Sort by timestamp (most recent first)
-    return [...validEntries].sort((a, b) => b.timestamp - a.timestamp);
-  }, [entries]);
-
-  // Function to format timestamps as dates
-  const formatDate = (timestamp: number): string => {
-    try {
-      if (!timestamp || isNaN(timestamp)) {
-        return 'Invalid date';
-      }
-
-      const date = new Date(timestamp);
-      if (isNaN(date.getTime())) {
-        return 'Invalid date';
-      }
-
-      return new Intl.DateTimeFormat('en-US', {
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric'
-      }).format(date);
-    } catch {
-      return 'Invalid date';
-    }
-  };
-
-  // Show empty state if there are no entries
-  if (!Array.isArray(entries) || entries.length === 0) {
+  // If no entries, show placeholder message
+  if (!entries || entries.length === 0) {
     return (
-      <div className="wireframe-section">
+      <div className="wireframe-section bhgm-journal-viewer" id="bhgmJournalViewer" data-testid="journal-viewer">
         <h2 className="wireframe-subtitle mb-2">Journal</h2>
-        <p>No journal entries yet.</p>
+        <p className="text-sm italic">No journal entries yet.</p>
       </div>
     );
   }
 
+  // Sort entries by timestamp (newest first)
+  const sortedEntries = [...entries].sort((a, b) => b.timestamp - a.timestamp);
+  
+  // Limit entries if maxEntries is provided
+  const displayEntries = maxEntries
+    ? sortedEntries.slice(0, maxEntries)
+    : sortedEntries;
+
+  // Toggle expanded state for an entry
+  const toggleExpand = (id: string) => {
+    setExpandedEntryId(expandedEntryId === id ? null : id);
+  };
+
+  // Get summary content for display in the condensed view
+  const getSummaryContent = (entry: JournalEntry): string => {
+    // If a narrativeSummary is available and valid, use it
+    if (entry.narrativeSummary && 
+        entry.narrativeSummary.length > 0 && 
+        !entry.narrativeSummary.includes('[MOCK') && 
+        !entry.narrativeSummary.includes('[FALLBACK')) {
+      return entry.narrativeSummary;
+    }
+    
+    // If the summary is marked as mock or fallback but we're not in a test environment,
+    // try to create a better summary
+    if (entry.narrativeSummary && 
+        (entry.narrativeSummary.includes('[MOCK') || 
+         entry.narrativeSummary.includes('[FALLBACK'))) {
+      // Extract the first proper sentence from content
+      const sentenceMatch = entry.content.match(/^(.+?[.!?])\s/);
+      if (sentenceMatch && sentenceMatch[1]) {
+        return sentenceMatch[1];
+      }
+      
+      // If character name is identifiable, create a better summary
+      const characterMatch = entry.content.match(/([A-Z][a-z]+)(?:\s+steps|\s+walks|\s+enters|\s+arrives)/);
+      if (characterMatch) {
+        return `${characterMatch[1]} explores the frontier town of Boot Hill.`;
+      }
+    }
+    
+    // If no valid summary, create one from the first sentence
+    const content = entry.content || '';
+    
+    // Try to extract first sentence
+    const sentenceMatch = content.match(/^(.+?[.!?])\s/);
+    if (sentenceMatch && sentenceMatch[1]) {
+      return sentenceMatch[1];
+    }
+    
+    // If no clear sentence, use truncation as a last resort
+    const MAX_LENGTH = 100;
+    
+    if (content.length <= MAX_LENGTH) return content;
+    
+    const truncated = content.substring(0, MAX_LENGTH);
+    const lastSpaceIndex = truncated.lastIndexOf(' ');
+    
+    if (lastSpaceIndex === -1) return truncated + '...';
+    
+    return truncated.substring(0, lastSpaceIndex) + '...';
+  };
+
   return (
-    <div id="bhgmJournalViewer" data-testid="journal-viewer" className="wireframe-section bhgm-journal-viewer">
+    <div className="wireframe-section bhgm-journal-viewer" id="bhgmJournalViewer" data-testid="journal-viewer">
       <h2 className="wireframe-subtitle mb-2">Journal</h2>
-      {sortedEntries.length === 0 ? (
-        <p>No valid journal entries available.</p>
-      ) : (
-        <ul className="overflow-y-auto">
-          {sortedEntries.map((entry) => (
-            <JournalEntry
-              key={entry.id || entry.timestamp || Math.random().toString(36).substring(2, 11)}
-              entry={entry}
-              formatDate={formatDate}
-            />
-          ))}
-        </ul>
-      )}
+      <ul className="overflow-y-auto">
+        {displayEntries.map((entry) => (
+          <li 
+            key={entry.id} 
+            className="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
+            onClick={() => toggleExpand(entry.id)}
+          >
+            <strong>{formatDate(entry.timestamp)}</strong>: {getSummaryContent(entry)}
+            
+            {/* No longer showing full content when expanded - user only wants date and summary */}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

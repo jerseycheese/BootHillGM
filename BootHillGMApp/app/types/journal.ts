@@ -19,7 +19,7 @@ export interface CombatJournalEntry extends BaseJournalEntry {
     player: string;
     opponent: string;
   };
-  outcome: 'victory' | 'defeat' | 'escape' | 'truce';
+  outcome: 'victory' | 'defeat' | 'escape' | 'draw' | 'truce';
 }
 
 export interface InventoryJournalEntry extends BaseJournalEntry {

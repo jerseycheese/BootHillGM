@@ -47,7 +47,7 @@ export function handleSetCombatActive(state: ExtendedGameState, payload: boolean
 }
 
 /**
- * Handles the UPDATE_COMBAT_STATE action
+ * Handlers for UPDATE_COMBAT_STATE action
  */
 export function handleUpdateCombatState(state: ExtendedGameState, payload: unknown): ExtendedGameState {
   // Cast to our working type
@@ -92,10 +92,7 @@ export function handleUpdateCombatState(state: ExtendedGameState, payload: unkno
     isActive: true
   });
   
-  // Convert currentTurn to string for legacy code
-  const legacyCombatStateString = combatTurnToString(currentTurn);
-  
-  // Create a properly typed legacy state object for the adapter
+  // Create properly typed legacy state object for the adapter
   const transformedLegacyState: Partial<CombatState> = {
     ...(state.combatState || {}),
     ...combatPayload,
@@ -108,12 +105,6 @@ export function handleUpdateCombatState(state: ExtendedGameState, payload: unkno
     combat: updatedCombat,
     combatState: adaptEnsureCombatState(transformedLegacyState)
   };
-  
-  // For strict legacy compatibility, also preserve the string format
-  if (newState.combatState) {
-    // @ts-expect-error - Intentionally using string for legacy code
-    newState.combatState.currentTurn = legacyCombatStateString;
-  }
   
   return newState;
 }
@@ -129,7 +120,7 @@ export function handleSetCombatType(state: ExtendedGameState, payload: 'brawling
     isActive: true
   };
   
-  // Create new state with both structured and legacy properties
+  // Create new state with structured properties
   const newState: ExtendedGameState = {
     ...state,
     combat: updatedCombat
@@ -147,17 +138,10 @@ export function handleSetCombatType(state: ExtendedGameState, payload: 'brawling
     ...(state.combatState || {}),
     combatType: payload,
     isActive: true,
-    // Use the string version of currentTurn that the CombatState expects
     currentTurn: mappedCurrentTurn
   };
   
   newState.combatState = adaptEnsureCombatState(legacyState);
-  
-  // For strict legacy compatibility, restore the string value after adaptation
-  if (newState.combatState) {
-    // @ts-expect-error - Intentionally using string for legacy code
-    newState.combatState.currentTurn = currentTurnString;
-  }
   
   return newState;
 }

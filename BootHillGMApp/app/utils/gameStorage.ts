@@ -12,7 +12,7 @@
 import { characterStorage } from './storage/characterStorage';
 import { narrativeStorage } from './storage/narrativeStorage';
 import { gameElementsStorage } from './storage/gameElementsStorage';
-import { gameStateStorage } from './storage/gameStateStorage';
+import { GameStorage as gameStateStorage } from './storage/gameStateStorage';
 
 // Export keys and functions as a single object
 const GameStorage = {
@@ -25,7 +25,9 @@ const GameStorage = {
     INITIAL_NARRATIVE: 'initial-narrative',
     COMPLETED_CHARACTER: 'completed-character',
     LAST_CHARACTER: 'lastCreatedCharacter',
-    CHARACTER_NAME: 'character-name'
+    CHARACTER_NAME: 'character-name',
+    RESET_FLAG: '_boothillgm_reset_flag',
+    FORCE_GENERATION: '_boothillgm_force_generation'
   },
   
   // Character-related functions

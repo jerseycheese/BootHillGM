@@ -2,7 +2,6 @@ import { Character } from '../types/character';
 import { GameSessionProps } from '../components/GameArea/types';
 import { InventoryManager } from '../utils/inventoryManager';
 import { GameAction } from '../types/actions';
-import { GameEngineAction } from '../types/gameActions';
 import { GameState, initialGameState } from '../types/gameState';
 import { Dispatch } from 'react';
 import { getAIResponse } from '../services/ai/gameService';
@@ -156,9 +155,13 @@ export function generateSessionProps(
   // Create adaptedHealthChangeHandler - Placeholder
   const localAdaptedHealthChangeHandler = (_characterType: string, _newStrength: number) => { // Prefix unused args
   };
+  
+  const handleStrengthChange = (_characterType: 'player' | 'opponent', _newStrength: number) => {
+    // Implementation would update character strength
+  };
 
-  // Create a non-nullable dispatch function
-  const safeDispatch: Dispatch<GameEngineAction> = dispatch as Dispatch<GameEngineAction> || (() => {});
+  // Create a properly typed dispatch function using only GameAction
+  const safeDispatch: Dispatch<GameAction> = dispatch || (() => {});
 
   // Define action handlers that depend on dispatch and state
   const handleUseItem = (_itemId: string) => { // Prefix unused arg
@@ -198,7 +201,7 @@ export function generateSessionProps(
     lastActionType = actionType;
 
     // Mark as loading while processing
-    dispatch({ type: 'ui/SET_LOADING', payload: true });
+    dispatch({ type: 'ui/SET_LOADING', payload: true } as const);
 
     try {
       // Extract existing journal entries and inventory items
@@ -388,13 +391,14 @@ export function generateSessionProps(
     opponent: null,
     handleUserInput: () => { /* Default no-op */ },
     retryLastAction: () => { /* Default no-op */ },
-    handleCombatEnd: () => {},
+    handleCombatEnd: async () => {},
     handlePlayerHealthChange: localAdaptedHealthChangeHandler,
     handleUseItem,
     handleEquipWeapon,
     executeCombatRound: async () => { /* Default no-op */ },
     initiateCombat: () => { /* Default no-op */ },
     getCurrentOpponent: () => null,
+    handleStrengthChange,
   };
 
   // If state or dispatch is unavailable, return default props
@@ -420,9 +424,10 @@ export function generateSessionProps(
     // Provide implementations for functions
     handleUserInput: handleUserInput,
     retryLastAction: retryLastAction,
-    handleCombatEnd: () => {},
+    handleCombatEnd: async () => {},
     executeCombatRound: async () => { /* Default no-op */ },
     initiateCombat: () => { /* Default no-op */ },
     getCurrentOpponent: () => opponent,
+    handleStrengthChange,
   };
 }

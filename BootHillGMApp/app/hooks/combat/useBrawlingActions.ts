@@ -7,12 +7,12 @@ import { resolveBrawlingRound } from "../../utils/brawlingSystem";
 import { calculateUpdatedStrength } from "../../utils/strengthSystem";
 import { BrawlingAction } from "../../types/brawling.types";
 import { checkKnockout } from '../../utils/combatUtils';
-import { GameEngineAction } from "../../types/gameActions";
+import { GameAction } from "../../types/actions";
 
 interface UseBrawlingActionsProps {
     playerCharacter: Character;
     opponent: Character;
-    dispatch: React.Dispatch<GameEngineAction>;
+    dispatch: React.Dispatch<GameAction>;
     dispatchBrawling: React.Dispatch<BrawlingAction>;
     brawlingState: {
         round: 1 | 2;
@@ -91,7 +91,7 @@ export const useBrawlingActions = ({
     
           // Update the correct character in the global state
           dispatch({
-            type: 'UPDATE_CHARACTER',
+            type: 'character/UPDATE_CHARACTER',
             payload: {
               ...updatedTarget,
               id: target.id,

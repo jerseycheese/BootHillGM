@@ -1,11 +1,20 @@
 import { renderHook, act } from '@testing-library/react';
 import { useBrawlingCombat } from '../../../hooks/useBrawlingCombat';
 import { mockPlayer, mockOpponent, setupBrawlingTestEnvironment, cleanupBrawlingTestEnvironment } from '../../../test/fixtures/brawling/brawlingTestFixtures';
-import { GameEngineAction, UpdateCharacterPayload } from '../../../types/gameActions';
+import { UpdateCharacterPayload } from '../../../types/gameActions';
 
-// Type guard for UPDATE_CHARACTER action
-const isUpdateCharacterAction = (action: GameEngineAction): action is { type: "UPDATE_CHARACTER"; payload: UpdateCharacterPayload } => {
-  return action.type === "UPDATE_CHARACTER";
+// Define type for dispatched character update actions
+type CharacterUpdateAction = {
+  type: "character/UPDATE_CHARACTER";
+  payload: UpdateCharacterPayload;
+};
+
+// Type guard for character/UPDATE_CHARACTER action
+const isUpdateCharacterAction = (action: unknown): action is CharacterUpdateAction => {
+  return typeof action === 'object' &&
+         action !== null &&
+         'type' in action &&
+         action.type === "character/UPDATE_CHARACTER";
 };
 import * as brawlingSystem from '../../../utils/brawlingSystem';
 
@@ -73,11 +82,14 @@ describe('useBrawlingCombat - Multi-Round', () => {
     expect(hookResult.current.processRound).toBeDefined();
 
     // Process first round and advance timers
+    console.log('Before processRound');
     await act(async () => {
       await hookResult.current.processRound(true, true);
       jest.advanceTimersByTime(100);
       await Promise.resolve();
     });
+    console.log('After processRound');
+    console.log('Dispatch calls:', mockDispatch.mock.calls);
 
     expect(hookResult.current.brawlingState.round).toBe(2);
 
@@ -106,14 +118,27 @@ describe('useBrawlingCombat - Multi-Round', () => {
   });
 
   it('should process a complete combat round with both player and opponent actions', async () => {
-    // Mock the brawlingSystem.resolveBrawlingRound to return predictable results
-    (brawlingSystem.resolveBrawlingRound as jest.Mock).mockImplementation(() => ({
-      roll: 10,
-      result: 'Light Hit',
-      damage: 1, // Use minimal damage to avoid triggering knockouts
-      location: 'chest',
-      nextRoundModifier: 0
-    }));
+    // Mock the brawlingSystem.resolveBrawlingRound to return different results for player vs opponent
+    (brawlingSystem.resolveBrawlingRound as jest.Mock).mockImplementation((modifier: number, isPunching: boolean) => {
+      // Player action (isPunching = true)
+      if (isPunching) {
+        return {
+          roll: 10,
+          result: 'Light Hit',
+          damage: 1, // Player hits opponent
+          location: 'chest',
+          nextRoundModifier: 0
+        };
+      }
+      // Opponent action (isPunching = false)
+      return {
+        roll: 8,
+        result: 'Miss',
+        damage: 0, // Opponent misses player
+        location: 'chest',
+        nextRoundModifier: 0
+      };
+    });
 
     // Mock random choice for opponent
     jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
@@ -174,22 +199,18 @@ describe('useBrawlingCombat - Multi-Round', () => {
     expect(playerEntry?.text).toContain('Player');
     expect(opponentEntry?.text).toContain('Opponent');
 
+    // Log all dispatched actions for debugging
+    console.log('All dispatched actions:', mockDispatch.mock.calls.map(call => call[0]));
+
     // Check for UPDATE_CHARACTER actions after player's and opponent's actions
-    expect(
-      mockDispatch.mock.calls.some(
-        (call) => {
-          const action = call[0] as GameEngineAction;
-          return isUpdateCharacterAction(action) && action.payload.id === 'player-1';
-        }
-      )
-    ).toBe(true);
-    expect(
-      mockDispatch.mock.calls.some(
-        (call) => {
-          const action = call[0] as GameEngineAction;
-          return isUpdateCharacterAction(action) && action.payload.id === 'opponent-1';
-        }
-      )
-    ).toBe(true);
+    const playerUpdates = mockDispatch.mock.calls.filter(
+      (call) => isUpdateCharacterAction(call[0]) && call[0].payload.id === 'player-1'
+    );
+    const opponentUpdates = mockDispatch.mock.calls.filter(
+      (call) => isUpdateCharacterAction(call[0]) && call[0].payload.id === 'opponent-1'
+    );
+
+    expect(playerUpdates.length).toBeGreaterThan(0);
+    expect(opponentUpdates.length).toBeGreaterThan(0);
   });
 });

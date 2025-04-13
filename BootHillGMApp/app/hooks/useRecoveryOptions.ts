@@ -35,7 +35,7 @@ export function useRecoveryOptions(
         // Keep character-creation-progress to preserve the character
         
         // Create a basic emergency state
-        const emergencyNarrative = "After a moment of confusion, you find yourself back in Boothill town. Your adventure continues...";
+        const emergencyNarrative = "After a moment of confusion, you find yourself back in Boot Hill town. Your adventure continues...";
         
         // Try to extract character data from localStorage
         let playerData = null;
@@ -93,7 +93,7 @@ export function useRecoveryOptions(
             context: "" // Add missing context property
           },
           inventory: { items: getStartingInventory(), equippedWeaponId: null },
-          location: { type: 'town' as const, name: 'Boothill' },
+          location: { type: 'town' as const, name: 'Boot Hill' },
           savedTimestamp: Date.now(),
           isClient: true,
           suggestedActions: [

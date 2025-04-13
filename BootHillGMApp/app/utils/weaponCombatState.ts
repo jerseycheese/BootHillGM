@@ -1,6 +1,6 @@
 import { Character } from '../types/character';
 import { WeaponCombatState, WeaponCombatResult, CombatState, LogEntry, WeaponCombatAction, Wound } from '../types/combat';
-import { GameEngineAction } from '../types/gameActions';
+import { GameAction } from '../types/actions'; // Use main GameAction type
 import { WOUND_EFFECTS } from './strengthSystem';
 
 /**
@@ -41,7 +41,7 @@ export const processWeaponCombatTurn = async (
   isPlayerAction: boolean,
   attacker: Character,
   defender: Character,
-  dispatch: React.Dispatch<GameEngineAction>,
+  dispatch: React.Dispatch<GameAction>, // Use main GameAction type
   combatState: CombatState
 ): Promise<{
   updatedCharacter: Character | null;
@@ -144,7 +144,7 @@ export const handleCombatResult = (
   isPlayerAction: boolean,
   attacker: Character,
   defender: Character,
-  dispatch: React.Dispatch<GameEngineAction>,
+  dispatch: React.Dispatch<GameAction>,
   combatState: CombatState
 ): Character | null => {
   const damage = result.damage || 0;
@@ -158,8 +158,13 @@ export const handleCombatResult = (
 
     // Dispatch action to update opponent
     dispatch({
-      type: 'SET_OPPONENT',
-      payload: updatedOpponent
+      type: 'character/UPDATE_CHARACTER',
+      payload: {
+        id: updatedOpponent.id,
+        attributes: updatedOpponent.attributes,
+        wounds: updatedOpponent.wounds,
+        strengthHistory: updatedOpponent.strengthHistory
+      }
     });
 
     return updatedOpponent;
@@ -169,7 +174,7 @@ export const handleCombatResult = (
 
     // Dispatch action to update player character
     dispatch({
-      type: 'UPDATE_CHARACTER',
+      type: 'character/UPDATE_CHARACTER',
       payload: {
         id: updatedPlayer.id,
         attributes: updatedPlayer.attributes,

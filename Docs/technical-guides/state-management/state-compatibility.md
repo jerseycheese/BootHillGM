@@ -49,11 +49,11 @@ Location data can exist in multiple formats:
 location: "town"
 
 // Direct LocationType object
-location: { type: "town", name: "Boothill" }
+location: { type: "town", name: "Boot Hill" }
 
 // Full LocationState object
 location: {
-  currentLocation: { type: "town", name: "Boothill" },
+  currentLocation: { type: "town", name: "Boot Hill" },
   history: [ /* previous locations */ ]
 }
 ```

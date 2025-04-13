@@ -159,7 +159,6 @@ export function aiResponseToPlayerDecision(
  */
 export function generateFallbackDecision(
   narrativeState: NarrativeState,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _character: Character,
   _gameState?: GameState
 ): PlayerDecision {

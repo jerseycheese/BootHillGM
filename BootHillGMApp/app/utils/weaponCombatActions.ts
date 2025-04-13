@@ -2,7 +2,7 @@ import { Character } from '../types/character';
 import { WeaponCombatAction, WeaponCombatResult, WeaponCombatState, LogEntry } from '../types/combat';
 import { resolveWeaponAction } from './weaponCombatResolver';
 import { processWeaponCombatTurn } from './weaponCombatState';
-import { GameEngineAction } from '../types/gameActions';
+import { GameAction } from '../types/actions'; // Use main GameAction type
 import { CombatState } from '../types/combat';
 
 export const processPlayerAction = async (
@@ -11,7 +11,7 @@ export const processPlayerAction = async (
   opponent: Character,
   weaponState: WeaponCombatState,
   aimBonus: number,
-  dispatch: React.Dispatch<GameEngineAction>,
+  dispatch: React.Dispatch<GameAction>, // Use main GameAction type
   combatState: CombatState
 ): Promise<{
   result: WeaponCombatResult;
@@ -52,7 +52,7 @@ export const processOpponentAction = async (
   opponent: Character,
   playerCharacter: Character,
   weaponState: WeaponCombatState,
-  dispatch: React.Dispatch<GameEngineAction>,
+  dispatch: React.Dispatch<GameAction>, // Use main GameAction type
   combatState: CombatState
 ) => {
   // Basic AI: Choose a random action from available actions

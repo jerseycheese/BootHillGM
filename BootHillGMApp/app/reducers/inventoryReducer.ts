@@ -128,14 +128,12 @@ const normalizeItem = (item: unknown): InventoryItem => {
 const inventoryReducer = (state: InventoryState = initialInventoryState, action: GameAction): InventoryState => {
   switch (action.type) {
     case 'inventory/ADD_ITEM': {
-      console.log('[Reducer ADD_ITEM] Action received:', JSON.stringify(action)); // Log the whole action
       const rawNewItem = ('payload' in action) ? action.payload : null;
       
       if (!rawNewItem) return state;
       
       // Normalize the item to ensure all properties have proper formats
       const newItem = normalizeItem(rawNewItem);
-      console.log('[Reducer ADD_ITEM] Normalized new item:', JSON.stringify(newItem));
       
       // Check if item already exists
       const existingItemIndex = state.items.findIndex(item => item.id === newItem.id);
@@ -150,7 +148,6 @@ const inventoryReducer = (state: InventoryState = initialInventoryState, action:
             ...oldItem,
             quantity: newQuantity // Assign the calculated numeric quantity
         };
-        console.log('[Reducer ADD_ITEM] Updated existing item:', JSON.stringify(updatedItem)); // Log the updated item object
         // Create the updated items array immutably
         updatedItems = [
             ...state.items.slice(0, existingItemIndex),

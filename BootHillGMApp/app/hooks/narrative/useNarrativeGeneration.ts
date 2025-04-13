@@ -3,8 +3,8 @@
  */
 import { useCallback, useState, useMemo } from 'react';
 import { AIService } from '../../services/ai';
-import { InventoryItem } from '../../types/item.types';
-import { NarrativeContextValue, NarrativeResponse } from './types';
+import { Character } from '../../types/character';
+import { NarrativeResponse } from './types';
 
 /**
  * Hook that provides functionality for generating narrative responses
@@ -12,8 +12,7 @@ import { NarrativeContextValue, NarrativeResponse } from './types';
  * @param context The narrative context
  * @returns Functions and state for narrative generation
  */
-export function useNarrativeGeneration(context: NarrativeContextValue) {
-  const { state } = context;
+export function useNarrativeGeneration() {
   const [isGeneratingNarrative, setIsGeneratingNarrative] = useState(false);
   
   // Instance of the AI service - wrapped in useMemo to prevent recreation on every render
@@ -32,27 +31,56 @@ export function useNarrativeGeneration(context: NarrativeContextValue) {
    */
   const generateNarrativeResponse = useCallback(async (
     option: string,
-    decisionPrompt: string
+    _decisionPrompt: string
   ): Promise<NarrativeResponse> => {
     setIsGeneratingNarrative(true);
     
     try {
-      // Use recent narrative history as context
-      const recentHistory = state.narrativeHistory.slice(-3).join('\n\n');
-      
-      // Get player inventory from game state - as an array of InventoryItem objects
-      const inventory: InventoryItem[] = []; // In a real implementation, get this from game state
-      
-      // Create a prompt that includes the decision context and selected option
-      const prompt = `In response to "${decisionPrompt}", I chose to "${option}". What happens next?`;
-      
       // Get AI response with narrative continuation
-      const response = await aiService.getAIResponse(prompt, recentHistory, inventory);
+      // Prepare complete character data structure
+      const characterData: Character = {
+        name: 'Player',
+        inventory: { items: [] },
+        isNPC: false,
+        isPlayer: true,
+        id: 'current-player',
+        attributes: {
+          speed: 5,
+          gunAccuracy: 5,
+          throwingAccuracy: 5,
+          strength: 5,
+          baseStrength: 5,
+          bravery: 5,
+          experience: 0
+        },
+        minAttributes: {
+          speed: 1,
+          gunAccuracy: 1,
+          throwingAccuracy: 1,
+          strength: 1,
+          baseStrength: 1,
+          bravery: 1,
+          experience: 0
+        },
+        maxAttributes: {
+          speed: 10,
+          gunAccuracy: 10,
+          throwingAccuracy: 10,
+          strength: 10,
+          baseStrength: 10,
+          bravery: 10,
+          experience: 100
+        },
+        wounds: [],
+        isUnconscious: false
+      };
+
+      const response = await aiService.generateGameContent(characterData);
       
       setIsGeneratingNarrative(false);
       return {
         narrative: response.narrative,
-        acquiredItems: response.acquiredItems || [],
+        acquiredItems: (response.acquiredItems || []).map(item => item.name),
         removedItems: response.removedItems || []
       };
     } catch (error) {
@@ -68,7 +96,7 @@ export function useNarrativeGeneration(context: NarrativeContextValue) {
         removedItems: []
       };
     }
-  }, [state.narrativeHistory, aiService]);
+  }, [aiService]);
 
   return {
     generateNarrativeResponse,

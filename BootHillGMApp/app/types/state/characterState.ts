@@ -6,6 +6,7 @@ import { Character } from '../character';
 export interface CharacterState {
   player: Character | null;
   opponent: Character | null;
+  [key: string]: unknown;
 }
 
 /**

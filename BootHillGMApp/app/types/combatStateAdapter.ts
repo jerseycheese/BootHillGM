@@ -59,6 +59,8 @@ export interface CombatInitiator {
   executeCombatRound: () => void;
   handleCombatAction: () => void;
   handlePlayerHealthChange: (characterId: string, newHealth: number) => void;
+  handleCombatEnd: (winner: "player" | "opponent", combatResults: string) => Promise<void>;
+  handleStrengthChange: (characterType: "player" | "opponent", newStrength: number) => void;
   
   // Player/character management
   onEquipWeapon: (itemId: string) => void;
@@ -67,7 +69,9 @@ export interface CombatInitiator {
   
   // State management
   isCombatActive: boolean;
-  dispatch: Dispatch<GameAction>; // Use GameAction
+  isProcessing: boolean;
+  combatQueueLength: number;
+  dispatch: Dispatch<GameAction>;
   
   // Additional properties for hooks
   isLoading?: boolean;
@@ -77,9 +81,6 @@ export interface CombatInitiator {
   handleDebug?: (command: string) => void;
   handleSave?: () => void;
   handleLoad?: () => void;
-  
-  // Allow for additional unknown properties
-  // [key: string]: unknown; // Removing index signature if not strictly needed
 }
 
 /**

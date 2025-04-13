@@ -1,6 +1,6 @@
 # Test Utilities
 
-This directory contains utility functions and helpers for testing the BootHill GM application.
+This directory contains utility functions and helpers for testing the Boot Hill GM application.
 
 ## Organization
 

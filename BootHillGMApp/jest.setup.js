@@ -64,6 +64,22 @@ global.IntersectionObserver = class IntersectionObserver {
   }
 };
 
+// Add crypto mock for tests that require UUID generation
+// This is similar to how Node polyfills certain browser APIs
+global.crypto = {
+  // Basic implementation that can be mocked in tests
+  // Use our utility instead of relying on this directly
+  randomUUID: () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, 
+    c => {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    }
+  ),
+  // Keep any existing crypto methods
+  ...(global.crypto || {})
+};
+
 // Improved localStorage mock with proper error handling
 class LocalStorageMock {
   constructor() {
@@ -118,3 +134,23 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
   // Don't fail the test, just log the error
 });
+
+// Mock @google/generative-ai package
+jest.mock('@google/generative-ai', () => ({
+  GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
+    getGenerativeModel: jest.fn().mockImplementation(() => ({
+      generateContent: jest.fn().mockResolvedValue({
+        response: {
+          text: () => 'Mock AI response'
+        }
+      })
+    }))
+  }))
+}));
+
+// Mock global fetch if needed
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve({}),
+  })
+);

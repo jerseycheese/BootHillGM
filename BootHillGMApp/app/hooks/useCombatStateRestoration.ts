@@ -1,9 +1,6 @@
 import { useEffect } from 'react';
-import { Character } from '../types/character'; // Re-import Character
-import { CombatState } from '../types/state/combatState'; // Use state types (Removed unused LogEntry alias)
-// Removed unused imports: GameAction, Dispatch
-
-// Removed unused local CombatInitiator interface definition
+import { Character } from '../types/character';
+import { CombatState } from '../types/state/combatState';
 import { Weapon } from '../types/weapon.types';
 import { Wound } from '../types/wound';
 import { InventoryItem } from '../types/item.types';
@@ -134,10 +131,11 @@ function getSafeOpponent(state: unknown): OpponentLike | null {
  * - Maintaining exact strength values and turn state
  * - Preserving combat log history and wounds
  */
+import { useGameSession } from './useGameSession'; // Import the hook itself
+
 export function useCombatStateRestoration(
     state: unknown,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    gameSession: any | null // Use 'any' temporarily
+    gameSession: ReturnType<typeof useGameSession> | null
 ) {
     useEffect(() => {
         if (!state || !gameSession) return;
@@ -153,7 +151,7 @@ export function useCombatStateRestoration(
         const shouldRestoreCombat = isCombatActive &&
             safeOpponent &&
             safeCombatState &&
-            !gameSession.isCombatActive;
+            safeCombatState.isActive;
 
         if (shouldRestoreCombat) {
             // Create a restored opponent with all required Character properties
@@ -227,8 +225,7 @@ export function useCombatStateRestoration(
             };
             
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            gameSession.initiateCombat(restoredOpponent, restoredCombatState as any); // Cast state to any temporarily
+            gameSession.initiateCombat(restoredOpponent, restoredCombatState);
         }
     }, [
         gameSession,

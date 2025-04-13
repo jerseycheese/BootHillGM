@@ -1,23 +1,13 @@
 /**
- * AI Services barrel file
- * 
- * Exports all AI-related services to simplify imports.
+ * Centralized AI service exports
  */
 
-// AI Service
-export { default as AIService } from './aiService';
+import { AIService } from './aiService';
 
-// Decision Service
-export { default as DecisionService } from './decision-service';
-export { default as AIDecisionGenerator } from './decision-service/decision-generator';
-export { default as NarrativeDecisionDetector } from './decision-service/narrative-decision-detector';
-export { default as DecisionHistoryService } from './decision-service/decision-history-service';
-export { default as AIServiceClient } from './decision-service/ai-service-client';
+export { AIService };
 
-// Summary Generation
-export { generateCharacterSummary } from './summaryGenerator';
-export const generateNarrativeSummary = async (content: string, _context: string): Promise<string> => {
-  // Simple implementation that returns the first 100 characters as a summary
-  // or returns just 'Summary' when in test environments
-  return content.slice(0, 100) + (content.length > 100 ? '...' : '');
-};
+// Create and export a default instance for shared use
+export const aiServiceInstance = new AIService();
+
+// Export default for module pattern
+export default AIService;

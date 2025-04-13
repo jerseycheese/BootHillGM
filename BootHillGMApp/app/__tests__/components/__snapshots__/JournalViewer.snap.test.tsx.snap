@@ -16,13 +16,13 @@ exports[`JournalViewer snapshots handles entries with missing IDs 1`] = `
       class="overflow-y-auto"
     >
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        Arrived at Redemption
+        Arrived at Redemption.
       </li>
     </ul>
   </div>
@@ -45,13 +45,13 @@ exports[`JournalViewer snapshots matches snapshot with combat entry 1`] = `
       class="overflow-y-auto"
     >
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        Defeated a bandit
+        Defeated a bandit.
       </li>
     </ul>
   </div>
@@ -61,14 +61,18 @@ exports[`JournalViewer snapshots matches snapshot with combat entry 1`] = `
 exports[`JournalViewer snapshots matches snapshot with empty entries 1`] = `
 <div>
   <div
-    class="wireframe-section"
+    class="wireframe-section bhgm-journal-viewer"
+    data-testid="journal-viewer"
+    id="bhgmJournalViewer"
   >
     <h2
       class="wireframe-subtitle mb-2"
     >
       Journal
     </h2>
-    <p>
+    <p
+      class="text-sm italic"
+    >
       No journal entries yet.
     </p>
   </div>
@@ -91,40 +95,40 @@ exports[`JournalViewer snapshots matches snapshot with entries in reverse chrono
       class="overflow-y-auto"
     >
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        The Missing Sheriff: started
+        Started a new quest.
       </li>
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        Acquired: Whiskey, Ammunition | Removed: Bandage
+        Inventory updated.
       </li>
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        Defeated a bandit
+        Defeated a bandit.
       </li>
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        Arrived at Redemption
+        Arrived at Redemption.
       </li>
     </ul>
   </div>
@@ -147,13 +151,13 @@ exports[`JournalViewer snapshots matches snapshot with inventory entry 1`] = `
       class="overflow-y-auto"
     >
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        Acquired: Whiskey, Ammunition | Removed: Bandage
+        Inventory updated.
       </li>
     </ul>
   </div>
@@ -176,40 +180,40 @@ exports[`JournalViewer snapshots matches snapshot with multiple entries of diffe
       class="overflow-y-auto"
     >
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        The Missing Sheriff: started
+        Started a new quest.
       </li>
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        Acquired: Whiskey, Ammunition | Removed: Bandage
+        Inventory updated.
       </li>
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        Defeated a bandit
+        Defeated a bandit.
       </li>
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        Arrived at Redemption
+        Arrived at Redemption.
       </li>
     </ul>
   </div>
@@ -232,13 +236,13 @@ exports[`JournalViewer snapshots matches snapshot with narrative entry 1`] = `
       class="overflow-y-auto"
     >
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        Arrived at Redemption
+        Arrived at Redemption.
       </li>
     </ul>
   </div>
@@ -248,14 +252,18 @@ exports[`JournalViewer snapshots matches snapshot with narrative entry 1`] = `
 exports[`JournalViewer snapshots matches snapshot with null entries 1`] = `
 <div>
   <div
-    class="wireframe-section"
+    class="wireframe-section bhgm-journal-viewer"
+    data-testid="journal-viewer"
+    id="bhgmJournalViewer"
   >
     <h2
       class="wireframe-subtitle mb-2"
     >
       Journal
     </h2>
-    <p>
+    <p
+      class="text-sm italic"
+    >
       No journal entries yet.
     </p>
   </div>
@@ -278,13 +286,13 @@ exports[`JournalViewer snapshots matches snapshot with quest entry 1`] = `
       class="overflow-y-auto"
     >
       <li
-        class="wireframe-text mb-2"
+        class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
       >
         <strong>
           03/30/2022
         </strong>
         : 
-        The Missing Sheriff: started
+        Started a new quest.
       </li>
     </ul>
   </div>
@@ -294,14 +302,18 @@ exports[`JournalViewer snapshots matches snapshot with quest entry 1`] = `
 exports[`JournalViewer snapshots matches snapshot with undefined entries 1`] = `
 <div>
   <div
-    class="wireframe-section"
+    class="wireframe-section bhgm-journal-viewer"
+    data-testid="journal-viewer"
+    id="bhgmJournalViewer"
   >
     <h2
       class="wireframe-subtitle mb-2"
     >
       Journal
     </h2>
-    <p>
+    <p
+      class="text-sm italic"
+    >
       No journal entries yet.
     </p>
   </div>
@@ -323,13 +335,13 @@ exports[`JournalViewer snapshots renders with accessible attributes 1`] = `
     class="overflow-y-auto"
   >
     <li
-      class="wireframe-text mb-2"
+      class="wireframe-text mb-2 cursor-pointer hover:bg-gray-100 transition-colors"
     >
       <strong>
         03/30/2022
       </strong>
       : 
-      Arrived at Redemption
+      Arrived at Redemption.
     </li>
   </ul>
 </div>

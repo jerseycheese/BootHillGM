@@ -24,4 +24,4 @@ export enum ResponseContextType {
 }
 
 // Default location name used in fallback responses
-export const DEFAULT_LOCATION_NAME = 'Boothill';
+export const DEFAULT_LOCATION_NAME = 'Boot Hill';

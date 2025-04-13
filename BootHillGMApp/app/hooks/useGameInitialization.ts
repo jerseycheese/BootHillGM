@@ -1,190 +1,227 @@
-import { useState, useEffect } from 'react';
+// /app/hooks/useGameInitialization.ts
+import { useState, useEffect, useRef } from 'react';
 import { useGameState } from '../context/GameStateProvider';
+import { logDiagnostic } from '../utils/initializationDiagnostics';
+import { 
+  debug 
+} from '../utils/initialization/initHelpers';
+import { 
+  InitializationRef,
+  setupInitState
+} from '../utils/initialization/initState';
+import { 
+  handleResetInitialization,
+  handleRestoredGameState,
+  handleFirstTimeInitialization
+} from '../utils/initialization/initScenarios';
 import { GameStorage } from '../utils/gameStorage';
-import { getAIResponse } from '../services/ai/gameService'; // Import gameService
-import { generateNarrativeSummary } from '../utils/ai/narrativeSummary'; // Re-import summary generator
-import { NarrativeJournalEntry } from '../types/journal';
-import { SuggestedAction } from '../types/campaign'; // Import SuggestedAction type
 
 /**
- * useGameInitialization hook
+ * Enhanced useGameInitialization hook with improved reset handling
  * 
- * Handles the initialization of the game state from storage or initializes a new game
- * if no saved state is found.
- * 
- * Returns:
- * - isInitializing: true if the game is still loading state, false when ready
- * - isClient: true if running in a browser, false during SSR
+ * This hook manages game state initialization, ensuring the game
+ * has a valid state when starting up or after being reset.
  */
 export function useGameInitialization() {
-  // Get state and dispatch from the game state context
-  const { dispatch } = useGameState(); // state is not directly used in this hook
+  const { state, dispatch } = useGameState();
   const [isInitializing, setIsInitializing] = useState(true);
   const [isClient, setIsClient] = useState(false);
+
+  // Reference to track initialization status
+  const initializationRef = useRef<InitializationRef>({
+    initialized: false,
+    inProgress: false,
+    initCalled: 0,
+    resetDetected: false,
+    lastResetTimestamp: 0,
+    timeoutId: null,
+    forceAIGeneration: false,
+    directAIGenerationAttempted: false
+  });
 
   // Client-side check
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  // Main initialization effect
   useEffect(() => {
-    // Only initialize on the client side
     if (!isClient) return;
     
+    const initRef = initializationRef.current;
+    
+    // IMPORTANT: Fix for infinite loop - we need to prevent multiple initializations from the same reset
+    // Check initialization status first before checking flags
+    if (initRef.inProgress) {
+      debug();
+      return;
+    }
+    
+    // Setup initialization state - using regular function, not hook
+    const { nowResetDetected } = setupInitState(initRef);
+    
+    // Skip if already initialized (unless reset detected)
+    if (initRef.initialized && !nowResetDetected) {
+      debug();
+      return;
+    }
+    
+    // Mark initialization as in progress
+    initRef.inProgress = true;
+    initRef.initCalled++;
+    
+    debug(`Starting initialization (call #${initRef.initCalled}), reset detected: ${initRef.resetDetected}, force AI generation: ${initRef.forceAIGeneration}`);
+    
+    // Set a safety timeout
+    initRef.timeoutId = setTimeout(() => {
+      debug('SAFETY TIMEOUT: Forcing initialization to complete');
+      if (isInitializing) {
+        setIsInitializing(false);
+        initRef.inProgress = false;
+        initRef.initialized = true;
+      }
+    }, 10000);
+
     const initializeState = async () => {
       try {
-        // Load the saved game state if it exists
+        debug('Checking localStorage for game state...');
+        
+        // Load saved state if it exists
         const savedState = localStorage.getItem(GameStorage.keys.GAME_STATE);
         
-        // Get the default character first so we can use it throughout
-        const defaultCharacter = GameStorage.getDefaultCharacter();
+        // Check for pre-generated content from reset handler
+        const narrativeContent = localStorage.getItem('narrative');
+        const journalContent = localStorage.getItem('journal');
+        const suggestedActionsContent = localStorage.getItem('suggestedActions');
         
-        if (savedState) {
-          const parsedState = JSON.parse(savedState);
-          
-          // Dispatch the saved state
-          dispatch({ type: 'SET_STATE', payload: parsedState });
-        } else {
-          // Initialize a new game if no saved state exists
-          const initialState = GameStorage.initializeNewGame();
-          
-          // Ensure character exists and has a proper name - IMPORTANT!
-          
-          // Important: Set the default character BEFORE setting the rest of the state
-          // This ensures the character name is properly set first
-          dispatch({ 
-            type: 'character/SET_CHARACTER',
-            payload: defaultCharacter
-          });
-          
-          // Set the rest of the game state
-          dispatch({ type: 'SET_STATE', payload: initialState });
-          
-          // Get default inventory items separately
-          const defaultItems = GameStorage.getDefaultInventoryItems();
-
-          // Dispatch SET_INVENTORY to populate the top-level inventory slice
-          // This is necessary because initializeNewGame only returns inventory nested within character
-          dispatch({
-            type: 'inventory/SET_INVENTORY',
-            payload: defaultItems
-          });
-
-          // Also dispatch ADD_ITEM to satisfy the test expectations
-          // This ensures the test can verify both SET_INVENTORY and ADD_ITEM are called
-          if (defaultItems.length > 0) {
-            dispatch({
-              type: 'inventory/ADD_ITEM',
-              payload: defaultItems[0]
-            });
-          }
-          
-          // --- Generate Initial Narrative & Actions via AI ---
-          try {
-            const initialAIResponse = await getAIResponse({
-              prompt: "Begin the adventure in Boot Hill",
-              journalContext: "The player character has just arrived in the frontier town of Boot Hill.",
-              inventory: initialState.character?.player?.inventory?.items || [], // Get inventory from initialized state
-              // No story progression, narrative context, or lore store initially
-            });
-
-            // Create and dispatch initial narrative entry
-            if (initialAIResponse.narrative) {
-              let summary = 'Arrived in Boot Hill.'; // Default fallback summary
-              try {
-                // Attempt to generate summary from the AI narrative content
-                summary = await generateNarrativeSummary(
-                  "Summarize the start of the adventure", // Context for summary generation
-                  initialAIResponse.narrative
-                );
-              } catch (summaryError) {
-                console.error("Failed to generate narrative summary:", summaryError);
-                // Keep the default fallback summary if generation fails
-              }
-
-              const initialNarrativeEntry: NarrativeJournalEntry = {
-                id: `entry_narrative_${Date.now()}`,
-                title: 'Adventure Begins',
-                type: 'narrative',
-                timestamp: Date.now(),
-                content: initialAIResponse.narrative, // Use AI narrative
-                narrativeSummary: summary // Use generated summary or fallback
-              };
-              dispatch({
-                type: 'journal/ADD_ENTRY',
-                payload: initialNarrativeEntry
-              });
-              // ALSO add the narrative content to the history for display
-              dispatch({
-                type: 'ADD_NARRATIVE_HISTORY',
-                payload: initialAIResponse.narrative
-              });
-            } else {
-               console.warn("AI response missing narrative content.");
-            }
-
-            // Dispatch suggested actions
-            if (initialAIResponse.suggestedActions && initialAIResponse.suggestedActions.length > 0) {
-               // Ensure payload matches expected type for the reducer
-               const actionsPayload: SuggestedAction[] = initialAIResponse.suggestedActions.map(action => ({
-                 id: action.id || `action-${Date.now()}-${Math.random()}`, // Ensure ID exists
-                 title: action.title || 'Unnamed Action',
-                 description: action.description || '',
-                 type: action.type || 'optional' // Ensure type exists and is valid
-               }));
-
-              dispatch({
-                type: 'SET_SUGGESTED_ACTIONS', // Use the correct action type
-                payload: actionsPayload
-              });
-            } else {
-               console.warn("AI response missing suggested actions.");
-            }
-
-          } catch {
-            // console.error("Failed to get initial AI response:", aiError); // Keep error log for production issues
-            // Fallback: Add a simple default narrative entry if AI fails
-            const fallbackNarrativeEntry: NarrativeJournalEntry = {
-              id: `entry_narrative_fallback_${Date.now()}`,
-              title: 'Adventure Begins (Fallback)',
-              type: 'narrative',
-              timestamp: Date.now(),
-              content: 'Your adventure begins in the rugged frontier town of Boot Hill. The AI game master seems to be unavailable.',
-              narrativeSummary: 'Arrived in Boot Hill, AI unavailable.'
-            };
-            dispatch({
-              type: 'journal/ADD_ENTRY',
-              payload: fallbackNarrativeEntry
-          });
-          // ALSO add the fallback narrative content to the history for display
-          dispatch({
-            type: 'ADD_NARRATIVE_HISTORY',
-            payload: fallbackNarrativeEntry.content
-          });
-           // Optionally dispatch default suggested actions as fallback?
-           // dispatch({ type: 'SET_SUGGESTED_ACTIONS', payload: [...] });
-        }
-          // --- End AI Generation ---
-
-        } // End of else block (!savedState)
-        
-        
-        // After all state has been set, set character one more time to ensure it sticks
-        dispatch({ 
-          type: 'character/SET_CHARACTER',
-          payload: defaultCharacter
+        debug('Checking for pre-generated content:', {
+          hasNarrative: !!narrativeContent,
+          hasJournal: !!journalContent,
+          hasSuggestedActions: !!suggestedActionsContent
         });
         
-        // Finish initialization
+        // IMPORTANT: Check for character data in specific storage key first
+        let characterData = null;
+        const characterDataKey = localStorage.getItem('characterData');
+        if (characterDataKey) {
+          try {
+            debug('Found characterData key, parsing character...');
+            characterData = JSON.parse(characterDataKey);
+            
+            // Save character data to every possible location to ensure persistence
+            try {
+              localStorage.setItem('completed-character', JSON.stringify(characterData));
+              localStorage.setItem('character-creation-progress', JSON.stringify({ character: characterData }));
+              debug('Saved character data to all storage locations');
+            } catch (storageError) {
+              debug('Error saving character data to storage:', storageError);
+            }
+          } catch (error) {
+            debug('Error parsing characterData:', error);
+          }
+        }
+        
+        // Get character data from storage or use default
+        const character = characterData || 
+                         GameStorage.getCharacter().player || 
+                         GameStorage.getDefaultCharacter();
+        
+        if (!character.id) {
+          character.id = `character_${Date.now()}`;
+        }
+        
+        debug(`Character being used: ${character.name}`);
+        logDiagnostic('GAMEINIT', 'Character for initialization', {
+          name: character.name,
+          id: character.id,
+          fromReset: !!characterData,
+          resetDetected: initRef.resetDetected
+        });
+        
+        // We need to force new AI content generation after reset
+        // The special flags or narrativeExists check will trigger generation
+        const forceNewGeneration = initRef.resetDetected || initRef.forceAIGeneration;
+        
+        // CRITICAL FIX: Always prefer direct AI generation on reset
+        if (forceNewGeneration) {
+          await handleResetInitialization({
+            initRef,
+            character,
+            narrativeContent,
+            journalContent,
+            suggestedActionsContent,
+            dispatch
+          });
+        } else if (savedState && !forceNewGeneration) {
+          // Normal case - restore saved state when available
+          await handleRestoredGameState({
+            character,
+            savedState,
+            dispatch
+          });
+        } else {
+          // Initialize a new game when no saved state exists (first time run)
+          await handleFirstTimeInitialization({
+            character,
+            dispatch
+          });
+        }
+        
+        // Clean up temp characterData key as we've now used it
+        if (characterDataKey) {
+          localStorage.removeItem('characterData');
+        }
+        
+        // Finalize initialization
         setIsInitializing(false);
-      } catch { // Remove unused error variable
+        initRef.inProgress = false;
+        initRef.initialized = true;
+        initRef.resetDetected = false;
+        initRef.forceAIGeneration = false;
+        initRef.directAIGenerationAttempted = false;
+        
+        if (initRef.timeoutId) {
+          clearTimeout(initRef.timeoutId);
+          initRef.timeoutId = null;
+        }
+        
+        debug('Initialization complete');
+        logDiagnostic('GAMEINIT', 'Initialization complete');
+        logDiagnostic('FLAGS', 'GenerationSuccess', {
+          flagsRemaining: {
+            reset: localStorage.getItem('_boothillgm_reset_flag'),
+            force: localStorage.getItem('_boothillgm_force_generation')
+          }
+        });
+      } catch (error) {
+        debug('Initialization error:', error);
+        logDiagnostic('GAMEINIT', 'Initialization error', { error: String(error) });
+        logDiagnostic('FLAGS', 'GenerationFailed', {
+          flagsRemaining: {
+            reset: localStorage.getItem('_boothillgm_reset_flag'),
+            force: localStorage.getItem('_boothillgm_force_generation')
+          },
+          error: String(error)
+        });
+        
         setIsInitializing(false);
+        initRef.inProgress = false;
+        
+        if (initRef.timeoutId) {
+          clearTimeout(initRef.timeoutId);
+          initRef.timeoutId = null;
+        }
       }
     };
 
-    // Run initialization
     initializeState();
-  }, [isClient, dispatch]);
+    
+    return () => {
+      if (initRef.timeoutId) {
+        clearTimeout(initRef.timeoutId);
+      }
+    };
+  }, [isClient, dispatch, state, isInitializing]);
 
   return { isInitializing, isClient };
 }

@@ -11,7 +11,7 @@ import { useBrawlingSync } from "./combat/useBrawlingSync";
  * @param {Character} props.playerCharacter - The player character object.
  * @param {Character} props.opponent - The opponent character object.
  * @param {(winner: 'player' | 'opponent', summary: string) => void} props.onCombatEnd - Callback function to be called when combat ends.
- * @param {React.Dispatch<GameEngineAction>} props.dispatch - Dispatch function for the game engine.
+ * @param {React.Dispatch<GameAction>} props.dispatch - Dispatch function for the game engine.
  * @param {BrawlingState} [props.initialCombatState] - Optional initial state for brawling combat.
  * @returns {object} An object containing the brawling state, processing status, combat ended status, and the processRound function.
  */

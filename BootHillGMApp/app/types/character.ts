@@ -85,6 +85,9 @@ export interface Character {
 
   /** Strength history */
   strengthHistory?: StrengthHistory;
+
+  /** Index signature for dynamic property access */
+  [key: string]: unknown;
 }
 
 export interface CombatLogEntry {

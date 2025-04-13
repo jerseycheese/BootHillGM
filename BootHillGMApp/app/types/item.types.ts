@@ -11,6 +11,10 @@ export interface InventoryItem {
   usePrompt?: string;
   weapon?: Weapon;
   isEquipped?: boolean;
+  // Add the extended properties to the base interface
+  weight?: number;
+  value?: number;
+  durability?: number;
 }
 
 export function createInventoryItem(itemData: Omit<InventoryItem, 'category'>): InventoryItem {
@@ -20,7 +24,8 @@ export function createInventoryItem(itemData: Omit<InventoryItem, 'category'>): 
   };
 }
 
-export type ItemCategory = 'general' | 'weapon' | 'consumable' | 'medical';
+// Update ItemCategory to include 'misc'
+export type ItemCategory = 'general' | 'weapon' | 'consumable' | 'medical' | 'misc';
 
 export interface ItemRequirements {
   minStrength?: number;

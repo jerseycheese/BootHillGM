@@ -26,7 +26,7 @@ export function generateNarrative(
 ): string {
   switch (contextType) {
     case ResponseContextType.INITIALIZING:
-      return `${characterName} arrives in the town of Boothill, greeted by the sight of dusty streets and wooden buildings. The sun hangs low in the sky, casting long shadows across the main thoroughfare. The distant sounds of piano music drift from the saloon, while townsfolk move about their business.`;
+      return `${characterName} arrives in the town of Boot Hill, greeted by the sight of dusty streets and wooden buildings. The sun hangs low in the sky, casting long shadows across the main thoroughfare. The distant sounds of piano music drift from the saloon, while townsfolk move about their business.`;
       
     case ResponseContextType.LOOKING:
       return `${characterName} looks around at the frontier town. The dusty main street stretches before you, lined with wooden buildings. A saloon stands nearby, and people move about their business. The mountains rise in the distance, a reminder of the vast wilderness beyond the town limits.`;

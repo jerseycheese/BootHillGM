@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 /**
  * LoadingScreen Component
@@ -21,7 +21,7 @@ interface LoadingScreenProps {
   subMessage?: string;
   size?: 'small' | 'medium' | 'large';
   fullscreen?: boolean;
-  type?: 'session' | 'combat' | 'ai' | 'inventory' | 'general';
+  type?: 'session' | 'combat' | 'ai' | 'inventory' | 'general' | 'reset';
   onRetry?: () => void;
   error?: string | null;
   children?: React.ReactNode;
@@ -39,6 +39,31 @@ export function LoadingScreen({
   children,
   loadingTime
 }: LoadingScreenProps) {
+  // Check if we should suppress loading screen during reset
+  const [shouldRender, setShouldRender] = useState(true);
+  
+  useEffect(() => {
+    // Check for skip loading flag in localStorage
+    const skipLoading = localStorage.getItem('_boothillgm_skip_loading');
+    
+    // If this is a reset operation and skip flag is set, don't render
+    if (type === 'reset' || skipLoading === 'true') {
+      setShouldRender(false);
+      
+      // Clean up the flag after we've used it
+      if (skipLoading) {
+        localStorage.removeItem('_boothillgm_skip_loading');
+      }
+    } else {
+      setShouldRender(true);
+    }
+  }, [type]);
+  
+  // If we shouldn't render, return null
+  if (!shouldRender) {
+    return null;
+  }
+
   const getDefaultMessage = () => {
     switch(type) {
       case 'session':
@@ -49,6 +74,8 @@ export function LoadingScreen({
         return 'Processing response...';
       case 'inventory':
         return 'Updating inventory...';
+      case 'reset':
+        return 'Resetting game...';
       default:
         return 'Loading...';
     }
@@ -68,6 +95,8 @@ export function LoadingScreen({
         return 'The AI is generating a response...';
       case 'inventory':
         return 'Updating your items...';
+      case 'reset':
+        return 'Preparing a new adventure...';
       default:
         return 'Please wait...';
     }

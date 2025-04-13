@@ -4,7 +4,7 @@ This guide explains the unified state model approach implemented in Issue #253.
 
 ## Overview
 
-The BootHill GM App previously maintained two parallel state models:
+The Boot Hill GM App previously maintained two parallel state models:
 
 1. **Legacy CampaignState**: A flatter structure with direct property access
 2. **Domain-Specific GameState**: A more organized structure with domain-specific slices

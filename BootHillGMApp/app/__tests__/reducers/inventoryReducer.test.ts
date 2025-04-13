@@ -1,7 +1,8 @@
 import inventoryReducer, { initialInventoryState } from '../../reducers/inventoryReducer';
 import { InventoryState } from '../../types/state/inventoryState';
 import { InventoryItem, ItemCategory } from '../../types/item.types';
-import { GameAction, UseItemAction, AddItemAction, SetInventoryAction, UpdateItemQuantityAction } from '../../types/actions/inventoryActions';
+import { GameAction } from '../../types/actions';
+import { UseItemAction, AddItemAction, SetInventoryAction, UpdateItemQuantityAction } from '../../types/actions/inventoryActions';
 
 describe('inventoryReducer', () => {
   let initialState: InventoryState;
@@ -22,8 +23,8 @@ describe('inventoryReducer', () => {
   });
 
   it('should handle initial state', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(inventoryReducer(undefined, {} as any)).toEqual(initialInventoryState);
+    // Use a valid, minimal action type like NO_OP
+    expect(inventoryReducer(undefined, { type: 'NO_OP' })).toEqual(initialInventoryState);
   });
 
   describe("inventory/USE_ITEM", () => {
@@ -81,6 +82,8 @@ describe('inventoryReducer', () => {
 
     it('should not change state if payload is missing', () => {
       const action = { type: 'inventory/USE_ITEM' }; // Missing payload
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // Using 'as any' to explicitly test reducer behavior with a malformed action (missing payload).
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect(inventoryReducer(initialState, action as any)).toEqual(initialState);
     });

@@ -17,7 +17,7 @@ import { successPathDefaultActions } from '../__mocks__/gameServiceMocks';
 jest.mock('../../../../services/ai/utils/entityExtractor', () => ({
   extractEntitiesFromText: jest.fn().mockReturnValue({
     characters: ['Sheriff', 'Bartender'],
-    locations: ['Saloon', 'Boothill'],
+    locations: ['Saloon', 'Boot Hill'],
     items: ['gun', 'whiskey']
   })
 }));

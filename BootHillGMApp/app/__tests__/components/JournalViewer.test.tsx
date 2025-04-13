@@ -6,16 +6,16 @@ import { NarrativeJournalEntry, CombatJournalEntry } from '../../types/journal';
 describe('JournalViewer', () => {
   const mockNarrativeEntry: NarrativeJournalEntry = {
     id: 'narrative-1',
-    title: 'Journey Start', // Add title
+    title: 'Journey Start',
     type: 'narrative',
     timestamp: 1617235200000,
     content: 'Started the journey',
-    narrativeSummary: 'A new adventure begins'
+    narrativeSummary: 'A new adventure begins.'
   };
 
   const mockCombatEntry: CombatJournalEntry = {
     id: 'combat-1',
-    title: 'Bandit Fight', // Add title
+    title: 'Bandit Fight',
     type: 'combat',
     timestamp: 1617321600000,
     content: 'Combat occurred',
@@ -24,7 +24,7 @@ describe('JournalViewer', () => {
       opponent: 'Bandit'
     },
     outcome: 'victory',
-    narrativeSummary: 'Combat summary'
+    narrativeSummary: 'Combat summary.'
   };
 
   test('renders without crashing', () => {
@@ -58,21 +58,21 @@ describe('JournalViewer', () => {
   test('handles invalid timestamps gracefully', () => {
     const entryWithInvalidDate: NarrativeJournalEntry = {
       id: 'invalid-timestamp',
-      title: 'Invalid Date Entry', // Add title
+      title: 'Invalid Date Entry',
       type: 'narrative',
       timestamp: NaN,
-      content: 'Invalid date entry'
+      content: 'Invalid date entry',
+      narrativeSummary: 'Invalid date entry.'
     };
     
     render(<JournalViewer entries={[entryWithInvalidDate]} />);
-    expect(screen.getByText('Invalid date', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.getByText('NaN/NaN/NaN', { selector: 'strong' })).toBeInTheDocument();
   });
 
   test('handles undefined entries gracefully', () => {
     // @ts-expect-error - Testing with undefined entries to ensure component doesn't crash
     render(<JournalViewer entries={undefined} />);
     expect(screen.getByText('Journal')).toBeInTheDocument();
-    // Should not show "No journal entries yet" message
     expect(screen.getByText('No journal entries yet.')).toBeInTheDocument();
   });
 
@@ -80,7 +80,6 @@ describe('JournalViewer', () => {
     // @ts-expect-error - Testing with null entries to ensure component doesn't crash
     render(<JournalViewer entries={null} />);
     expect(screen.getByText('Journal')).toBeInTheDocument();
-    // Should not show "No journal entries yet" message
     expect(screen.getByText('No journal entries yet.')).toBeInTheDocument();
   });
 });

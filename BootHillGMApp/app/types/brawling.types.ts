@@ -1,5 +1,5 @@
 import { LogEntry, BrawlingState } from "./combat";
-import { GameEngineAction } from "./gameActions";
+import { GameAction } from "./actions"; // Use main GameAction type
 import { Character } from "./character";
 
 /**
@@ -19,7 +19,7 @@ export interface UseBrawlingCombatProps {
   playerCharacter: Character;
   opponent: Character;
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
-  dispatch: React.Dispatch<GameEngineAction>;
+  dispatch: React.Dispatch<GameAction>; // Use main GameAction type
   initialCombatState?: BrawlingState;
 }
 

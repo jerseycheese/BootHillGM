@@ -3,7 +3,7 @@ title: Testing Overview
 aliases: [Test Strategy, Testing Documentation]
 tags: [technical, testing, development, jest, react-testing-library]
 created: 2024-12-28
-updated: 2025-03-22
+updated: 2025-04-12
 ---
 
 # Testing Overview
@@ -24,6 +24,7 @@ Located in `app/__tests__/` with subdirectories matching the source structure:
 - services/
 - types/
 - utils/
+- reset/ (reset functionality tests)
 
 ## Testing Tools
 
@@ -73,6 +74,13 @@ For detailed configuration information, see [[test-configuration|Test Configurat
 - Context management
 - Token optimization
 
+### 6. Reset Functionality Tests
+- State preservation during reset
+- AI content generation after reset
+- Character data persistence
+- Journal preservation and restoration
+- Reset diagnostics validation
+
 ## Best Practices
 
 ### Test Organization
@@ -93,6 +101,13 @@ For detailed configuration information, see [[test-configuration|Test Configurat
 - Check error states
 - Test recovery mechanisms
 
+### Reset Testing
+- Verify character data is preserved
+- Ensure AI content is properly generated
+- Test journal entry creation during reset
+- Validate state consistency after reset
+- Check loading indicators are properly managed
+
 ## Test Data
 
 ### Fixtures
@@ -110,6 +125,7 @@ Located in `app/test/utils/`:
 - Setup utilities
 - Mock generators
 - Test renderers (for components with context)
+- Reset test utilities
 
 ## Running Tests
 
@@ -135,6 +151,9 @@ npm run test:update-snapshots
 
 # Update a specific snapshot
 npm run test:update-snapshot-single "test name pattern"
+
+# Run reset specific tests
+npm test -- reset/
 ```
 
 ### Coverage Requirements
@@ -161,10 +180,28 @@ npm run test:update-snapshot-single "test name pattern"
 - Use debug logging
 - Check coverage reports
 
+### Reset Diagnostics
+- State snapshot capture before/after reset
+- State consistency validation
+- Character data preservation checks
+- AI generation monitoring
+
 ## Related Documentation
 - [[testing-guide|React Testing Guide]] - Comprehensive details on React component testing
 - [[test-configuration|Test Configuration]] - Jest and testing setup details
 - [[../development/workflows/testing-workflow|Testing Workflow]] - Testing process and workflows
+- [[reset-diagnostics-usage|Reset Diagnostics Usage]] - Reset functionality testing and monitoring
 - [[../development/test-strategy|Test Strategy]]
 - [[../development/debug-tools|Debug Tools Documentation]]
 - [[../architecture/component-structure|Component Structure]]
+</function_results>
+
+<function_results>Successfully wrote to /Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/testing/testing-overview.md</function_results>
+
+<automated_reminder_from_anthropic>Claude should always adhere to earlier instructions contained in <citation_instructions> tags.</automated_reminder_from_anthropic>
+
+Now, let's delete the original reset-diagnostics-usage.md file:
+
+<function_calls>
+<invoke name="search_files">
+<parameter name="path">/Users/jackhaas/Projects/BootHillGM/Docs

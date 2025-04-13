@@ -14,8 +14,9 @@ import { BrawlingControls } from './BrawlingControls';
 import { WeaponCombatControls } from './WeaponCombatControls';
 import { useBrawlingCombat } from '../../hooks/useBrawlingCombat';
 import { useWeaponCombat } from '../../hooks/useWeaponCombat';
-import { GameEngineAction } from '../../types/gameActions';
+// Removed unused import: import { GameEngineAction } from '../../types/gameActions';
 import { CombatTypeSelection } from './CombatTypeSelection';
+import { CombatSystemProps } from '../GameArea/types'; // Import the correct props type
 import {
   CombatType,
   CombatState, // Use older CombatState from types/combat
@@ -28,15 +29,8 @@ import { Weapon } from '../../types/weapon.types';
 import { getDefaultWeapon } from '../../utils/weaponUtils';
 import { CombatLog } from './CombatLog';
 
-// Use inline props definition expecting older types
-export const CombatSystem: React.FC<{
-  playerCharacter: Character;
-  opponent: Character;
-  onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
-  dispatch: React.Dispatch<GameEngineAction>; // Expect GameEngineAction
-  initialCombatState?: CombatState; // Expect older CombatState
-  currentCombatState?: CombatState; // Add back currentCombatState
-}> = ({
+// Use the imported CombatSystemProps
+export const CombatSystem: React.FC<CombatSystemProps> = ({
   playerCharacter,
   opponent,
   onCombatEnd,
@@ -123,8 +117,8 @@ export const CombatSystem: React.FC<{
   // Handle returning to narrative UI
   const handleReturnToNarrative = useCallback(() => {
     // Use non-namespaced types expected by older logic/GameEngineAction
-    dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
-    dispatch({ type: 'END_COMBAT' });
+    dispatch({ type: 'combat/SET_COMBAT_ACTIVE', payload: false });
+    dispatch({ type: 'combat/END_COMBAT' });
   }, [dispatch]);
 
   // Memoize combat log entries to prevent unnecessary re-renders

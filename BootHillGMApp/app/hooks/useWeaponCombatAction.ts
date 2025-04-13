@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { WeaponCombatAction, WeaponCombatState } from '../types/combat/types';
 import { Character } from '../types/character';
-import { GameEngineAction } from '../types/gameActions';
+import { GameAction } from '../types/actions'; // Use main GameAction type
 import { CombatState } from '../types/combat';
 import { processCombatTurn } from '../utils/weaponCombatTurn';
 import { shouldResetAim } from '../utils/weaponCombatAim';
@@ -15,7 +15,7 @@ interface UseWeaponCombatActionProps {
   weaponState: WeaponCombatState;
   aimBonus: number;
   isProcessing: boolean;
-  dispatch: React.Dispatch<GameEngineAction>;
+  dispatch: React.Dispatch<GameAction>; // Use main GameAction type
   combatState: CombatState;
   setWeaponState: (state: WeaponCombatState | ((prev: WeaponCombatState) => WeaponCombatState)) => void;
   setCurrentOpponent: (opponent: Character) => void;

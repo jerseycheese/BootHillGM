@@ -98,7 +98,6 @@ export const mockPlayerDecisions = {
 };
 
 import { NarrativeJournalEntry, CombatJournalEntry, InventoryJournalEntry, QuestJournalEntry } from '../../types/journal';
-// Removed unused LocationType import
 
 // Mock journal entries for testing
 export const mockJournalEntries: {
@@ -112,27 +111,26 @@ export const mockJournalEntries: {
     type: 'narrative',
     timestamp: FIXED_TIMESTAMP,
     content: 'You arrive at the dusty town of Redemption as the sun begins to set.',
-    narrativeSummary: 'Arrived at Redemption',
-    title: 'Arrival', // Add optional title
+    narrativeSummary: 'Arrived at Redemption.',
+    title: 'Arrival',
   },
   combat: {
     id: 'combat-entry-1',
-    title: 'Bandit Fight', // Add optional title
+    title: 'Bandit Fight',
     type: 'combat',
     timestamp: FIXED_TIMESTAMP + 3600000, // 1 hour later
     content: 'You defeated the bandit with your trusty six-shooter.',
-    // Removed non-existent combatResult property
-    narrativeSummary: 'Defeated a bandit',
-    // Add missing CombatJournalEntry properties
+    narrativeSummary: 'Defeated a bandit.',
     combatants: { player: 'Player', opponent: 'Bandit' },
     outcome: 'victory',
   },
   inventory: {
     id: 'inventory-entry-1',
-    title: 'Looting', // Add optional title
+    title: 'Looting',
     type: 'inventory',
     timestamp: FIXED_TIMESTAMP + 7200000, // 2 hours later
     content: 'Inventory updated',
+    narrativeSummary: 'Inventory updated.',
     items: {
       acquired: ['Whiskey', 'Ammunition'],
       removed: ['Bandage'],
@@ -140,12 +138,13 @@ export const mockJournalEntries: {
   },
   quest: {
     id: 'quest-entry-1',
-    title: 'Quest Update', // Add optional title
+    title: 'Quest Update',
     type: 'quest',
     timestamp: FIXED_TIMESTAMP + 10800000, // 3 hours later
     content: 'Started a new quest',
+    narrativeSummary: 'Started a new quest.',
     questTitle: 'The Missing Sheriff',
-    status: 'started', // Corrected status value
+    status: 'started',
   },
 };
 

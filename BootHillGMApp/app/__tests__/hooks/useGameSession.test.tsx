@@ -62,7 +62,7 @@ jest.mock('../../hooks/useNarrativeUpdater', () => ({
 jest.mock('../../hooks/useLocation', () => ({
   useLocation: jest.fn(() => ({
     locationState: {
-      currentLocation: { type: 'town', name: 'Boothill' },
+      currentLocation: { type: 'town', name: 'Boot Hill' },
       history: []
     },
     updateLocation: jest.fn()

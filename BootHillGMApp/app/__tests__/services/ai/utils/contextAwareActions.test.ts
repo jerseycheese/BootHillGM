@@ -16,10 +16,10 @@ import { ActionType } from '../../../../types/campaign';
 jest.mock('../../../../services/ai/utils/entityExtractor', () => ({
   extractEntitiesFromText: jest.fn().mockImplementation((text: string) => {
     // Return specific entities based on the test narrative
-    if (text.includes('Sheriff Johnson') && text.includes('Boothill')) {
+    if (text.includes('Sheriff Johnson') && text.includes('Boot Hill')) {
       return {
         characters: ['Johnson'],
-        locations: ['Boothill'],
+        locations: ['Boot Hill'],
         items: []
       };
     }
@@ -40,7 +40,7 @@ describe('Context-Aware Suggested Actions', () => {
       const aiResponse = { narrative: "You enter the saloon and see a gunslinger eyeing you suspiciously.", suggestedActions: [] };
       // const gameContext: GameContext = { // Context no longer needed
       //   recentEntries: [
-      //     "The town of Boothill seems tense today.",
+      //     "The town of Boot Hill seems tense today.",
       //     "You notice a notorious gunslinger watching you from across the street.",
       //     "As you enter the saloon, he follows you in, hand hovering near his pistol."
       //   ]
@@ -124,7 +124,7 @@ describe('Context-Aware Suggested Actions', () => {
   describe('Action Text Generation', () => {
     it('should include entity names in generated action text', () => {
       // Arrange
-      const narrativeWithCharacter = "Sheriff Johnson patrols the dusty street of Boothill, his badge gleaming in the sun.";
+      const narrativeWithCharacter = "Sheriff Johnson patrols the dusty street of Boot Hill, his badge gleaming in the sun.";
       
       // Act - generate several actions to increase chance of capturing character name
       const actions = [];
@@ -134,7 +134,7 @@ describe('Context-Aware Suggested Actions', () => {
       
       // Assert - at least one action should mention Johnson
       const mentionsCharacter = actions.some(text => text.includes('Johnson'));
-      const mentionsLocation = actions.some(text => text.includes('Boothill'));
+      const mentionsLocation = actions.some(text => text.includes('Boot Hill'));
       
       // Either character or location should be mentioned in at least one action
       expect(mentionsCharacter || mentionsLocation).toBe(true);

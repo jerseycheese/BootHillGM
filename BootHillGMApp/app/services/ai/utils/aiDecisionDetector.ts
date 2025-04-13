@@ -63,8 +63,7 @@ export function detectDecisionPoint(
  */
 export function calculateDecisionScore(
   narrativeState: NarrativeState,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  character: Character,
+  _character: Character,
   lastDecisionTime: number,
   gameState?: ExtendedGameState
 ): number {

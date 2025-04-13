@@ -15,6 +15,8 @@ import { GameState } from '../types/gameState';
 export function useDevTools(gameState: GameState) {
   // Core state
   const [loading, setLoading] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [loadingIndicator, setLoadingIndicator] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [renderCount, setRenderCount] = useState(0);
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
@@ -238,6 +240,7 @@ export function useDevTools(gameState: GameState) {
     
     // Methods
     setLoading,
+    setLoadingIndicator,
     setError,
     setShowDecisionHistory,
     setSelectedLocationType,

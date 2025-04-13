@@ -18,7 +18,7 @@ import { contextActionTemplates, TEMPLATE_VARS, processTemplate } from './action
  * 
  * @param actionType The type of action to create
  * @param contextType The type of context (initializing, looking, etc.)
- * @param locationName The name of the location (defaults to Boothill)
+ * @param locationName The name of the location (defaults to Boot Hill)
  * @returns A suggested action object
  */
 export function createContextAction(

@@ -4,7 +4,7 @@
  * Provides game state to the application using a clean slice-based architecture.
  */
 
-import React, { useReducer, createContext, useContext, ReactNode, useMemo, Dispatch } from 'react';
+import React, { useReducer, createContext, useContext, ReactNode, useMemo, useCallback, Dispatch } from 'react';
 import rootReducer from '../reducers/rootReducer';
 import { GameState, initialGameState } from '../types/gameState';
 import { GameAction } from '../types/actions';
@@ -88,13 +88,18 @@ export function createSelector<T, K extends unknown[]>(
 ) {
   return function useSelector(): T {
     const { state } = useGameState();
+    const additionalDeps = deps(state);
     
-    // Use React's useMemo for memoization
-    // Memoize based ONLY on the specific dependencies returned by the deps function
-    return useMemo(
+    // Memoize selector result with explicit dependencies
+    const memoizedSelector = useCallback(
       () => selector(state),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      [state, ...deps(state)] // Re-add direct dependency on the whole state object
+      [state] // Explicit dependency on state
+    );
+    
+    // Then apply any additional consumer-provided dependencies
+    return useMemo(
+      memoizedSelector,
+      [memoizedSelector, ...additionalDeps] // Explicit array
     );
   };
 }
@@ -122,7 +127,6 @@ export const useItemById = (id: string) => {
   const { state } = useGameState();
   return useMemo(
     () => state.inventory?.items.find(item => item.id === id),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [state.inventory?.items, id]
   );
 };
@@ -167,7 +171,6 @@ export const useNotificationsByType = (type: string) => {
   const { state } = useGameState();
   return useMemo(
     () => (state.ui?.notifications || []).filter(notification => notification.type === type),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [state.ui?.notifications, type]
   );
 };

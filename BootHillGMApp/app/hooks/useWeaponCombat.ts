@@ -4,14 +4,14 @@ import { getCombatCapabilities } from '../utils/weaponCombatValidation';
 import { UseWeaponCombatReturn } from '../types/weaponCombatHook';
 import { WeaponCombatState } from '../types/combat';
 import { Character } from '../types/character';
-import { GameEngineAction } from '../types/gameActions';
+import { GameAction } from '../types/actions'; // Use main GameAction type
 import { CombatState } from '../types/combat';
 
 interface UseWeaponCombatProps {
   playerCharacter: Character;
   opponent: Character;
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
-  dispatch: React.Dispatch<GameEngineAction>;
+  dispatch: React.Dispatch<GameAction>; // Use main GameAction type
   initialState?: WeaponCombatState;
   debugMode?: boolean;
   combatState: CombatState;

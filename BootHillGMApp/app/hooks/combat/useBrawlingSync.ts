@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { ensureCombatState, BrawlingState } from "../../types/combat";
-import { GameEngineAction } from "../../types/gameActions";
+import { GameAction } from "../../types/actions";
 import { Character } from "../../types/character";
 import { BrawlingAction } from "../../types/brawling.types";
 import { waitForStateUpdate } from "../../test/utils/testSyncUtils";
@@ -8,7 +8,7 @@ import { waitForStateUpdate } from "../../test/utils/testSyncUtils";
 interface UseBrawlingSyncProps {
   brawlingState: BrawlingState;
   isCombatEnded: boolean;
-  dispatch: React.Dispatch<GameEngineAction>;
+  dispatch: React.Dispatch<GameAction>;
   onCombatEnd: (winner: 'player' | 'opponent', summary: string) => void;
   playerCharacter: Character;
   opponent: Character;
@@ -73,7 +73,7 @@ export const useBrawlingSync = ({
       });
 
       dispatch({
-        type: 'UPDATE_CHARACTER',
+        type: 'character/UPDATE_CHARACTER',
         payload: {
           ...playerCharacter,
           id: playerCharacter.id,
@@ -81,7 +81,7 @@ export const useBrawlingSync = ({
       });
 
       dispatch({
-        type: 'UPDATE_CHARACTER',
+        type: 'character/UPDATE_CHARACTER',
         payload: {
           ...opponent,
           id: opponent.id,

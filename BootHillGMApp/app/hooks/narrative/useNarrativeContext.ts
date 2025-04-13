@@ -50,7 +50,7 @@ export function useNarrativeContext(): UseNarrativeContextReturn {
       generateNarrativeResponse, 
       isGeneratingNarrative, 
       setIsGeneratingNarrative 
-    } = useNarrativeGeneration(context);
+    } = useNarrativeGeneration();
     
     const { 
       presentPlayerDecision, 

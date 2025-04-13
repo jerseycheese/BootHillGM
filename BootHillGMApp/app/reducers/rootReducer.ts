@@ -188,18 +188,30 @@ const initialState: GameState = {
   suggestedActions: []
 };
 
+// Type for partial game state with unknown properties
+interface PartialGameStateWithUnknown extends Partial<GameState> {
+  [key: string]: unknown;
+}
+
 /**
  * Root reducer function that combines all slice reducers
  */
 const rootReducer = (state: GameState = initialState, action: GameAction): GameState => {
+  
   // Type-check for null or undefined action
   if (!action) return state;
 
   // Handle the full state replacement action from initialization
   if (action.type === 'SET_STATE' && 'payload' in action) {
-    // Ensure payload conforms to GameState, potentially adding validation if needed
-    return action.payload as GameState;
+    
+    // Check if we have the essential state properties
+    // Use PartialGameStateWithUnknown instead of any
+    const payload = action.payload as PartialGameStateWithUnknown;
+  
+    // Ensure payload conforms to GameState and return it
+    return payload as GameState;
   }
+  
   // Handle resetting the state to initial values
   if (action.type === 'RESET_STATE') {
     // Return a fresh copy of the initial state

@@ -1,7 +1,9 @@
 import { renderHook, act } from "@testing-library/react";
 import { useBrawlingCombat } from "../../hooks/useBrawlingCombat";
 import { Character } from "../../types/character";
-import { GameEngineAction, UpdateCharacterPayload } from "../../types/gameActions";
+import { GameAction } from "../../types/actions";
+import { UpdateCharacterPayload } from "../../types/actions/characterActions";
+import { InventoryItem } from "../../types/item.types";
 import { resolveBrawlingRound } from "../../utils/brawlingSystem";
 import * as combatUtils from "../../utils/combatUtils";
 
@@ -18,7 +20,7 @@ jest.mock("../../utils/combatUtils", () => ({
 describe("Combat Integration Tests", () => {
   let initialPlayerCharacter: Character;
   let initialOpponent: Character;
-  let mockDispatch: jest.MockedFunction<React.Dispatch<GameEngineAction>>;
+  let mockDispatch: jest.MockedFunction<React.Dispatch<GameAction>>;
   let mockOnCombatEnd: jest.Mock;
 
   beforeEach(() => {
@@ -30,7 +32,7 @@ describe("Combat Integration Tests", () => {
       isPlayer: true,
       id: "player",
       name: "Player",
-      inventory: [],
+      inventory: { items: [] as InventoryItem[] },
       isUnconscious: false,
       attributes: {
         strength: 15,
@@ -40,6 +42,24 @@ describe("Combat Integration Tests", () => {
         throwingAccuracy: 8,
         bravery: 12,
         experience: 0,
+      },
+      minAttributes: {
+        speed: 1,
+        gunAccuracy: 1,
+        throwingAccuracy: 1,
+        strength: 8,
+        baseStrength: 8,
+        bravery: 1,
+        experience: 0
+      },
+      maxAttributes: {
+        speed: 20,
+        gunAccuracy: 20,
+        throwingAccuracy: 20,
+        strength: 20,
+        baseStrength: 20,
+        bravery: 20,
+        experience: 11
       },
       wounds: [],
       strengthHistory: {
@@ -58,7 +78,7 @@ describe("Combat Integration Tests", () => {
       isPlayer: false,
       id: "opponent",
       name: "Opponent",
-      inventory: [],
+      inventory: { items: [] as InventoryItem[] },
       isUnconscious: false,
       attributes: {
         strength: 12,
@@ -68,6 +88,24 @@ describe("Combat Integration Tests", () => {
         throwingAccuracy: 5,
         bravery: 10,
         experience: 0,
+      },
+      minAttributes: {
+        speed: 1,
+        gunAccuracy: 1,
+        throwingAccuracy: 1,
+        strength: 8,
+        baseStrength: 8,
+        bravery: 1,
+        experience: 0
+      },
+      maxAttributes: {
+        speed: 20,
+        gunAccuracy: 20,
+        throwingAccuracy: 20,
+        strength: 20,
+        baseStrength: 20,
+        bravery: 20,
+        experience: 11
       },
       wounds: [],
       strengthHistory: {
@@ -82,7 +120,7 @@ describe("Combat Integration Tests", () => {
     };
 
     mockDispatch = jest.fn() as jest.MockedFunction<
-      React.Dispatch<GameEngineAction>
+      React.Dispatch<GameAction>
     >;
     mockOnCombatEnd = jest.fn();
   });
@@ -109,12 +147,12 @@ describe("Combat Integration Tests", () => {
 
     // Find the UPDATE_CHARACTER action and get the updated character
     const opponentUpdateAction = mockDispatch.mock.calls.find(
-      (call) => call[0].type === "UPDATE_CHARACTER" && call[0].payload.id === "opponent"
+      (call) => call[0].type === "character/UPDATE_CHARACTER" && call[0].payload.id === "opponent"
     );
     expect(opponentUpdateAction).toBeDefined();
 
     const updatedOpponent = (
-      opponentUpdateAction![0] as { type: "UPDATE_CHARACTER"; payload: UpdateCharacterPayload }
+      opponentUpdateAction![0] as { type: "character/UPDATE_CHARACTER"; payload: UpdateCharacterPayload }
     ).payload;
 
     // Verify strength reduction
@@ -156,16 +194,34 @@ describe("Combat Integration Tests", () => {
       },
       wounds: [],
       isUnconscious: false,
-      inventory: [],
-        strengthHistory: {
-            baseStrength: 1,
-            changes: [{
-                previousValue: 1,
-                newValue: 1,
-                reason: 'initial',
-                timestamp: new Date()
-            }]
-        },
+      inventory: { items: [] as InventoryItem[] },
+      minAttributes: {
+        speed: 1,
+        gunAccuracy: 1,
+        throwingAccuracy: 1,
+        strength: 8,
+        baseStrength: 8,
+        bravery: 1,
+        experience: 0
+      },
+      maxAttributes: {
+        speed: 20,
+        gunAccuracy: 20,
+        throwingAccuracy: 20,
+        strength: 20,
+        baseStrength: 20,
+        bravery: 20,
+        experience: 11
+      },
+      strengthHistory: {
+        baseStrength: 1,
+        changes: [{
+          previousValue: 1,
+          newValue: 1,
+          reason: 'initial',
+          timestamp: new Date()
+        }]
+      },
     };
 
       // Mock resolveBrawlingRound for knockout scenario
@@ -199,12 +255,12 @@ describe("Combat Integration Tests", () => {
 
     // Find the UPDATE_CHARACTER action to verify strength history
     const opponentUpdateAction = mockDispatch.mock.calls.find(
-      (call) => call[0].type === "UPDATE_CHARACTER" && call[0].payload.id === "opponent"
+      (call) => call[0].type === "character/UPDATE_CHARACTER" && call[0].payload.id === "opponent"
     );
     expect(opponentUpdateAction).toBeDefined();
 
     const updatedOpponent = (
-      opponentUpdateAction![0] as { type: "UPDATE_CHARACTER"; payload: UpdateCharacterPayload }
+      opponentUpdateAction![0] as { type: "character/UPDATE_CHARACTER"; payload: UpdateCharacterPayload }
     ).payload;
 
     // Verify strength history for knockout
@@ -270,12 +326,12 @@ describe("Combat Integration Tests", () => {
 
      // Find the UPDATE_CHARACTER action to verify strength history
     const opponentUpdateAction = mockDispatch.mock.calls.find(
-      (call) => call[0].type === "UPDATE_CHARACTER" && call[0].payload.id === "opponent"
+      (call) => call[0].type === "character/UPDATE_CHARACTER" && call[0].payload.id === "opponent"
     );
     expect(opponentUpdateAction).toBeDefined();
 
     const updatedOpponent = (
-      opponentUpdateAction![0] as { type: "UPDATE_CHARACTER"; payload: UpdateCharacterPayload }
+      opponentUpdateAction![0] as { type: "character/UPDATE_CHARACTER"; payload: UpdateCharacterPayload }
     ).payload;
 
     // Verify strength history for defeat

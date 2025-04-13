@@ -262,7 +262,7 @@ export const mockWildernessDescriptionResponse: Partial<GameServiceResponse> = {
 // Default fallback response
 export const defaultFallbackResponse: GameServiceResponse = {
   narrative: "the player considers their next move. The western frontier stretches out before you, full of opportunity and danger. The decisions you make here could shape your fortune - for better or worse. A moment's consideration might be the difference between success and disaster.",
-  location: { type: 'town', name: 'Boothill' },
+  location: { type: 'town', name: 'Boot Hill' },
   combatInitiated: false,
   opponent: null,
   acquiredItems: [],

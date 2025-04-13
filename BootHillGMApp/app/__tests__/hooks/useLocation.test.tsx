@@ -2,10 +2,10 @@ import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { useLocation } from '../../hooks/useLocation';
 import { LocationType } from '../../services/locationService';
-import { TestCampaignStateProvider } from '../utils/testWrappers';
+import { TestCampaignStateProvider } from '../../test/utils/campaignTestWrappers';
 import { ReactElement, ReactNode } from 'react';
-import { CampaignState } from '../../types/campaign';
 import { CampaignStateContextType } from '../../types/campaignState.types';
+import { TestCampaignState } from '../../test/utils/campaignTestWrappers';
 
 // Mock the LocationService to prevent network calls during tests
 jest.mock('../../services/locationService', () => ({
@@ -32,7 +32,7 @@ describe('useLocation Hook', () => {
 
   it('should initialize with default state if no location provided', () => {
     // Create state with undefined location
-    const initialState: Partial<CampaignState> = {
+    const initialState: Partial<TestCampaignState> = {
       location: undefined
     };
     
@@ -52,10 +52,10 @@ describe('useLocation Hook', () => {
 
   it('should use existing state if available', () => {
     // Create a location of type LocationType
-    const location: LocationType = { type: 'town', name: 'Boothill' };
+    const location: LocationType = { type: 'town', name: 'Boot Hill' };
     
     // Create initial state with location
-    const initialState: Partial<CampaignState> = {
+    const initialState: Partial<TestCampaignState> = {
       location
     };
     
@@ -69,14 +69,14 @@ describe('useLocation Hook', () => {
     });
     
     // Should use the location from state
-    expect(result.current.locationState.currentLocation).toEqual({ type: 'town', name: 'Boothill' });
+    expect(result.current.locationState.currentLocation).toEqual({ type: 'town', name: 'Boot Hill' });
     // The history will be empty since we only provided the location
     expect(result.current.locationState.history).toEqual([]);
   });
 
   it('should dispatch location update', () => {
     // Start with empty state
-    const initialState = {};
+    const initialState: Partial<TestCampaignState> = {};
     
     // Create a wrapper that tracks dispatches
     const mockDispatch = jest.fn();
@@ -92,7 +92,7 @@ describe('useLocation Hook', () => {
       wrapper: ({ children }) => {
         const originalContext = TestCampaignStateProvider({
           children: null,
-          initialState: initialState
+          initialState: initialState as TestCampaignState
         }) as ReactElement & ContextWithValue;
         
         // Clone the context value with our mock dispatch

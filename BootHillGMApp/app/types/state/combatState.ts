@@ -1,5 +1,8 @@
 import { CombatParticipant, CombatType } from "../combat";
 
+// Re-export the CombatType for use in other modules
+export type { CombatType };
+
 /**
  * Represents a combat log entry.
  */

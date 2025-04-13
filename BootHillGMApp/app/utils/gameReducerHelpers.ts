@@ -217,36 +217,10 @@ export function processInventoryState(state: ExtendedGameState, action: GameEngi
     inventory: inventorySlice
   };
   
-  // For backward compatibility - also update any inventory array properties
-  // This helps with tests that expect inventory to be an array
-  if (Array.isArray(state.inventory)) {
-    // If state.inventory was an array (legacy format), 
-    // we need to set it up as both an array and an object with items
-    const inventoryItems = inventorySlice?.items || [];
-    newState.inventory.items = inventoryItems;
-    
-    // Make the inventory property iterable for tests
-    // @ts-expect-error - intentionally adding array-like properties
-    newState.inventory.forEach = Array.prototype.forEach.bind(inventoryItems);
-    // @ts-expect-error - intentionally adding array-like properties
-    newState.inventory.map = Array.prototype.map.bind(inventoryItems);
-    // @ts-expect-error - intentionally adding array-like properties 
-    newState.inventory.filter = Array.prototype.filter.bind(inventoryItems);
-    // @ts-expect-error - intentionally adding array-like properties
-    newState.inventory.find = Array.prototype.find.bind(inventoryItems);
-    // @ts-expect-error - intentionally adding array-like properties
-    newState.inventory.some = Array.prototype.some.bind(inventoryItems);
-    // @ts-expect-error - intentionally adding array-like properties
-    newState.inventory.length = inventoryItems.length;
-    
-    // Add iterator for spread operator
-    // @ts-expect-error - intentionally adding array-like properties
-    newState.inventory[Symbol.iterator] = function* () {
-      for (let i = 0; i < inventoryItems.length; i++) {
-        yield inventoryItems[i];
-      }
-    };
-  }
+  // If state.inventory was an array (legacy format), 
+  // we need to set it up as both an array and an object with items
+  const inventoryItems = inventorySlice?.items || [];
+  newState.inventory.items = inventoryItems;
   
   return newState;
 }
@@ -274,28 +248,6 @@ export function processJournalState(state: ExtendedGameState, action: GameEngine
     if (Array.isArray(state.journal)) {
       const journalEntries = (journalSlice as JournalState).entries || [];
       newState.journal.entries = journalEntries;
-      
-      // Make the journal property iterable for tests
-      // @ts-expect-error - intentionally adding array-like properties
-      newState.journal.forEach = Array.prototype.forEach.bind(journalEntries);
-      // @ts-expect-error - intentionally adding array-like properties
-      newState.journal.map = Array.prototype.map.bind(journalEntries);
-      // @ts-expect-error - intentionally adding array-like properties
-      newState.journal.filter = Array.prototype.filter.bind(journalEntries);
-      // @ts-expect-error - intentionally adding array-like properties
-      newState.journal.find = Array.prototype.find.bind(journalEntries);
-      // @ts-expect-error - intentionally adding array-like properties
-      newState.journal.some = Array.prototype.some.bind(journalEntries);
-      // @ts-expect-error - intentionally adding array-like properties
-      newState.journal.length = journalEntries.length;
-      
-      // Add iterator for spread operator
-      // @ts-expect-error - intentionally adding array-like properties
-      newState.journal[Symbol.iterator] = function* () {
-        for (let i = 0; i < journalEntries.length; i++) {
-          yield journalEntries[i];
-        }
-      };
     }
   }
   

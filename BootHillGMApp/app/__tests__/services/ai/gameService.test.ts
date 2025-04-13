@@ -188,7 +188,7 @@ describe('getAIResponse', () => {
 
   describe('Error Handling', () => {
     it('should return fallback response for invalid JSON structure', async () => {
-      // Type assertion needed for test purpose
+      // Using 'as any' to pass intentionally malformed JSON data for error handling test.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockSuccessfulAIResponse(mockInvalidJsonResponse as any);
       

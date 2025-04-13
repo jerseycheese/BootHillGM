@@ -19,7 +19,7 @@ import { LocationType } from '../../services/locationService'; // Import Locatio
  * Interface for a partial campaign state used in tests
  * This matches the expected shape in the components that use it
  */
-interface TestCampaignState {
+export interface TestCampaignState {
   currentPlayer?: string;
   npcs?: string[]; // Use string[] to match GameState type
   character?: Character | null;
@@ -87,7 +87,7 @@ const defaultCampaignState: TestCampaignState = {
       id: 'test-story-point',
       type: 'exposition',
       title: 'Test Story Point',
-      content: 'You find yourself in Boothill with Test Character.',
+      content: 'You find yourself in Boot Hill with Test Character.',
       choices: []
     },
     visitedPoints: [],
@@ -98,7 +98,7 @@ const defaultCampaignState: TestCampaignState = {
   journal: [],
   location: { 
     type: 'town', 
-    name: 'Boothill' 
+    name: 'Boot Hill' 
   },
   isCombatActive: false,
   opponent: null,

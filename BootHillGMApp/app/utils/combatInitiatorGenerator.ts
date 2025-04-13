@@ -9,15 +9,26 @@ import { Dispatch } from 'react';
 
 // Define CombatInitiator locally using standard CombatState
 interface CombatInitiator {
+  // Combat core functions
   initiateCombat: (opponent: Character, combatState?: Partial<CombatStateFromCombat>) => void;
-  executeCombatRound: () => Promise<void>; // Ensure it returns Promise<void>
-  handleCombatAction: () => Promise<void>; // Ensure it returns Promise<void>
+  executeCombatRound: () => Promise<void>;
+  handleCombatAction: () => Promise<void>;
   handlePlayerHealthChange: (characterId: string, newHealth: number) => void;
+  handleCombatEnd: (winner: "player" | "opponent", combatResults: string) => Promise<void>;
+  handleStrengthChange: (characterType: "player" | "opponent", newStrength: number) => void;
+  
+  // Player/character management
   onEquipWeapon: (itemId: string) => void;
   getCurrentOpponent: () => Character | null;
   opponent: Character | null;
+  
+  // State management
   isCombatActive: boolean;
-  dispatch: Dispatch<GameEngineAction>; // Expects GameEngineAction
+  isProcessing: boolean;
+  combatQueueLength: number;
+  dispatch: Dispatch<GameEngineAction>;
+  
+  // Additional properties
   isLoading?: boolean;
   error?: string | null;
   handleUserInput?: (input: string) => void;
@@ -25,7 +36,6 @@ interface CombatInitiator {
   handleDebug?: (command: string) => void;
   handleSave?: () => void;
   handleLoad?: () => void;
-  [key: string]: unknown;
 }
 
 /**
@@ -61,16 +71,25 @@ export function createCombatInitiator(
     },
     executeCombatRound: async () => { console.warn('executeCombatRound default implementation called'); },
     handleCombatAction: async () => { console.warn('handleCombatAction default implementation called'); },
-    handlePlayerHealthChange: sessionProps.handlePlayerHealthChange, // Get from sessionProps
-    onEquipWeapon: sessionProps.handleEquipWeapon, // Get from sessionProps
+    handleCombatEnd: sessionProps.handleCombatEnd || (async () => {
+      console.warn('handleCombatEnd default implementation called');
+    }),
+    handleStrengthChange: sessionProps.handleStrengthChange || ((characterType, newStrength) => {
+      console.warn('handleStrengthChange default implementation called');
+      sessionProps.handlePlayerHealthChange(characterType, newStrength);
+    }),
+    handlePlayerHealthChange: sessionProps.handlePlayerHealthChange,
+    onEquipWeapon: sessionProps.handleEquipWeapon,
     getCurrentOpponent: () => null,
     opponent: null,
     isCombatActive: false,
-    dispatch: safeDispatch, // Use the casted safe dispatch
-    isLoading: sessionProps.isLoading || false, // Get from sessionProps
-    error: sessionProps.error || null, // Get from sessionProps
-    handleUserInput: sessionProps.handleUserInput, // Get from sessionProps
-    retryLastAction: sessionProps.retryLastAction, // Get from sessionProps
+    isProcessing: false,
+    combatQueueLength: 0,
+    dispatch: safeDispatch,
+    isLoading: sessionProps.isLoading || false,
+    error: sessionProps.error || null,
+    handleUserInput: sessionProps.handleUserInput,
+    retryLastAction: sessionProps.retryLastAction,
     handleDebug: undefined,
     handleSave: undefined,
     handleLoad: undefined
@@ -83,24 +102,28 @@ export function createCombatInitiator(
 
   // Return the fully constructed object, using values from state and sessionProps
   return {
-    // Core combat functions (provide defaults or potentially pass down if needed)
-    initiateCombat: defaultInitiator.initiateCombat, // Placeholder
-    executeCombatRound: defaultInitiator.executeCombatRound, // Placeholder
-    handleCombatAction, // Use the defined handler
+    // Core combat functions
+    initiateCombat: defaultInitiator.initiateCombat,
+    executeCombatRound: defaultInitiator.executeCombatRound,
+    handleCombatAction,
+    handleCombatEnd: defaultInitiator.handleCombatEnd,
+    handleStrengthChange: defaultInitiator.handleStrengthChange,
 
     // Health & Equipment
     handlePlayerHealthChange: sessionProps.handlePlayerHealthChange,
     onEquipWeapon: sessionProps.handleEquipWeapon,
 
     // Opponent info
-    getCurrentOpponent: () => state.character?.opponent || null, // Get from state
-    opponent: state.character?.opponent || null, // Get from state
+    getCurrentOpponent: () => state.character?.opponent || null,
+    opponent: state.character?.opponent || null,
 
     // State management
-    isCombatActive: state.combat?.isActive || false, // Get from state
-    dispatch: safeDispatch, // Use the casted dispatch
+    isCombatActive: state.combat?.isActive || false,
+    isProcessing: false,
+    combatQueueLength: 0,
+    dispatch: safeDispatch,
 
-    // Additional properties from sessionProps
+    // Additional properties
     isLoading: sessionProps.isLoading,
     error: sessionProps.error,
     handleUserInput: sessionProps.handleUserInput,

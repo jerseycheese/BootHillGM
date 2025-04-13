@@ -117,7 +117,7 @@ export const generateNarrativeFallback = async (content: string, action: string 
 export const createEmergencyState = async (): Promise<GameState> => {
   console.warn("Creating emergency recovery state");
   
-  const narrativeContent = "You find yourself in Boothill with a fresh start ahead of you.";
+  const narrativeContent = "You find yourself in Boot Hill with a fresh start ahead of you.";
 
   return {
     ...initialGameState,
@@ -160,7 +160,7 @@ export const createEmergencyState = async (): Promise<GameState> => {
       context: "",
     },
     inventory: createInventoryState(getStartingInventory()),
-    location: { type: 'town' as const, name: 'Boothill' },
+    location: { type: 'town' as const, name: 'Boot Hill' },
     savedTimestamp: Date.now(),
     isClient: true,
     suggestedActions: [
@@ -179,7 +179,7 @@ export const createEmergencyState = async (): Promise<GameState> => {
  * @returns Fallback game state for a new character
  */
 export const createFallbackNewCharacterState = async (characterData: Character | null): Promise<GameState> => {
-  const fallbackNarrative = `${characterData?.name || 'You'} arrive in the dusty town of Boothill, ready to make your mark on the frontier.`;
+  const fallbackNarrative = `${characterData?.name || 'You'} arrive in the dusty town of Boot Hill, ready to make your mark on the frontier.`;
   
   // Generate a narrative summary using AI
   const summary = await generateNarrativeFallback(fallbackNarrative, "arrive");
@@ -211,12 +211,12 @@ export const createFallbackNewCharacterState = async (characterData: Character |
       displayMode: 'standard' as NarrativeDisplayMode,
       context: "",
     },
-    location: { type: 'town' as const, name: 'Boothill' },
+    location: { type: 'town' as const, name: 'Boot Hill' },
     inventory: createInventoryState(getStartingInventory()),
     savedTimestamp: Date.now(),
     isClient: true,
     suggestedActions: [
-      { id: 'fallback-init-1', title: "Explore the town", description: "Get to know Boothill", type: 'optional' },
+      { id: 'fallback-init-1', title: "Explore the town", description: "Get to know Boot Hill", type: 'optional' },
       { id: 'fallback-init-2', title: "Visit the saloon", description: "Find information and refreshment", type: 'optional' },
       { id: 'fallback-init-3', title: "Look for work", description: "Earn some money", type: 'optional' }
     ]
@@ -251,7 +251,7 @@ export const createFallbackExistingCharacterState = async (state: GameState): Pr
   return {
     ...state,
     narrative: fallbackNarrativeState,
-    location: { type: 'town' as const, name: 'Boothill' },
+    location: { type: 'town' as const, name: 'Boot Hill' },
     inventory: createInventoryState(getStartingInventory()),
     savedTimestamp: Date.now(),
     isClient: true,

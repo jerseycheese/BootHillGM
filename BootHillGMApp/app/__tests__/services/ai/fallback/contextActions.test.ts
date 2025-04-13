@@ -4,10 +4,10 @@
  * Tests for the context action generator.
  */
 
-import { createContextAction } from './contextActions';
-import { ResponseContextType } from './constants';
-import { ActionType } from './contextActionTypes';
-import { contextActionTemplates } from './actionTemplates';
+import { createContextAction } from '../../../../services/ai/fallback/contextActions';
+import { ResponseContextType } from '../../../../services/ai/fallback/constants';
+import { ActionType } from '../../../../services/ai/fallback/contextActionTypes';
+import { contextActionTemplates } from '../../../../services/ai/fallback/actionTemplates';
 
 describe('Context Action Generator', () => {
   test('should create a context action with default location', () => {
@@ -15,7 +15,7 @@ describe('Context Action Generator', () => {
     
     expect(action).toEqual(expect.objectContaining({
       id: expect.stringContaining('fallback-initializing-main'),
-      title: expect.stringContaining('Explore Boothill'),
+      title: expect.stringContaining('Explore Boot Hill'),
       description: expect.any(String),
       type: 'main'
     }));
