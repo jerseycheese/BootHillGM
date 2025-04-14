@@ -1,0 +1,127 @@
+/**
+ * Test-specific utilities
+ * 
+ * This module contains utility functions specifically designed for
+ * testing scenarios, including environment detection and test data setup.
+ */
+import { GameEngineAction } from "../../types/gameActions";
+import { Character } from "../../types/character";
+import { InventoryItem } from "../../types/item.types";
+import { CombatState } from "../../types/state/combatState";
+import { ExtendedInventoryItem, ItemCategory } from "../../types/inventory";
+
+/**
+ * Type definition for window with testing flag
+ */
+interface WindowWithTestFlag extends Window {
+  __TESTING__?: boolean;
+}
+
+/**
+ * Detect if current environment is a test environment
+ * This is used to adjust behavior for tests
+ * 
+ * @returns boolean indicating if the current environment is a test environment
+ */
+export const isTestEnvironment = (): boolean => {
+  // Check for Jest globals
+  const hasJest = typeof jest !== 'undefined';
+  
+  // Check node environment
+  const isTestEnv = typeof process !== 'undefined' && 
+    process.env && 
+    process.env.NODE_ENV === 'test';
+  
+  // Check for test flag in window
+  const hasTestFlag = typeof window !== 'undefined' && 
+    window && 
+    (window as WindowWithTestFlag).__TESTING__ === true;
+  
+  return hasJest || isTestEnv || hasTestFlag;
+};
+
+/**
+ * Initializes a test combat scenario with default opponent
+ * 
+ * @returns GameEngineAction to set up a combat test scenario
+ */
+export const initializeTestCombat = (): GameEngineAction => {
+  const opponentItems: ExtendedInventoryItem[] = [{
+    id: "test-weapon",
+    name: "Test Weapon",
+    quantity: 1,
+    category: "weapon" as ItemCategory,
+    description: "A test weapon",
+    weight: 1,
+    value: 10,
+    durability: 100
+  }];
+
+  const opponent: Character = {
+    id: "test-opponent",
+    name: "Test Opponent",
+    isNPC: true,
+    isPlayer: false,
+    attributes: {
+      speed: 8,
+      gunAccuracy: 7,
+      throwingAccuracy: 6,
+      strength: 9,
+      baseStrength: 9,
+      bravery: 8,
+      experience: 2
+    },
+    minAttributes: {
+      speed: 1,
+      gunAccuracy: 1,
+      throwingAccuracy: 1,
+      strength: 1,
+      baseStrength: 1,
+      bravery: 1,
+      experience: 0
+    },
+    maxAttributes: {
+      speed: 15,
+      gunAccuracy: 15,
+      throwingAccuracy: 15,
+      strength: 15,
+      baseStrength: 15,
+      bravery: 15,
+      experience: 10
+    },
+    inventory: {
+      items: opponentItems as unknown as InventoryItem[]
+    },
+    wounds: [],
+    isUnconscious: false
+  };
+
+  const combatState: CombatState = {
+    isActive: true,
+    rounds: 0,
+    combatType: "brawling",
+    playerTurn: true,
+    playerCharacterId: "",
+    opponentCharacterId: opponent.id,
+    combatLog: [{
+      text: "Combat initialized",
+      timestamp: Date.now(),
+      type: "system"
+    }],
+    roundStartTime: Date.now(),
+    modifiers: {
+      player: 0,
+      opponent: 0
+    },
+    currentTurn: null
+  };
+
+  return {
+    type: "SET_STATE",
+    payload: {
+      combat: combatState,
+      character: { player: null, opponent },
+      isClient: true
+    }
+  } as unknown as GameEngineAction;
+};
