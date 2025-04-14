@@ -25,10 +25,10 @@ The system uses a modular approach with the following components:
             ├───────────────┐
             │               │
             ▼               ▼
-┌───────────────────────┐  ┌───────────────────────┐
-│useInitializationStrategies│  │useInitializationTimeout│
-│  (Strategy Providers)  │  │ (Timeout Management)  │
-└───────────┬───────────┘  └───────────────────────┘
+┌─────────────────────────┐  ┌───────────────────────────┐
+│initScenarios            │  │useInitializationTimeout   │
+│(Initialization Handlers)│  │ (Timeout Management)      │
+└───────────┬─────────────┘  └───────────────────────────┘
             │
             ▼
 ┌───────────────────────┐
@@ -47,15 +47,13 @@ The system uses a modular approach with the following components:
 2. **useGameSession** (`/hooks/initialization/useGameSession.ts`):
    - Core implementation of game initialization
    - Manages initialization lifecycle
-   - Coordinates between strategy providers
+   - Coordinates between initialization scenarios
    - Handles state updates and persistence
 
-3. **useInitializationStrategies** (`/hooks/initialization/useInitializationStrategies.ts`):
-   - Provides specialized strategies for different initialization scenarios
-   - Handles new character initialization
-   - Manages existing state restoration
-   - Generates suggestions for gameplay
-   - Provides error recovery mechanisms
+3. **initScenarios** (`/utils/initialization/initScenarios.ts`):
+   - Exports modular scenario handlers for different initialization paths
+   - Each scenario is in its own file under `/scenarios` directory
+   - Handles direct AI generation, reset, first-time, and restored state
 
 4. **useInitializationTimeout** (`/hooks/initialization/useInitializationTimeout.ts`):
    - Manages timeout handling for initialization
@@ -68,48 +66,50 @@ The system uses a modular approach with the following components:
    - Provides fallback state generators
    - Manages emergency recovery states
 
-6. **initialization.types.ts** (`/types/initialization.types.ts`):
+6. **initialization.ts** (`/types/initialization.ts`):
    - Type definitions for the initialization system
    - Ensures type safety across components
 
-## Initialization Flow
+## Initialization Scenarios
 
-The initialization process follows this general flow:
+The initialization system supports four main scenarios, each handled by dedicated modules:
 
-1. **Entry Point**: Component mounts and calls `useGameInitialization`
-2. **Initial Setup**: Sets up state tracking and client detection
-3. **Strategy Selection**:
-   - New character: Uses `initializeNewCharacter` strategy
-   - Existing state with missing suggestions: Uses `generateNewSuggestions` strategy
-   - Existing character without state: Uses `initializeExistingCharacter` strategy
-4. **AI Integration**: Each strategy may call the AI service for narrative and suggestions
-5. **Error Handling**: Failed initialization triggers fallback mechanisms
-   - Provides appropriate recovery state based on failure context
-   - Ensures game can continue even when AI services are unavailable
-6. **Timeout Safety**: Prevents infinite loading with timeout mechanism
-   - Uses `useInitializationTimeout` to set a maximum wait time
-   - Provides emergency recovery state if initialization takes too long
-7. **State Application**: Applies the initialized state to the game
-   - Updates game context with new state
-   - Saves state for persistence
+1. **Direct AI Generation** (`/scenarios/directAIGeneration.ts`):
+   - Uses pre-generated content from reset handler
+   - Parses and validates JSON content
+   - Applies content to game state
+
+2. **Reset Initialization** (`/scenarios/resetInitialization.ts`):
+   - Handles game reset with new content
+   - Attempts direct AI method if pre-content available
+   - Falls back to generating new content if needed
+
+3. **First-time Initialization** (`/scenarios/firstTimeInitialization.ts`):
+   - Initializes new game state for first-time users
+   - Generates AI narrative and actions
+   - Provides fallback content if AI generation fails
+
+4. **Restored Game State** (`/scenarios/restoredGameState.ts`):
+   - Restores game from saved state in localStorage
+   - Ensures character data is properly set
+   - Handles state parsing and validation
+
+## Integration with Services
+
+The initialization scenarios integrate with existing services:
+
+1. **GameStorage** - For state persistence and management
+2. **LocationService** - For location data conversion and handling
+3. **AIService** - For generating narrative content and suggestions
 
 ## Error Recovery Strategy
 
 The system implements a multi-layered error recovery approach:
 
-1. **Strategy-Level Fallbacks**: Each initialization strategy has its own fallback mechanism
-2. **Emergency Recovery**: When all else fails, `createEmergencyState` provides a minimal valid state
+1. **Scenario-Level Fallbacks**: Each initialization scenario has its own fallback mechanism
+2. **Emergency Recovery**: When all else fails, fallback content creation provides a minimal valid state
 3. **Timeout Protection**: Prevents infinite loading with automatic timeout recovery
 4. **Attempt Limiting**: Caps initialization attempts to prevent infinite retry loops
-
-## AI Integration
-
-The initialization system integrates with AI services for narrative generation:
-
-1. **New Character**: Requests AI to generate an introduction based on character background
-2. **Existing Character**: Requests AI to summarize the character's current situation
-3. **Suggestions**: Requests AI to generate contextual action suggestions based on narrative
-4. **Fallbacks**: Provides predefined fallback content when AI services are unavailable
 
 ## State Management
 
@@ -124,31 +124,37 @@ The initialization system manages several types of state:
 
 To maintain performance during initialization:
 
-1. **Refs**: Uses React refs to prevent unnecessary re-renders
-2. **Animation Frame**: Wraps state updates in requestAnimationFrame to avoid render phase updates
-3. **Debouncing**: Prevents rapid consecutive state saves
+1. **Conditional Debugging**: Debug statements only execute in non-production environments
+2. **Type Safety**: Strong typing prevents runtime errors and improves performance
+3. **Service Reuse**: Leverages existing services rather than duplicating functionality
 4. **Re-entrancy Prevention**: Guards against concurrent initialization attempts
 
 ## Testing Strategy
 
 The modular architecture facilitates targeted testing:
 
-1. **Unit Tests**: Each utility function can be tested in isolation
-2. **Integration Tests**: Strategy hooks can be tested with mock dependencies
-3. **End-to-End Tests**: Full initialization flow can be tested with mock AI services
-4. **Error Testing**: Recovery mechanisms can be tested by injecting errors
+1. **Unit Tests**: Each initialization scenario can be tested in isolation
+2. **Integration Tests**: Complete initialization flow can be tested end-to-end
+3. **Error Testing**: Recovery mechanisms can be tested by injecting errors
+4. **Service Mocking**: AI and storage services can be mocked for deterministic testing
 
 ## Refactoring Summary
 
-The refactoring transformed the original monolithic implementation (approximately 570 lines) into a modular system with several smaller files:
+The refactoring transformed the original monolithic implementation into a modular system with several smaller files:
 
-| File                                        | Lines | Purpose                             |
-|---------------------------------------------|-------|-------------------------------------|
-| `/hooks/useGameInitialization.ts`           | 11    | Main API wrapper                    |
-| `/hooks/initialization/useGameSession.ts`   | 146   | Core initialization logic           |
-| `/hooks/initialization/useInitializationStrategies.ts` | 273 | Strategy implementations  |
-| `/hooks/initialization/useInitializationTimeout.ts` | 45 | Timeout management             |
-| `/utils/gameInitializationUtils.ts`         | 203   | Utility functions                   |
-| `/types/initialization.types.ts`            | 93    | Type definitions                    |
+| File                                    | Purpose                             |
+|-----------------------------------------|-------------------------------------|
+| `/utils/initialization/initScenarios.ts`| Main entry point for scenarios      |
+| `/scenarios/directAIGeneration.ts`      | Direct AI content handler           |
+| `/scenarios/resetInitialization.ts`     | Reset handler for existing games    |
+| `/scenarios/firstTimeInitialization.ts` | New game initialization             |
+| `/scenarios/restoredGameState.ts`       | Saved state restoration             |
+| `/types/initialization.ts`              | Type definitions                    |
 
 Each file is now under the target size of 300 lines while maintaining the exact same functionality as the original implementation.
+
+## Additional Documentation
+
+For more detailed information on the initialization scenarios, see [Initialization Scenarios](./initialization-scenarios.md).
+
+For information on resilient state handling, see [Resilient State Initialization](./resilient-state-initialization.md).

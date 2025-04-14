@@ -95,4 +95,47 @@ export class LocationService {
     // Return only the most recent MAX_HISTORY locations
     return updatedHistory.slice(-MAX_HISTORY);
   }
+
+  /**
+   * Converts an AI generation location result to standard LocationType
+   * Ensures locations have required properties for persistence
+   * @param location Location object from AI generation
+   * @returns A properly formatted LocationType
+   */
+  convertAIGeneratedLocation(location: {
+    type?: string;
+    name?: string;
+    description?: string;
+  } | undefined): LocationType {
+    if (!location) {
+      return { type: 'town', name: 'Boot Hill' };
+    }
+    
+    // Handle wilderness locations that have description instead of name
+    if (location.type === 'wilderness' && location.description) {
+      return { 
+        type: 'wilderness', 
+        description: location.description 
+      };
+    }
+    
+    // Handle landmarks with descriptions
+    if (location.type === 'landmark' && location.name) {
+      return {
+        type: 'landmark',
+        name: location.name,
+        ...(location.description ? { description: location.description } : {})
+      };
+    }
+    
+    // For town or other location types, ensure name exists
+    if (location.type === 'town' || !location.type) {
+      return {
+        type: 'town',
+        name: location.name || 'Boot Hill'
+      };
+    }
+    
+    return { type: 'unknown' };
+  }
 }

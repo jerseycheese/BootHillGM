@@ -6,15 +6,19 @@
  * Ensures backward compatibility with legacy storage formats.
  */
 
+import { Dispatch } from 'react';
 import { GameState } from '../../types/gameState';
 import { CharacterState } from '../../types/state/characterState';
 import { NarrativeState } from '../../types/narrative.types';
 import { SuggestedAction } from '../../types/campaign';
 import { Character } from '../../types/character';
+import { NarrativeJournalEntry } from '../../types/journal';
+import { GameAction } from '../../types/actions';
 import { gameElementsStorage } from './gameElementsStorage';
 import { storageKeys } from './storageKeys';
 import { characterUtils } from '../character/characterUtils';
 import { narrativeUtils } from '../narrative/narrativeUtils';
+import { LocationType } from '../../services/locationService';
 
 // Module constants
 const MODULE_NAME = 'GameStorage:GameState';
@@ -58,6 +62,34 @@ const saveGameState = (gameState: Record<string, unknown>): void => {
   } catch (e) {
     console.error(`${MODULE_NAME} - Error saving game state:`, e);
   }
+};
+
+/**
+ * Save state to localStorage for initialization scenarios
+ * Used by initialization code paths
+ */
+const saveInitialGameState = (
+  character: Character,
+  narrative: string, 
+  journalEntry: NarrativeJournalEntry | null, 
+  actions: SuggestedAction[],
+  location: LocationType = { type: 'town', name: 'Boot Hill' }
+): Record<string, unknown> => {
+  const defaultItems = character.inventory?.items || [];
+  
+  // Save state to localStorage
+  const stateToSave = {
+    character: { player: character, opponent: null },
+    inventory: { items: defaultItems, equippedWeaponId: null },
+    journal: { entries: journalEntry ? [journalEntry] : [] },
+    narrative: { narrativeHistory: narrative ? [narrative] : [] },
+    suggestedActions: actions,
+    location: location
+  };
+  
+  localStorage.setItem('saved-game-state', JSON.stringify(stateToSave));
+  
+  return stateToSave;
 };
 
 /**
@@ -189,6 +221,103 @@ const initializeNewGame = (
 };
 
 /**
+ * Initializes basic game state for initialization scenarios
+ * Used by the initialization code paths
+ */
+const initializeGameState = (
+  character: Character,
+  dispatch: Dispatch<GameAction>
+): void => {
+  // Initialize a new game state
+  const initialState = initializeNewGame(character);
+  
+  // Set character first
+  dispatch({
+    type: 'character/SET_CHARACTER',
+    payload: character
+  } as GameAction);
+  
+  // Set initial state
+  dispatch({ 
+    type: 'SET_STATE', 
+    payload: initialState 
+  } as GameAction);
+  
+  // Set inventory
+  const defaultItems = character.inventory?.items || getDefaultInventoryItems();
+  dispatch({
+    type: 'inventory/SET_INVENTORY',
+    payload: defaultItems
+  } as GameAction);
+};
+
+/**
+ * Dispatches narrative content to state
+ * Used by initialization code paths
+ */
+const dispatchNarrativeContent = (
+  dispatch: Dispatch<GameAction>,
+  narrative: string,
+  journalEntry: NarrativeJournalEntry
+): void => {
+  // Add narrative to history
+  dispatch({
+    type: 'ADD_NARRATIVE_HISTORY',
+    payload: narrative
+  });
+  
+  // Add journal entry
+  dispatch({
+    type: 'journal/ADD_ENTRY',
+    payload: journalEntry
+  });
+};
+
+/**
+ * Dispatches suggested actions to state
+ * Used by initialization code paths
+ */
+const dispatchSuggestedActions = (
+  dispatch: Dispatch<GameAction>,
+  actions: SuggestedAction[]
+): void => {
+  if (Array.isArray(actions) && actions.length) {
+    dispatch({
+      type: 'SET_SUGGESTED_ACTIONS',
+      payload: actions
+    });
+  }
+};
+
+/**
+ * Saves content to localStorage for persistence
+ * Used by initialization code paths
+ */
+const saveContentToLocalStorage = (
+  narrative: string,
+  journalEntry: NarrativeJournalEntry,
+  actions: SuggestedAction[]
+): void => {
+  // Ensure the journal entry explicitly includes the narrativeSummary field if it exists
+  const journalEntryWithSummary = journalEntry.narrativeSummary ? {
+    ...journalEntry,
+    narrativeSummary: journalEntry.narrativeSummary // Explicitly set to ensure it's included
+  } : journalEntry;
+  
+  // Save to localStorage
+  localStorage.setItem('narrative', JSON.stringify(narrative));
+  localStorage.setItem('journal', JSON.stringify([journalEntryWithSummary]));
+  localStorage.setItem('suggestedActions', JSON.stringify(actions));
+  
+  // Also save the summary separately for debugging and recovery if it exists
+  if (journalEntry.narrativeSummary) {
+    localStorage.setItem('narrative_summary', journalEntry.narrativeSummary);
+  }
+  
+  debug('Successfully saved content to localStorage');
+};
+
+/**
  * Save individual game components to separate storage keys for backward compatibility.
  * Ensures all components are properly stored in their dedicated locations.
  * 
@@ -280,14 +409,26 @@ const getCharacter = (): { player: Character | null, opponent: Character | null 
 };
 
 /**
+ * Get default inventory items
+ */
+const getDefaultInventoryItems = (): unknown => {
+  return gameElementsStorage.getDefaultInventoryItems();
+};
+
+/**
  * Public API for game state storage functionality.
  * Maintains backward compatibility with original interface.
  */
 export const GameStorage = {
   saveGameState,
+  saveInitialGameState,
   initializeNewGame,
+  initializeGameState,
+  dispatchNarrativeContent,
+  dispatchSuggestedActions,
+  saveContentToLocalStorage,
   getDefaultCharacter: characterUtils.getDefaultCharacter,
-  getDefaultInventoryItems: gameElementsStorage.getDefaultInventoryItems,
+  getDefaultInventoryItems,
   getCharacter,
   keys: storageKeys
 };

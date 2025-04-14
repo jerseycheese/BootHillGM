@@ -1,0 +1,128 @@
+// /app/utils/initialization/gameStateManager.ts
+import { Dispatch } from 'react';
+import { GameAction } from '../../types/actions';
+import { Character } from '../../types/character';
+import { NarrativeJournalEntry } from '../../types/journal';
+import { ActionItem, GameLocation } from '../../types/initialization';
+import { GameStorage } from '../gameStorage';
+import { debug } from './initHelpers';
+
+/**
+ * Saves state to localStorage for persistence
+ */
+export function saveGameState(
+  character: Character,
+  narrative: string, 
+  journalEntry: NarrativeJournalEntry | null, 
+  actions: ActionItem[],
+  location: GameLocation = { type: 'town', name: 'Boot Hill' }
+) {
+  const defaultItems = character.inventory?.items || [];
+  
+  // Save state to localStorage
+  const stateToSave = {
+    character: { player: character, opponent: null },
+    inventory: { items: defaultItems, equippedWeaponId: null },
+    journal: { entries: journalEntry ? [journalEntry] : [] },
+    narrative: { narrativeHistory: narrative ? [narrative] : [] },
+    suggestedActions: actions,
+    location: location
+  };
+  
+  localStorage.setItem('saved-game-state', JSON.stringify(stateToSave));
+  
+  return stateToSave;
+}
+
+/**
+ * Initializes game state with character and basic state setup
+ */
+export function initializeGameState(
+  character: Character,
+  dispatch: Dispatch<GameAction>
+): void {
+  // Initialize a new game state
+  const initialState = GameStorage.initializeNewGame();
+  
+  // Set character first
+  dispatch({
+    type: 'character/SET_CHARACTER',
+    payload: character
+  } as GameAction);
+  
+  // Set initial state
+  dispatch({ 
+    type: 'SET_STATE', 
+    payload: initialState 
+  } as GameAction);
+  
+  // Set inventory
+  const defaultItems = character.inventory?.items || GameStorage.getDefaultInventoryItems();
+  dispatch({
+    type: 'inventory/SET_INVENTORY',
+    payload: defaultItems
+  } as GameAction);
+}
+
+/**
+ * Dispatches narrative content to state
+ */
+export function dispatchNarrativeContent(
+  dispatch: Dispatch<GameAction>,
+  narrative: string,
+  journalEntry: NarrativeJournalEntry
+): void {
+  // Add narrative to history
+  dispatch({
+    type: 'ADD_NARRATIVE_HISTORY',
+    payload: narrative
+  });
+  
+  // Add journal entry
+  dispatch({
+    type: 'journal/ADD_ENTRY',
+    payload: journalEntry
+  });
+}
+
+/**
+ * Dispatches suggested actions to state
+ */
+export function dispatchSuggestedActions(
+  dispatch: Dispatch<GameAction>,
+  actions: ActionItem[]
+): void {
+  if (Array.isArray(actions) && actions.length) {
+    dispatch({
+      type: 'SET_SUGGESTED_ACTIONS',
+      payload: actions
+    });
+  }
+}
+
+/**
+ * Saves content to localStorage
+ */
+export function saveContentToLocalStorage(
+  narrative: string,
+  journalEntry: NarrativeJournalEntry,
+  actions: ActionItem[]
+): void {
+  // Ensure the journal entry explicitly includes the narrativeSummary field if it exists
+  const journalEntryWithSummary = journalEntry.narrativeSummary ? {
+    ...journalEntry,
+    narrativeSummary: journalEntry.narrativeSummary // Explicitly set to ensure it's included
+  } : journalEntry;
+  
+  // Save to localStorage
+  localStorage.setItem('narrative', JSON.stringify(narrative));
+  localStorage.setItem('journal', JSON.stringify([journalEntryWithSummary]));
+  localStorage.setItem('suggestedActions', JSON.stringify(actions));
+  
+  // Also save the summary separately for debugging and recovery if it exists
+  if (journalEntry.narrativeSummary) {
+    localStorage.setItem('narrative_summary', journalEntry.narrativeSummary);
+  }
+  
+  debug('Successfully saved content to localStorage');
+}

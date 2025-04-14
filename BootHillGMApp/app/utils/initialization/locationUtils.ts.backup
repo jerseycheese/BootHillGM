@@ -1,0 +1,26 @@
+// /app/utils/initialization/locationUtils.ts
+import { GameLocation } from '../../types/initialization';
+
+/**
+ * Converts a location object to GameLocation type
+ * Ensures locations have required properties for persistence
+ */
+export function convertToGameLocation(location: any | undefined): GameLocation {
+  if (!location) {
+    return { type: 'town', name: 'Boot Hill' };
+  }
+  
+  // Handle wilderness locations that have description instead of name
+  if (location.type === 'wilderness' && location.description && !location.name) {
+    return { 
+      type: location.type,
+      name: location.description // Use description as name for GameLocation compatibility
+    };
+  }
+  
+  // For other location types, ensure name exists
+  return {
+    type: location.type || 'town',
+    name: location.name || 'Boot Hill'
+  };
+}

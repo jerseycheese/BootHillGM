@@ -2,110 +2,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { GameControlSectionProps } from "../../types/debug.types";
 import { initializeTestCombat, resetGame, extractCharacterData } from "../../utils/debugActions";
-import { GameAction } from "../../types/actions";
-import { GameEngineAction } from "../../types/gameActions";
-import { logDiagnostic, captureStateSnapshot } from "../../utils/initializationDiagnostics";
+import { logDiagnostic } from "../../utils/initializationDiagnostics";
 import { AIService } from "../../services/ai/aiService";
-import { createTypedNarrativeEntry } from "../../utils/initialization/journalEntryHelpers";
-
-// Type for location that includes both variants
-interface SafeLocation {
-  type: string;
-  name?: string;
-  description?: string;
-}
-
-// Define tracking interface for diagnostics
-interface TrackingDiagnostics {
-  beforeActionDispatch: (actionType: string, actionPayload?: unknown) => void;
-  afterActionDispatch: () => void;
-}
-
-// Enhanced tracking implementation with proper diagnostics
-const trackResetProcess: TrackingDiagnostics = {
-  beforeActionDispatch: (actionType, actionPayload) => {
-    // Log detailed action information before dispatch
-    logDiagnostic('RESET', `Before dispatch: ${actionType}`, {
-      actionType,
-      hasPayload: !!actionPayload,
-      payloadType: actionPayload ? typeof actionPayload : 'none',
-      timestamp: new Date().toISOString()
-    });
-    
-    // Capture state snapshot before reset for comparison
-    const beforeSnapshot = captureStateSnapshot();
-    if (beforeSnapshot) {
-      logDiagnostic('RESET', 'State snapshot before reset', {
-        totalKeys: beforeSnapshot.totalKeys,
-        characterName: beforeSnapshot.gameStateKeys['saved-game-state']?.characterName,
-        inventoryCount: beforeSnapshot.gameStateKeys['saved-game-state']?.inventoryCount
-      });
-    }
-  },
-  afterActionDispatch: () => {
-    // Capture state after reset for verification
-    const afterSnapshot = captureStateSnapshot();
-    if (afterSnapshot) {
-      logDiagnostic('RESET', 'State snapshot after reset', {
-        totalKeys: afterSnapshot.totalKeys,
-        characterName: afterSnapshot.gameStateKeys['saved-game-state']?.characterName,
-        inventoryCount: afterSnapshot.gameStateKeys['saved-game-state']?.inventoryCount
-      });
-    }
-    
-    logDiagnostic('RESET', 'Reset process completed, preparing for page reload');
-  }
-};
-
-/**
- * Type adapter to convert GameEngineAction to GameAction with enhanced validation
- */
-function adaptAction(action: GameEngineAction): GameAction {
-  // Log action adaptation for diagnostics
-  logDiagnostic('ActionAdapter', `Converting action: ${action.type}`, {
-    originalType: action.type,
-    hasPayload: action.type !== "RESET_NARRATIVE"
-  });
-
-  // Handle specific type conversions
-  if (action.type === "SET_LOCATION" && typeof action.payload !== "string") {
-    const location = action.payload as SafeLocation;
-    return {
-      type: action.type,
-      payload: location.name || location.description || "unknown"
-    };
-  }
-  
-  // Enhanced SET_STATE action validation
-  if (action.type === "SET_STATE") {
-    // Log character data for diagnostic purposes
-    if (action.payload?.character?.player) {
-      logDiagnostic('ActionAdapter', 'SET_STATE character data', {
-        name: action.payload.character.player.name,
-        attributeCount: Object.keys(action.payload.character.player.attributes || {}).length,
-        inventoryCount: action.payload.character.player.inventory?.items?.length || 0
-      });
-    }
-
-    return {
-      type: "SET_STATE",
-      payload: action.payload
-    };
-  }
-  
-  // Handle RESET_NARRATIVE actions
-  if (action.type === "RESET_NARRATIVE") {
-    return { type: "RESET_NARRATIVE" };
-  }
-  
-  // Handle RESET_STATE actions
-  if ((action.type as string) === "RESET_STATE") {
-    return { type: "RESET_STATE" };
-  }
-  
-  // Default case
-  return action as unknown as GameAction;
-}
+import { adaptAction } from "../../utils/debug/actionAdapter";
+import { generateAIContent } from "../../utils/debug/resetContentGenerator";
+import { handleResetStorage } from "../../utils/debug/resetStorageManager";
+import { trackResetProcess } from "../../utils/debug/resetTracker";
 
 /**
  * Enhanced GameControlSection component with proper reset functionality
@@ -119,7 +21,6 @@ const GameControlSection: React.FC<GameControlSectionProps> = ({
   setLoadingIndicator,
   gameState
 }) => {
-  // Removed resetProgress state to eliminate the tracker
   const [resetTimestamp, setResetTimestamp] = useState<number | null>(null);
   const [needsReload, setNeedsReload] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
@@ -153,15 +54,13 @@ const GameControlSection: React.FC<GameControlSectionProps> = ({
     }
   }, [needsReload]);
 
-  // Enhanced post-reset verification with character validation
+  // Enhanced post-reset verification
   useEffect(() => {
     if (resetTimestamp === null) return;
     
-    // Log start of verification
     logDiagnostic('RESET', 'Post-reset verification started', { resetTimestamp });
     
     const checkTimerId = setTimeout(() => {
-      // Check localStorage for character data post-reset
       try {
         const savedState = localStorage.getItem('saved-game-state');
         if (savedState) {
@@ -198,32 +97,17 @@ const GameControlSection: React.FC<GameControlSectionProps> = ({
 
   /**
    * Handles game reset while preserving character data and generating new AI content
-   * 
-   * This function manages the game reset process with the following responsibilities:
-   * 1. Preserves character data across the reset
-   * 2. Clears localStorage except for essential character data
-   * 3. Directly generates new AI content (narrative and suggested actions)
-   * 4. Creates journal entries with proper summaries
-   * 5. Ensures state consistency during and after reset
-   * 6. Manages loading indicators to prevent UI flashing
-   * 7. Provides fallback behavior when AI generation fails
-   * 
-   * The implementation includes robust error handling and state management
-   * to ensure a smooth reset experience while maintaining character persistence.
-   * 
-   * @returns {Promise<void>} A promise that resolves when reset is complete
    */
   const handleResetGame = useCallback(async () => {
     setIsResetting(true);
     
-    // IMPORTANT: Clear any existing loading indicators to prevent flashing
+    // Clear any existing loading indicators to prevent flashing
     if (loading === "reset") {
       setLoading(null);
     }
     setLoadingIndicator(null);
     setError(null);
     
-    // Log start of reset process
     logDiagnostic('RESET', 'User initiated reset');
     
     try {
@@ -243,252 +127,11 @@ const GameControlSection: React.FC<GameControlSectionProps> = ({
         logDiagnostic('RESET', 'No character data available');
       }
       
-      // Clear localStorage except for character data and needed keys
-      Object.keys(localStorage).forEach(key => {
-        if (key !== 'characterData' && 
-            !key.startsWith('_boothillgm_') && 
-            key !== 'diagnostic-history') {
-          localStorage.removeItem(key);
-        }
-      });
+      // Handle localStorage cleanup
+      handleResetStorage(characterData);
       
-      // Set reset flags for triggering AI generation - THIS MUST BE SET BEFORE AI GENERATION
-      localStorage.setItem('_boothillgm_reset_flag', Date.now().toString());
-      localStorage.setItem('_boothillgm_force_generation', 'true');
-      
-      // Save character data
-      if (characterData) {
-        localStorage.setItem('characterData', JSON.stringify(characterData));
-      }
-      
-      // Save character data in formats expected by test
-      if (characterData) {
-        localStorage.setItem('character-creation-progress', JSON.stringify({ character: characterData }));
-        localStorage.setItem('completed-character', JSON.stringify(characterData));
-      }
-      
-      // Try direct AI generation first
-      try {
-        logDiagnostic('RESET', 'Calling AI service directly with character data', {
-          name: characterData?.name || 'null',
-          id: characterData?.id || 'null',
-          hasAttributes: !!characterData?.attributes,
-          hasInventory: !!characterData?.inventory
-        });
-        
-        // Using already instantiated AIService for consistency
-        const aiResponse = await aiService.generateGameContent(characterData);
-        
-        logDiagnostic('RESET', 'AI response received', {
-          hasNarrative: !!aiResponse.narrative,
-          narrativeLength: aiResponse.narrative?.length || 0,
-          suggestedActionCount: aiResponse.suggestedActions?.length || 0
-        });
-        
-        // CRITICAL FIX: Directly dispatch content to state AND store in localStorage
-        if (aiResponse.narrative) {
-          
-          // Generate a proper AI summary for the journal entry
-          let narrativeSummary = '';
-          try {
-            
-            // Enhanced context for better summary generation
-            const summaryContext = `Character ${characterData?.name || 'the character'} in Boot Hill. 
-              Create a complete sentence summary of this narrative that is NOT just the first sentence 
-              and fully captures the essence of the entry.`;
-            
-            narrativeSummary = await aiService.generateNarrativeSummary(
-              aiResponse.narrative,
-              summaryContext
-            );
-            
-          } catch {
-            
-            // Create a fallback summary that's not just the first sentence
-            narrativeSummary = `${characterData?.name || 'The character'} begins a new adventure in the frontier town of Boot Hill.`;
-          }
-          
-          // Create a properly typed journal entry with the AI-generated summary
-          const journalEntry = createTypedNarrativeEntry(
-            aiResponse.narrative,
-            'New Adventure',
-            Date.now(),
-            narrativeSummary
-          );
-          
-          // DIRECT DISPATCH to state - this is critical
-          dispatch({
-            type: 'ADD_NARRATIVE_HISTORY',
-            payload: aiResponse.narrative
-          });
-          
-          // Dispatch journal entry to state
-          dispatch({
-            type: 'journal/ADD_ENTRY',
-            payload: journalEntry
-          });
-          
-          // Also store in localStorage for initialization
-          localStorage.setItem('narrative', JSON.stringify(aiResponse.narrative));
-          localStorage.setItem('journal', JSON.stringify([journalEntry]));
-          
-          // Save to saved-game-state as well to ensure it persists
-          try {
-            const savedState = localStorage.getItem('saved-game-state');
-            const state = savedState ? JSON.parse(savedState) : {};
-            
-            if (state && typeof state === 'object') {
-              // Update narrative in saved state
-              if (!state.narrative) state.narrative = {};
-              state.narrative.narrativeHistory = [aiResponse.narrative];
-              
-              // Update journal in saved state
-              if (!state.journal) state.journal = {};
-              state.journal.entries = [journalEntry];
-              
-              // Save updated state
-              localStorage.setItem('saved-game-state', JSON.stringify(state));
-            } else {
-              // Create a minimal state if none exists
-              const minimalState = {
-                narrative: { narrativeHistory: [aiResponse.narrative] },
-                journal: { entries: [journalEntry] },
-                character: { player: characterData || { name: 'Test Character', id: 'test-id' }, opponent: null },
-                suggestedActions: aiResponse.suggestedActions || []
-              };
-              localStorage.setItem('saved-game-state', JSON.stringify(minimalState));
-            }
-          } catch {
-            
-            // Create a minimal state as fallback
-            const minimalState = {
-              narrative: { narrativeHistory: [aiResponse.narrative] },
-              journal: { entries: [journalEntry] },
-              character: { player: characterData || { name: 'Test Character', id: 'test-id' }, opponent: null },
-              suggestedActions: aiResponse.suggestedActions || []
-            };
-            localStorage.setItem('saved-game-state', JSON.stringify(minimalState));
-          }
-        } else {
-          logDiagnostic('RESET', 'No narrative content in AI response');
-          
-          // Create fallback narrative for tests
-          const fallbackNarrative = 'This is DEFINITELY AI-generated content for Test Character, NOT hardcoded fallback.';
-          localStorage.setItem('narrative', JSON.stringify(fallbackNarrative));
-          
-          // Create minimal saved state for tests
-          const minimalState = {
-            narrative: { narrativeHistory: [fallbackNarrative] },
-            journal: { entries: [] },
-            character: { player: characterData || { name: 'Test Character', id: 'test-id' }, opponent: null },
-            suggestedActions: aiResponse.suggestedActions || []
-          };
-          localStorage.setItem('saved-game-state', JSON.stringify(minimalState));
-        }
-        
-        if (aiResponse.suggestedActions?.length) {
-          
-          // DIRECT DISPATCH to state
-          dispatch({
-            type: 'SET_SUGGESTED_ACTIONS',
-            payload: aiResponse.suggestedActions
-          });
-          
-          // Store in localStorage
-          localStorage.setItem('suggestedActions', JSON.stringify(aiResponse.suggestedActions));
-          
-          // Save to saved-game-state as well
-          try {
-            const savedState = localStorage.getItem('saved-game-state');
-            const state = savedState ? JSON.parse(savedState) : {};
-            
-            if (state && typeof state === 'object') {
-              // Update suggested actions in saved state
-              state.suggestedActions = aiResponse.suggestedActions;
-              
-              // Save updated state
-              localStorage.setItem('saved-game-state', JSON.stringify(state));
-            }
-          } catch {
-            // Error already logged in diagnostics
-          }
-        } else {
-          logDiagnostic('RESET', 'No suggested actions in AI response');
-          
-          // Create fallback actions for tests
-          const fallbackActions = [
-            { 
-              id: 'ai-test-action-1', 
-              title: 'AI-Generated Test Action 1', 
-              description: 'This is a unique AI-generated action', 
-              type: 'optional' 
-            },
-            { 
-              id: 'ai-test-action-2', 
-              title: 'AI-Generated Test Action 2', 
-              description: 'Another unique AI-generated action', 
-              type: 'optional' 
-            }
-          ];
-          
-          localStorage.setItem('suggestedActions', JSON.stringify(fallbackActions));
-          
-          // Update saved-game-state with actions
-          try {
-            const savedState = localStorage.getItem('saved-game-state');
-            const state = savedState ? JSON.parse(savedState) : {};
-            
-            if (state && typeof state === 'object') {
-              state.suggestedActions = fallbackActions;
-              localStorage.setItem('saved-game-state', JSON.stringify(state));
-            }
-          } catch {
-            // Error already logged in diagnostics
-          }
-        }
-        
-        logDiagnostic('RESET', 'Direct AI generation successful', {
-          hasNarrative: !!aiResponse.narrative,
-          journalEntries: 1, // We create one journal entry from the narrative
-          suggestedActionCount: aiResponse.suggestedActions?.length || 0
-        });
-      } catch (aiError) {
-        // Replace console.error with logDiagnostic
-        logDiagnostic('RESET', 'Direct AI generation failed, falling back to initialization method', {
-          error: String(aiError),
-          errorStack: aiError instanceof Error ? aiError.stack : 'No stack trace'
-        });
-        
-        // Set fallback content for tests
-        const fallbackNarrative = 'This is DEFINITELY AI-generated content for Test Character, NOT hardcoded fallback.';
-        localStorage.setItem('narrative', JSON.stringify(fallbackNarrative));
-        
-        const fallbackActions = [
-          { 
-            id: 'ai-test-action-1', 
-            title: 'AI-Generated Test Action 1', 
-            description: 'This is a unique AI-generated action', 
-            type: 'optional' 
-          },
-          { 
-            id: 'ai-test-action-2', 
-            title: 'AI-Generated Test Action 2', 
-            description: 'Another unique AI-generated action', 
-            type: 'optional' 
-          }
-        ];
-        
-        localStorage.setItem('suggestedActions', JSON.stringify(fallbackActions));
-        
-        // Create a minimal saved state for tests
-        const minimalState = {
-          narrative: { narrativeHistory: [fallbackNarrative] },
-          journal: { entries: [] },
-          character: { player: characterData || { name: 'Test Character', id: 'test-id' }, opponent: null },
-          suggestedActions: fallbackActions
-        };
-        localStorage.setItem('saved-game-state', JSON.stringify(minimalState));
-      }
+      // Generate AI content
+      await generateAIContent(characterData, aiService, dispatch);
       
       // CRITICAL: Intercept any loading indicators that might appear
       setLoading(null);
