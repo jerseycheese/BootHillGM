@@ -1,144 +1,27 @@
+/**
+ * Session Props Generator
+ * 
+ * Generates props for the game session components by combining state, dispatch,
+ * character data, and event handlers into a cohesive props object.
+ * 
+ * @module utils/sessionPropsGenerator
+ */
 import { Character } from '../types/character';
 import { GameSessionProps } from '../components/GameArea/types';
 import { InventoryManager } from '../utils/inventoryManager';
 import { GameAction } from '../types/actions';
 import { GameState, initialGameState } from '../types/gameState';
 import { Dispatch } from 'react';
-import { getAIResponse } from '../services/ai/gameService';
-import { getJournalContext } from '../utils/JournalManager';
-import { getItemsFromInventory, getEntriesFromJournal } from '../hooks/selectors/typeGuards';
-import { InventoryItem, ItemCategory } from '../types/item.types';
-import { CombatParticipant } from '../types/combat';
-import { generateActionFallbackEntry } from './fallback/fallbackJournalGenerator';
-import { generateNarrativeSummary } from './ai/narrativeSummary';
-import { JournalEntry, NarrativeJournalEntry, JournalEntryType } from '../types/journal';
-import { ActionType, SuggestedAction } from '../types/campaign';
-import { v4 as uuidv4 } from 'uuid';
-
-/**
- * Type for complex item objects that might be in the AI response
- */
-interface AIItemResponse {
-  name: string;
-  category?: ItemCategory;
-  [key: string]: unknown;
-}
-
-/**
- * Creates a journal entry with a summary that won't be lost in state transitions
- * 
- * @param title - The title of the journal entry
- * @param content - The main content of the journal entry
- * @param summary - The AI-generated or fallback summary
- * @param type - The type of journal entry (defaults to 'narrative')
- * @returns A properly structured JournalEntry object
- */
-function createJournalEntry(title: string, content: string, summary: string, type: JournalEntryType = 'narrative'): JournalEntry {
-  // Create a unique ID that includes a timestamp for sorting
-  const entryId = `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
-  // Create typed entry based on the entry type
-  if (type === 'narrative') {
-    // For narrative entries, explicitly include the narrativeSummary field
-    const narrativeEntry: NarrativeJournalEntry = {
-      id: entryId,
-      title: title,
-      timestamp: Date.now(),
-      content: content,
-      type: 'narrative',
-      // Explicitly add the narrativeSummary field
-      narrativeSummary: summary || "No summary available"
-    };
-    
-    return narrativeEntry;
-  } else {
-    // For other entry types, create a base entry
-    // All other entry types will be handled by the reducer logic
-    if (type === 'combat') {
-      return {
-        id: entryId,
-        title: title,
-        timestamp: Date.now(),
-        content: content,
-        type: 'combat',
-        combatants: { player: '', opponent: '' },
-        outcome: 'victory'
-      };
-    } else if (type === 'inventory') {
-      return {
-        id: entryId,
-        title: title,
-        timestamp: Date.now(),
-        content: content,
-        type: 'inventory',
-        items: { acquired: [], removed: [] }
-      };
-    } else if (type === 'quest') {
-      return {
-        id: entryId,
-        title: title,
-        timestamp: Date.now(),
-        content: content,
-        type: 'quest',
-        questTitle: 'Unknown Quest',
-        status: 'started'
-      };
-    } else {
-      // Default fallback
-      return {
-        id: entryId,
-        title: title,
-        timestamp: Date.now(),
-        content: content,
-        type: 'narrative',
-        narrativeSummary: summary || "No summary available"
-      };
-    }
-  }
-}
-
-/**
- * Extracts a proper string item name from various possible structures
- * Handles both string items and complex AIItemResponse objects
- * 
- * @param item - The item data from AI response, either a string or object
- * @returns A string representing the item name
- */
-function extractItemName(item: string | AIItemResponse): string {
-  if (typeof item === 'string') {
-    return item;
-  }
-  
-  if (typeof item === 'object' && item !== null) {
-    return item.name;
-  }
-  
-  return 'Unknown Item';
-}
-
-/**
- * Extracts a valid category from various possible item structures
- * Provides a default category of 'general' when none is specified
- * 
- * @param item - The item data from AI response, either a string or object
- * @returns A valid ItemCategory string
- */
-function extractItemCategory(item: string | AIItemResponse): ItemCategory {
-  if (typeof item === 'string') {
-    return 'general';
-  }
-  
-  if (typeof item === 'object' && item !== null && 
-      typeof item.category === 'string' && 
-      ['general', 'weapon', 'consumable', 'medical'].includes(item.category)) {
-    return item.category as ItemCategory;
-  }
-  
-  return 'general';
-}
+import { processUserInput } from './session/userInputHandler';
 
 /**
  * Generates session props for the game interface components
+ * 
+ * @param state - Current game state
+ * @param dispatch - Dispatch function for state updates
+ * @param playerCharacter - Current player character
+ * @param isLoading - Loading state indicator
+ * @returns Properly structured GameSessionProps object
  */
 export function generateSessionProps(
   state: GameState | null | undefined,
@@ -149,25 +32,26 @@ export function generateSessionProps(
   // Derive opponent directly from state
   const opponent = state?.character?.opponent || null;
 
-  // ID getters for health change handler
-  const _getPlayerId = () => playerCharacter?.id || 'player';
-  const _getOpponentId = () => opponent?.id || 'opponent';
+  // Create a properly typed dispatch function using only GameAction
+  const safeDispatch: Dispatch<GameAction> = dispatch || (() => {});
 
-  // Create adaptedHealthChangeHandler - Placeholder
-  const localAdaptedHealthChangeHandler = (_characterType: string, _newStrength: number) => { // Prefix unused args
-  };
-  
+  /**
+   * Handles player strength/health changes
+   */
   const handleStrengthChange = (_characterType: 'player' | 'opponent', _newStrength: number) => {
     // Implementation would update character strength
   };
 
-  // Create a properly typed dispatch function using only GameAction
-  const safeDispatch: Dispatch<GameAction> = dispatch || (() => {});
-
-  // Define action handlers that depend on dispatch and state
-  const handleUseItem = (_itemId: string) => { // Prefix unused arg
+  /**
+   * Handles item usage from inventory
+   */
+  const handleUseItem = (_itemId: string) => {
+    // Implementation would handle item usage
   };
 
+  /**
+   * Handles equipping weapons from inventory
+   */
   const handleEquipWeapon = (itemId: string) => {
     if (!state || !dispatch || !playerCharacter) {
       return;
@@ -182,8 +66,10 @@ export function generateSessionProps(
   };
 
   // Store the last action to potentially implement retryLastAction
-  let lastActionInput: string | null = null;
-  let lastActionType: string | undefined = undefined;
+  let lastActionState = {
+    input: null as string | null,
+    actionType: undefined as string | undefined
+  };
 
   /**
    * Processes user input, updates journal/narrative history, and retrieves AI response
@@ -194,180 +80,24 @@ export function generateSessionProps(
    */
   const handleUserInput = async (input: string, actionType?: string) => {
     if (!state || !dispatch) {
-      return;
+      return null;
     }
 
     // Store the action for potential retry
-    lastActionInput = input;
-    lastActionType = actionType;
+    lastActionState = { input, actionType };
 
-    // Mark as loading while processing
-    dispatch({ type: 'ui/SET_LOADING', payload: true } as const);
-
-    try {
-      // Extract existing journal entries and inventory items
-      const journalEntries = getEntriesFromJournal(state.journal);
-      const inventoryItems = getItemsFromInventory(state.inventory);
-
-      // Get the action type from the action itself if provided in the UI/state
-      const actionObj = state.suggestedActions?.find(action => action.title === input);
-      const effectiveActionType = actionType || (actionObj?.type as string) || 'basic';
-
-      // Add player input to narrative history
-      dispatch({
-        type: 'ADD_NARRATIVE_HISTORY',
-        payload: `Player: ${input}`
-      });
-
-      try {
-        // Get AI response
-        const response = await getAIResponse({
-          prompt: input,
-          journalContext: getJournalContext(journalEntries),
-          inventory: inventoryItems
-        });
-
-        // Add AI response to narrative history
-        dispatch({
-          type: 'ADD_NARRATIVE_HISTORY',
-          payload: response.narrative
-        });
-
-        
-        // Generate summary using the dedicated AI function
-        const aiSummary = await generateNarrativeSummary(input, response.narrative);
-
-        // Create a properly typed journal entry that preserves the summary
-        const journalEntry = createJournalEntry(input, response.narrative, aiSummary, 'narrative');
-        
-        // Dispatch with an explicit type so that our reducer knows how to handle it
-        dispatch({
-          type: 'journal/ADD_ENTRY',
-          payload: journalEntry
-        });
-        
-
-        // Update suggested actions if available
-        if (response.suggestedActions) {
-          // Convert response suggested actions to proper typed actions
-          const typedSuggestedActions: SuggestedAction[] = response.suggestedActions.map(action => ({
-            id: action.id || `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            title: action.title,
-            description: action.description || action.title,
-            type: (action.type as ActionType) || 'basic'
-          }));
-          
-          dispatch({
-            type: 'SET_SUGGESTED_ACTIONS',
-            payload: typedSuggestedActions
-          });
-        }
-
-        // Handle acquired items
-        if (response.acquiredItems?.length > 0) {
-          response.acquiredItems.forEach((rawItem) => {
-            // Treat as potentially complex item structure
-            const itemData = rawItem as string | AIItemResponse;
-            
-            // Extract string name and category from potentially complex structure
-            const itemName = extractItemName(itemData);
-            const itemCategory = extractItemCategory(itemData);
-            
-            const newItem: InventoryItem = {
-              id: uuidv4(),
-              name: itemName,
-              description: `A ${itemName}`,
-              quantity: 1,
-              category: itemCategory,
-            };
-            
-            dispatch({ type: 'inventory/ADD_ITEM', payload: newItem });
-          });
-        }
-
-        // Handle removed items
-        if (response.removedItems?.length > 0) {
-          response.removedItems.forEach((itemName: string) => {
-            const itemToRemove = inventoryItems.find(
-              (item: InventoryItem) => item.name === itemName
-            );
-            if (itemToRemove) {
-              dispatch({ type: 'inventory/REMOVE_ITEM', payload: itemToRemove.id });
-            }
-          });
-        }
-
-        // Update location if provided
-        if (response.location) {
-          dispatch({ 
-            type: 'SET_LOCATION', 
-            payload: response.location 
-          });
-        }
-
-        // Handle combat initiation if needed
-        if (response.combatInitiated && response.opponent) {
-          // Set combat as active
-          dispatch({
-            type: 'combat/SET_ACTIVE',
-            payload: true
-          });
-          
-          // Add opponent to participants
-          const opponentParticipant = response.opponent as CombatParticipant;
-          
-          // Update combat state with participants and initial values
-          dispatch({
-            type: 'combat/UPDATE_STATE',
-            payload: {
-              isActive: true,
-              rounds: 1,
-              playerTurn: true,
-              participants: [opponentParticipant]
-            }
-          });
-        }
-      } catch (error) {
-        console.error('Error getting AI response:', error);
-        
-        // Create a fallback journal entry when AI service fails
-        const fallbackEntry = generateActionFallbackEntry(input, effectiveActionType);
-        
-        // Add fallback entry to journal
-        dispatch({
-          type: 'journal/ADD_ENTRY',
-          payload: fallbackEntry
-        });
-        
-        
-        // Fallback response if AI service fails
-        dispatch({
-          type: 'ADD_NARRATIVE_HISTORY',
-          payload: `You ${input.toLowerCase()}. ${fallbackEntry.content}`
-        });
-
-        // Generate some fallback suggested actions
-        const fallbackActions: SuggestedAction[] = [
-          { id: 'fallback-gen-1', title: 'Focus on what you see', type: 'optional', description: 'Look more closely at your surroundings' },
-          { id: 'fallback-gen-2', title: 'Check nearby buildings', type: 'optional', description: 'Investigate structures around you' },
-          { id: 'fallback-gen-3', title: 'Look for armed individuals', type: 'optional', description: 'Scan for potential threats' },
-          { id: 'fallback-gen-4', title: 'Ask about what you see', type: 'optional', description: 'Find someone to talk to about the area' }
-        ];
-        
-        dispatch({
-          type: 'SET_SUGGESTED_ACTIONS',
-          payload: fallbackActions 
-        });
-      }
-
-      return null;
-    } catch (error) {
-      console.error('Error in handleUserInput:', error);
-      return null;
-    } finally {
-      // Mark as not loading once complete
-      dispatch({ type: 'ui/SET_LOADING', payload: false });
+    // Process the user input using the separated handler
+    const result = await processUserInput(input, actionType, state, dispatch);
+    
+    // Update last action state with the result
+    if (result.success) {
+      lastActionState = { 
+        input: result.lastInput, 
+        actionType: result.lastActionType 
+      };
     }
+
+    return null;
   };
 
   /**
@@ -376,8 +106,8 @@ export function generateSessionProps(
    * @returns Promise resolving to null when complete
    */
   const retryLastAction = async () => {
-    if (lastActionInput) {
-      return handleUserInput(lastActionInput, lastActionType);
+    if (lastActionState.input) {
+      return handleUserInput(lastActionState.input, lastActionState.actionType);
     }
     return null;
   };
@@ -393,7 +123,7 @@ export function generateSessionProps(
     handleUserInput: () => { /* Default no-op */ },
     retryLastAction: () => { /* Default no-op */ },
     handleCombatEnd: async () => {},
-    handlePlayerHealthChange: localAdaptedHealthChangeHandler,
+    handlePlayerHealthChange: () => {},
     handleUseItem,
     handleEquipWeapon,
     executeCombatRound: async () => { /* Default no-op */ },
@@ -420,7 +150,7 @@ export function generateSessionProps(
     opponent,
     handleEquipWeapon,
     handleUseItem,
-    handlePlayerHealthChange: localAdaptedHealthChangeHandler,
+    handlePlayerHealthChange: () => {},
 
     // Provide implementations for functions
     handleUserInput: handleUserInput,
