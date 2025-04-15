@@ -114,6 +114,7 @@ const processJournalEntries = (entries: Array<JournalEntry | RawJournalEntry>): 
           timestamp: entry.timestamp || Date.now(),
           content: entry.content || '',
           type: 'narrative',
+          narrativeSummary: entry.narrativeSummary || '',
         };
     }
     

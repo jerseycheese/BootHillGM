@@ -2,15 +2,15 @@ export type JournalEntryType = 'narrative' | 'combat' | 'inventory' | 'quest';
 
 export interface BaseJournalEntry {
   id: string;
-  title: string; // Title is now always assigned by the reducer
+  title: string;
   timestamp: number;
   content: string;
-  narrativeSummary?: string; // Make sure this is defined in the base interface
+  narrativeSummary?: string;
 }
 
 export interface NarrativeJournalEntry extends BaseJournalEntry {
   type: 'narrative';
-  // Add any other narrative-specific fields here
+  narrativeSummary: string;
 }
 
 export interface CombatJournalEntry extends BaseJournalEntry {

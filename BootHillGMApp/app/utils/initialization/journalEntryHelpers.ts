@@ -27,7 +27,7 @@ export function createTypedNarrativeEntry(
   content: string,
   title: string = 'New Adventure',
   timestamp: number = Date.now(),
-  summary?: string
+  summary: string = 'New narrative entry'
 ): NarrativeJournalEntry {
   return {
     id: `entry_narrative_${Date.now()}`,
@@ -35,7 +35,7 @@ export function createTypedNarrativeEntry(
     type: 'narrative' as const, // Use 'as const' to ensure the literal type
     title,
     content,
-    ...(summary ? { narrativeSummary: summary } : {})
+    narrativeSummary: summary
   };
 }
 

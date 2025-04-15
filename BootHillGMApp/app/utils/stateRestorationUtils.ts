@@ -68,19 +68,20 @@ export const ensureJournalEntry = (entry: unknown): JournalEntry => {
       type: 'narrative',
       timestamp: Date.now(),
       content: 'Missing journal content',
+      narrativeSummary: 'Default summary', // Add required property for narrative type
     };
   }
 
   // Check if entry has required properties
   const entryObj = entry as Partial<JournalEntry>;
   if (!entryObj.type || !entryObj.content || !entryObj.id) {
-    // Add missing required properties
     return {
       id: entryObj.id || getUUID(),
       title: entryObj.title || 'Restored Entry', // Add title (use existing if possible)
       type: 'narrative', // Default to narrative if type is missing
       timestamp: entryObj.timestamp || Date.now(),
       content: entryObj.content || 'Missing journal content',
+      narrativeSummary: 'narrativeSummary' in entryObj ? String(entryObj.narrativeSummary) : 'Generated summary', // Add required property
     };
   }
 

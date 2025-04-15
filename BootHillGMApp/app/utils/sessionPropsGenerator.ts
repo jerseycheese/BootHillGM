@@ -47,7 +47,7 @@ function createJournalEntry(title: string, content: string, summary: string, typ
       content: content,
       type: 'narrative',
       // Explicitly add the narrativeSummary field
-      narrativeSummary: summary || undefined
+      narrativeSummary: summary || "No summary available"
     };
     
     return narrativeEntry;
@@ -90,7 +90,8 @@ function createJournalEntry(title: string, content: string, summary: string, typ
         title: title,
         timestamp: Date.now(),
         content: content,
-        type: 'narrative'
+        type: 'narrative',
+        narrativeSummary: summary || "No summary available"
       };
     }
   }

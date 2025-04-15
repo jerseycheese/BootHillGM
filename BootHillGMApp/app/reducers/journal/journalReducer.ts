@@ -71,7 +71,8 @@ function validateAndConvertEntry(rawEntry: RawJournalEntry): JournalEntry {
         title, // Add title
         timestamp,
         content,
-        type: 'narrative'
+        type: 'narrative',
+        narrativeSummary: rawEntry.narrativeSummary || 'No summary available'
       };
   }
   

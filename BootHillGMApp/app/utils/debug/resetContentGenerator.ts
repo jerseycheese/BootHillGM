@@ -85,6 +85,12 @@ export async function generateAIContent(
         narrativeSummary
       );
       
+      // Add the missing summary property to make it compatible with JournalEntry interface
+      const journalEntryWithSummary = {
+        ...journalEntry,
+        summary: narrativeSummary
+      };
+      
       // DIRECT DISPATCH to state - this is critical
       dispatch({
         type: 'ADD_NARRATIVE_HISTORY',
@@ -102,7 +108,7 @@ export async function generateAIContent(
       localStorage.setItem('journal', JSON.stringify([journalEntry]));
       
       // Save to saved-game-state as well to ensure it persists
-      updateSavedGameState(aiResponse.narrative, journalEntry as JournalEntry, characterData, aiResponse.suggestedActions || []);
+      updateSavedGameState(aiResponse.narrative, journalEntryWithSummary, characterData, aiResponse.suggestedActions || []);
     } else {
       handleFallbackContent(characterData);
     }

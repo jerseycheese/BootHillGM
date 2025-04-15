@@ -17,7 +17,7 @@ export function createNarrativeEntry(
   content: string,
   title: string = 'New Adventure',
   timestamp: number = Date.now(),
-  summary?: string
+  summary: string = 'A new chapter unfolds in the story.'
 ): NarrativeJournalEntry {
   return {
     id: `entry_narrative_${Date.now()}`,
@@ -25,7 +25,7 @@ export function createNarrativeEntry(
     type: 'narrative',
     title,
     content,
-    ...(summary ? { narrativeSummary: summary } : {})
+    narrativeSummary: summary
   };
 }
 
