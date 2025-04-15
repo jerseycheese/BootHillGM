@@ -1,13 +1,20 @@
 /**
- * Centralized AI service exports
+ * AI Service Index
+ * Exports all AI service components
  */
 
-import { AIService } from './aiService';
+// Main service
+export { AIService, aiServiceInstance } from './aiService';
 
-export { AIService };
+// Types
+export * from './types/gameService.types';
+export * from './types/aiService.types';
 
-// Create and export a default instance for shared use
-export const aiServiceInstance = new AIService();
+// Generators
+export { GameContentGenerator } from './generators/gameContentGenerator';
+export { SummaryGenerator } from './generators/summaryGenerator';
 
-// Export default for module pattern
-export default AIService;
+// Utilities
+export { debug } from './utils/aiServiceDebug';
+export { createMockResponse, createMockSummary } from './utils/mockResponseGenerator';
+export { generateFallbackResponse, generateFallbackSummary } from './utils/fallbackResponseGenerator';
