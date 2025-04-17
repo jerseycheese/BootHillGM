@@ -8,7 +8,6 @@
 import { Character } from '../../types/character';
 import { GameServiceResponse } from './types/gameService.types';
 import { logDiagnostic } from '../../utils/initializationDiagnostics';
-import { debug } from './utils/aiServiceDebug';
 import { GameContentGenerator } from './generators/gameContentGenerator';
 import { SummaryGenerator } from './generators/summaryGenerator';
 import { generateFallbackResponse } from './utils/fallbackResponseGenerator';
@@ -38,10 +37,6 @@ export class AIService {
       this.lastRequestTimestamp = Date.now();
       this.aiRequestInProgress = true;
       
-      // Enhanced debug
-      debug('Starting AI content generation for character:', 
-        characterData ? characterData.name : 'No character provided');
-      
       // Log for diagnostics
       logDiagnostic('AI_SERVICE', 'Starting AI content generation', {
         characterName: characterData?.name || 'Unknown',
@@ -62,8 +57,6 @@ export class AIService {
         details about ${characterName}'s arrival in town and initial impressions.
         Keep it focused and around 4-6 sentences in length. Make this completely unique.`;
       
-      debug('Using base prompt:', basePrompt.substring(0, 100) + '...');
-      
       // Get inventory items if available
       const inventoryItems = characterData?.inventory?.items || [];
       
@@ -79,25 +72,15 @@ export class AIService {
         journalContext = journalContext.slice(0, -2) + '.'; // Remove last comma and add period
       }
       
-      debug('Using journal context:', journalContext.substring(0, 100) + '...');
-      
       // Try to generate content with retries
       const result = await this.gameContentGenerator.generateWithRetries(
         basePrompt, 
         journalContext, 
         inventoryItems
       );
-      
-      // Enhanced logging for successful generation
-      debug('Successfully generated content:', {
-        hasNarrative: !!result.narrative,
-        narrativeLength: result.narrative?.length || 0,
-        suggestedActionCount: result.suggestedActions?.length || 0
-      });
-      
+
       return result;
     } catch (error) {
-      debug('Error in generateGameContent:', error);
       logDiagnostic('AI_SERVICE', 'Error in generateGameContent', { error: String(error) });
       
       // Generate fallback content

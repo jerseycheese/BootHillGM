@@ -42,18 +42,18 @@ export function useOptimizedNarrativeContext() {
     const now = Date.now();
     if (
       contextCacheRef.current &&
-      contextCacheRef.current.state === state.narrative && // Compare with narrative slice
+      contextCacheRef.current.state === state && // Compare with narrative slice
       now - contextCacheRef.current.timestamp < 5000 // Cache valid for 5 seconds
     ) {
       return contextCacheRef.current.optimizedContext;
     }
     
     // Build fresh context
-    const result = buildNarrativeContext(state.narrative, options); // Pass narrative slice
+    const result = buildNarrativeContext(state, options); // Use full state
     
     // Cache the result
     contextCacheRef.current = {
-      state: state.narrative, // Cache narrative slice
+      state: state, // Cache narrative slice
       optimizedContext: result.formattedContext,
       timestamp: now
     };

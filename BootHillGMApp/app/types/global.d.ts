@@ -119,6 +119,8 @@ export interface BHGMDebug {
     service: ContextualDecisionService;
     lastDetectionScore: number;
     isGenerating: () => boolean;
+    resetState: () => void;
+    evaluationLog: unknown[]; // Add missing property
   };
   
   // Quality evaluation tools

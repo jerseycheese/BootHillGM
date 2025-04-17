@@ -2,7 +2,6 @@ import { GameServiceResponse } from '../types/gameService.types';
 import { LocationType } from '../../locationService';
 import { ActionType } from '../../../types/campaign';
 import { Character } from '../../../types/character';
-import { debug } from './aiServiceDebug';
 
 /**
  * Generates a fallback response when AI generation fails
@@ -13,8 +12,6 @@ import { debug } from './aiServiceDebug';
  */
 export function generateFallbackResponse(characterData: Character | null): GameServiceResponse {
   const characterName = characterData?.name || 'the stranger';
-  
-  debug('Generating distinctive fallback content for', characterName);
   
   // Create a distinctive narrative that's obviously not the default
   const fallbackNarrative = `As ${characterName} steps off the stagecoach onto the dusty street of Boot Hill, 
@@ -56,7 +53,6 @@ export function generateFallbackResponse(characterData: Character | null): GameS
     opponent: null
   };
   
-  debug('Returning fallback content');
   return fallbackResponse;
 }
 

@@ -5,7 +5,7 @@
  */
 
 import { useCallback } from 'react';
-import { useNarrative } from '../context/NarrativeContext';
+import { useNarrative } from '../hooks/narrative/NarrativeProvider';
 import { 
   LoreFact, 
   LoreCategory, 
@@ -20,7 +20,8 @@ import {
  */
 export function useLore() {
   const { state, dispatch } = useNarrative();
-  const loreStore = state.narrative?.lore || initialLoreState; // Access via narrative slice
+  // Update to access lore directly from state
+  const loreStore = state.lore || initialLoreState;
 
   /**
    * Add a new lore fact
@@ -131,12 +132,12 @@ export function useLore() {
   /**
    * Get related facts
    */
-  const getRelatedFacts = useCallback((factId: string) => {
-    const fact = loreStore.facts[factId];
+  const getRelatedFacts = useCallback((id: string) => {
+    const fact = loreStore.facts[id];
     if (!fact) return [];
 
     return fact.relatedFactIds
-      .map(id => loreStore.facts[id])
+      .map((relatedId: string) => loreStore.facts[relatedId])
       .filter(Boolean);
   }, [loreStore]);
 
@@ -145,8 +146,8 @@ export function useLore() {
    */
   const getAllFactsSortedByImportance = useCallback((includeInvalid: boolean = false) => {
     return Object.values(loreStore.facts)
-      .filter(fact => includeInvalid || fact.isValid)
-      .sort((a, b) => b.importance - a.importance);
+      .filter((fact: LoreFact) => includeInvalid || fact.isValid)
+      .sort((a: LoreFact, b: LoreFact) => b.importance - a.importance);
   }, [loreStore]);
 
   return {

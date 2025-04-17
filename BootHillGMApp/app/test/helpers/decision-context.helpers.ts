@@ -240,6 +240,23 @@ export function recordDecisionWithImpact(
   
   // Update world state impacts using the safe update function
   updateNarrativeContext(gameState, (context) => {
+    // Initialize impactState if it doesn't exist
+    if (!context.impactState) {
+      context.impactState = {
+        worldStateImpacts: {},
+        reputationImpacts: {},
+        relationshipImpacts: {},
+        storyArcImpacts: {},
+        lastUpdated: Date.now()
+      };
+    }
+    
+    // Initialize worldStateImpacts if it doesn't exist
+    if (!context.impactState.worldStateImpacts) {
+      context.impactState.worldStateImpacts = {};
+    }
+    
+    // Now safely set the value
     context.impactState.worldStateImpacts.SaloonAttention = 75;
   });
 }

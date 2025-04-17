@@ -105,6 +105,16 @@ export function useNarrativeContext(): UseNarrativeContextReturn {
       };
     }, [generateNarrativeResponse, dispatch]);
   
+    // Create wrapped version of checkForDecisionTriggers that returns synchronous boolean
+    const wrappedCheckForDecisionTriggers = useCallback((narrativeText: string): boolean => {
+      // Call the async function but return a synchronous result
+      checkForDecisionTriggers(narrativeText).catch(err => 
+        console.error('Error checking for decision triggers:', err)
+      );
+      // Return false since we can't know the result synchronously
+      return false;
+    }, [checkForDecisionTriggers]);
+  
     return {
       // Current decision state
       currentDecision: narrativeSlice.currentDecision,
@@ -117,7 +127,7 @@ export function useNarrativeContext(): UseNarrativeContextReturn {
       recordPlayerDecision,
       clearPlayerDecision,
       getDecisionHistory,
-      checkForDecisionTriggers,
+      checkForDecisionTriggers: wrappedCheckForDecisionTriggers,
       triggerAIDecision,
       ensureFreshState,
       

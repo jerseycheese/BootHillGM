@@ -1,0 +1,151 @@
+/**
+ * Unit tests for useDecisionTriggering hook
+ */
+import React from 'react';
+import { renderHook } from '@testing-library/react-hooks/dom';
+import { act } from 'react-dom/test-utils';
+import { useDecisionTriggering } from '../../hooks/narrative/useDecisionTriggering';
+import { PlayerDecision, DecisionImportance, NarrativeState, NarrativeAction } from '../../types/narrative.types';
+import { NarrativeContextType } from '../../hooks/narrative/NarrativeProvider';
+import { Dispatch } from 'react';
+
+// Mock imports
+jest.mock('../../actions/narrativeActions', () => ({
+  addNarrativeHistory: jest.fn(() => ({ type: 'ADD_NARRATIVE_HISTORY' }))
+}));
+
+// Mock the contextualDecisionGenerator
+const mockGenerateEnhancedDecision = jest.fn();
+const mockSetDecisionGenerationMode = jest.fn();
+
+jest.mock('../../utils/contextualDecisionGenerator', () => ({
+  generateEnhancedDecision: (...args: unknown[]) => mockGenerateEnhancedDecision(...args),
+  setDecisionGenerationMode: (mode: string) => mockSetDecisionGenerationMode(mode)
+}));
+
+describe('useDecisionTriggering', () => {
+  // Setup mocks
+  const mockDispatch = jest.fn();
+  const mockPresentPlayerDecision = jest.fn();
+  
+  // Create a minimal NarrativeState for testing
+  const mockNarrativeState: NarrativeState = {
+    narrativeHistory: ['Previous narrative item'],
+    currentDecision: undefined,
+    narrativeContext: { 
+      decisionHistory: [] 
+    },
+    currentStoryPoint: null,
+    visitedPoints: [],
+    availableChoices: [],
+    displayMode: 'standard',
+    context: ''
+  };
+  
+  const mockContext: NarrativeContextType = {
+    state: mockNarrativeState,
+    dispatch: mockDispatch as Dispatch<NarrativeAction>
+  };
+  
+  beforeEach(() => {
+    jest.clearAllMocks();
+    
+    // Mock enhanced decision generator to return a test decision
+    mockGenerateEnhancedDecision.mockImplementation(async () => ({
+      id: 'test-decision-123',
+      prompt: 'Test contextual decision prompt',
+      timestamp: Date.now(),
+      options: [
+        { id: 'option1', text: 'Contextual option 1', impact: 'Impact 1' },
+        { id: 'option2', text: 'Contextual option 2', impact: 'Impact 2' }
+      ],
+      context: 'Test contextual decision context',
+      importance: 'moderate' as DecisionImportance,
+      characters: [],
+      aiGenerated: true
+    }));
+  });
+  
+  it('checks for decision triggers and uses AI generation for contextual decisions', async () => {
+    const { result } = renderHook(() => 
+      useDecisionTriggering(mockContext, mockPresentPlayerDecision)
+    );
+    
+    // Setup test narrative with a trigger keyword
+    const testNarrative = 'What do you do next?';
+    
+    // Call the hook function
+    await act(async () => {
+      await result.current.checkForDecisionTriggers(testNarrative);
+    });
+    
+    // Verify that AI generation was called
+    expect(mockSetDecisionGenerationMode).toHaveBeenCalledWith('ai');
+    expect(mockGenerateEnhancedDecision).toHaveBeenCalled();
+    
+    // Verify that the AI-generated decision was presented
+    expect(mockPresentPlayerDecision).toHaveBeenCalled();
+    const presentedDecision = mockPresentPlayerDecision.mock.calls[0][0] as PlayerDecision;
+    expect(presentedDecision.id).toBe('test-decision-123');
+    expect(presentedDecision.prompt).toBe('Test contextual decision prompt');
+  });
+  
+  it('uses fallback with contextual information when AI generation fails', async () => {
+    // Make the AI generator fail
+    mockGenerateEnhancedDecision.mockRejectedValue(new Error('Test error'));
+    
+    const { result } = renderHook(() => 
+      useDecisionTriggering(mockContext, mockPresentPlayerDecision)
+    );
+    
+    // Trigger a decision
+    await act(async () => {
+      await result.current.triggerAIDecision('Test context', 'significant');
+    });
+    
+    // Verify that a fallback decision was presented
+    expect(mockPresentPlayerDecision).toHaveBeenCalled();
+    const fallbackDecision = mockPresentPlayerDecision.mock.calls[0][0] as PlayerDecision;
+    
+    // Verify the fallback is contextual, not generic
+    expect(fallbackDecision.prompt).toBe('What would you like to do next?');
+    expect(fallbackDecision.context).toContain('Context: ');
+    expect(fallbackDecision.importance).toBe('significant');
+  });
+  
+  it('does not trigger new decisions when one is already active', async () => {
+    // Set up state with an existing decision
+    const stateWithDecision: NarrativeState = {
+      ...mockNarrativeState,
+      currentDecision: {
+        id: 'existing-decision',
+        prompt: 'Existing decision',
+        timestamp: Date.now(),
+        options: [],
+        context: 'Existing context',
+        importance: 'minor' as DecisionImportance,
+        characters: [],
+        aiGenerated: false
+      }
+    };
+    
+    const contextWithDecision = {
+      state: stateWithDecision,
+      dispatch: mockDispatch as Dispatch<NarrativeAction>
+    };
+    
+    const { result } = renderHook(() => 
+      useDecisionTriggering(contextWithDecision, mockPresentPlayerDecision)
+    );
+    
+    // Try to trigger a new decision
+    await act(async () => {
+      const triggered = await result.current.checkForDecisionTriggers('What should you do?');
+      expect(triggered).toBe(false);
+    });
+    
+    // Verify no new decision was presented
+    expect(mockPresentPlayerDecision).not.toHaveBeenCalled();
+    expect(mockGenerateEnhancedDecision).not.toHaveBeenCalled();
+  });
+});

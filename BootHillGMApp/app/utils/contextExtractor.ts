@@ -122,9 +122,18 @@ export function refreshNarrativeContext(
   
   // Create a copy to avoid mutating the original
   const updatedContext: NarrativeContext = {
+    // Spread existing context first to capture all values
     ...existingContext,
-    // Update the impact state's lastUpdated timestamp instead of adding a new property
+    // Then set required properties with nullish coalescing
+    importantEvents: existingContext.importantEvents ?? [],
+    worldContext: existingContext.worldContext ?? '',
+    characterFocus: existingContext.characterFocus ?? [],
+    // Initialize impact state with proper defaults
     impactState: {
+      reputationImpacts: {},
+      relationshipImpacts: {},
+      worldStateImpacts: {},
+      storyArcImpacts: {},
       ...existingContext.impactState,
       lastUpdated: Date.now()
     }
@@ -136,8 +145,8 @@ export function refreshNarrativeContext(
     const recentEvents = extractImportantEvents(narrativeState.narrativeHistory.slice(-5));
     if (recentEvents.length > 0) {
       updatedContext.importantEvents = [
-        ...updatedContext.importantEvents,
-        ...recentEvents.filter(event => !updatedContext.importantEvents.includes(event))
+        ...(updatedContext.importantEvents ?? []),
+        ...recentEvents.filter(event => !(updatedContext.importantEvents ?? []).includes(event))
       ];
     }
     
@@ -145,7 +154,7 @@ export function refreshNarrativeContext(
     const mentionedCharacters = extractCharacterMentions(narrativeState.narrativeHistory);
     if (mentionedCharacters.length > 0) {
       updatedContext.characterFocus = [
-        ...new Set([...updatedContext.characterFocus, ...mentionedCharacters])
+        ...new Set([...(updatedContext.characterFocus ?? []), ...mentionedCharacters])
       ];
     }
   }
@@ -156,7 +165,7 @@ export function refreshNarrativeContext(
       `the town of ${gameState.location.name}` : 
       gameState.location.type}`;
     
-    if (!updatedContext.worldContext.includes(locationUpdate)) {
+    if (!(updatedContext.worldContext ?? '').includes(locationUpdate)) {
       updatedContext.worldContext = updatedContext.worldContext
         ? `${updatedContext.worldContext}. ${locationUpdate}`
         : locationUpdate;

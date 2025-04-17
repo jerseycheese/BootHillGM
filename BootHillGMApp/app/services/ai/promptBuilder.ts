@@ -1,10 +1,5 @@
 import { InventoryItem } from '../../types/item.types';
 
-// Debug console function for better troubleshooting
-const debug = (...args: Array<unknown>): void => {
-  console.log('[DEBUG PromptBuilder]', ...args);
-};
-
 const WESTERN_THEMES = {
   SURVIVAL: ['resource scarcity', 'environmental challenges', 'physical hardship', 'self-reliance'],
   LAW_VS_OUTLAW: ['justice', 'order vs chaos', 'authority', 'moral choices'],
@@ -18,7 +13,6 @@ const WESTERN_THEMES = {
 function analyzeActionThemes(action: string): Array<keyof typeof WESTERN_THEMES> {
   // Ensure action is a valid string
   if (!action || typeof action !== 'string') {
-    debug('Invalid action passed to analyzeActionThemes:', action);
     return ['SURVIVAL']; // Default theme if invalid input
   }
   
@@ -44,7 +38,6 @@ function analyzeActionThemes(action: string): Array<keyof typeof WESTERN_THEMES>
 function formatInventoryItems(inventory: InventoryItem[] | undefined | null): string {
   // Check if inventory exists and is an array
   if (!inventory || !Array.isArray(inventory)) {
-    debug('Invalid inventory in formatInventoryItems:', inventory);
     return 'No items in inventory';
   }
   
@@ -60,8 +53,7 @@ function formatInventoryItems(inventory: InventoryItem[] | undefined | null): st
     });
     
     return itemStrings.join('\n');
-  } catch (error) {
-    debug('Error formatting inventory items:', error);
+  } catch {
     return 'Error reading inventory';
   }
 }
@@ -77,11 +69,6 @@ export function buildGamePrompt(
   context: string = 'You are in a frontier town in the Old West.',
   inventory: InventoryItem[] = []
 ): string {
-  debug('Building game prompt with:', { 
-    action: action || '(empty)', 
-    contextLength: context?.length || 0,
-    inventoryCount: Array.isArray(inventory) ? inventory.length : 0
-  });
   
   try {
     // Handle null/undefined inputs with defaults
@@ -98,8 +85,7 @@ export function buildGamePrompt(
       themeContext = relevantThemes.map(theme => 
         `Consider ${theme.replace(/_/g, ' ').toLowerCase()} themes: ${WESTERN_THEMES[theme].join(', ')}.`
       ).join('\n    ');
-    } catch (e) {
-      debug('Error creating theme context:', e);
+    } catch {
       themeContext = 'Consider survival themes: resource scarcity, environmental challenges, physical hardship, self-reliance.';
     }
     
@@ -134,11 +120,9 @@ export function buildGamePrompt(
     SUGGESTED_ACTIONS: [{"text": "action description", "type": "action type", "context": "tooltip explanation"}]
     Include exactly 3 suggested actions with types: "basic" (look, move), "combat" (fight, defend), or "interaction" (talk, trade).`;
     
-    debug('Generated prompt of length:', prompt.length);
     return prompt;
-  } catch (error) {
-    debug('Error building game prompt:', error);
-    
+  } catch {
+
     // Fallback simple prompt in case of errors
     return `
     You are an AI Game Master for a Western-themed RPG. 

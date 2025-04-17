@@ -71,6 +71,40 @@ const ItemUpdate: React.FC<{
   );
 };
 
+/**
+ * Checks if content contains STORY_POINT JSON or system metadata
+ * Used to filter out system metadata that shouldn't be displayed to users
+ */
+const isStoryPointMetadata = (content: string): boolean => {
+  // FIXED: Add check for duplicate "Game Event:" prefixes and other system messages
+  const systemPrefixes = [
+    'STORY_POINT:',
+    'Game Event:',
+    'Context:'
+  ];
+  
+  // Check for prefixes
+  if (systemPrefixes.some(prefix => content.includes(prefix))) {
+    return true;
+  }
+  
+  // Check for duplicate content with Game Event prefix
+  if (content.trim().startsWith('Game Event:')) {
+    return true;
+  }
+  
+  // Check for JSON component parts
+  return (
+    content.trim() === 'STORY_POINT: {' ||
+    content.trim().startsWith('"title":') ||
+    content.trim().startsWith('"description":') ||
+    content.trim().startsWith('"significance":') ||
+    content.trim().startsWith('"characters":') ||
+    content.trim().startsWith('"isMilestone":') ||
+    content.trim() === '}'
+  );
+};
+
 export const NarrativeContent: React.FC<{
   item: NarrativeItem;
   processedUpdates: Set<string>;
@@ -83,7 +117,10 @@ export const NarrativeContent: React.FC<{
 
   const config = STYLE_CONFIGS[item.type];
   
-  if (!item.content || item.content.includes('undefined')) {
+  // Filter out story point metadata JSON and system messages that shouldn't be visible to users
+  if (!item.content || 
+      item.content.includes('undefined') || 
+      isStoryPointMetadata(item.content)) {
     return null;
   }
 

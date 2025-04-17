@@ -1,6 +1,5 @@
 import { getAIResponse } from '../gameService';
 import { logDiagnostic } from '../../../utils/initializationDiagnostics';
-import { debug } from '../utils/aiServiceDebug';
 import { createMockSummary } from '../utils/mockResponseGenerator';
 import { generateFallbackSummary } from '../utils/fallbackResponseGenerator';
 
@@ -17,18 +16,14 @@ export class SummaryGenerator {
    */
   async generateNarrativeSummary(content: string, context: string = ''): Promise<string> {
     try {
-      debug('Generating narrative summary with content length:', content.length);
       
       // Enhanced prompt to ensure we get a complete sentence summary
       const prompt = this.createSummaryPrompt(content, context);
-      
-      debug('Using summary prompt:', prompt.substring(0, 100) + '...');
-      
+
       // IMPORTANT CHANGE: Only use mock AI in test environment, but use real API in development
       const isTestEnvironment = typeof jest !== 'undefined';
       
       if (isTestEnvironment) {
-        debug('Using mock summary for test environment');
         
         // Extract character name from context if available
         const characterMatch = context.match(/character (\w+)/i);
@@ -51,16 +46,13 @@ export class SummaryGenerator {
       });
 
       if (response?.narrative) {
-        debug('Successfully generated summary:', response.narrative);
         
         // Ensure summary ends with proper punctuation
         return this.formatSummary(response.narrative);
       }
-      
-      debug('No narrative content in summary response');
+
       throw new Error('No narrative content in response');
     } catch (error) {
-      debug('Error generating narrative summary:', error);
       logDiagnostic('AI_SERVICE', 'Error generating narrative summary', {
         error: String(error),
         contentLength: content.length,

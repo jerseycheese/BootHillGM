@@ -57,8 +57,6 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
       
       // Run initial content analysis
       analyzeContent();
-      
-      console.log('[DEBUG DevTools] Content monitor initialized. Access via window.contentMonitor');
     }
   }, []);
 

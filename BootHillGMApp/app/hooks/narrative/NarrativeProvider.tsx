@@ -15,11 +15,25 @@
  * </NarrativeProvider>
  */
 
-import React, { ReactNode, useContext, createContext } from 'react';
+import React, { ReactNode, useContext, createContext, useCallback } from 'react';
 import { useGameState } from '../../context/GameStateProvider';
 import { GameState } from '../../types/gameState';
 import { GameAction } from '../../types/actions';
+import { PlayerDecision, NarrativeChoice } from '../../types/narrative.types';
+import { StoryPoint } from '../../types/narrative/story-point.types';
 import { initialGameState } from '../../types/gameState';
+import { useDecisionTriggering } from './useDecisionTriggering';
+
+/**
+ * DecisionTriggeringFunctions Type
+ * Functions provided by the decision triggering hook
+ */
+export interface DecisionTriggeringFunctions {
+  checkForDecisionTriggers: (narrativeText: string) => Promise<boolean>;
+  triggerAIDecision: (context?: string) => Promise<boolean>;
+  ensureFreshState: () => Promise<GameState['narrative']>;
+  shouldSkipNarrativeResponse?: () => boolean;
+}
 
 /**
  * NarrativeContext Type
@@ -27,8 +41,17 @@ import { initialGameState } from '../../types/gameState';
  * and the new consolidated state structure
  */
 export interface NarrativeContextType {
-  state: GameState;
+  state: GameState['narrative'] & {
+    visitedPoints: string[];
+    availableChoices: NarrativeChoice[] | string[];
+    displayMode: string;
+    context: string;
+    currentDecision?: PlayerDecision;
+    narrativeHistory: string[];
+    currentStoryPoint: StoryPoint | null;
+  };
   dispatch: React.Dispatch<GameAction>;
+  decisionTriggeringFunctions?: DecisionTriggeringFunctions;
 }
 
 /**
@@ -36,7 +59,15 @@ export interface NarrativeContextType {
  * to avoid circular dependencies
  */
 export const NarrativeContext = createContext<NarrativeContextType>({
-  state: initialGameState,
+  state: {
+    ...initialGameState.narrative,
+    visitedPoints: [],
+    availableChoices: [],
+    displayMode: 'standard',
+    context: '',
+    narrativeHistory: [],
+    currentStoryPoint: null,
+  },
   dispatch: () => null,
 });
 
@@ -55,20 +86,39 @@ export const NarrativeProvider: React.FC<NarrativeProviderProps> = ({ children }
   // Create a compatible context value that matches what components expect
   const narrativeContextValue = {
     state: {
-      ...state,
-      // We don't need to duplicate these fields as they're already in state.narrative
-      // but we keep them for backward compatibility with components that expect them
-      // at the root level
+      ...state.narrative,
+      visitedPoints: state.narrative?.visitedPoints || [],
+      availableChoices: state.narrative?.availableChoices || [],
+      displayMode: state.narrative?.displayMode || 'standard',
+      context: JSON.stringify(state.narrative?.context || { decisionHistory: [] }),
       currentDecision: state.narrative?.currentDecision,
-      narrativeContext: state.narrative?.narrativeContext,
       narrativeHistory: state.narrative?.narrativeHistory || [],
       currentStoryPoint: state.narrative?.currentStoryPoint,
     },
     dispatch
   };
   
+  // Get decision triggering functions
+  const presentPlayerDecision = useCallback((decision: PlayerDecision) => {
+    dispatch({
+      type: 'PRESENT_DECISION',
+      payload: decision
+    });
+  }, [dispatch]);
+  
+  const decisionTriggeringFunctions = useDecisionTriggering(
+    narrativeContextValue, 
+    presentPlayerDecision
+  );
+  
+  // Add the functions to the context value
+  const enhancedContext: NarrativeContextType = {
+    ...narrativeContextValue,
+    decisionTriggeringFunctions
+  };
+  
   return (
-    <NarrativeContext.Provider value={narrativeContextValue}>
+    <NarrativeContext.Provider value={enhancedContext}>
       {children}
     </NarrativeContext.Provider>
   );

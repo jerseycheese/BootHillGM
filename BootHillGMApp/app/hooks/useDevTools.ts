@@ -3,7 +3,7 @@ import { useGameState } from '../context/GameStateProvider';
 import { LocationType } from '../services/locationService';
 import { EVENTS, triggerCustomEvent } from '../utils/events';
 import { initializeBrowserDebugTools, updateDebugCurrentDecision } from '../utils/debugConsole';
-import { generateEnhancedDecision } from '../utils/contextualDecisionGenerator.enhanced';
+import { generateEnhancedDecision } from '../utils/contextualDecisionGenerator';
 import { initializeDecisionDebugTools } from '../utils/decisionDebug';
 import { clearCurrentDecision, addNarrativeHistory } from '../actions/narrativeActions';
 import { createDecisionGameState } from '../utils/decisionStateUtils';

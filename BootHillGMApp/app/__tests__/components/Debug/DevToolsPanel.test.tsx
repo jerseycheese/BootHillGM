@@ -35,6 +35,12 @@ jest.mock('../../../utils/events', () => ({
   triggerCustomEvent: jest.fn(),
 }));
 
+// Mock the contextualDecisionGenerator
+jest.mock('../../../utils/contextualDecisionGenerator', () => ({
+  initializeDecisionDebugTools: jest.fn(),
+  generateEnhancedDecision: jest.fn(),
+}));
+
 // Mock child components
 jest.mock('../../../components/Debug/GameControlSection', () => {
   return function MockGameControlSection() {
@@ -71,11 +77,6 @@ jest.mock('../../../components/Debug/GameStateDisplay', () => {
     return <div data-testid="game-state-display">Game State Display</div>;
   };
 });
-
-jest.mock('../../../utils/contextualDecisionGenerator.enhanced', () => ({
-  initializeDecisionDebugTools: jest.fn(),
-  generateEnhancedDecision: jest.fn(),
-}));
 
 // Mock global window for browser environment
 global.window = Object.create(window);

@@ -23,7 +23,7 @@ import { AIRequestResult, Opponent } from '../../types/ai.types';
  * @returns Functions and state for AI interaction
  */
 export function useAIWithOptimizedContext() {
-  const { state: narrativeState } = useNarrative();
+  const { state: _narrativeState } = useNarrative();
   const { ensureFreshContext } = useNarrativeContextSynchronization();
   const { 
     buildOptimizedContext, 
@@ -58,16 +58,22 @@ export function useAIWithOptimizedContext() {
         : getDefaultContext();
       const contextBuildTime = performance.now() - startTime;
       
+      // Create context metadata for tracking quality metrics
+      const contextMetadata = {
+        optimized: true,
+        compressionLevel: contextOptions?.compressionLevel || 'medium',
+        tokensUsed: estimateTokenCount(context),
+        buildTimeMs: contextBuildTime
+      };
+      
       // Use the positional parameters for backward compatibility with tests
-      // Note: This approach ensures both our implementation and tests remain compatible
       const aiResponse = await getAIResponse(
         prompt,
         context,
         inventory,
         undefined,
-        narrativeState.narrative?.narrativeContext // Access via narrative slice
+        undefined // Don't pass the metadata as the narrative context parameter
       );
-      
       
       const storyProgression = aiResponse.storyProgression 
         ? { ...aiResponse.storyProgression, description: aiResponse.storyProgression.description || '' }
@@ -89,12 +95,7 @@ export function useAIWithOptimizedContext() {
         ...aiResponse,
         opponent: normalizedOpponent, 
         storyProgression,
-        contextQuality: {
-          optimized: true,
-          compressionLevel: contextOptions?.compressionLevel || 'medium',
-          tokensUsed: estimateTokenCount(context),
-          buildTimeMs: contextBuildTime
-        }
+        contextQuality: contextMetadata
       };
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error in AI request');
@@ -104,7 +105,6 @@ export function useAIWithOptimizedContext() {
       setIsLoading(false);
     }
   }, [
-    narrativeState, 
     ensureFreshContext, 
     buildOptimizedContext, 
     getDefaultContext

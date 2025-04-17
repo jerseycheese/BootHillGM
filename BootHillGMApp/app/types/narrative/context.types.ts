@@ -29,21 +29,24 @@ export interface ImpactState {
  */
 export interface NarrativeContext {
   tone?: 'serious' | 'lighthearted' | 'tense' | 'mysterious';
-  characterFocus: string[];
-  themes: string[];
-  worldContext: string;
-  importantEvents: string[];
-  storyPoints: Record<string, StoryPoint>;
-  narrativeArcs: Record<string, NarrativeArc>;
-  impactState: ImpactState;
-  narrativeBranches: Record<string, NarrativeBranch>;
+  characterFocus?: string[];
+  themes?: string[];
+  worldContext?: string;
+  importantEvents?: string[];
+  storyPoints?: Record<string, StoryPoint>;
+  narrativeArcs?: Record<string, NarrativeArc>;
+  impactState?: ImpactState;
+  narrativeBranches?: Record<string, NarrativeBranch>;
   currentArcId?: string;
   currentBranchId?: string;
 
   // Decision tracking
   activeDecision?: PlayerDecision;
-  pendingDecisions: PlayerDecision[];
+  pendingDecisions?: PlayerDecision[];
   decisionHistory: PlayerDecisionRecord[]; // Replaces playerChoices
+  
+  // Recent narrative context - added for issue #210 fix
+  recentEvents?: string;
 
   // Location information - added to fix type errors
   location?: {

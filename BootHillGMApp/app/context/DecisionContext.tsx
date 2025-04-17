@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useNarrative } from './NarrativeContext';
+import { useNarrative } from '../hooks/narrative/NarrativeProvider';
 import AIDecisionService from '../services/ai/aiDecisionService';
 import { PlayerDecision } from '../types/narrative.types';
 import { Character } from '../types/character';
@@ -53,7 +53,6 @@ export const DecisionProvider: React.FC<DecisionProviderProps> = ({
   const [service] = useState(() => decisionService || new AIDecisionService());
   
   // Access the narrative context
-  // Rename 'narrativeState' to 'gameState' to reflect the actual content from useNarrative
   const { state: gameState, dispatch } = useNarrative();
   
   // Component state
@@ -71,8 +70,8 @@ export const DecisionProvider: React.FC<DecisionProviderProps> = ({
     
     try {
       // Generate a decision from the service
-      // Pass the narrative slice from the gameState
-      const decision = await service.generateDecision(gameState.narrative, character);
+      // Use gameState directly since it's now the narrative state
+      const decision = await service.generateDecision(gameState, character);
       
       // PlayerDecision is now directly returned from generateDecision
       const playerDecision = decision;
@@ -109,8 +108,8 @@ export const DecisionProvider: React.FC<DecisionProviderProps> = ({
     // Check if we should present a decision
     const checkForDecisionPoint = async () => {
       try {
-        // Pass the narrative slice from the gameState
-        const result = service.detectDecisionPoint(gameState.narrative, character);
+        // Use gameState directly since it's now the narrative state
+        const result = service.detectDecisionPoint(gameState, character);
         
         if (result.shouldPresent) {
           await generateDecision();

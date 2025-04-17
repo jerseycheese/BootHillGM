@@ -46,7 +46,9 @@ export function initializeAIDecisionSystem(): void {
         setMode: () => {},
         generateDecision: async () => null,
         service: getContextualDecisionService(),
-        isGenerating: () => false
+        isGenerating: () => false,
+        resetState: () => { console.warn('Debug resetState not implemented in this initializer'); },
+        evaluationLog: []
       };
       
       // Add quality debugging - using proper dynamic imports for browser environment

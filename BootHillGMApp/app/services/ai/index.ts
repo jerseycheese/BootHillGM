@@ -15,6 +15,5 @@ export { GameContentGenerator } from './generators/gameContentGenerator';
 export { SummaryGenerator } from './generators/summaryGenerator';
 
 // Utilities
-export { debug } from './utils/aiServiceDebug';
 export { createMockResponse, createMockSummary } from './utils/mockResponseGenerator';
 export { generateFallbackResponse, generateFallbackSummary } from './utils/fallbackResponseGenerator';

@@ -19,7 +19,7 @@
  * const { state, dispatch, context, decisions } = useNarrative();
  * 
  * // Access narrative history
- * const narrativeHistory = state.narrative?.narrativeHistory || [];
+ * const narrativeHistory = state.narrativeHistory || [];
  * 
  * // Present a decision to the player
  * decisions.presentPlayerDecision({
@@ -54,9 +54,9 @@ export const useNarrative = () => {
       
       // Narrative context and history
       context: {
-        narrativeContext: state.narrative?.narrativeContext,
-        narrativeHistory: state.narrative?.narrativeHistory || [],
-        currentStoryPoint: state.narrative?.currentStoryPoint,
+        narrativeContext: state.narrativeContext,
+        narrativeHistory: state.narrativeHistory || [],
+        currentStoryPoint: state.currentStoryPoint,
         
         // Initialization
         initializeNarrative,

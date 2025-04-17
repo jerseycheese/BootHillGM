@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useContext } from 'react';
 import { NarrativeSegment, UseNarrativeProcessorResult } from '../types/narrative.types';
 import { useStoryProgression } from './useStoryProgression';
 import { LocationType } from '../services/locationService';
+import { NarrativeContext } from './narrative/NarrativeProvider';
 
 /**
  * Hook for processing narrative text into segments and integrating with story progression
@@ -17,6 +18,10 @@ export function useNarrativeProcessor(): UseNarrativeProcessorResult {
   const [processedSegments, setProcessedSegments] = useState<NarrativeSegment[]>([]);
   const storyProgressionResult = useStoryProgression();
   const { processNarrativeForStoryPoints } = storyProgressionResult;
+  
+  // Get access to the decision triggering functions
+  const narrativeContext = useContext(NarrativeContext);
+  const shouldSkipNarrativeResponse = narrativeContext?.decisionTriggeringFunctions?.shouldSkipNarrativeResponse;
 
   /**
    * Process a narrative string into segments
@@ -26,6 +31,12 @@ export function useNarrativeProcessor(): UseNarrativeProcessorResult {
    */
   const processNarrative = useCallback((narrative: string, location?: LocationType) => {
     if (!narrative) return;
+
+    // Check if we should skip processing this narrative response
+    if (shouldSkipNarrativeResponse && shouldSkipNarrativeResponse()) {
+      console.debug('Skipping narrative response due to pending decision');
+      return;
+    }
 
     const lines = narrative.split('\n');
     const newSegments: NarrativeSegment[] = [];
@@ -149,7 +160,7 @@ export function useNarrativeProcessor(): UseNarrativeProcessorResult {
 
     // Update the processed segments
     setProcessedSegments(prevSegments => [...prevSegments, ...newSegments]);
-  }, [processNarrativeForStoryPoints]);
+  }, [processNarrativeForStoryPoints, shouldSkipNarrativeResponse]);
 
   /**
    * Add a player action segment
@@ -180,6 +191,12 @@ export function useNarrativeProcessor(): UseNarrativeProcessorResult {
   const addGMResponse = useCallback((response: string, location?: LocationType) => {
     if (!response.trim()) return;
     
+    // Check if we should skip processing this narrative response
+    if (shouldSkipNarrativeResponse && shouldSkipNarrativeResponse()) {
+      console.debug('Skipping GM response due to pending decision');
+      return;
+    }
+    
     // Process for story points
     processNarrativeForStoryPoints(response, location);
     
@@ -193,7 +210,7 @@ export function useNarrativeProcessor(): UseNarrativeProcessorResult {
         }
       }
     ]);
-  }, [processNarrativeForStoryPoints]);
+  }, [processNarrativeForStoryPoints, shouldSkipNarrativeResponse]);
 
   /**
    * Add a narrative segment directly
@@ -203,8 +220,14 @@ export function useNarrativeProcessor(): UseNarrativeProcessorResult {
   const addNarrativeSegment = useCallback((segment: NarrativeSegment) => {
     if (!segment.content.trim() && !segment.metadata?.items?.length) return;
     
+    // Check if we should skip processing this narrative response
+    if (shouldSkipNarrativeResponse && shouldSkipNarrativeResponse()) {
+      console.debug('Skipping narrative segment due to pending decision');
+      return;
+    }
+    
     setProcessedSegments(prevSegments => [...prevSegments, segment]);
-  }, []);
+  }, [shouldSkipNarrativeResponse]);
 
   /**
    * Clear all processed segments

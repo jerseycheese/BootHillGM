@@ -5,7 +5,7 @@ import {
   DecisionGenerationMode, 
   getDecisionGenerationMode, 
   setDecisionGenerationMode 
-} from '../../utils/contextualDecisionGenerator.enhanced';
+} from '../../utils/contextualDecisionGenerator';
 
 /**
  * Props for AIDecisionControls component

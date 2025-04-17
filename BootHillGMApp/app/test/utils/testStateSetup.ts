@@ -41,19 +41,16 @@ function isStateProvider(value: unknown): value is { state: GameState; dispatch:
  */
 export const createMockStateProvider = (
   initialState: Partial<GameState> = {},
-  dispatch: jest.Mock<GameEngineAction, GameEngineAction[]> = jest.fn() // Changed to jest.Mock
-): MockStateProvider => { // Changed return type to MockStateProvider
+  dispatch: jest.Mock<GameEngineAction, GameEngineAction[]> = jest.fn()
+): MockStateProvider => {
   // Ensure it's in the new format and apply adapters
   // State preparation is no longer needed
   const adaptedState = initialState as GameState;
-  // console.log("Initial State:", adaptedState); // Keep log if needed for debugging
 
   // Return a context value that mimics the structure of GameProvider
   return {
     state: adaptedState,
-    dispatch,
-    
-    // Removed legacy properties
+    dispatch
   };
 };
 
@@ -83,9 +80,7 @@ export const updateMockStateProvider = (
   // Return updated provider
   return {
     ...provider,
-    state: updatedState,
-    
-    // Removed legacy properties
+    state: updatedState
   };
 };
 

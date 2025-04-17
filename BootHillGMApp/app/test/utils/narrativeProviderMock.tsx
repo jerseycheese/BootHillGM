@@ -1,7 +1,6 @@
 import React from 'react';
-import { initialNarrativeState } from '../../types/narrative.types';
 import NarrativeContext from '../../context/NarrativeContext';
-import { GameState } from '../../types/gameState';
+import { NarrativeContextType } from '../../hooks/narrative/NarrativeProvider';
 import { initialState } from '../../types/initialState';
 
 /**
@@ -11,15 +10,17 @@ import { initialState } from '../../types/initialState';
 export const MockNarrativeProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   // Create mock narrative hook functions
   const mockDispatch = jest.fn();
-  const mockSaveNarrativeState = jest.fn();
-  const mockLoadNarrativeState = jest.fn().mockReturnValue(initialNarrativeState);
-  const mockResetNarrativeState = jest.fn();
   
-  // Create a minimal GameState with required properties
-  const mockState: GameState = {
-    ...initialState,
-    narrative: {
+  // Create a compatible narrative state that matches NarrativeContextType
+  const mockContextValue: NarrativeContextType = {
+    state: {
       ...initialState.narrative,
+      visitedPoints: [],
+      availableChoices: [],
+      displayMode: 'standard',
+      context: '',
+      narrativeHistory: [],
+      currentStoryPoint: null,
       narrativeContext: {
         characterFocus: [],
         themes: [],
@@ -39,20 +40,12 @@ export const MockNarrativeProvider: React.FC<{children: React.ReactNode}> = ({ c
         pendingDecisions: [],
         decisionHistory: []
       }
-    }
-  };
-  
-  // Mock context value
-  const contextValue = {
-    state: mockState,
-    dispatch: mockDispatch,
-    saveNarrativeState: mockSaveNarrativeState,
-    loadNarrativeState: mockLoadNarrativeState,
-    resetNarrativeState: mockResetNarrativeState
+    },
+    dispatch: mockDispatch
   };
 
   return (
-    <NarrativeContext.Provider value={contextValue}>
+    <NarrativeContext.Provider value={mockContextValue}>
       {children}
     </NarrativeContext.Provider>
   );
