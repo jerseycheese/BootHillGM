@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { GameProviderWrapper } from './components/GameProviderWrapper';
-// Removed import { CampaignStateProvider } from './components/CampaignStateManager';
-import NarrativeOptimizationProvider from './components/NarrativeOptimizationProvider';
+import { NarrativeOptimizationProvider } from './components/NarrativeOptimizationProvider';
 import Navigation from './components/Navigation';
 import { Suspense } from 'react';
 import "./globals.css";

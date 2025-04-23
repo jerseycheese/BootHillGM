@@ -63,7 +63,7 @@ export function validateCombatEndState(state: LegacyCombatState | SliceCombatSta
   
   const errors: ValidationError[] = [];
   const allowedProperties = ['isActive', 'combatType', 'winner', 'participants', 'rounds', 'combatLog'];
-  const cleanedState = {} as PartialNullableCombatState;
+  const cleanedState = { /* Intentionally empty */ } as PartialNullableCombatState;
 
   // Validate required properties
   if (!legacyState.combatType) {

@@ -5,43 +5,11 @@ import { Character } from '../../../types/character';
 
 describe('AIService', () => {
   let aiService: AIService;
-  let _mockGenerateContent; // Prefix with _ to indicate unused
 
   beforeEach(() => {
     aiService = new AIService();
     
     // Create a mock for the model's generateContent method
-    _mockGenerateContent = jest.fn().mockResolvedValue({
-      response: {
-        text: () => `{
-          "narrative": "Test narrative response",
-          "location": { "type": "town", "name": "Test Town" },
-          "playerDecision": {
-            "id": "decision1",
-            "prompt": "What will you do next?",
-            "timestamp": Date.now(),
-            "context": "test context",
-            "importance": "normal" as DecisionImportance,
-            "aiGenerated": true,
-            "options": [
-              { "id": "opt1", "text": "Option 1", "impact": "minor" },
-              { "id": "opt2", "text": "Option 2", "impact": "minor" }
-            ]
-          },
-          "acquiredItems": [],
-          "removedItems": [],
-          "suggestedActions": [
-            {
-              "id": "action1",
-              "title": "Look around",
-              "description": "Check your surroundings",
-              "type": "optional"
-            }
-          ]
-        }`
-      }
-    });
-    
     // Create our own generateWithRetries method that we can spy on
     const mockGenerateWithRetries = jest.fn().mockImplementation(
       async (): Promise<GameServiceResponse> => {

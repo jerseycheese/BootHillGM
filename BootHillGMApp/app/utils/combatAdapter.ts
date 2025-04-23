@@ -1,27 +1,6 @@
-/**
- * Combat Adapter Utility
- * 
- * This module provides adapter functions to bridge the CombatState type from combat.ts (legacy)
- * with the CombatState type from state/combatState.ts (new slice-based architecture)
- */
-
-import { CombatState as LegacyCombatState } from '../types/combat';
+// BootHillGMApp/app/utils/combatAdapter.ts (Reordered)
+import { CombatState as LegacyCombatState, LogEntry } from '../types/combat';
 import { CombatState as SliceCombatState, CombatLogEntry } from '../types/state/combatState';
-import { LogEntry } from '../types/combat';
-
-/**
- * Convert a LogEntry from the legacy format to a CombatLogEntry in the new format
- */
-export function convertLogEntry(entry: LogEntry): CombatLogEntry {
-  return {
-    text: entry.text,
-    timestamp: entry.timestamp,
-    type: mapLogEntryType(entry.type),
-    data: { 
-      originalType: entry.type 
-    }
-  };
-}
 
 /**
  * Map the log entry type from legacy to new format
@@ -33,9 +12,23 @@ function mapLogEntryType(
   if (type === 'hit' || type === 'miss' || type === 'critical' || type === 'info') {
     return type;
   }
-  
+
   // This should never happen, but provide a fallback
   return 'info';
+}
+
+/**
+ * Convert a LogEntry from the legacy format to a CombatLogEntry in the new format
+ */
+export function convertLogEntry(entry: LogEntry): CombatLogEntry {
+  return {
+    text: entry.text,
+    timestamp: entry.timestamp,
+    type: mapLogEntryType(entry.type), // Now defined above
+    data: {
+      originalType: entry.type
+    }
+  };
 }
 
 /**
@@ -61,8 +54,8 @@ export function legacyToSliceCombatState(legacy?: Partial<LegacyCombatState>): S
   }
 
   // Convert combatLog if it exists
-  const convertedLog = legacy.combatLog 
-    ? legacy.combatLog.map(convertLogEntry) 
+  const convertedLog = legacy.combatLog
+    ? legacy.combatLog.map(convertLogEntry) // Uses convertLogEntry
     : [];
 
   // Map currentTurn to appropriate format
@@ -77,8 +70,8 @@ export function legacyToSliceCombatState(legacy?: Partial<LegacyCombatState>): S
   }
 
   // Get round value from appropriate source
-  const roundValue = legacy.rounds || 
-                   (legacy.brawling?.round ? Number(legacy.brawling.round) : 0) || 
+  const roundValue = legacy.rounds ||
+                   (legacy.brawling?.round ? Number(legacy.brawling.round) : 0) ||
                    (legacy.weapon?.round || 0);
 
   return {
@@ -86,11 +79,11 @@ export function legacyToSliceCombatState(legacy?: Partial<LegacyCombatState>): S
     combatType: legacy.combatType ?? 'brawling',
     rounds: roundValue,
     playerTurn: true, // Default to player's turn when adapting
-    playerCharacterId: legacy.brawling?.playerCharacterId ?? 
-                       legacy.weapon?.playerCharacterId ?? 
+    playerCharacterId: legacy.brawling?.playerCharacterId ??
+                       legacy.weapon?.playerCharacterId ??
                        '',
-    opponentCharacterId: legacy.brawling?.opponentCharacterId ?? 
-                         legacy.weapon?.opponentCharacterId ?? 
+    opponentCharacterId: legacy.brawling?.opponentCharacterId ??
+                         legacy.weapon?.opponentCharacterId ??
                          '',
     combatLog: convertedLog,
     roundStartTime: Date.now(),
@@ -118,16 +111,16 @@ export function sliceToLegacyCombatState(slice: SliceCombatState): LegacyCombatS
       combatLog: []
     };
   }
-  
+
   // Safely access properties with default values
   const safeModifiers = slice.modifiers || { player: 0, opponent: 0 };
-  
+
   // Convert CombatLogEntry array to LogEntry array
-  const convertedLog: LogEntry[] = Array.isArray(slice.combatLog) 
+  const convertedLog: LogEntry[] = Array.isArray(slice.combatLog)
     ? slice.combatLog.map(entry => ({
         text: entry.text || '',
         // Convert back to the legacy LogEntry type
-        type: (entry.data?.originalType as 'hit' | 'miss' | 'critical' | 'info') || 
+        type: (entry.data?.originalType as 'hit' | 'miss' | 'critical' | 'info') ||
               (entry.type === 'system' || entry.type === 'action' || entry.type === 'result' ? 'info' : entry.type),
         timestamp: entry.timestamp || Date.now()
       }))
@@ -151,7 +144,7 @@ export function sliceToLegacyCombatState(slice: SliceCombatState): LegacyCombatS
         opponentCharacterId: slice.opponentCharacterId || '',
         roundLog: convertedLog
       }
-    } : {}),
+    } : { /* Intentionally empty */ }),
     ...(slice.combatType === 'weapon' ? {
       weapon: {
         round: slice.rounds || 0,
@@ -162,7 +155,7 @@ export function sliceToLegacyCombatState(slice: SliceCombatState): LegacyCombatS
         opponentCharacterId: slice.opponentCharacterId || '',
         roundLog: convertedLog
       }
-    } : {})
+    } : { /* Intentionally empty */ })
   };
 }
 

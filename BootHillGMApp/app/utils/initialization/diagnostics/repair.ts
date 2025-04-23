@@ -10,84 +10,6 @@ import { PartialCharacter, RepairResult } from './types';
 import { validateStateConsistency } from './validation';
 
 /**
- * Automatically repairs common game state inconsistencies across localStorage.
- *
- * This function:
- * 1. Validates state consistency across all storage locations
- * 2. Identifies the most reliable character data source
- * 3. Ensures character has valid inventory (adding defaults if missing)
- * 4. Propagates fixes to all relevant storage locations
- *
- * @example
- * // Run state repair and log results
- * const repairResult = await repairStateConsistency();
- * console.log('Repairs attempted:', repairResult.repairsAttempted);
- *
- * @returns {Promise<RepairResult>} Repair operation result containing:
- *   - timestamp: When repair was performed
- *   - repairsAttempted: Number of repair operations attempted
- *   - repairsSucceeded: Number of successful repairs
- *   - actions: Array of actions taken during repair
- *   - error: Error message if repair failed (optional)
- */
-export const repairStateConsistency = async (): Promise<RepairResult> => {
-  if (typeof window === 'undefined') {
-    return {
-      timestamp: Date.now(),
-      repairsAttempted: 0,
-      repairsSucceeded: 0,
-      actions: ['Cannot run in SSR environment']
-    };
-  }
-  
-  try {
-    const result: RepairResult = {
-      timestamp: Date.now(),
-      repairsAttempted: 0,
-      repairsSucceeded: 0,
-      actions: []
-    };
-    
-    // Validate state first
-    const validation = validateStateConsistency();
-    if (validation?.isConsistent) {
-      result.actions.push('No repairs needed, state is consistent');
-      return result;
-    }
-    
-    // Find the most reliable character and repair
-    const bestCharacter = await findBestCharacter();
-    
-    if (bestCharacter) {
-      result.repairsAttempted++;
-      result.actions.push(`Found reliable character in: ${bestCharacter.name}`);
-      
-      // Ensure character has inventory
-      await ensureCharacterInventory(bestCharacter, result);
-      
-      // Propagate character to all storage locations
-      const repairSuccess = await propagateCharacterToStorageLocations(bestCharacter, result);
-      
-      if (repairSuccess) {
-        result.repairsSucceeded++;
-      }
-    } else {
-      result.actions.push('Could not find a reliable character to use for repairs');
-    }
-    
-    return result;
-  } catch (error) {
-    return { 
-      timestamp: Date.now(),
-      repairsAttempted: 0,
-      repairsSucceeded: 0,
-      error: String(error),
-      actions: ['Exception during repair operation'] 
-    };
-  }
-};
-
-/**
  * Finds the most reliable character data from available sources
  * Tries multiple storage locations in order of reliability to find
  * a character object with minimum required fields.
@@ -223,3 +145,81 @@ async function propagateCharacterToStorageLocations(
   
   return successCount > 0;
 }
+
+/**
+ * Automatically repairs common game state inconsistencies across localStorage.
+ *
+ * This function:
+ * 1. Validates state consistency across all storage locations
+ * 2. Identifies the most reliable character data source
+ * 3. Ensures character has valid inventory (adding defaults if missing)
+ * 4. Propagates fixes to all relevant storage locations
+ *
+ * @example
+ * // Run state repair and log results
+ * const repairResult = await repairStateConsistency();
+ * console.log('Repairs attempted:', repairResult.repairsAttempted);
+ *
+ * @returns {Promise<RepairResult>} Repair operation result containing:
+ *   - timestamp: When repair was performed
+ *   - repairsAttempted: Number of repair operations attempted
+ *   - repairsSucceeded: Number of successful repairs
+ *   - actions: Array of actions taken during repair
+ *   - error: Error message if repair failed (optional)
+ */
+export const repairStateConsistency = async (): Promise<RepairResult> => {
+  if (typeof window === 'undefined') {
+    return {
+      timestamp: Date.now(),
+      repairsAttempted: 0,
+      repairsSucceeded: 0,
+      actions: ['Cannot run in SSR environment']
+    };
+  }
+  
+  try {
+    const result: RepairResult = {
+      timestamp: Date.now(),
+      repairsAttempted: 0,
+      repairsSucceeded: 0,
+      actions: []
+    };
+    
+    // Validate state first
+    const validation = validateStateConsistency();
+    if (validation?.isConsistent) {
+      result.actions.push('No repairs needed, state is consistent');
+      return result;
+    }
+    
+    // Find the most reliable character and repair
+    const bestCharacter = await findBestCharacter();
+    
+    if (bestCharacter) {
+      result.repairsAttempted++;
+      result.actions.push(`Found reliable character in: ${bestCharacter.name}`);
+      
+      // Ensure character has inventory
+      await ensureCharacterInventory(bestCharacter, result);
+      
+      // Propagate character to all storage locations
+      const repairSuccess = await propagateCharacterToStorageLocations(bestCharacter, result);
+      
+      if (repairSuccess) {
+        result.repairsSucceeded++;
+      }
+    } else {
+      result.actions.push('Could not find a reliable character to use for repairs');
+    }
+    
+    return result;
+  } catch (error) {
+    return { 
+      timestamp: Date.now(),
+      repairsAttempted: 0,
+      repairsSucceeded: 0,
+      error: String(error),
+      actions: ['Exception during repair operation'] 
+    };
+  }
+};

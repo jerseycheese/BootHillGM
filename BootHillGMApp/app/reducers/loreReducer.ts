@@ -15,6 +15,7 @@ import {
   LoreStore,
   initialLoreState
 } from '../types/narrative/lore.types';
+import { ActionTypes } from '../types/actionTypes';
 
 import {
   handleAddLoreFact,
@@ -41,31 +42,31 @@ export function loreReducer(
   const timestamp = Date.now();
 
   switch (action.type) {
-    case 'ADD_LORE_FACT':
+    case ActionTypes.ADD_LORE_FACT:
       return handleAddLoreFact(state, action, timestamp);
 
-    case 'UPDATE_LORE_FACT':
+    case ActionTypes.UPDATE_LORE_FACT:
       return handleUpdateLoreFact(state, action, timestamp);
 
-    case 'INVALIDATE_LORE_FACT':
+    case ActionTypes.INVALIDATE_LORE_FACT:
       return handleInvalidateLoreFact(state, action, timestamp);
 
-    case 'VALIDATE_LORE_FACT':
+    case ActionTypes.VALIDATE_LORE_FACT:
       return handleValidateLoreFact(state, action, timestamp);
 
-    case 'ADD_RELATED_FACTS':
+    case ActionTypes.ADD_RELATED_FACTS:
       return handleAddRelatedFacts(state, action, timestamp);
 
-    case 'REMOVE_RELATED_FACTS':
+    case ActionTypes.REMOVE_RELATED_FACTS:
       return handleRemoveRelatedFacts(state, action, timestamp);
 
-    case 'ADD_FACT_TAGS':
+    case ActionTypes.ADD_FACT_TAGS:
       return handleAddFactTags(state, action, timestamp);
 
-    case 'REMOVE_FACT_TAGS':
+    case ActionTypes.REMOVE_FACT_TAGS:
       return handleRemoveFactTags(state, action, timestamp);
 
-    case 'PROCESS_LORE_EXTRACTION':
+    case ActionTypes.PROCESS_LORE_EXTRACTION:
       // This action needs to call back into the reducer
       return handleProcessLoreExtraction(state, action, loreReducer);
 

@@ -92,7 +92,7 @@ export interface BHGMDebug {
   triggerDecision: (locationType?: LocationType) => void;
   clearDecision: () => void;
   listLocations: () => unknown[];
-  getState?: () => GameState;  // Updated from getGameState to getState to match usage
+  getState?: () => GameState;
   currentDecision?: PlayerDecision | null;
   sendCommand: (commandType: string, data?: unknown) => void;
   

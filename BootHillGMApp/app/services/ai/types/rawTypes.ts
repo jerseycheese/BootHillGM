@@ -47,7 +47,7 @@ export class ValidationError extends Error {
  * Centralizing them here enhances maintainability
  */
 export const PARSING_REGEX = {
-  LOCATION: /LOCATION:\s*([^:\n\[\]]+)/,
+  LOCATION: /LOCATION:\s*([^:\n[]]+)/,
   ACQUIRED_ITEMS: /ACQUIRED_ITEMS:(?:\s*\[([^\]]*)\]|\s*([^\n]*))/,
   REMOVED_ITEMS: /REMOVED_ITEMS:(?:\s*\[([^\]]*)\]|\s*([^\n]*))/,
   SUGGESTED_ACTIONS: /SUGGESTED_ACTIONS:\s*(\[[\s\S]*?\])/,

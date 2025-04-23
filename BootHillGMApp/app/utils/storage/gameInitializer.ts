@@ -14,6 +14,7 @@ import { Character } from '../../types/character';
 import { SuggestedAction } from '../../types/campaign';
 import { NarrativeJournalEntry } from '../../types/journal';
 import { gameElementsStorage } from './gameElementsStorage';
+import { ActionTypes } from '../../types/actionTypes';
 
 /**
  * Debug console function for internal logging.
@@ -23,6 +24,15 @@ import { gameElementsStorage } from './gameElementsStorage';
  */
 const debug = (...args: Array<unknown>): void => {
   console.log('[DEBUG GameInitializer]', ...args);
+};
+
+/**
+ * Get default inventory items for a new character.
+ * 
+ * @returns Array of default inventory items
+ */
+const getDefaultInventoryItems = (): unknown => {
+  return gameElementsStorage.getDefaultInventoryItems();
 };
 
 /**
@@ -44,20 +54,20 @@ const initializeGameState = (
     
     // Set character first
     dispatch({
-      type: 'character/SET_CHARACTER',
+      type: ActionTypes.SET_CHARACTER,
       payload: character
     } as GameAction);
     
     // Set initial state
     dispatch({ 
-      type: 'SET_STATE', 
-      payload: initialState 
-    } as GameAction);
-    
+      type: ActionTypes.SET_STATE, // Use ActionTypes constant
+      payload: initialState
+    });
+
     // Set inventory
     const defaultItems = character.inventory?.items || getDefaultInventoryItems();
     dispatch({
-      type: 'inventory/SET_INVENTORY',
+      type: ActionTypes.SET_INVENTORY,
       payload: defaultItems
     } as GameAction);
   }).catch(error => {
@@ -81,13 +91,13 @@ const dispatchNarrativeContent = (
 ): void => {
   // Add narrative to history
   dispatch({
-    type: 'ADD_NARRATIVE_HISTORY',
+    type: ActionTypes.ADD_NARRATIVE_HISTORY, // Use ActionTypes constant
     payload: narrative
   });
   
   // Add journal entry
   dispatch({
-    type: 'journal/ADD_ENTRY',
+    type: ActionTypes.ADD_ENTRY,
     payload: journalEntry
   });
 };
@@ -106,7 +116,7 @@ const dispatchSuggestedActions = (
 ): void => {
   if (Array.isArray(actions) && actions.length) {
     dispatch({
-      type: 'SET_SUGGESTED_ACTIONS',
+      type: ActionTypes.SET_SUGGESTED_ACTIONS,
       payload: actions
     });
   }
@@ -143,15 +153,6 @@ const saveContentToLocalStorage = (
   }
   
   debug('Successfully saved content to localStorage');
-};
-
-/**
- * Get default inventory items for a new character.
- * 
- * @returns Array of default inventory items
- */
-const getDefaultInventoryItems = (): unknown => {
-  return gameElementsStorage.getDefaultInventoryItems();
 };
 
 /**

@@ -30,7 +30,7 @@ import { GameState } from '../types/gameState';
  */
 export function createStateHook<T, D extends unknown[]>(
   selector: (state: GameState) => T,
-  getDependencies: (state: GameState) => D = (_state) => [] as unknown as D
+  getDependencies: (state: GameState) => D = () => [] as unknown as D
 ) {
   // Return a custom hook function
   return function useStateHook(): T {

@@ -98,7 +98,6 @@ describe('Response Validator', () => {
       expect(result.suggestedActions.some(action => action.type === 'combat' || action.type === 'danger')).toBeTruthy();
     });
     
-    // Removed obsolete test for ensureDiverseActionTypes within validateAndProcessResponse
   });
   
   describe('analyzeNarrativeContext', () => {

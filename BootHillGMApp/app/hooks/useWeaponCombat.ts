@@ -2,10 +2,9 @@ import { useWeaponCombatState } from './useWeaponCombatState';
 import { useWeaponCombatAction } from './useWeaponCombatAction';
 import { getCombatCapabilities } from '../utils/weaponCombatValidation';
 import { UseWeaponCombatReturn } from '../types/weaponCombatHook';
-import { WeaponCombatState } from '../types/combat';
+import { CombatState, WeaponCombatState } from '../types/combat';
 import { Character } from '../types/character';
 import { GameAction } from '../types/actions'; // Use main GameAction type
-import { CombatState } from '../types/combat';
 
 interface UseWeaponCombatProps {
   playerCharacter: Character;

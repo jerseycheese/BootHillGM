@@ -5,11 +5,9 @@
  * by analyzing narrative context and game state.
  */
 
-import { Character } from '../../types/character';
 import { NarrativeState } from '../../types/narrative.types';
-import { 
-  DecisionDetectionResult, 
-  ExtendedGameState,
+import {
+  DecisionDetectionResult,
   ContextualDecisionServiceConfig
 } from './contextualDecision.types';
 
@@ -51,14 +49,10 @@ export class DecisionDetector {
    * is an appropriate moment to present a decision to the player.
    * 
    * @param narrativeState Current narrative state
-   * @param character Player character data
-   * @param gameState Additional game state for context
    * @returns Decision detection result
    */
   public detectDecisionPoint(
-    narrativeState: NarrativeState,
-    character: Character,
-    gameState?: ExtendedGameState
+    narrativeState: NarrativeState
   ): DecisionDetectionResult {
     // Don't present decisions too frequently
     if (Date.now() - this.lastDecisionTime < this.config.minDecisionInterval) {
@@ -70,7 +64,7 @@ export class DecisionDetector {
     }
     
     // Calculate decision score based on narrative context
-    const score = this.calculateDecisionScore(narrativeState, character, gameState);
+    const score = this.calculateDecisionScore(narrativeState);
     
     // Determine if we should present a decision
     const shouldPresent = score >= this.config.relevanceThreshold;
@@ -90,14 +84,10 @@ export class DecisionDetector {
    * Higher scores mean a decision is more appropriate at this moment
    * 
    * @param narrativeState Current narrative state
-   * @param _character Player character data
-   * @param _gameState Additional game state for context
    * @returns Score from 0-1
    */
   private calculateDecisionScore(
-    narrativeState: NarrativeState,
-    _character: Character,
-    _gameState?: ExtendedGameState
+    narrativeState: NarrativeState
   ): number {
     // Start with a base score
     let score = 0.4;

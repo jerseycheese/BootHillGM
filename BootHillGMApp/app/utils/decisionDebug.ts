@@ -99,7 +99,5 @@ export function initializeDecisionDebugTools(): void {
       };
     }
     
-    if (process.env.NODE_ENV !== 'production') {
-    }
   }
 }

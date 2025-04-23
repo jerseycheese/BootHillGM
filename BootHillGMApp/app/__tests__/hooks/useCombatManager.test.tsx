@@ -145,7 +145,7 @@ describe('useCombatManager', () => {
 
   test('handles combat end error gracefully', async () => {
     // Temporarily suppress console.error for this test
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => { /* Intentionally empty */ });
     
     // Mock the stateProtection to throw an error for this test
     const mockWithProtection = jest.fn().mockRejectedValue(new Error('Test error'));

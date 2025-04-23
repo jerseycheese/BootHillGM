@@ -9,9 +9,9 @@
 
 import { renderHook, act } from '@testing-library/react';
 import { useBrawlingCombat } from '../../../hooks/useBrawlingCombat';
+import { UseBrawlingCombatProps } from '../../../types/brawling.types'; // Correct import path
 import { mockPlayerCharacter, mockNPC } from '../../../test/fixtures';
-import { UpdateCharacterPayload } from '../../../types/gameActions';
-import { GameEngineAction } from '../../../types/gameActions';
+import { UpdateCharacterPayload, GameEngineAction } from '../../../types/gameActions';
 import {
   getDefaultState,
   isUpdateCharacterAction,
@@ -26,7 +26,7 @@ jest.mock('../../../hooks/useBrawlingCombat', () => {
   
   return {
     ...originalModule,
-    useBrawlingCombat: (props) => {
+    useBrawlingCombat: (props: UseBrawlingCombatProps) => { // Add type annotation
       const processRound = jest.fn().mockImplementation(async () => {
         // Simulate calling the onCombatEnd callback
         if (mocks.checkKnockout().isKnockout) {

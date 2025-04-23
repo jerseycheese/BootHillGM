@@ -21,7 +21,7 @@ describe('Decision Utility Functions', () => {
       { id: 'option2', text: 'Option 2', impact: 'Impact 2' },
     ],
     context: 'Test context',
-    importance: 'moderate', // Corrected to string literal
+    importance: 'moderate',
     characters: ['char1', 'char2'],
     aiGenerated: true,
     location: { type: 'town', name: 'Testville' },

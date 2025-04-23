@@ -8,7 +8,7 @@ import { GameAction } from '../types/actions';
 import { inventoryReducer } from '../reducers/inventory/inventoryReducer';
 import { journalReducer } from '../reducers/journal/journalReducer';
 import { JournalState } from '../types/state/journalState';
-import { isNonNullObject } from '../reducers/gameTypes';
+import { isNonNullObject } from '../reducers/utils/typeGuards';
 
 /**
  * Maps an unknown array to a typed array by applying a transformation function
@@ -80,6 +80,22 @@ export function convertLegacyLogEntry(entry: LogEntry): CombatLogEntry {
 }
 
 /**
+ * Validate entry type to ensure it's a valid CombatLogEntry type
+ */
+function validateEntryType(type: unknown): CombatLogEntry['type'] {
+  const validTypes: CombatLogEntry['type'][] = [
+    'hit', 'miss', 'critical', 'info', 'system', 'action', 'result'
+  ];
+  
+  if (typeof type === 'string' && validTypes.includes(type as CombatLogEntry['type'])) {
+    return type as CombatLogEntry['type'];
+  }
+  
+  // Default to 'info' for invalid types
+  return 'info';
+}
+
+/**
  * Convert combat log entries for UPDATE_COMBAT_STATE
  * This fixes the type error related to log entry type differences
  */
@@ -108,7 +124,7 @@ export function convertCombatLogEntries(
       return {
         text: String(typedEntry.text || ''),
         timestamp: Number(typedEntry.timestamp || Date.now()),
-        type: validateEntryType(typedEntry.type),
+        type: validateEntryType(typedEntry.type), // Use validator here
         data: typedEntry.data || { originalType: typedEntry.type }
       };
     }
@@ -123,21 +139,6 @@ export function convertCombatLogEntries(
   });
 }
 
-/**
- * Validate entry type to ensure it's a valid CombatLogEntry type
- */
-function validateEntryType(type: unknown): CombatLogEntry['type'] {
-  const validTypes: CombatLogEntry['type'][] = [
-    'hit', 'miss', 'critical', 'info', 'system', 'action', 'result'
-  ];
-  
-  if (typeof type === 'string' && validTypes.includes(type as CombatLogEntry['type'])) {
-    return type as CombatLogEntry['type'];
-  }
-  
-  // Default to 'info' for invalid types
-  return 'info';
-}
 
 /**
  * Ensure NPCs array contains strings and not character objects

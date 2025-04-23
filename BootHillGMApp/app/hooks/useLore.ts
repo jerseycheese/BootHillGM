@@ -12,6 +12,17 @@ import {
   LoreExtractionResult,
   initialLoreState
 } from '../types/narrative/lore.types';
+import {
+  addLoreFact,
+  updateLoreFact,
+  invalidateLoreFact,
+  validateLoreFact,
+  addRelatedFacts,
+  removeRelatedFacts,
+  addFactTags,
+  removeFactTags,
+  processLoreExtraction
+} from '../actions/loreActions';
 
 /**
  * Hook for accessing and manipulating lore data
@@ -27,90 +38,63 @@ export function useLore() {
    * Add a new lore fact
    */
   const addFact = useCallback((fact: Omit<LoreFact, 'id' | 'createdAt' | 'updatedAt' | 'version'>) => {
-    dispatch({
-      type: 'ADD_LORE_FACT',
-      payload: fact
-    });
+    dispatch(addLoreFact(fact));
   }, [dispatch]);
 
   /**
    * Update an existing lore fact
    */
   const updateFact = useCallback((id: string, updates: Partial<LoreFact>) => {
-    dispatch({
-      type: 'UPDATE_LORE_FACT',
-      payload: { id, updates }
-    });
+    dispatch(updateLoreFact(id, updates));
   }, [dispatch]);
 
   /**
    * Mark a fact as invalid
    */
   const invalidateFact = useCallback((id: string) => {
-    dispatch({
-      type: 'INVALIDATE_LORE_FACT',
-      payload: id
-    });
+    dispatch(invalidateLoreFact(id));
   }, [dispatch]);
 
   /**
    * Mark a fact as valid
    */
   const validateFact = useCallback((id: string) => {
-    dispatch({
-      type: 'VALIDATE_LORE_FACT',
-      payload: id
-    });
+    dispatch(validateLoreFact(id));
   }, [dispatch]);
 
   /**
    * Add related facts to a fact
    */
-  const addRelatedFacts = useCallback((factId: string, relatedIds: string[]) => {
-    dispatch({
-      type: 'ADD_RELATED_FACTS',
-      payload: { factId, relatedIds }
-    });
+  const addFactRelatedFacts = useCallback((factId: string, relatedIds: string[]) => {
+    dispatch(addRelatedFacts(factId, relatedIds));
   }, [dispatch]);
 
   /**
    * Remove related facts from a fact
    */
-  const removeRelatedFacts = useCallback((factId: string, relatedIds: string[]) => {
-    dispatch({
-      type: 'REMOVE_RELATED_FACTS',
-      payload: { factId, relatedIds }
-    });
+  const removeFactRelatedFacts = useCallback((factId: string, relatedIds: string[]) => {
+    dispatch(removeRelatedFacts(factId, relatedIds));
   }, [dispatch]);
 
   /**
    * Add tags to a fact
    */
-  const addFactTags = useCallback((factId: string, tags: string[]) => {
-    dispatch({
-      type: 'ADD_FACT_TAGS',
-      payload: { factId, tags }
-    });
+  const addTagsToFact = useCallback((factId: string, tags: string[]) => {
+    dispatch(addFactTags(factId, tags));
   }, [dispatch]);
 
   /**
    * Remove tags from a fact
    */
-  const removeFactTags = useCallback((factId: string, tags: string[]) => {
-    dispatch({
-      type: 'REMOVE_FACT_TAGS',
-      payload: { factId, tags }
-    });
+  const removeTagsFromFact = useCallback((factId: string, tags: string[]) => {
+    dispatch(removeFactTags(factId, tags));
   }, [dispatch]);
 
   /**
    * Process lore extraction result from AI
    */
-  const processLoreExtraction = useCallback((extraction: LoreExtractionResult) => {
-    dispatch({
-      type: 'PROCESS_LORE_EXTRACTION',
-      payload: extraction
-    });
+  const processExtraction = useCallback((extraction: LoreExtractionResult) => {
+    dispatch(processLoreExtraction(extraction));
   }, [dispatch]);
 
   /**
@@ -156,11 +140,11 @@ export function useLore() {
     updateFact,
     invalidateFact,
     validateFact,
-    addRelatedFacts,
-    removeRelatedFacts,
-    addFactTags,
-    removeFactTags,
-    processLoreExtraction,
+    addRelatedFacts: addFactRelatedFacts,
+    removeRelatedFacts: removeFactRelatedFacts,
+    addFactTags: addTagsToFact,
+    removeFactTags: removeTagsFromFact,
+    processLoreExtraction: processExtraction,
     getFactsByCategory,
     getFactsByTag,
     getRelatedFacts,

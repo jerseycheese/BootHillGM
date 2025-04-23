@@ -131,10 +131,10 @@ describe('loreContextBuilder', () => {
 
   // Default test impact state
   const defaultImpactState = {
-    reputationImpacts: {},
-    relationshipImpacts: {},
-    worldStateImpacts: {},
-    storyArcImpacts: {},
+    reputationImpacts: { /* Intentionally empty */ },
+    relationshipImpacts: { /* Intentionally empty */ },
+    worldStateImpacts: { /* Intentionally empty */ },
+    storyArcImpacts: { /* Intentionally empty */ },
     lastUpdated: Date.now() - 1000
   };
 
@@ -149,10 +149,10 @@ describe('loreContextBuilder', () => {
     worldContext: 'Wild West frontier town',
     importantEvents: ['Recent shoot-out at the Broken Spur Saloon'],
     decisionHistory: [], 
-    storyPoints: {},
-    narrativeArcs: {},
+    storyPoints: { /* Intentionally empty */ },
+    narrativeArcs: { /* Intentionally empty */ },
     impactState: defaultImpactState,
-    narrativeBranches: {},
+    narrativeBranches: { /* Intentionally empty */ },
     pendingDecisions: [],
     currentTags: ['redemption', 'sheriff johnson', 'saloon'],
     sceneType: 'dialogue'

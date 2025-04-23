@@ -7,10 +7,12 @@ jest.mock('../../utils/aiService', () => ({
 // Define a mock module factory that doesn't rely on external variables
 jest.mock('../../hooks/useAIInteractions', () => {
   // Create a mock function inside the factory
-  const mockGetAIResponse = jest.fn();
+  const mockGenerateGameContent = jest.fn();
   
   return {
-    __mockAIService: { getAIResponse: mockGetAIResponse },
+    aiService: { 
+      generateGameContent: mockGenerateGameContent 
+    },
     useAIInteractions: jest.fn()
   };
 });
@@ -18,12 +20,16 @@ jest.mock('../../hooks/useAIInteractions', () => {
 // Now we can import modules
 import { renderHook, act } from '@testing-library/react';
 import { presentDecision } from '../../actions/narrativeActions';
-import { initialGameState } from '../../types/campaign';
-import { useAIInteractions, __mockAIService } from '../../hooks/useAIInteractions';
+import { initialState } from '../../types/initialState';
+import { useAIInteractions, aiService } from '../../hooks/useAIInteractions';
+import { Character } from '../../types/character';
+import { DecisionImportance } from '../../types/narrative.types';
+import { GameServiceResponse } from '../../services/ai/types/gameService.types';
+import { LocationType } from '../../services/locationService';
 
 describe('useAIInteractions', () => {
   const mockState = {
-    ...initialGameState
+    ...initialState
   };
   const mockDispatch = jest.fn();
   const mockOnInventoryChange = jest.fn();
@@ -34,7 +40,7 @@ describe('useAIInteractions', () => {
     // Set up the mock implementation for each test
     (useAIInteractions as jest.Mock).mockImplementation((state, dispatch, _onInventoryChange) => ({
       handleUserInput: jest.fn(async (input) => {
-        const aiResponse = await __mockAIService.getAIResponse(input, '', []);
+        const aiResponse = await aiService.generateGameContent(state.character?.player || null);
         
         if (aiResponse.playerDecision) {
           const action = presentDecision(aiResponse.playerDecision);
@@ -63,15 +69,18 @@ describe('useAIInteractions', () => {
       error: null
     }));
     
-    // Default response
-    __mockAIService.getAIResponse.mockResolvedValue({
-      narrative: 'Test narrative',
-      location: null,
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [],
-      playerDecision: null
-    });
+    // Mock the generateGameContent function properly with type safety
+    jest.spyOn(aiService, 'generateGameContent').mockImplementation(
+      (characterData: Character | null): Promise<GameServiceResponse> => {
+        return Promise.resolve({
+          narrative: 'Test narrative',
+          location: { type: 'unknown' } as LocationType,
+          acquiredItems: [],
+          removedItems: [],
+          suggestedActions: []
+        });
+      }
+    );
   });
   
   it('should dispatch presentDecision when AI response includes playerDecision', async () => {
@@ -84,19 +93,23 @@ describe('useAIInteractions', () => {
       ],
       timestamp: Date.now(),
       context: 'Test context',
-      importance: 'moderate',
+      importance: 'moderate' as DecisionImportance,
       aiGenerated: true
     };
     
     // Set up the mock response with player decision
-    __mockAIService.getAIResponse.mockResolvedValue({
-      narrative: 'Test narrative',
-      location: { type: 'town', name: 'Test Town' },
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: [],
-      playerDecision: mockPlayerDecision
-    });
+    jest.spyOn(aiService, 'generateGameContent').mockImplementation(
+      (characterData: Character | null): Promise<GameServiceResponse> => {
+        return Promise.resolve({
+          narrative: 'Test narrative',
+          location: { type: 'town', name: 'Test Town' } as LocationType,
+          acquiredItems: [],
+          removedItems: [],
+          suggestedActions: [],
+          playerDecision: mockPlayerDecision
+        });
+      }
+    );
     
     // Mock presentDecision to return a properly formatted action
     (presentDecision as jest.Mock).mockReturnValue({ 
@@ -124,14 +137,18 @@ describe('useAIInteractions', () => {
   
   it('should not dispatch presentDecision when AI response does not include playerDecision', async () => {
     // Mock response without player decision
-    __mockAIService.getAIResponse.mockResolvedValue({
-      narrative: 'Test narrative',
-      location: { type: 'town', name: 'Test Town' },
-      acquiredItems: [],
-      removedItems: [],
-      suggestedActions: []
-      // No playerDecision field
-    });
+    jest.spyOn(aiService, 'generateGameContent').mockImplementation(
+      (characterData: Character | null): Promise<GameServiceResponse> => {
+        return Promise.resolve({
+          narrative: 'Test narrative',
+          location: { type: 'town', name: 'Test Town' } as LocationType,
+          acquiredItems: [],
+          removedItems: [],
+          suggestedActions: []
+          // No playerDecision field
+        });
+      }
+    );
     
     const { result } = renderHook(() => 
       useAIInteractions(mockState, mockDispatch, mockOnInventoryChange)

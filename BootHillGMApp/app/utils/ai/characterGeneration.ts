@@ -2,7 +2,7 @@ import { Character } from '../../types/character';
 import { InventoryItem } from '../../types/item.types';
 import { getAIResponse } from '../../services/ai/gameService';
 import { generateFieldValue } from './fieldValueGeneration';
-import {} from './aiConfig';
+import { /* Intentionally empty */ } from './aiConfig';
 
 // Function to generate a complete character using AI
 export async function generateCompleteCharacter(): Promise<Character> {

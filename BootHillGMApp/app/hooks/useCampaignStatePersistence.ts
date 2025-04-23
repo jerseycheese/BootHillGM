@@ -1,8 +1,8 @@
 import { useCallback, useRef } from 'react';
 import { GameState } from '../types/gameState';
-// Removed unused imports: InventoryItem, Character, JournalEntry, CombatState, ExtendedGameState
 import { initialState as initialGameState } from '../types/initialState';
 import { GameEngineAction } from '../types/gameActions';
+import { ActionTypes } from '../types/actionTypes';
 
 /**
  * Hook for managing campaign state persistence to localStorage.
@@ -24,10 +24,8 @@ export const useCampaignStatePersistence = (
   /**
    * Saves the current game state to localStorage.
    * Prevents rapid consecutive saves and handles proper normalization.
-   * 
-   * @param {GameState} stateToSave - The game state to save
    */
-  const saveGame = useCallback((stateToSave: GameState) => {
+  const saveGame = useCallback(() => {
     try {
       const timestamp = Date.now();
       
@@ -36,11 +34,16 @@ export const useCampaignStatePersistence = (
         return;
       }
 
-      stateRef.current = stateToSave;
+      // Use the latest state from the ref, not the potentially stale argument
+      const currentState = stateRef.current;
+      if (!currentState) {
+        console.warn('Attempted to save game with null stateRef');
+        return;
+      }
 
       // Ensure state is in the new format before saving
       // State is already in the new GameState format
-      const normalizedState = stateToSave;
+      const normalizedState = currentState;
 
       // State is already normalized (GameState), just add timestamp and client flag
       const stateToStore = {
@@ -99,27 +102,27 @@ export const useCampaignStatePersistence = (
         // Example:
         character: {
           ...initialGameState.character,
-          ...(normalizedState.character || {}),
+          ...(normalizedState.character || { /* Intentionally empty */ }),
         },
         combat: {
           ...initialGameState.combat,
-          ...(normalizedState.combat || {}),
+          ...(normalizedState.combat || { /* Intentionally empty */ }),
         },
         inventory: {
           ...initialGameState.inventory,
-          ...(normalizedState.inventory || {}),
+          ...(normalizedState.inventory || { /* Intentionally empty */ }),
         },
         journal: {
           ...initialGameState.journal,
-          ...(normalizedState.journal || {}),
+          ...(normalizedState.journal || { /* Intentionally empty */ }),
         },
         narrative: {
           ...initialGameState.narrative,
-          ...(normalizedState.narrative || {}),
+          ...(normalizedState.narrative || { /* Intentionally empty */ }),
         },
         ui: {
           ...initialGameState.ui,
-          ...(normalizedState.ui || {}),
+          ...(normalizedState.ui || { /* Intentionally empty */ }),
         },
         // Ensure isClient is true after loading
         isClient: true,
@@ -128,7 +131,7 @@ export const useCampaignStatePersistence = (
       };
 
       // Dispatch the fully formed GameState
-      dispatch({ type: 'SET_STATE', payload: restoredState });
+      dispatch({ type: ActionTypes.SET_STATE, payload: restoredState }); // Use ActionTypes constant
       stateRef.current = restoredState; // Update the ref
       return restoredState;
     } catch (error) {

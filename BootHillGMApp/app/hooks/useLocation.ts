@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { LocationService, LocationType, LocationState } from '../services/locationService';
-// Removed import { useCampaignState } from './useCampaignStateContext';
-import { useGameState } from '../context/GameStateProvider'; // Import correct hook
+import { useGameState } from '../context/GameStateProvider';
+import { setLocation } from '../actions/locationActions';
 
 // Default location type when none is specified
 const DEFAULT_LOCATION: LocationType = { type: 'unknown' };
@@ -66,7 +66,7 @@ const extractLocationType = (locationData: unknown): LocationType => {
               name: 'name' in locationData ? String(locationData.name || 'Unknown Landmark') : 'Unknown Landmark',
               ...(('description' in locationData && locationData.description) 
                 ? { description: String(locationData.description) } 
-                : {})
+                : { /* Intentionally empty */ })
             };
           default:
             return { type: 'unknown' };
@@ -144,11 +144,8 @@ export const useLocation = () => {
       return;
     }
 
-    // Dispatch with the correct location type based on the discriminated union
-    dispatch({
-      type: 'SET_LOCATION',
-      payload: newLocation
-    });
+    // Dispatch with the action creator
+    dispatch(setLocation(newLocation));
 
     // Local state is updated via the useEffect above
   }, [dispatch, locationState]); // Remove unnecessary locationState.currentLocation dependency

@@ -5,9 +5,7 @@
  */
 
 import { GameState } from '../types/gameState';
-// Removed obsolete imports: adaptStateForTests, legacyGetters
 import { initialState } from '../types/initialState';
-// Removed obsolete imports: migrateGameState, needsMigration
 
 export class CampaignStateManager {
   private state: GameState;

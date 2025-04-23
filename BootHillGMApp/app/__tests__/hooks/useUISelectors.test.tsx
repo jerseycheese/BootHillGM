@@ -6,7 +6,21 @@ import {
 } from '../../hooks/stateSelectors';
 import { UIState } from '../../types/state/uiState';
 import { GameState } from '../../types/gameState';
-import { createGameProviderWrapper } from '../../test/utils/testWrappers';
+import { GameStateContext } from '../../context/GameStateProvider';
+import React from 'react';
+
+// Direct wrapper using GameStateContext
+const createWrapper = (mockState: GameState) => {
+  const Wrapper = ({ children }: { children: React.ReactNode }) => {
+    return (
+      <GameStateContext.Provider value={{ state: mockState, dispatch: jest.fn() }}>
+        {children}
+      </GameStateContext.Provider>
+    );
+  };
+  Wrapper.displayName = 'TestUIStateWrapper'; // Add display name
+  return Wrapper;
+};
 
 describe('UI Selector Hooks', () => {
   const mockUIState: UIState = {
@@ -16,13 +30,13 @@ describe('UI Selector Hooks', () => {
       { id: '1', message: 'Item acquired', type: 'success', timestamp: 1000 },
       { id: '2', message: 'Error loading', type: 'error', timestamp: 2000 },
       { id: '3', message: 'Quest updated', type: 'success', timestamp: 3000 }
-    ]
+    ],
+    activeTab: 'character'
   };
 
-  // Create a complete game state to ensure proper initialization
-  const mockGameState: Partial<GameState> = {
+  // Create a complete mock state
+  const mockGameState: GameState = {
     ui: mockUIState,
-    // Ensure these required state properties exist to avoid undefined issues
     character: { player: null, opponent: null },
     combat: {
       isActive: false,
@@ -36,7 +50,7 @@ describe('UI Selector Hooks', () => {
       modifiers: { player: 0, opponent: 0 },
       currentTurn: null
     },
-    inventory: { items: [] },
+    inventory: { items: [], equippedWeaponId: null },
     journal: { entries: [] },
     narrative: {
       currentStoryPoint: null,
@@ -44,6 +58,7 @@ describe('UI Selector Hooks', () => {
       availableChoices: [],
       narrativeHistory: [],
       displayMode: 'standard',
+      context: "",
       error: null
     },
     currentPlayer: '',
@@ -53,12 +68,13 @@ describe('UI Selector Hooks', () => {
     gameProgress: 0,
     suggestedActions: [],
     savedTimestamp: Date.now(),
-    isClient: true
+    isClient: true,
+    meta: {}
   };
 
   test('useNotifications returns all notifications', () => {
     const { result } = renderHook(() => useNotifications(), {
-      wrapper: createGameProviderWrapper(mockGameState)
+      wrapper: createWrapper(mockGameState)
     });
     
     expect(result.current).toHaveLength(3);
@@ -69,7 +85,7 @@ describe('UI Selector Hooks', () => {
 
   test('useNotificationsByType returns notifications filtered by type', () => {
     const { result } = renderHook(() => useNotificationsByType('success'), {
-      wrapper: createGameProviderWrapper(mockGameState)
+      wrapper: createWrapper(mockGameState)
     });
     
     expect(result.current).toHaveLength(2);
@@ -79,7 +95,7 @@ describe('UI Selector Hooks', () => {
 
   test('useLatestNotification returns the most recent notification', () => {
     const { result } = renderHook(() => useLatestNotification(), {
-      wrapper: createGameProviderWrapper(mockGameState)
+      wrapper: createWrapper(mockGameState)
     });
     
     expect(result.current).toEqual({
@@ -91,50 +107,27 @@ describe('UI Selector Hooks', () => {
   });
 
   test('hooks handle missing state gracefully', () => {
-    // Create a minimal valid game state with empty UI notifications
-    const emptyState: Partial<GameState> = {
+    // Empty state with no notifications
+    const emptyState: GameState = {
+      ...mockGameState,
       ui: {
-        isLoading: false,
-        modalOpen: null,
+        ...mockGameState.ui,
         notifications: []
-      },
-      character: { player: null, opponent: null },
-      combat: {
-        isActive: false,
-        combatType: null,
-        rounds: 0,
-        playerTurn: true,
-        playerCharacterId: '',
-        opponentCharacterId: '',
-        combatLog: [],
-        roundStartTime: 0,
-        modifiers: { player: 0, opponent: 0 },
-        currentTurn: null
-      },
-      inventory: { items: [] },
-      journal: { entries: [] },
-      narrative: {
-        currentStoryPoint: null,
-        visitedPoints: [],
-        availableChoices: [],
-        narrativeHistory: [],
-        displayMode: 'standard',
-        error: null
       }
     };
     
     const { result: notificationsResult } = renderHook(() => useNotifications(), {
-      wrapper: createGameProviderWrapper(emptyState)
+      wrapper: createWrapper(emptyState)
     });
     expect(notificationsResult.current).toEqual([]);
     
     const { result: typeResult } = renderHook(() => useNotificationsByType('success'), {
-      wrapper: createGameProviderWrapper(emptyState)
+      wrapper: createWrapper(emptyState)
     });
     expect(typeResult.current).toEqual([]);
     
     const { result: latestResult } = renderHook(() => useLatestNotification(), {
-      wrapper: createGameProviderWrapper(emptyState)
+      wrapper: createWrapper(emptyState)
     });
     expect(latestResult.current).toBeUndefined();
   });

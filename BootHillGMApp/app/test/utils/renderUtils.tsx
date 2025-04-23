@@ -35,13 +35,13 @@ interface ProviderOptions {
  */
 export function renderWithProviders(
   ui: ReactElement,
-  options: ProviderOptions & Omit<RenderOptions, 'wrapper'> = {}
+  options: ProviderOptions & Omit<RenderOptions, 'wrapper'> = { /* Intentionally empty */ }
 ) {
   // Destructure with defaults but keep ESLint happy by using _destructured names
   // These will be renamed when you implement the context
-  const _gameState = options.gameState || {};
+  const _gameState = options.gameState || { /* Intentionally empty */ };
   const _combatActive = options.combatActive || false;
-  const _narrativeState = options.narrativeState || {};
+  const _narrativeState = options.narrativeState || { /* Intentionally empty */ };
   
   // Filter out our custom options to get just the render options
   const renderOptions = { ...options };
@@ -80,7 +80,7 @@ export function renderWithProviders(
 /**
  * Render a character-related component with mock character data
  */
-export function renderCharacterComponent(ui: ReactElement, options = {}) {
+export function renderCharacterComponent(ui: ReactElement, options = { /* Intentionally empty */ }) {
   return renderWithProviders(ui, {
     gameState: {
       character: {
@@ -101,7 +101,7 @@ export function renderCharacterComponent(ui: ReactElement, options = {}) {
 /**
  * Render a combat-related component with mock combat state
  */
-export function renderCombatComponent(ui: ReactElement, options = {}) {
+export function renderCombatComponent(ui: ReactElement, options = { /* Intentionally empty */ }) {
   return renderWithProviders(ui, {
     gameState: {
       combat: {

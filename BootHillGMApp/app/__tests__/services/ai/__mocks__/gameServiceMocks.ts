@@ -184,7 +184,7 @@ export const mockCombatResponse: Partial<GameServiceResponse> = {
     maxAttributes: { strength: 20, baseStrength: 20, speed: 10, gunAccuracy: 10, throwingAccuracy: 10, bravery: 10, experience: 100 },
     wounds: [],
     isUnconscious: false,
-    inventory: { items: [] }, // Corrected structure
+    inventory: { items: [] },
     isNPC: true,
     isPlayer: false,
   } as Character,
@@ -267,7 +267,7 @@ export const defaultFallbackResponse: GameServiceResponse = {
   opponent: null,
   acquiredItems: [],
   removedItems: [],
-  suggestedActions: [ // Updated to match fallbackService.ts generic output mapped to fallbackPathDefaultActions IDs
+  suggestedActions: [
     { id: 'fallback-gen-1', title: "Focus on your objective", description: "Remember why you're here", type: 'main' },
     { id: 'fallback-gen-2', title: "Look for interesting details", description: "Find something worth investigating", type: 'side' },
     { id: 'fallback-gen-3', title: "Prepare for trouble", description: "Stay ready for action", type: 'combat' },

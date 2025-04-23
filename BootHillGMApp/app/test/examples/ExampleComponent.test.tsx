@@ -7,7 +7,7 @@ import userEvent from '@testing-library/user-event';
 
 // Create a simple test component
 const ExampleButton = ({ 
-  onClick = () => {}, 
+  onClick = () => { /* Intentionally empty */ }, 
   label = 'Click Me',
   disabled = false
 }) => (

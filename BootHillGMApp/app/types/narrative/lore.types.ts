@@ -5,6 +5,8 @@
  * which tracks and maintains world facts and lore details.
  */
 
+import { ActionTypes } from '../actionTypes';
+
 /**
  * Categories for organizing lore facts
  */
@@ -65,24 +67,24 @@ export interface LoreExtractionResult {
 }
 
 /**
- * Lore actions
+ * Lore actions using standardized ActionTypes
  */
 export type LoreAction = 
-  | { type: 'ADD_LORE_FACT'; payload: Omit<LoreFact, 'id' | 'createdAt' | 'updatedAt' | 'version'> }
-  | { type: 'UPDATE_LORE_FACT'; payload: { id: string; updates: Partial<LoreFact> } }
-  | { type: 'INVALIDATE_LORE_FACT'; payload: string }
-  | { type: 'VALIDATE_LORE_FACT'; payload: string }
-  | { type: 'ADD_RELATED_FACTS'; payload: { factId: string; relatedIds: string[] } }
-  | { type: 'REMOVE_RELATED_FACTS'; payload: { factId: string; relatedIds: string[] } }
-  | { type: 'ADD_FACT_TAGS'; payload: { factId: string; tags: string[] } }
-  | { type: 'REMOVE_FACT_TAGS'; payload: { factId: string; tags: string[] } }
-  | { type: 'PROCESS_LORE_EXTRACTION'; payload: LoreExtractionResult };
+  | { type: typeof ActionTypes.ADD_LORE_FACT; payload: Omit<LoreFact, 'id' | 'createdAt' | 'updatedAt' | 'version'> }
+  | { type: typeof ActionTypes.UPDATE_LORE_FACT; payload: { id: string; updates: Partial<LoreFact> } }
+  | { type: typeof ActionTypes.INVALIDATE_LORE_FACT; payload: string }
+  | { type: typeof ActionTypes.VALIDATE_LORE_FACT; payload: string }
+  | { type: typeof ActionTypes.ADD_RELATED_FACTS; payload: { factId: string; relatedIds: string[] } }
+  | { type: typeof ActionTypes.REMOVE_RELATED_FACTS; payload: { factId: string; relatedIds: string[] } }
+  | { type: typeof ActionTypes.ADD_FACT_TAGS; payload: { factId: string; tags: string[] } }
+  | { type: typeof ActionTypes.REMOVE_FACT_TAGS; payload: { factId: string; tags: string[] } }
+  | { type: typeof ActionTypes.PROCESS_LORE_EXTRACTION; payload: LoreExtractionResult };
 
 /**
  * Initial lore state
  */
 export const initialLoreState: LoreStore = {
-  facts: {},
+  facts: { /* Intentionally empty */ },
   categorizedFacts: {
     character: [],
     location: [],
@@ -90,8 +92,8 @@ export const initialLoreState: LoreStore = {
     item: [],
     concept: []
   },
-  factsByTag: {},
-  factVersions: {},
+  factsByTag: { /* Intentionally empty */ },
+  factVersions: { /* Intentionally empty */ },
   latestUpdate: 0
 };
 

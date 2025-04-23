@@ -1,30 +1,22 @@
 import { gameReducer } from '../../reducers/gameReducer';
-// import { GameState } from '../../types/gameState'; // Removed unused import
-import { ExtendedGameState } from '../../types/extendedState'; // Re-added to match reducer signature
-import { GameEngineAction } from '../../types/gameActions';
+import { ExtendedGameState } from '../../types/extendedState';
+import { GameAction } from '../../types/actions'; // Use correct GameAction type
 import { Character } from '../../types/character';
 import { InventoryItem, ItemCategory } from '../../types/item.types';
 import { NarrativeJournalEntry } from '../../types/journal';
 import { initialNarrativeState } from '../../types/narrative.types';
-// import { journalAdapter } from '../../utils/stateAdapters'; // Removed adapter import
-import { initialCharacterState } from '../../types/state/characterState'; // Import initialCharacterState
-import { initialJournalState } from '../../types/state/journalState'; // Import initialJournalState
-import { initialInventoryState } from '../../types/state/inventoryState'; // Import initialInventoryState
-import { initialCombatState } from '../../types/state/combatState'; // Import initialCombatState
-import { initialUIState } from '../../types/state/uiState'; // Import initialUIState
-// import { adaptStateForTests } from '../../utils/stateAdapters'; // Removed adapter import
-
-// Removed unused JournalEntryObject interface
-
-// Removed getJournalEntries helper function as journalAdapter is gone
+import { initialCharacterState } from '../../types/state/characterState';
+import { initialJournalState } from '../../types/state/journalState';
+import { initialInventoryState } from '../../types/state/inventoryState';
+import { initialCombatState } from '../../types/state/combatState';
+import { initialUIState } from '../../types/state/uiState';
+import { ActionTypes } from '../../types/actionTypes';
 
 describe('gameReducer', () => {
-  let initialState: ExtendedGameState; // Use ExtendedGameState to match reducer
+  let initialState: ExtendedGameState;
 
   beforeEach(() => {
     // Create a base state with all required properties
-    // Create a base state conforming to ExtendedGameState
-    // This requires properties that might have been in the legacy model
     initialState = {
       // Slices
       character: initialCharacterState,
@@ -43,18 +35,18 @@ describe('gameReducer', () => {
       savedTimestamp: 0,
       isClient: false,
       suggestedActions: [],
+      meta: {},
 
-      // Properties potentially needed for ExtendedGameState (add defaults)
-      player: null, // Example legacy property
-      opponent: null, // Example legacy property
-      entries: [], // Example legacy property
-      isCombatActive: false, // Example legacy property
-      // Add other legacy properties as needed based on ExtendedGameState definition
+      // Properties for ExtendedGameState
+      player: null,
+      opponent: null,
+      entries: [],
+      isCombatActive: false,
     };
-  }); // End beforeEach
+  });
 
   it('should set player name', () => {
-    const action: GameEngineAction = { type: 'SET_PLAYER', payload: 'John Doe' };
+    const action: GameAction = { type: ActionTypes.SET_PLAYER, payload: 'John Doe' };
     const newState = gameReducer(initialState, action);
     expect(newState.currentPlayer).toBe('John Doe');
   });
@@ -94,56 +86,67 @@ describe('gameReducer', () => {
       },
       wounds: [],
       isUnconscious: false,
-      inventory: { items: [] }, // Correct structure
+      inventory: { items: [] },
       weapon: undefined,
       equippedWeapon: undefined,
       strengthHistory: {
-        baseStrength: 8, // Match the baseStrength in attributes
+        baseStrength: 8,
         changes: [],
       },
     };
-    const action: GameEngineAction = { type: 'SET_CHARACTER', payload: mockCharacter };
+    const action: GameAction = { type: ActionTypes.SET_CHARACTER, payload: mockCharacter };
     const newState = gameReducer(initialState, action);
-    // Use the character state instead of directly comparing with mockCharacter
     expect(newState.character?.player).toEqual(mockCharacter);
   });
 
   it('should set location', () => {
-    const action: GameEngineAction = { type: 'SET_LOCATION', payload: { type: 'town', name: 'Saloon' } };
+    const action: GameAction = { type: ActionTypes.SET_LOCATION, payload: { type: 'town', name: 'Saloon' } };
     const newState = gameReducer(initialState, action);
     expect(newState.location).toEqual({ type: 'town', name: 'Saloon' });
   });
 
   it('should set narrative', () => {
-    const action: GameEngineAction = { type: 'SET_NARRATIVE', payload: { text: 'You enter the saloon.' } }; // Correct payload structure
+    // The issue was the payload format - it needs to be directly usable as a string
+    const action: GameAction = { type: ActionTypes.ADD_NARRATIVE_HISTORY, payload: 'You enter the saloon.' };
     const newState = gameReducer(initialState, action);
     expect(newState.narrative.narrativeHistory).toContain('You enter the saloon.');
   });
 
   it('should set game progress', () => {
-    const action: GameEngineAction = { type: 'SET_GAME_PROGRESS', payload: 10 };
+    const action: GameAction = { type: ActionTypes.SET_GAME_PROGRESS, payload: 10 };
     const newState = gameReducer(initialState, action);
     expect(newState.gameProgress).toBe(10);
   });
 
   it('should update journal', () => {
+    const timestamp = Date.now();
     const newEntry: NarrativeJournalEntry = {
-      id: `entry_${Date.now()}`, // Add missing ID
-      title: 'Untitled Entry', // Add the expected default title
+      id: `entry_${timestamp}`,
+      title: 'Untitled Entry',
       type: 'narrative',
-      timestamp: Date.now(),
+      timestamp: timestamp,
       content: 'Started the journey',
       narrativeSummary: 'A new adventure begins'
     };
-    const action: GameEngineAction = { type: 'UPDATE_JOURNAL', payload: newEntry };
+    
+    const action: GameAction = {
+      type: ActionTypes.UPDATE_JOURNAL_GENERAL, 
+      payload: { 
+        text: 'Started the journey', 
+        summary: 'A new adventure begins' 
+      } 
+    };
+    
     const newState = gameReducer(initialState, action);
     
-    // Access entries directly from the journal slice
-    expect(newState.journal.entries).toContainEqual(newEntry);
+    // Verify entry is in the journal
+    expect(newState.journal.entries.length).toBe(1);
+    expect(newState.journal.entries[0].content).toBe('Started the journey');
+    expect(newState.journal.entries[0].narrativeSummary).toBe('A new adventure begins');
   });
 
   it('should set combat status', () => {
-    const action: GameEngineAction = { type: 'SET_COMBAT_ACTIVE', payload: true };
+    const action: GameAction = { type: ActionTypes.SET_COMBAT_ACTIVE, payload: true };
     const newState = gameReducer(initialState, action);
     expect(newState.combat.isActive).toBe(true);
   });
@@ -185,11 +188,9 @@ describe('gameReducer', () => {
       isUnconscious: false,
       inventory: { items: [] },
     };
-    const action: GameEngineAction = { type: 'SET_OPPONENT', payload: mockOpponent };
+    const action: GameAction = { type: ActionTypes.SET_OPPONENT, payload: mockOpponent };
     const newState = gameReducer(initialState, action);
     
-    // Check the opponent in character.opponent instead of comparing complete object
-    // We'll check just the key fields we care about
     expect(newState.character?.opponent).toBeTruthy();
     expect(newState.character?.opponent?.name).toBe('Bandit');
     expect(newState.character?.opponent?.isNPC).toBe(true);
@@ -198,97 +199,87 @@ describe('gameReducer', () => {
 
   it('should add an item to the inventory', () => {
     const newItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health', category: 'general' as ItemCategory };
-    const action: GameEngineAction = { type: 'ADD_ITEM', payload: newItem };
+    const action: GameAction = { type: ActionTypes.ADD_ITEM, payload: newItem };
     
-    // Create a clean initial state (ExtendedGameState)
     const testState: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [], equippedWeaponId: null } // Add missing property
+      inventory: { items: [], equippedWeaponId: null }
     };
     
     const newState = gameReducer(testState, action);
-    
-    // Check the item exists in the inventory state
     expect(newState.inventory.items).toContainEqual(newItem);
   });
 
   it('should remove an item from the inventory', () => {
     const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health', category: 'general' as ItemCategory };
     
-    // Create a state with the item already in inventory (ExtendedGameState)
     const stateWithItem: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [item], equippedWeaponId: null } // Add missing property
+      inventory: { items: [item], equippedWeaponId: null }
     };
     
-    const action: GameEngineAction = { type: 'REMOVE_ITEM', payload: '1' };
+    const action: GameAction = { type: ActionTypes.REMOVE_ITEM, payload: '1' };
     const newState = gameReducer(stateWithItem, action);
-    
-    // Check the item was removed
     expect(newState.inventory.items).toHaveLength(0);
   });
 
   it('should update item quantity when adding an existing item', () => {
     const existingItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health', category: 'general' as ItemCategory };
     
-    // Create a state with the item already in inventory (ExtendedGameState)
     const stateWithItem: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [existingItem], equippedWeaponId: null } // Add missing property
+      inventory: { items: [existingItem], equippedWeaponId: null }
     };
     
-    const action: GameEngineAction = { type: 'ADD_ITEM', payload: { ...existingItem, quantity: 2 } };
+    const action: GameAction = { type: ActionTypes.ADD_ITEM, payload: { ...existingItem, quantity: 2 } };
     const newState = gameReducer(stateWithItem, action);
-    
-    // Check the quantity was updated
     expect(newState.inventory.items[0].quantity).toBe(3);
   });
 
   it('should handle USE_ITEM action', () => {
     const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health', category: 'general' as ItemCategory };
     
-    // Create a state with the item already in inventory (ExtendedGameState)
     const stateWithItem: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [item], equippedWeaponId: null } // Add missing property
+      inventory: { items: [item], equippedWeaponId: null }
     };
     
-    const action: GameEngineAction = { type: 'USE_ITEM', payload: '1' };
+    const action: GameAction = { type: ActionTypes.USE_ITEM, payload: '1' };
     const newState = gameReducer(stateWithItem, action);
-    
-    // Check the quantity was reduced
     expect(newState.inventory.items[0].quantity).toBe(1);
   });
 
   it('should remove item when quantity reaches 0 after USE_ITEM', () => {
     const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 1, description: 'Restores health', category: 'general' as ItemCategory };
     
-    // Create a state with the item already in inventory (ExtendedGameState)
     const stateWithItem: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [item], equippedWeaponId: null } // Add missing property
+      inventory: { items: [item], equippedWeaponId: null }
     };
     
-    const action: GameEngineAction = { type: 'USE_ITEM', payload: '1' };
+    const action: GameAction = { type: ActionTypes.USE_ITEM, payload: '1' };
     const newState = gameReducer(stateWithItem, action);
-    
-    // Check the item was removed completely
     expect(newState.inventory.items).toHaveLength(0);
   });
 
   it('should handle UPDATE_ITEM_QUANTITY action', () => {
     const item: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health', category: 'general' as ItemCategory };
     
-    // Create a state with the item already in inventory (ExtendedGameState)
     const stateWithItem: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [item], equippedWeaponId: null } // Add missing property
+      inventory: { items: [item], equippedWeaponId: null }
     };
     
-    const action: GameEngineAction = { type: 'UPDATE_ITEM_QUANTITY', payload: { id: '1', quantity: 5 } };
-    const newState = gameReducer(stateWithItem, action);
+    // Use the updated payload format to match what the reducer now expects
+    const action: GameAction = {
+      type: ActionTypes.UPDATE_ITEM_QUANTITY, 
+      payload: { 
+        itemId: '1', 
+        quantity: 5 
+      } 
+    };
     
-    // Check the quantity was updated to the new value
+    const newState = gameReducer(stateWithItem, action);
     expect(newState.inventory.items[0].quantity).toBe(5);
   });
 
@@ -296,16 +287,13 @@ describe('gameReducer', () => {
     const validItem: InventoryItem = { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health', category: 'general' as ItemCategory };
     const invalidItem: InventoryItem = { id: '2', name: 'REMOVED_ITEMS: Invalid Item', quantity: 0, description: 'Should be removed', category: 'general' as ItemCategory };
     
-    // Create a state with both valid and invalid items (ExtendedGameState)
     const stateWithItems: ExtendedGameState = {
       ...initialState,
-      inventory: { items: [validItem, invalidItem], equippedWeaponId: null } // Add missing property
+      inventory: { items: [validItem, invalidItem], equippedWeaponId: null }
     };
     
-    const action: GameEngineAction = { type: 'CLEAN_INVENTORY' };
+    const action: GameAction = { type: ActionTypes.CLEAN_INVENTORY };
     const newState = gameReducer(stateWithItems, action);
-    
-    // Check only the valid item remains
     expect(newState.inventory.items).toHaveLength(1);
     expect(newState.inventory.items[0]).toEqual(validItem);
   });
@@ -315,10 +303,8 @@ describe('gameReducer', () => {
       { id: '1', name: 'Health Potion', quantity: 2, description: 'Restores health', category: 'general' as ItemCategory },
       { id: '2', name: 'Sword', quantity: 1, description: 'Sharp weapon', category: 'general' as ItemCategory }
     ];
-    const action: GameEngineAction = { type: 'SET_INVENTORY', payload: newInventory };
+    const action: GameAction = { type: ActionTypes.SET_INVENTORY, payload: newInventory };
     const newState = gameReducer(initialState, action);
-    
-    // Check the inventory was completely replaced
     expect(newState.inventory.items).toEqual(newInventory);
   });
 });

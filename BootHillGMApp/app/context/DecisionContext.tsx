@@ -1,215 +1,169 @@
-'use client';
-
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useNarrative } from '../hooks/narrative/NarrativeProvider';
-import AIDecisionService from '../services/ai/aiDecisionService';
-import { PlayerDecision } from '../types/narrative.types';
-import { Character } from '../types/character';
-
 /**
- * Context value provided by the DecisionContext
+ * Decision Context
+ * 
+ * Provides context for player decisions and options management
+ * throughout the game interface.
  */
-interface DecisionContextValue {
-  // Current active decision
-  currentDecision: PlayerDecision | null;
-  
-  // Is a decision currently being generated?
-  isLoading: boolean;
-  
-  // Has an error occurred?
-  error: Error | null;
-  
-  // Select an option from the current decision
-  selectOption: (optionId: string) => Promise<void>;
-  
-  // Force check for a decision point
-  checkForDecision: () => Promise<void>;
-  
-  // Clear the current decision
+import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
+import { PlayerDecision, PlayerDecisionOption } from '../types/narrative/decision.types';
+
+// Define custom types needed in this file
+
+// Define extended PlayerDecision type
+interface ExtendedPlayerDecision extends PlayerDecision {
+  selectedOption?: PlayerDecisionOption | null; // Use PlayerDecisionOption
+  metadata?: Record<string, string>;
+}
+
+// Define context state type
+interface DecisionState {
+  activeDecision: ExtendedPlayerDecision | null;
+  previousDecisions: ExtendedPlayerDecision[];
+  isProcessing: boolean;
+  error: string | null;
+}
+
+// Define action types
+type DecisionAction = 
+  | { type: 'SET_DECISION'; payload: ExtendedPlayerDecision }
+  | { type: 'CLEAR_DECISION' }
+  | { type: 'SELECT_OPTION'; payload: PlayerDecisionOption } // Use PlayerDecisionOption
+  | { type: 'START_PROCESSING' }
+  | { type: 'END_PROCESSING' }
+  | { type: 'SET_ERROR'; payload: string };
+
+// Define context type
+interface DecisionContextType {
+  state: DecisionState;
+  setDecision: (decision: ExtendedPlayerDecision) => void;
   clearDecision: () => void;
+  selectOption: (option: PlayerDecisionOption) => void; // Use PlayerDecisionOption
+  startProcessing: () => void;
+  endProcessing: () => void;
+  setError: (error: string) => void;
 }
 
-// Create the context with default value
-const DecisionContext = createContext<DecisionContextValue | undefined>(undefined);
+// Helper function declarations for use in reducer
+// Define clearDecision before it's used in the reducer
+function clearDecision(dispatch: React.Dispatch<DecisionAction>) {
+  dispatch({ type: 'CLEAR_DECISION' });
+}
 
-/**
- * Props for the DecisionProvider
- */
+// Create initial state
+const initialState: DecisionState = {
+  activeDecision: null,
+  previousDecisions: [],
+  isProcessing: false,
+  error: null
+};
+
+// Create context
+const DecisionContext = createContext<DecisionContextType | null>(null);
+
+// Create reducer function
+function decisionReducer(state: DecisionState, action: DecisionAction): DecisionState {
+  switch (action.type) {
+    case 'SET_DECISION':
+      return {
+        ...state,
+        activeDecision: action.payload,
+        error: null
+      };
+    case 'CLEAR_DECISION':
+      // Only add to previous decisions if there was an active decision
+      return {
+        ...state,
+        activeDecision: null,
+        previousDecisions: state.activeDecision 
+          ? [...state.previousDecisions, state.activeDecision]
+          : state.previousDecisions,
+        error: null
+      };
+    case 'SELECT_OPTION':
+      if (!state.activeDecision) {
+        return state;
+      }
+      return {
+        ...state,
+        activeDecision: {
+          ...state.activeDecision,
+          selectedOption: action.payload
+        }
+      };
+    case 'START_PROCESSING':
+      return {
+        ...state,
+        isProcessing: true
+      };
+    case 'END_PROCESSING':
+      return {
+        ...state,
+        isProcessing: false
+      };
+    case 'SET_ERROR':
+      return {
+        ...state,
+        error: action.payload
+      };
+    default:
+      return state;
+  }
+}
+
+// Create provider component
 interface DecisionProviderProps {
-  children: React.ReactNode;
-  character: Character; // Player character
-  decisionService?: AIDecisionService; // Optional custom service
+  children: ReactNode;
 }
 
-/**
- * Provider component for Decision context
- */
-export const DecisionProvider: React.FC<DecisionProviderProps> = ({ 
-  children, 
-  character,
-  decisionService 
-}) => {
-  // Initialize the decision service if not provided
-  const [service] = useState(() => decisionService || new AIDecisionService());
+export const DecisionProvider: React.FC<DecisionProviderProps> = ({ children }) => {
+  const [state, dispatch] = useReducer(decisionReducer, initialState);
   
-  // Access the narrative context
-  const { state: gameState, dispatch } = useNarrative();
+  // Action creators
+  const setDecision = useCallback((decision: ExtendedPlayerDecision) => {
+    dispatch({ type: 'SET_DECISION', payload: decision });
+  }, []);
   
-  // Component state
-  const [currentDecision, setCurrentDecision] = useState<PlayerDecision | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [lastCheckTime, setLastCheckTime] = useState<number>(0);
+  // Use the pre-declared clearDecision function
+  const clearDecisionHandler = useCallback(() => {
+    clearDecision(dispatch);
+  }, [dispatch]);
   
-  /**
-   * Generate a new decision based on current context
-   */
-  const generateDecision = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      // Generate a decision from the service
-      // Use gameState directly since it's now the narrative state
-      const decision = await service.generateDecision(gameState, character);
-      
-      // PlayerDecision is now directly returned from generateDecision
-      const playerDecision = decision;
-      
-      // Update state
-      setCurrentDecision(playerDecision);
-      
-      // Also update narrative context to include this decision
-      dispatch({
-        type: 'PRESENT_DECISION',
-        payload: playerDecision
-      });
-    } catch (err) {
-      console.error('Error generating decision:', err);
-      setError(err instanceof Error ? err : new Error('Failed to generate decision'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [gameState, character, service, dispatch]); // Updated dependency
+  const selectOption = useCallback((option: PlayerDecisionOption) => { // Use PlayerDecisionOption
+    dispatch({ type: 'SELECT_OPTION', payload: option });
+  }, []);
   
-  // Check for decision points when narrative context changes
-  useEffect(() => {
-    // Don't check too frequently
-    const now = Date.now();
-    if (now - lastCheckTime < 5000) { // 5 second minimum between auto-checks
-      return;
-    }
-    
-    // Don't check if we already have an active decision
-    if (currentDecision || isLoading) {
-      return;
-    }
-    
-    // Check if we should present a decision
-    const checkForDecisionPoint = async () => {
-      try {
-        // Use gameState directly since it's now the narrative state
-        const result = service.detectDecisionPoint(gameState, character);
-        
-        if (result.shouldPresent) {
-          await generateDecision();
-        }
-      } catch (err) {
-        console.error('Error checking for decision point:', err);
-        setError(err instanceof Error ? err : new Error('Failed to check for decision'));
-      } finally {
-        setLastCheckTime(now);
-      }
-    };
-    
-    checkForDecisionPoint();
-  }, [gameState, character, lastCheckTime, currentDecision, isLoading, service, generateDecision]); // Updated dependency
+  const startProcessing = useCallback(() => {
+    dispatch({ type: 'START_PROCESSING' });
+  }, []);
   
-  /**
-   * Force check for decision point (can be triggered by player or game events)
-   */
-  const checkForDecision = async () => {
-    if (isLoading || currentDecision) {
-      return; // Already loading or have a decision
-    }
-    
-    await generateDecision();
-  };
+  const endProcessing = useCallback(() => {
+    dispatch({ type: 'END_PROCESSING' });
+  }, []);
   
-  /**
-   * Handle player selecting a decision option
-   */
-  const selectOption = async (optionId: string) => {
-    if (!currentDecision) {
-      return;
-    }
-    
-    try {
-      // Find the selected option
-      const selectedOption = currentDecision.options.find(opt => opt.id === optionId);
-      if (!selectedOption) {
-        throw new Error(`Option ${optionId} not found in current decision`);
-      }
-      
-      // Record the decision
-      dispatch({
-        type: 'RECORD_DECISION',
-        payload: {
-          decisionId: currentDecision.id,
-          selectedOptionId: optionId,
-          narrative: `You chose: ${selectedOption.text}`, // Basic narrative, would be expanded
-          timestamp: Date.now(),
-          impactDescription: `Impact of choosing: ${selectedOption.text}`,
-          tags: [],
-          relevanceScore: 1
-        }
-      });
-      
-      // Record in the decision service for future context
-      service.recordDecision(
-        currentDecision.id,
-        optionId,
-        `Player chose: ${selectedOption.text}`
-      );
-      
-      // Clear the current decision
-      clearDecision();
-      
-    } catch (err) {
-      console.error('Error selecting decision option:', err);
-      setError(err instanceof Error ? err : new Error('Failed to select option'));
-    }
-  };
+  const setError = useCallback((error: string) => {
+    dispatch({ type: 'SET_ERROR', payload: error });
+  }, []);
   
-  /**
-   * Clear the current decision
-   */
-  const clearDecision = () => {
-    setCurrentDecision(null);
-    dispatch({ type: 'CLEAR_CURRENT_DECISION' });
-  };
-  
-  // Create the context value
-  const contextValue: DecisionContextValue = {
-    currentDecision,
-    isLoading,
-    error,
+  // Create value object
+  const value: DecisionContextType = {
+    state,
+    setDecision,
+    clearDecision: clearDecisionHandler,
     selectOption,
-    checkForDecision,
-    clearDecision
+    startProcessing,
+    endProcessing,
+    setError
   };
   
   return (
-    <DecisionContext.Provider value={contextValue}>
+    <DecisionContext.Provider value={value}>
       {children}
     </DecisionContext.Provider>
   );
 };
 
-/**
- * Hook to use the decision context
- */
-export const useDecision = (): DecisionContextValue => {
+// Create custom hook
+export const useDecision = (): DecisionContextType => {
   const context = useContext(DecisionContext);
   if (!context) {
     throw new Error('useDecision must be used within a DecisionProvider');
@@ -217,4 +171,50 @@ export const useDecision = (): DecisionContextValue => {
   return context;
 };
 
-export default DecisionContext;
+// Helper functions for creating different types of decisions
+export const createCombatDecision = (
+  prompt: string,
+  options: PlayerDecisionOption[] // Use PlayerDecisionOption
+): ExtendedPlayerDecision => ({
+  id: `combat_${Date.now()}`,
+  prompt,
+  options,
+  selectedOption: null,
+  timestamp: Date.now(),
+  context: '',
+  importance: 'significant',
+  aiGenerated: false,
+  metadata: { category: 'combat' }
+});
+
+export const createDialogDecision = (
+  prompt: string,
+  options: PlayerDecisionOption[], // Use PlayerDecisionOption
+  speaker?: string
+): ExtendedPlayerDecision => ({
+  id: `dialog_${Date.now()}`,
+  prompt,
+  options,
+  selectedOption: null,
+  timestamp: Date.now(),
+  context: '',
+  importance: 'moderate',
+  aiGenerated: false,
+  metadata: { category: 'dialog', speaker: speaker || '' }
+});
+
+export const createExplorationDecision = (
+  prompt: string,
+  options: PlayerDecisionOption[], // Use PlayerDecisionOption
+  location?: string
+): ExtendedPlayerDecision => ({
+  id: `exploration_${Date.now()}`,
+  prompt,
+  options,
+  selectedOption: null,
+  timestamp: Date.now(),
+  context: '',
+  importance: 'minor',
+  aiGenerated: false,
+  metadata: { category: 'exploration', location: location || '' }
+});

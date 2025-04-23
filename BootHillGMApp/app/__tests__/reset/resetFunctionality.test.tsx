@@ -158,7 +158,7 @@ describe('resetFunctionality', () => {
         setLoading={mockSetLoading}
         setError={jest.fn()}
         setLoadingIndicator={mockSetLoadingIndicator}
-        gameState={{} as GameState}
+        gameState={{ /* Intentionally empty */ } as GameState}
       />
     );
 

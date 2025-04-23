@@ -17,7 +17,7 @@ export function processSetNarrative(state: ExtendedGameState, action: SetNarrati
     currentPoint = state.narrative.storyProgression?.currentPoint ?? null;
   }
 
-  let updatedProgressionPoints = state.narrative.storyProgression?.progressionPoints ?? {};
+  let updatedProgressionPoints = state.narrative.storyProgression?.progressionPoints ?? { /* Intentionally empty */ };
 
   if (typeof payload !== 'string' && payload.storyProgression) {
     const newPointId = `story_point_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -34,7 +34,7 @@ export function processSetNarrative(state: ExtendedGameState, action: SetNarrati
       timestamp: Date.now(),
       aiGenerated: true, // Assuming AI-generated for now, can be adjusted
       location: state.location ?? undefined,
-      tags: storyProgressionData?.tags ?? [] // Added tags field with fallback to empty array
+      tags: storyProgressionData?.tags ?? []
     };
     updatedProgressionPoints = {
       ...updatedProgressionPoints,
@@ -54,7 +54,7 @@ export function processSetNarrative(state: ExtendedGameState, action: SetNarrati
         currentPoint,
         progressionPoints: updatedProgressionPoints,
         mainStorylinePoints: state.narrative.storyProgression?.mainStorylinePoints ?? [],
-        branchingPoints: state.narrative.storyProgression?.branchingPoints ?? {},
+        branchingPoints: state.narrative.storyProgression?.branchingPoints ?? { /* Intentionally empty */ },
         lastUpdated: Date.now()
       }
     }

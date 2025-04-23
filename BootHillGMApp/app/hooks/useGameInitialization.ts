@@ -14,7 +14,7 @@ import {
   handleRestoredGameState,
   handleFirstTimeInitialization
 } from '../utils/initialization/initScenarios';
-import { GameStorage } from '../utils/gameStorage';
+import GameStorage from '../services/storage/gameStorage';
 
 /**
  * Enhanced useGameInitialization hook with improved reset handling
@@ -87,7 +87,7 @@ export function useGameInitialization() {
         debug('Checking localStorage for game state...');
         
         // Load saved state if it exists
-        const savedState = localStorage.getItem(GameStorage.keys.GAME_STATE);
+        const savedState = localStorage.getItem('bhgm-game-state');
         
         // Check for pre-generated content from reset handler
         const narrativeContent = localStorage.getItem('narrative');

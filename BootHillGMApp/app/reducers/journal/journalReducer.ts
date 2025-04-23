@@ -100,7 +100,6 @@ export function journalReducer(
     // Extract the payload
     const payload = action.payload;
     
-    // Removed debug logging comment
     if (typeof payload !== 'object' || payload === null) {
       return state;
     }
@@ -108,11 +107,9 @@ export function journalReducer(
     // Cast payload to a type-safe structure
     const entryData = payload as RawJournalEntry;
     
-    // Removed debug logging comment
     // Create a properly typed journal entry
     const newEntry = validateAndConvertEntry(entryData);
     
-    // Removed debug logging comment
     // Add the entry to the state
     return {
       ...state,
@@ -186,19 +183,16 @@ export function journalReducer(
     }
     
     case 'journal/REMOVE_ENTRY': {
-      if (!('payload' in action) || !action.payload || typeof action.payload !== 'object') {
+      // Expect payload to be the string ID directly, matching the type definition
+      if (!('payload' in action) || typeof action.payload !== 'string') {
         return state;
       }
-      
-      const payload = action.payload as Record<string, unknown>;
-      
-      if (typeof payload.id !== 'string') {
-        return state;
-      }
-      
+
+      const entryIdToRemove = action.payload;
+
       return {
         ...state,
-        entries: state.entries.filter(entry => entry.id !== payload.id)
+        entries: state.entries.filter(entry => entry.id !== entryIdToRemove)
       };
     }
     

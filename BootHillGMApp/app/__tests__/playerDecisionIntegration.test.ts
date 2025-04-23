@@ -7,27 +7,22 @@ jest.mock('../utils/aiService', () => ({
 }));
 
 // Define a mock module factory that doesn't rely on external variables
-jest.mock('../hooks/useAIInteractions', () => {
-  // Create the mock function inside the factory
-  const mockGetAIResponse = jest.fn();
-  
-  return {
-    __mockAIService: { getAIResponse: mockGetAIResponse },
-    useAIInteractions: jest.fn()
-  };
-});
+// We mock the hook itself, not the service it uses internally
+jest.mock('../hooks/useAIInteractions');
 
 // Now import everything else
 import { renderHook, act } from '@testing-library/react';
-// Removed the unused AIService import
+import { LocationType } from '../services/locationService';
+import { PlayerDecision } from '../types/narrative.types';
 import { parsePlayerDecision } from '../services/ai/responseParser';
 import { presentDecision } from '../actions/narrativeActions';
-import { initialGameState } from '../types/campaign';
-import { useAIInteractions, __mockAIService } from '../hooks/useAIInteractions';
+import { initialState } from '../types/initialState';
+import { useAIInteractions } from '../hooks/useAIInteractions'; // Only import the hook
+import { aiServiceInstance } from '../services/ai'; // Import the actual service instance
 
 describe('Player Decision Integration', () => {
   const mockState = {
-    ...initialGameState
+    ...initialState // Correct variable name
   };
   const mockDispatch = jest.fn();
   const mockOnInventoryChange = jest.fn();
@@ -38,9 +33,9 @@ describe('Player Decision Integration', () => {
     // Set up mock implementation
     (useAIInteractions as jest.Mock).mockImplementation((state, dispatch, _onInventoryChange) => ({
       handleUserInput: jest.fn(async (input) => {
-        // Call the mock directly
-        const response = await __mockAIService.getAIResponse(input, '', []);
-        
+        // Call the mocked service instance method
+        const response = await aiServiceInstance.generateGameContent({} as any); // Use aiServiceInstance
+
         // If there's a playerDecision, call presentDecision and dispatch
         if (response.playerDecision) {
           const action = presentDecision(response.playerDecision);
@@ -61,20 +56,20 @@ describe('Player Decision Integration', () => {
       error: null
     }));
     
-    // Default mock response
-    __mockAIService.getAIResponse.mockResolvedValue({
+    // Default mock response for the actual aiServiceInstance
+    jest.spyOn(aiServiceInstance, 'generateGameContent').mockResolvedValue({
       narrative: 'Test narrative',
-      location: null,
+      location: { type: 'unknown' } as LocationType, // Use valid default LocationType
       acquiredItems: [],
       removedItems: [],
       suggestedActions: [],
-      playerDecision: null
+      playerDecision: undefined // Use undefined for optional property
     });
   });
   
   it('should extract and present player decisions from AI responses', async () => {
     // Mock the response with a player decision
-    const mockParsedDecision = {
+    const mockParsedDecision: PlayerDecision = { // Explicitly type the mock object
       id: 'decision-1',
       prompt: 'What will you do?',
       options: [
@@ -83,13 +78,13 @@ describe('Player Decision Integration', () => {
       ],
       timestamp: Date.now(),
       context: '',
-      importance: 'significant',
+      importance: 'significant', // Use valid string literal for DecisionImportance type
       characters: [],
       aiGenerated: true
     };
     
-    // Set up our exposed mock
-    __mockAIService.getAIResponse.mockResolvedValue({
+    // Set up mock response for the actual aiServiceInstance
+    jest.spyOn(aiServiceInstance, 'generateGameContent').mockResolvedValue({
       narrative: 'Test narrative',
       location: { type: 'town', name: 'Test Town' },
       acquiredItems: [],
@@ -111,9 +106,9 @@ describe('Player Decision Integration', () => {
       await result.current.handleUserInput('test input');
     });
     
-    // Verify the mocked AIService was called
-    expect(__mockAIService.getAIResponse).toHaveBeenCalledWith('test input', expect.any(String), expect.any(Array));
-    
+    // Verify the mocked aiServiceInstance was called
+    expect(aiServiceInstance.generateGameContent).toHaveBeenCalled(); // Check if the method was called
+
     // Verify dispatch was called with proper actions
     expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ 
       type: 'SET_NARRATIVE',

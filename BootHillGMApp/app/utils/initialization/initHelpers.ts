@@ -5,9 +5,13 @@ import { Character } from '../../types/character';
 
 /**
  * Debug logging function for initialization
+ * Empty implementation to avoid console logs in production
  */
-export const debug = (..._args: Parameters<typeof console.log>): void => {
-  // Log removed - but keep function signature to match calls in code
+export const debug = (...args: unknown[]): void => { // Changed any[] to unknown[]
+  // Debug logging disabled in production, enabled otherwise
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[INIT DEBUG]', ...args);
+  }
 };
 
 /**

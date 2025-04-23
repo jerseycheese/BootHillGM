@@ -3,18 +3,19 @@ import { renderHook, act } from '@testing-library/react';
 import { GameStateProvider, useGameState } from '../../context/GameStateProvider';
 import { GameState } from '../../types/gameState';
 import { ItemCategory } from '../../types/item.types';
+import { ActionTypes } from '../../types/actionTypes';
 
 // Mock the getAIResponse function to avoid actual API calls during tests
 jest.mock('../../services/ai/gameService', () => ({
   getAIResponse: jest.fn().mockResolvedValue({
     narrative: 'Test narrative',
-    context: {}
+    context: { /* Intentionally empty */ }
   })
 }));
 
 // Mock localStorage for testing
 const localStorageMock = (() => {
-  let store: Record<string, string> = {};
+  let store: Record<string, string> = { /* Intentionally empty */ };
   return {
     getItem: jest.fn((key: string) => store[key] || null),
     setItem: jest.fn((key: string, value: string) => {
@@ -24,7 +25,7 @@ const localStorageMock = (() => {
       delete store[key];
     }),
     clear: jest.fn(() => {
-      store = {};
+      store = { /* Intentionally empty */ };
     })
   };
 })();
@@ -92,7 +93,7 @@ describe('CampaignStateManager', () => {
     // Dispatch a test action
     await act(async () => {
       result.current.dispatch({ 
-        type: 'inventory/ADD_ITEM', // This type should now be valid for the dispatch
+        type: ActionTypes.ADD_ITEM, // Corrected: Use flat ActionTypes constant
         payload: {
           id: 'test-item',
           name: 'Test Item',

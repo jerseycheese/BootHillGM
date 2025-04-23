@@ -10,8 +10,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { CombatLogEntry } from '../../../types/combat';
 import { mockPlayerCharacter, mockNPC } from '../../../test/fixtures';
-import { UpdateCharacterPayload } from '../../../types/gameActions';
-import { GameEngineAction } from '../../../types/gameActions';
+import { UpdateCharacterPayload, GameEngineAction } from '../../../types/gameActions';
 import { 
   isUpdateCharacterAction, 
   setupMocks,
@@ -80,7 +79,7 @@ describe('useBrawlingCombat - Multiple Rounds', () => {
       applyWound: jest.fn().mockReturnValue({
         newStrength: 10,
         location: 'torso',
-        updatedTarget: {}
+        updatedTarget: { /* Intentionally empty */ }
       })
     });
     

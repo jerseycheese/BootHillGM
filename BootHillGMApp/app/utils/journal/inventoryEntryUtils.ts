@@ -10,6 +10,33 @@ import { cleanText } from '../textCleaningUtils';
 import { generateUUID } from '../uuidGenerator';
 
 /**
+ * Generates a summary of inventory changes
+ * 
+ * Creates a human-readable description of items gained and lost,
+ * formatted for consistency with other journal entry summaries.
+ * 
+ * The function handles empty arrays gracefully and ensures
+ * proper punctuation in the final summary.
+ * 
+ * @param acquired - Array of acquired item names
+ * @param removed - Array of removed item names
+ * @returns Formatted summary string
+ */
+export const generateInventorySummary = (acquired: string[], removed: string[]): string => {
+  const parts: string[] = [];
+  if (acquired && acquired.length) {
+    parts.push(`Acquired: ${acquired.join(', ')}`);
+  }
+  if (removed && removed.length) {
+    parts.push(`Used/Lost: ${removed.join(', ')}`);
+  }
+  
+  // Ensure consistent punctuation
+  const summary = parts.join('. ');
+  return summary.endsWith('.') ? summary : summary + '.';
+};
+
+/**
  * Creates an inventory journal entry
  * 
  * This function handles the specialized process of inventory entry creation:
@@ -41,33 +68,6 @@ export const createInventoryEntry = (
       acquired: acquiredItems || [],
       removed: removedItems || []
     },
-    narrativeSummary: generateInventorySummary(acquiredItems || [], removedItems || [])
+    narrativeSummary: generateInventorySummary(acquiredItems || [], removedItems || []) // Now defined before call
   };
-};
-
-/**
- * Generates a summary of inventory changes
- * 
- * Creates a human-readable description of items gained and lost,
- * formatted for consistency with other journal entry summaries.
- * 
- * The function handles empty arrays gracefully and ensures
- * proper punctuation in the final summary.
- * 
- * @param acquired - Array of acquired item names
- * @param removed - Array of removed item names
- * @returns Formatted summary string
- */
-export const generateInventorySummary = (acquired: string[], removed: string[]): string => {
-  const parts: string[] = [];
-  if (acquired && acquired.length) {
-    parts.push(`Acquired: ${acquired.join(', ')}`);
-  }
-  if (removed && removed.length) {
-    parts.push(`Used/Lost: ${removed.join(', ')}`);
-  }
-  
-  // Ensure consistent punctuation
-  const summary = parts.join('. ');
-  return summary.endsWith('.') ? summary : summary + '.';
 };

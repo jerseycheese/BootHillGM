@@ -148,7 +148,6 @@ export function buildAIPrompt(
 
       Respond as the Game Master in JSON format, with the following structure:
 
-      // Updated example format for suggestedActions
       {
         "narrative": "...",
         "location": { "...": "..." },

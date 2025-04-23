@@ -2,7 +2,7 @@
 import { Dispatch } from 'react';
 import { GameAction } from '../../../types/actions';
 import { Character } from '../../../types/character';
-import { SuggestedAction } from '../../../types/campaign';
+import { SuggestedAction, ActionType } from '../../../types/campaign'; // Combined imports
 import { AIService } from '../../../services/ai/aiService';
 import { debug, createNarrativeEntry, generateEnhancedNarrativeSummary, createFallbackContent } from '../initHelpers';
 import { InitializationRef } from '../initState';
@@ -10,7 +10,6 @@ import { handleDirectAIGeneration } from './directAIGeneration';
 import { GameStorage } from '../../storage/gameStateStorage';
 import { LocationService } from '../../../services/locationService';
 import { logDiagnostic } from '../../initializationDiagnostics';
-import { ActionType } from '../../../types/campaign';
 
 /**
  * Handles the reset initialization flow, including AI content generation

@@ -5,6 +5,7 @@ import { getAIResponse } from '../../services/ai/gameService';
 import { InventoryManager } from '../../utils/inventoryManager';
 import { InventoryItem } from '../../types/item.types';
 import { GameState, initialGameState } from '../../types/gameState';
+import { ActionTypes } from '../../types/actionTypes';
 
 // Mock dependencies
 jest.mock('../../context/GameStateProvider');
@@ -106,7 +107,7 @@ describe('useItemHandler', () => {
       mockInitialState // Ensure full game state is passed
     );
     expect(mockGetAIResponse).toHaveBeenCalled();
-    expect(mockDispatch).toHaveBeenCalledWith({ type: 'inventory/USE_ITEM', payload: itemId });
+    expect(mockDispatch).toHaveBeenCalledWith({ type: ActionTypes.USE_ITEM, payload: itemId });
     expect(mockUpdateNarrative).toHaveBeenCalledWith(expect.objectContaining({
         text: 'You used the item.',
         playerInput: 'use Bandages' // Check if prompt is generated correctly
@@ -158,8 +159,8 @@ describe('useItemHandler', () => {
 
     expect(mockValidateItemUse).toHaveBeenCalled();
     expect(mockGetAIResponse).toHaveBeenCalled();
-    expect(mockDispatch).not.toHaveBeenCalledWith({ type: 'inventory/USE_ITEM', payload: itemId }); // Should not dispatch USE_ITEM on error
-    expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'journal/ADD_ENTRY' })); // Should add fallback journal entry
+    expect(mockDispatch).not.toHaveBeenCalledWith({ type: ActionTypes.USE_ITEM, payload: itemId }); // Should not dispatch USE_ITEM on error
+    expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: ActionTypes.ADD_ENTRY })); // Should add fallback journal entry
     expect(result.current.error).toBe('Failed to use item. Please try again.');
     expect(result.current.isLoading).toBe(false);
   });

@@ -1,6 +1,5 @@
 // /app/types/initialization.ts
-import { ActionType } from './campaign';
-import { SuggestedAction } from './campaign';
+import { ActionType, SuggestedAction } from './campaign';
 
 /**
  * Interface for AI generation results

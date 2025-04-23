@@ -70,7 +70,7 @@ describe('JournalManager', () => {
     
     it('returns a fallback entry on error', async () => {
       // Suppress console.error for this test
-      jest.spyOn(console, 'error').mockImplementation(() => {});
+      jest.spyOn(console, 'error').mockImplementation(() => { /* Intentionally empty */ });
       
       // Mock the AI service to reject with an error
       mockAIService.generateNarrativeSummary.mockRejectedValueOnce(new Error('Test error'));
@@ -191,7 +191,7 @@ describe('JournalManager', () => {
 
       it('should handle AI service errors gracefully', async () => {
         // Temporarily suppress console.error for this test
-        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => { /* Intentionally empty */ });
         
         // Mock implementation to reject with an error
         mockAIService.generateNarrativeSummary.mockRejectedValueOnce(new Error('AI Error'));
@@ -322,7 +322,7 @@ describe('JournalManager', () => {
       });
       
       it('should handle null input', () => {
-        const result = JournalManager.filterJournal(null as unknown as JournalEntry[], {});
+        const result = JournalManager.filterJournal(null as unknown as JournalEntry[], { /* Intentionally empty */ });
         expect(result).toEqual([]);
       });
     });

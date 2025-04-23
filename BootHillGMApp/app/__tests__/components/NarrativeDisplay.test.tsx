@@ -1,9 +1,8 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { NarrativeDisplay } from '../../components/NarrativeDisplay';
+import { NarrativeDisplay, NarrativeItem } from '../../components/NarrativeDisplay';
 import { NarrativeContent } from '../../components/NarrativeContent';
-import { NarrativeItem } from '../../components/NarrativeDisplay';
-import { CampaignStateContext } from '../../components/CampaignStateManager';
+import CampaignStateProvider from '../../components/CampaignStateProvider'; // Import the provider component
 import { initialNarrativeState } from '../../types/narrative.types';
 import { initialGameState } from '../../types/gameState';
 import { MockNarrativeProvider } from '../../test/utils/narrativeProviderMock';
@@ -16,35 +15,23 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       ...initialNarrativeState,
       storyProgression: {
         currentPoint: null,
-        progressionPoints: {},
+        progressionPoints: { /* Intentionally empty */ },
         mainStorylinePoints: [],
-        branchingPoints: {},
+        branchingPoints: { /* Intentionally empty */ },
         lastUpdated: Date.now()
       }
     }
   };
 
-  // Fix: Add missing properties required by CampaignStateContextType
-  const mockContextValue: import('../../types/campaignState.types').CampaignStateContextType = {
-    state: mockState,
-    dispatch: jest.fn(),
-    saveGame: jest.fn(),
-    loadGame: jest.fn(),
-    cleanupState: jest.fn(),
-    player: null, // Add missing property
-    opponent: null, // Add missing property
-    inventory: [], // Add missing property
-    entries: [], // Add missing property
-    isCombatActive: false, // Add missing property
-    narrativeContext: undefined // Add missing property
-  };
+  // No longer need mockContextValue when using the actual provider
 
   return (
-    <CampaignStateContext.Provider value={mockContextValue}>
+    // Use the actual provider component and pass initial state
+    <CampaignStateProvider initialState={mockState}>
       <MockNarrativeProvider>
         {children}
       </MockNarrativeProvider>
-    </CampaignStateContext.Provider>
+    </CampaignStateProvider>
   );
 };
 

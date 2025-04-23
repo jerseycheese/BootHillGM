@@ -2,21 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { Character } from '../../types/character';
 import StatusDisplayManager from '../../components/StatusDisplayManager';
-import { CampaignStateProvider } from '../../components/CampaignStateManager';
-
-// Create a mock CampaignStateProvider that doesn't actually perform state updates
-jest.mock('../../components/CampaignStateManager', () => {
-  const originalModule = jest.requireActual('../../components/CampaignStateManager');
-  
-  return {
-    ...originalModule,
-    useCampaignState: () => ({
-      state: {}, // Empty state
-      dispatch: jest.fn(), // Mock dispatch function
-    }),
-    CampaignStateProvider: ({ children }) => <div data-testid="mock-state-provider">{children}</div>
-  };
-});
+import CampaignStateProvider from '../../components/CampaignStateProvider';
 
 describe('StatusDisplayManager', () => {
   const mockCharacter: Character = {
@@ -67,7 +53,7 @@ describe('StatusDisplayManager', () => {
   test('renders character information correctly', () => {
     const location = { type: 'town' as const, name: 'Test Town' };
     
-    render(
+    const { container } = render(
       <CampaignStateProvider>
         <StatusDisplayManager 
           character={mockCharacter}

@@ -1,17 +1,17 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { Character } from '../types/character';
-import { useGameState } from '../context/GameStateProvider'; // Updated import
-// Removed unused import: DefaultWeapons
-import { CombatState, CombatLogEntry as LogEntry, initialCombatState } from '../types/state/combatState'; // Use state CombatState and import only exported members
-// Removed import of CombatStateFromCombat
-// Removed non-exported members: ensureCombatState, CombatParticipant, BrawlingState, WeaponCombatState
-// Removed import of CombatStateFromCombat
+import { useGameState } from '../context/GameStateProvider';
+import { CombatState, CombatLogEntry as LogEntry, initialCombatState } from '../types/state/combatState';
 import { cleanCharacterName } from '../utils/combatUtils';
 import { useCombatState } from './combat/useCombatState';
 import { useCombatActions } from './combat/useCombatActions';
-// Removed unused import: InventoryItem
-// Removed unused import: UniversalCombatState
 import { JournalUpdatePayload } from '../types/gameActions';
+import { ActionTypes } from '../types/actionTypes';
+
+// Simple state protection utility
+interface StateProtection {
+  withProtection: (id: string, action: () => Promise<void>) => Promise<void>;
+}
 
 /**
  * Custom hook for managing combat encounters.
@@ -33,10 +33,31 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
   const {
     isProcessing,
     setIsProcessing,
-    isUpdatingRef,
-    combatQueueLength,
-    stateProtection
+    isUpdatingRef
   } = useCombatState();
+  
+  // Create local replacements for the removed properties
+  const combatQueueLength = useRef(0);
+  
+  // Create a simple state protection utility
+  const stateProtection = useRef<StateProtection>({
+    withProtection: async (id: string, action: () => Promise<void>) => {
+      try {
+        // Simple lock mechanism
+        if (isUpdatingRef.current) {
+          console.warn(`Combat state update already in progress for: ${id}`);
+          return;
+        }
+        isUpdatingRef.current = true;
+        
+        // Execute the protected action
+        await action();
+      } finally {
+        // Always release the lock
+        isUpdatingRef.current = false;
+      }
+    }
+  });
 
   const { handleStrengthChange, executeCombatRound } = useCombatActions();
 
@@ -87,28 +108,21 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           };
 
           dispatch({
-            type: 'journal/UPDATE_JOURNAL', // Use namespaced type
+            type: ActionTypes.UPDATE_JOURNAL,
             payload: journalEntry
           });
 
-          // Removed unused strength variables
-
           // Use helper function to get round count safely
-          const roundCount = getRoundCount(); // Removed argument
-
-          // Removed unused combatSummary variable
+          const roundCount = getRoundCount();
 
           // Create an empty log entries array with proper typing
           const combatLog: LogEntry[] = [];
 
-          // Using the ensure function to create a valid combat state object
           // Construct updatedCombatState based on CombatState from state/combatState
-          // Removed ensureCombatState as it's not exported/needed
-          const updatedCombatState: Partial<CombatState> = { // Use Partial for intermediate object
+          const updatedCombatState: Partial<CombatState> = {
             isActive: true,
             combatType: null,
             winner,
-            // Removed properties not in state/combatState: brawling, weapon, summary, participants
             rounds: roundCount,
             combatLog,
             // Add other properties from CombatState if needed, ensuring defaults
@@ -120,13 +134,13 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           };
 
           dispatch({
-            type: 'combat/UPDATE_STATE', // Use correct namespaced type
+            type: ActionTypes.UPDATE_COMBAT_STATE,
             payload: updatedCombatState,
           });
 
-          dispatch({ type: 'character/SET_OPPONENT', payload: null }); // Clear opponent in character slice
+          dispatch({ type: ActionTypes.SET_OPPONENT, payload: null }); // Clear opponent in character slice
           // Reset combat action handles setting isActive to false and resetting combat slice
-          dispatch({ type: 'combat/RESET_COMBAT' });
+          dispatch({ type: ActionTypes.END_COMBAT });
         });
       } catch (error) {
         console.error("Error in handleCombatEnd:", error);
@@ -137,8 +151,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         setIsProcessing(false);
       }
     },
-    // Removed unnecessary 'state' and 'getRoundCount' dependencies
-    [dispatch, player, opponent, onUpdateNarrative, stateProtection, setIsProcessing, getRoundCount] // Added getRoundCount
+    [dispatch, player, opponent, onUpdateNarrative, setIsProcessing, getRoundCount]
   );
 
   /**
@@ -168,23 +181,17 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         }
 
         // Moved inside the useCallback to prevent dependency issues
-        // Removed unused inventory variable
-        
-        // Removed unused equippedWeaponItem variable
-        // Removed unused equippedWeapon variable
 
         // Update combat state to set isActive to true
         // Use namespaced type and spread existing state to satisfy type checker
-        dispatch({ type: 'combat/SET_ACTIVE', payload: true }); // Use correct action type
-        dispatch({ type: 'character/SET_OPPONENT', payload: newOpponent }); // Use namespaced type
+        dispatch({ type: ActionTypes.SET_COMBAT_ACTIVE, payload: true }); // Use standardized action type
+        dispatch({ type: ActionTypes.SET_OPPONENT, payload: newOpponent }); // Use standardized action type
 
         // Get rounds from the right property - using getRoundCount for a more robust approach
         const existingRounds = existingCombatState ? state?.combat?.rounds || 0 : 0; // Access rounds directly if state exists
 
         // Create an empty participants array with proper typing
-        // Removed unused/undefined CombatParticipant type
-        // const participants: CombatParticipant[] = [];
-        
+
         // Create an empty log entries array with proper typing
         const combatLog: LogEntry[] = [];
 
@@ -193,7 +200,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
           // Start with initial state to ensure all fields are present
           ...initialCombatState,
           // Override with existing state if provided
-          ...(existingCombatState || {}),
+          ...(existingCombatState || { /* Intentionally empty */ }),
           // Ensure core properties are set correctly
           isActive: true, // Starting combat always means active
           combatType: existingCombatState?.combatType ?? null, // Keep existing or null
@@ -208,7 +215,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         };
         
         dispatch({
-          type: 'combat/UPDATE_STATE', // Use correct action type
+          type: ActionTypes.UPDATE_COMBAT_STATE,
           payload: combatStatePayload, // Use the correctly typed payload
         });
       } catch (error) {
@@ -220,9 +227,6 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
         isUpdatingRef.current = false;
       }
     },
-    // Removed unnecessary 'state' and 'getRoundCount' dependencies
-    // Added state dependencies for inventory and combat rounds access
-    // Removed unnecessary state.inventory.items dependency
     [dispatch, player, onUpdateNarrative, isUpdatingRef, state?.combat?.rounds]
   );
 
@@ -241,6 +245,7 @@ export const useCombatManager = ({ onUpdateNarrative }: { onUpdateNarrative: (te
     getCurrentOpponent,
     executeCombatRound: () => executeCombatRound(handleCombatEnd),
     isProcessing,
-    combatQueueLength
+    combatQueueLength: combatQueueLength.current,
+    stateProtection: stateProtection.current
   };
 };

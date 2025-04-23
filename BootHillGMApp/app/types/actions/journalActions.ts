@@ -1,46 +1,36 @@
 import { JournalEntry } from '../journal';
+import { ActionTypes } from '../actionTypes'; // Import ActionTypes
 
 /**
- * Journal action types
- */
-export type JournalActionType =
-  | 'journal/ADD_ENTRY'
-  | 'journal/REMOVE_ENTRY'
-  | 'journal/UPDATE_ENTRY'
-  | 'journal/SET_ENTRIES'
-  | 'journal/CLEAR_ENTRIES'
-  | 'journal/UPDATE_JOURNAL'; // Added this
-
-/**
- * Journal action interfaces
+ * Journal action interfaces using ActionTypes
  */
 export interface AddJournalEntryAction {
-  type: 'journal/ADD_ENTRY';
+  type: typeof ActionTypes.ADD_ENTRY; // Use ActionTypes
   payload: Partial<JournalEntry>;
 }
 
 export interface RemoveJournalEntryAction {
-  type: 'journal/REMOVE_ENTRY';
+  type: typeof ActionTypes.REMOVE_ENTRY; // Use ActionTypes
   payload: { id: string };
 }
 
 export interface UpdateJournalEntryAction {
-  type: 'journal/UPDATE_ENTRY';
+  type: typeof ActionTypes.UPDATE_JOURNAL; // Use ActionTypes (maps to 'journal/UPDATE_ENTRY')
   payload: Partial<JournalEntry> & { id: string };
 }
 
 export interface SetJournalEntriesAction {
-  type: 'journal/SET_ENTRIES';
+  type: typeof ActionTypes.SET_ENTRIES; // Use ActionTypes
   payload: JournalEntry[];
 }
 
 export interface ClearJournalEntriesAction {
-  type: 'journal/CLEAR_ENTRIES';
+  type: typeof ActionTypes.CLEAR_ENTRIES; // Use ActionTypes
 }
 
-// Add new interface for UPDATE_JOURNAL 
-export interface UpdateJournalAction {
-  type: 'journal/UPDATE_JOURNAL' | 'UPDATE_JOURNAL';
+// Interface for general journal updates (often adding new entries)
+export interface UpdateJournalGeneralAction { // Renamed interface
+  type: typeof ActionTypes.UPDATE_JOURNAL_GENERAL; // Use ActionTypes (maps to 'journal/UPDATE_JOURNAL', handles legacy 'UPDATE_JOURNAL')
   payload: Partial<JournalEntry>;
 }
 
@@ -53,4 +43,4 @@ export type JournalAction =
   | UpdateJournalEntryAction
   | SetJournalEntriesAction
   | ClearJournalEntriesAction
-  | UpdateJournalAction;
+  | UpdateJournalGeneralAction; // Use renamed interface

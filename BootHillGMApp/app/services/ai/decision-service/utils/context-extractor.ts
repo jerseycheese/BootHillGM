@@ -129,7 +129,7 @@ export function refreshNarrativeContext(narrativeState: NarrativeState): string 
   // World state impacts
   if (narrativeState.narrativeContext?.impactState) {
     const impactState = narrativeState.narrativeContext.impactState;
-    const worldStateEntries = Object.entries(impactState.worldStateImpacts || {})
+    const worldStateEntries = Object.entries(impactState.worldStateImpacts || { /* Intentionally empty */ })
       .map(([key, value]) => `- ${key}: ${value}`)
       .join('\n');
     

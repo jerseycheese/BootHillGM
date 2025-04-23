@@ -8,6 +8,28 @@
 import { JournalEntry } from '../../types/journal';
 
 /**
+ * Choose an appropriate action verb based on the action type
+ */
+function getActionVerb(actionType?: string): string {
+  switch (actionType) {
+    case 'combat':
+      return 'decided';
+    case 'interaction':
+      return 'chose';
+    case 'side':
+      return 'opted';
+    case 'main':
+      return 'decided';
+    case 'basic':
+      return 'chose';
+    case 'chaotic':
+      return 'recklessly decided';
+    default:
+      return 'chose';
+  }
+}
+
+/**
  * Generate a fallback journal entry when an action is taken but the AI service fails
  * 
  * @param action The action that was taken
@@ -33,28 +55,6 @@ export function generateActionFallbackEntry(action: string, actionType?: string)
     content,
     narrativeSummary
   };
-}
-
-/**
- * Choose an appropriate action verb based on the action type
- */
-function getActionVerb(actionType?: string): string {
-  switch (actionType) {
-    case 'combat':
-      return 'decided';
-    case 'interaction':
-      return 'chose';
-    case 'side':
-      return 'opted';
-    case 'main':
-      return 'decided';
-    case 'basic':
-      return 'chose';
-    case 'chaotic':
-      return 'recklessly decided';
-    default:
-      return 'chose';
-  }
 }
 
 /**

@@ -80,7 +80,8 @@ export const useWeaponCombatAction = ({
         // Reset the aim bonus to 0
         setAimBonus(0);
       }
-    } catch {
+    } catch { // Add error parameter
+      // TODO: Implement error handling for combat action processing
     } finally {
       setIsProcessing(false);
     }

@@ -71,14 +71,14 @@ describe('useAIInteractions', () => {
 
   it('should handle undefined location in response', async () => {
     const mockDispatch = jest.fn();
-    const mockOnInventoryChange = jest.fn();
+    const _mockOnInventoryChange = jest.fn(); // Prefixed with underscore
 
     // Create a valid response with explicit undefined location
     // Mock implementation is now typed in the jest.fn above
     // No need for separate mockResponse variable
 
     const { result } = renderHook(() => 
-      useAIInteractions(mockState, mockDispatch, mockOnInventoryChange)
+      useAIInteractions(mockState, mockDispatch, _mockOnInventoryChange) // Use prefixed variable
     );
 
     await act(async () => {

@@ -91,9 +91,9 @@ describe('Decision Quality Assessment', () => {
       'The bandit leader has threatened to burn down the town',
       'You agreed to help defend the town'
     ],
-    storyPoints: {},
-    narrativeArcs: {},
-    narrativeBranches: {},
+    storyPoints: { /* Intentionally empty */ },
+    narrativeArcs: { /* Intentionally empty */ },
+    narrativeBranches: { /* Intentionally empty */ },
     decisionHistory: []
   };
 

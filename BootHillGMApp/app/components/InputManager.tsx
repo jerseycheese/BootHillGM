@@ -45,7 +45,6 @@ export default function InputManager({
    * @returns A string containing the CSS class for the button
    */
   const actionClass = (type: string) => {
-    // Fixed mapping of action types to CSS classes
     const typeClasses = {
       // Primary action types from campaign.ts and extended types
       'combat': 'bg-red-500',

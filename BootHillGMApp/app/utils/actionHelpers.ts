@@ -50,7 +50,7 @@ export function createCharacter(payload: Partial<Character>): Character {
     },
     attributes: {
       ...defaultAttributes,
-      ...(payload.attributes || {}),
+      ...(payload.attributes || { /* Intentionally empty */ }),
     },
     wounds: payload.wounds ?? [],
     isUnconscious: payload.isUnconscious ?? false,

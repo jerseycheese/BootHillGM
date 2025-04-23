@@ -7,6 +7,9 @@ import { createMockCharacter } from '../../test/character/characterData';
 import { GameState } from '../../types/gameState';
 import { CombatState } from '../../types/combat';
 import { JournalEntry } from '../../types/journal';
+import { initialNarrativeState } from '../../types/narrative.types';
+import { initialCombatState } from '../../types/state/combatState';
+import { initialUIState } from '../../types/state/uiState';
 
 jest.mock('../../utils/inventoryManager', () => ({
   InventoryManager: {
@@ -15,20 +18,19 @@ jest.mock('../../utils/inventoryManager', () => ({
 }));
 
 // Helper function to create a mock GameState
-const createMockGameState = (overrides: Partial<GameState> = {}): GameState => ({
+const createMockGameState = (overrides: Partial<GameState> = { /* Intentionally empty */ }): GameState => ({
   currentPlayer: 'player1',
-  character: createMockCharacter(),
+  character: { player: createMockCharacter(), opponent: null },
   npcs: [],
   location: { type: 'town', name: 'Fairhaven' },
   quests: [],
-  inventory: [],
-  journal: [] as JournalEntry[],
-  combatState: undefined as CombatState | undefined,
-  isCombatActive: false,
+  inventory: { items: [], equippedWeaponId: null },
+  journal: { entries: [] },
+  combat: initialCombatState,
   gameProgress: 0,
-  narrative: '',
-  opponent: null,
+  narrative: initialNarrativeState,
   suggestedActions: [],
+  ui: initialUIState,
   ...overrides,
 });
 
@@ -66,7 +68,7 @@ describe('InventoryItem', () => {
     });
     const mockContextValue = {
       state: createMockGameState({
-        inventory: [item],
+        inventory: { items: [item], equippedWeaponId: null },
       }),
     };
     renderWithContext(
@@ -105,7 +107,7 @@ describe('InventoryItem', () => {
     });
     const mockContextValue = {
       state: createMockGameState({
-        inventory: [item],
+        inventory: { items: [item], equippedWeaponId: null },
       }),
     };
 

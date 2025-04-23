@@ -18,7 +18,7 @@ describe('Narrative Context Actions', () => {
     initialState = createNarrativeTestState();
   });
 
-  describe('UPDATE_NARRATIVE_CONTEXT action', () => {
+  describe('SET_NARRATIVE_CONTEXT action', () => {
     it('should update narrative context properties', () => {
       const contextUpdate = {
         tone: 'mysterious' as const,

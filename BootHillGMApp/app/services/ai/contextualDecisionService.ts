@@ -69,17 +69,10 @@ export class ContextualDecisionService {
    * @returns Decision detection result
    */
   public detectDecisionPoint(
-    narrativeState: NarrativeState,
-    character: Character,
-    gameState?: GameState
-  ): DecisionDetectionResult {
-    // Use the contextual-specific extender with type safety
-    const extendedState = extendGameStateForContextual(gameState);
-    
-    // The extendGameStateForContextual already provides the necessary structure, including combat.active
-    const compatibleExtendedState = extendedState;
-    
-    return this.detector.detectDecisionPoint(narrativeState, character, compatibleExtendedState);
+    narrativeState: NarrativeState
+  ): DecisionDetectionResult {    
+    // Pass only the required argument to the updated detectDecisionPoint method
+    return this.detector.detectDecisionPoint(narrativeState);
   }
   
   /**

@@ -1,15 +1,12 @@
-import { createMockLocalStorage } from '../utils/localStorageMock';
+import { mockLocalStorage } from '../utils/mockLocalStorage';
 
 let mockRouterPush: jest.Mock;
 
 export const setupMocks = () => {
   mockRouterPush = jest.fn();
   const mockCleanupState = jest.fn();
-
-  // Instead of using spyOn which is causing the error, replace the object directly
-  const mockLocalStorage = createMockLocalStorage();
   
-  // Replace the existing localStorage instead of trying to spy on it
+  // Set up localStorage mock properly
   Object.defineProperty(window, 'localStorage', {
     value: mockLocalStorage,
     writable: true

@@ -9,7 +9,7 @@ jest.mock('../context/GameStateProvider', () => ({
     <div data-testid="mock-game-state-provider">{children}</div>
   ),
   useGameState: jest.fn().mockReturnValue({
-    state: {},
+    state: { /* Intentionally empty */ },
     dispatch: jest.fn()
   })
 }));
@@ -19,7 +19,7 @@ jest.mock('../hooks/narrative/NarrativeProvider', () => ({
     <div data-testid="mock-narrative-provider">{children}</div>
   ),
   useNarrative: jest.fn().mockReturnValue({
-    state: {},
+    state: { /* Intentionally empty */ },
     dispatch: jest.fn()
   })
 }));

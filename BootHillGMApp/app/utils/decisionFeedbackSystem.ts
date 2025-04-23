@@ -36,74 +36,6 @@ const enhancementPatterns: Array<{
 ];
 
 /**
- * Initializes the feedback system
- * 
- * This sets up event listeners and initial state for the feedback system
- * @returns Boolean indicating if initialization was successful
- */
-export function initializeFeedbackSystem(): boolean {
-  // Reset weights to initial values
-  resetFeedbackWeights();
-  
-  // Add event listener for decision quality feedback if in browser environment
-  if (typeof window !== 'undefined') {
-    try {
-      // Set up feedback listener on window object for debug purposes
-      if (window.bhgmDebug) {
-        // Use the narrativeContext property that already exists and has an index signature
-        if (!window.bhgmDebug.narrativeContext) {
-          window.bhgmDebug.narrativeContext = {
-            showOptimizedContext: () => undefined,
-            testCompression: () => undefined,
-            compareTokenEstimation: () => ({ message: 'Not implemented' }),
-            benchmarkCompressionEfficiency: () => undefined,
-            getOptimalCompression: () => 'medium'
-          };
-        }
-        
-        // Now we can safely add our property to narrativeContext
-        (window.bhgmDebug.narrativeContext as NarrativeContextDebugTools).feedbackSystem = {
-          patterns: getFeedbackPatternWeights(),
-          updateWeights: updateFeedbackWeights,
-          reset: resetFeedbackWeights
-        };
-      }
-      return true;
-    } catch (error) {
-      console.error('Failed to initialize feedback system:', error);
-      return false;
-    }
-  }
-  
-  return false;
-}
-
-/**
- * Enhances a decision generation prompt with feedback guidance
- * 
- * @param basePrompt Original decision generation prompt
- * @returns Enhanced prompt with feedback guidance
- */
-export function generateFeedbackEnhancedPrompt(basePrompt: string): string {
-  // Select top 2-3 enhancement patterns based on weight
-  const selectedPatterns = [...enhancementPatterns]
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, Math.floor(Math.random() * 2) + 2); // Random 2-3 patterns
-  
-  // Create enhancement section
-  const enhancementSection = selectedPatterns
-    .map(p => `- ${p.pattern}`)
-    .join('\n');
-  
-  // Add enhancement section to prompt
-  return `${basePrompt}
-
-Important guidance for high-quality decisions:
-${enhancementSection}
-`;
-}
-
-/**
  * Updates feedback pattern weights based on decision quality
  * 
  * @param appliedPatterns Patterns that were applied
@@ -142,4 +74,72 @@ export function getFeedbackPatternWeights(): Array<{
   weight: number;
 }> {
   return [...enhancementPatterns];
+}
+
+/**
+ * Initializes the feedback system
+ * 
+ * This sets up event listeners and initial state for the feedback system
+ * @returns Boolean indicating if initialization was successful
+ */
+export function initializeFeedbackSystem(): boolean {
+  // Reset weights to initial values
+  resetFeedbackWeights(); // Now defined before call
+  
+  // Add event listener for decision quality feedback if in browser environment
+  if (typeof window !== 'undefined') {
+    try {
+      // Set up feedback listener on window object for debug purposes
+      if (window.bhgmDebug) {
+        // Use the narrativeContext property that already exists and has an index signature
+        if (!window.bhgmDebug.narrativeContext) {
+          window.bhgmDebug.narrativeContext = {
+            showOptimizedContext: () => undefined,
+            testCompression: () => undefined,
+            compareTokenEstimation: () => ({ message: 'Not implemented' }),
+            benchmarkCompressionEfficiency: () => undefined,
+            getOptimalCompression: () => 'medium'
+          };
+        }
+        
+        // Now we can safely add our property to narrativeContext
+        (window.bhgmDebug.narrativeContext as NarrativeContextDebugTools).feedbackSystem = {
+          patterns: getFeedbackPatternWeights(), // Now defined before call
+          updateWeights: updateFeedbackWeights, // Now defined before call
+          reset: resetFeedbackWeights // Now defined before call
+        };
+      }
+      return true;
+    } catch (error) {
+      console.error('Failed to initialize feedback system:', error);
+      return false;
+    }
+  }
+  
+  return false;
+}
+
+/**
+ * Enhances a decision generation prompt with feedback guidance
+ * 
+ * @param basePrompt Original decision generation prompt
+ * @returns Enhanced prompt with feedback guidance
+ */
+export function generateFeedbackEnhancedPrompt(basePrompt: string): string {
+  // Select top 2-3 enhancement patterns based on weight
+  const selectedPatterns = [...enhancementPatterns]
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, Math.floor(Math.random() * 2) + 2); // Random 2-3 patterns
+  
+  // Create enhancement section
+  const enhancementSection = selectedPatterns
+    .map(p => `- ${p.pattern}`)
+    .join('\n');
+  
+  // Add enhancement section to prompt
+  return `${basePrompt}
+
+Important guidance for high-quality decisions:
+${enhancementSection}
+`;
 }

@@ -1,7 +1,6 @@
 import { GameEngineAction } from '../types/gameActions';
 import { CombatState, CombatTurn, CombatLogEntry } from '../types/state/combatState';
-import { StoryProgressionData } from '../types/narrative.types';
-import { NarrativeAction } from '../types/narrative.types';
+import { NarrativeAction, StoryProgressionData } from '../types/narrative.types';
 
 /**
  * Type for SET_NARRATIVE action in the game reducer

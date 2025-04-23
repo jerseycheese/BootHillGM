@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import GameSession from '../../components/GameSession';
-import { CampaignStateProvider } from '../../components/CampaignStateManager';
+import CampaignStateProvider from '../../components/CampaignStateProvider';
 import { Character } from '../../types/character';
 import * as GameInitializationHook from '../../hooks/useGameInitialization';
 import * as GameSessionHook from '../../hooks/useGameSession';

@@ -2,13 +2,12 @@
 import { Dispatch } from 'react';
 import { GameAction } from '../../../types/actions';
 import { Character } from '../../../types/character';
-import { SuggestedAction } from '../../../types/campaign';
+import { SuggestedAction, ActionType } from '../../../types/campaign'; // Combined imports
 import { AIService } from '../../../services/ai/aiService';
 import { debug, createNarrativeEntry, createFallbackContent } from '../initHelpers';
 import { logDiagnostic } from '../../initializationDiagnostics';
 import { GameStorage } from '../../storage/gameStateStorage';
 import { LocationService } from '../../../services/locationService';
-import { ActionType } from '../../../types/campaign';
 
 /**
  * Handles first-time initialization when no saved state exists

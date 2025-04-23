@@ -12,7 +12,7 @@ export const createReducer = <S, A extends { type: string }>(
   handlers: Record<string, (state: S, action: A) => S>
 ) => {
   return (state = initialState, action: A): S => {
-    if (handlers.hasOwnProperty(action.type)) {
+    if (Object.prototype.hasOwnProperty.call(handlers, action.type)) { // Use recommended hasOwnProperty call
       return handlers[action.type](state, action);
     }
     return state;

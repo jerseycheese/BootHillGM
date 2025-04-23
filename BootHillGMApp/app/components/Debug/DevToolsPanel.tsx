@@ -1,6 +1,8 @@
 // DevToolsPanel.tsx
-import React, { useEffect } from "react";
+import React, { useEffect, Dispatch } from "react"; // Combine imports
 import { DevToolsPanelProps } from "../../types/debug.types";
+// import { Dispatch } from 'react'; // Remove duplicate
+import { NarrativeAction } from "../../types/narrative/actions.types";
 
 // Import components
 import GameControlSection from "./GameControlSection";
@@ -17,6 +19,9 @@ import { useDevTools } from "../../hooks/useDevTools";
 
 // Import content monitor for debug purposes
 import { attachContentMonitorToWindow, analyzeContent } from "../../utils/debug";
+
+// Import initial state for fallback
+import { initialNarrativeState } from "../../types/state/narrativeState";
 
 /**
  * DevTools panel for game debugging and testing.
@@ -60,6 +65,12 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
     }
   }, []);
 
+  // Ensure we always have a valid narrative state by providing a fallback
+  const narrativeState = gameState.narrative || initialNarrativeState;
+  
+  // Cast dispatch to the expected NarrativeAction type for the narrative-specific components
+  const narrativeDispatch = dispatch as Dispatch<NarrativeAction>;
+
   return (
     <div className="bg-gray-800 text-white p-4 mt-4 rounded-md border border-gray-700">
       <DevToolsHeader 
@@ -91,7 +102,7 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
             
             {/* Decision Testing Section */}
             <DecisionTestingSection 
-              narrativeContext={{ state: gameState.narrative, dispatch: dispatch }}
+              narrativeContext={{ state: narrativeState, dispatch: narrativeDispatch }}
               loading={loading}
               setLoading={setLoading}
               setError={setError}
@@ -148,7 +159,7 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
 
           {/* Narrative Context Debug Panel */}
           <NarrativeDebugPanel 
-            narrativeContext={{ state: gameState.narrative, dispatch: dispatch }}
+            narrativeContext={{ state: narrativeState, dispatch: narrativeDispatch }}
             renderCount={renderCount}
             showDecisionHistory={showDecisionHistory}
             decisionHistory={decisionHistory}

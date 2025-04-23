@@ -8,4 +8,4 @@ declare global {
 
 // This file needs to be excluded from Jest tests
 // Export an empty object to make TypeScript happy
-export {};
+export { /* Intentionally empty */ };

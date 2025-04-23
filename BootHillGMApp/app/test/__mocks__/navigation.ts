@@ -8,7 +8,7 @@ const createMockRouter = () => {
     forward: jest.fn(),
     refresh: jest.fn(),
     pathname: '/',
-    query: {},
+    query: { /* Intentionally empty */ },
   };
   return mockRouter;
 };

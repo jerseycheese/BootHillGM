@@ -8,10 +8,10 @@
 import { NarrativeState } from '../../../types/narrative.types';
 import { Character } from '../../../types/character';
 import { DecisionResponse } from '../../../types/ai-service.types';
-import { AIDecisionGenerator } from './decision-generator';
-import DecisionHistoryService from './decision-history-service';
-import AIServiceClient from './ai-service-client';
-import NarrativeDecisionDetector from './narrative-decision-detector';
+import { AIDecisionGenerator } from './decisionGenerator';
+import DecisionHistoryService from './decisionHistoryService';
+import AIServiceClient from './aiServiceClient';
+import NarrativeDecisionDetector from './narrativeDecisionDetector';
 import { DecisionServiceConfig } from '../../../types/decision-service/decision-service.types';
 import { PlayerDecision, DecisionImportance } from '../../../types/narrative/decision.types';
 import { LocationType } from '../../../services/locationService';

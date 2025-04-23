@@ -26,12 +26,10 @@ export function useNarrativeGeneration() {
    * AI generation fails.
    * 
    * @param option - The selected decision option text
-   * @param decisionPrompt - The original decision prompt
    * @returns Object with narrative text and item updates
    */
   const generateNarrativeResponse = useCallback(async (
-    option: string,
-    _decisionPrompt: string
+    option: string
   ): Promise<NarrativeResponse> => {
     setIsGeneratingNarrative(true);
     

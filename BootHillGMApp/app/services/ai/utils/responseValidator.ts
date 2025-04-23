@@ -58,7 +58,7 @@ function createValidLocation(location: unknown): LocationType {
       return { 
         type: 'landmark', 
         name: locationObj.name, 
-        ...(typeof locationObj.description === 'string' ? { description: locationObj.description } : {})
+        ...(typeof locationObj.description === 'string' ? { description: locationObj.description } : { /* Intentionally empty */ })
       };
     } else if (locationObj.type === 'unknown') {
       return { type: 'unknown' };

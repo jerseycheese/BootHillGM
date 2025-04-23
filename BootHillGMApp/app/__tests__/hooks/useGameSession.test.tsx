@@ -26,13 +26,13 @@ jest.mock('../../services/locationService', () => ({
     getInstance: jest.fn(() => ({
       updateLocationHistory: jest.fn((history, newLocation) => 
         history ? [...history, newLocation] : [newLocation]),
-      getLocationDetail: jest.fn(() => ({})),
+      getLocationDetail: jest.fn(() => ({ /* Intentionally empty */ })),
       getLocationsByType: jest.fn(() => []),
       getLocationHistory: jest.fn(() => []),
     })),
   },
-  LocationType: {},
-  LocationState: {},
+  LocationType: { /* Intentionally empty */ },
+  LocationState: { /* Intentionally empty */ },
 }));
 
 // Mock the necessary combat hooks

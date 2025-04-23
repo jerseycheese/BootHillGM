@@ -1,60 +1,18 @@
-/**
- * Fallback Decision Generator
- * 
- * This module provides fallback decision generation capabilities when
- * AI-powered generation fails or is unavailable. It ensures a graceful
- * degradation path with reasonable templated decisions.
- */
-
+// BootHillGMApp/app/services/ai/fallbackDecisionGenerator.ts (Reordered)
 import { NarrativeState, PlayerDecision } from '../../types/narrative.types';
 import { Character } from '../../types/character';
 import { v4 as uuidv4 } from 'uuid';
-
-/**
- * Generates a fallback decision when AI generation fails
- * 
- * @param narrativeState Current narrative state
- * @param character Player character
- * @returns Fallback player decision
- */
-export function generateFallbackDecision(
-  narrativeState: NarrativeState,
-  character: Character
-): PlayerDecision {
-  // Extract context for situational awareness
-  const locationContext = narrativeState.currentStoryPoint?.locationChange 
-    ? extractLocationName(narrativeState.currentStoryPoint.locationChange)
-    : 'current location';
-
-  const recentNarrative = narrativeState.narrativeHistory.length > 0
-    ? narrativeState.narrativeHistory[narrativeState.narrativeHistory.length - 1]
-    : '';
-
-  // Determine the most appropriate fallback based on context
-  if (isInCombatContext(recentNarrative)) {
-    return generateCombatDecision(character, locationContext);
-  } else if (isInTownContext(locationContext, narrativeState)) {
-    return generateTownDecision(character, locationContext);
-  } else if (isInDialogueContext(recentNarrative)) {
-    return generateDialogueDecision(character);
-  } else if (isInWildernessContext(locationContext, narrativeState)) {
-    return generateWildernessDecision(character);
-  } else {
-    // Generic fallback as last resort
-    return generateGenericDecision(character);
-  }
-}
 
 /**
  * Check if the narrative context suggests a combat situation
  */
 function isInCombatContext(narrative: string): boolean {
   const combatKeywords = [
-    'fight', 'gun', 'shoot', 'attack', 'defend', 'dodge', 
+    'fight', 'gun', 'shoot', 'attack', 'defend', 'dodge',
     'punch', 'hit', 'shot', 'weapon', 'battle', 'duel'
   ];
 
-  return combatKeywords.some(keyword => 
+  return combatKeywords.some(keyword =>
     narrative.toLowerCase().includes(keyword)
   );
 }
@@ -64,21 +22,21 @@ function isInCombatContext(narrative: string): boolean {
  */
 function isInTownContext(location: string, state: NarrativeState): boolean {
   // Check for direct town indicator
-  if (location.includes('town') || 
-     (state.currentStoryPoint?.locationChange && 
+  if (location.includes('town') ||
+     (state.currentStoryPoint?.locationChange &&
       typeof state.currentStoryPoint.locationChange !== 'string' &&
       state.currentStoryPoint.locationChange.type === 'town')) {
     return true;
   }
-  
+
   // Check for town-associated keywords
   const townKeywords = [
     'saloon', 'bar', 'sheriff', 'store', 'bank', 'street',
     'hotel', 'building', 'jail', 'office', 'church'
   ];
-  
+
   const recentNarrative = state.narrativeHistory.slice(-2).join(' ');
-  return townKeywords.some(keyword => 
+  return townKeywords.some(keyword =>
     recentNarrative.toLowerCase().includes(keyword)
   );
 }
@@ -88,9 +46,9 @@ function isInTownContext(location: string, state: NarrativeState): boolean {
  */
 function isInDialogueContext(narrative: string): boolean {
   // Look for quotation marks or dialogue indicators
-  return narrative.includes('"') || 
-         narrative.includes('"') || 
-         narrative.includes("'") || 
+  return narrative.includes('"') ||
+         narrative.includes('"') || // Note: Duplicate quote check, likely typo, keeping for now
+         narrative.includes("'") ||
          /\b(said|asked|replied|spoke|talked)\b/i.test(narrative);
 }
 
@@ -99,21 +57,21 @@ function isInDialogueContext(narrative: string): boolean {
  */
 function isInWildernessContext(location: string, state: NarrativeState): boolean {
   // Check for direct wilderness indicator
-  if (location.includes('wilderness') || 
-     (state.currentStoryPoint?.locationChange && 
+  if (location.includes('wilderness') ||
+     (state.currentStoryPoint?.locationChange &&
       typeof state.currentStoryPoint.locationChange !== 'string' &&
       state.currentStoryPoint.locationChange.type === 'wilderness')) {
     return true;
   }
-  
+
   // Check for wilderness-associated keywords
   const wildernessKeywords = [
     'forest', 'mountain', 'river', 'trail', 'desert', 'canyon',
     'camp', 'wildlife', 'trees', 'rocks', 'ridge'
   ];
-  
+
   const recentNarrative = state.narrativeHistory.slice(-2).join(' ');
-  return wildernessKeywords.some(keyword => 
+  return wildernessKeywords.some(keyword =>
     recentNarrative.toLowerCase().includes(keyword)
   );
 }
@@ -125,25 +83,25 @@ function extractLocationName(location: unknown): string {
   if (typeof location === 'string') {
     return location;
   }
-  
+
   if (location && typeof location === 'object') {
     const locationObj = location as Record<string, unknown>;
-    
+
     if ('type' in locationObj) {
       const type = locationObj.type as string;
-      
+
       if (type === 'town' && 'name' in locationObj) {
         return `the town of ${locationObj.name}`;
       }
-      
+
       if (type === 'landmark' && 'name' in locationObj) {
         return `${locationObj.name}`;
       }
-      
+
       return type;
     }
   }
-  
+
   return 'this location';
 }
 
@@ -183,15 +141,16 @@ function generateCombatDecision(character: Character, location: string): PlayerD
     ],
     context: `Tensions are high in ${location}.`,
     importance: 'significant',
-    characters: ['Player Character'],
+    characters: ['Player Character'], // Assuming only player character involved in fallback
     aiGenerated: false
   };
 }
 
 /**
  * Generate a town-specific decision
+ * character parameter is kept for function signature consistency with other generators
  */
-function generateTownDecision(_character: Character, location: string): PlayerDecision {
+function generateTownDecision(character: Character, location: string): PlayerDecision {
   return {
     id: `town-fallback-${uuidv4()}`,
     prompt: `What would you like to do in ${location}?`,
@@ -231,8 +190,9 @@ function generateTownDecision(_character: Character, location: string): PlayerDe
 
 /**
  * Generate a dialogue-relevant decision
+ * character parameter is kept for function signature consistency with other generators
  */
-function generateDialogueDecision(_character: Character): PlayerDecision {
+function generateDialogueDecision(/* _character: Character */): PlayerDecision { // Removed unused parameter
   return {
     id: `dialogue-fallback-${uuidv4()}`,
     prompt: 'How do you respond?',
@@ -272,8 +232,9 @@ function generateDialogueDecision(_character: Character): PlayerDecision {
 
 /**
  * Generate a wilderness-specific decision
+ * character parameter is kept for function signature consistency with other generators
  */
-function generateWildernessDecision(_character: Character): PlayerDecision {
+function generateWildernessDecision(/* _character: Character */): PlayerDecision { // Removed unused parameter
   return {
     id: `wilderness-fallback-${uuidv4()}`,
     prompt: 'What\'s your next move in the wilderness?',
@@ -313,8 +274,9 @@ function generateWildernessDecision(_character: Character): PlayerDecision {
 
 /**
  * Generate a generic decision as final fallback
+ * character parameter is kept for function signature consistency with other generators
  */
-function generateGenericDecision(_character: Character): PlayerDecision {
+function generateGenericDecision(/* _character: Character */): PlayerDecision { // Removed unused parameter
   return {
     id: `generic-fallback-${uuidv4()}`,
     prompt: 'What would you like to do next?',
@@ -350,4 +312,40 @@ function generateGenericDecision(_character: Character): PlayerDecision {
     characters: ['Player Character'],
     aiGenerated: false
   };
+}
+
+/**
+ * Generates a fallback decision when AI generation fails
+ *
+ * @param narrativeState Current narrative state
+ * @param character Player character
+ * @returns Fallback player decision
+ */
+export function generateFallbackDecision(
+  narrativeState: NarrativeState,
+  character: Character
+): PlayerDecision {
+  // Extract context for situational awareness
+  const locationContext = narrativeState.currentStoryPoint?.locationChange
+    ? extractLocationName(narrativeState.currentStoryPoint.locationChange) // Defined above
+    : 'current location';
+
+  const recentNarrative = narrativeState.narrativeHistory.length > 0
+    ? narrativeState.narrativeHistory[narrativeState.narrativeHistory.length - 1]
+    : '';
+
+  // Determine the most appropriate fallback based on context
+  if (isInCombatContext(recentNarrative)) { // Defined above
+    return generateCombatDecision(character, locationContext); // Defined above
+  } else if (isInTownContext(locationContext, narrativeState)) { // Defined above
+    return generateTownDecision(character, locationContext); // Defined above
+  } else if (isInDialogueContext(recentNarrative)) { // Defined above
+    return generateDialogueDecision(/* character */);
+  } else if (isInWildernessContext(locationContext, narrativeState)) { // Defined above
+    return generateWildernessDecision(/* character */);
+
+  } else {
+    // Generic fallback as last resort
+    return generateGenericDecision(/* character */);
+  }
 }

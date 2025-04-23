@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { GameState } from "../../types/gameState";
 import { GameEngineAction } from "../../types/gameActions";
 import { MAX_INITIALIZATION_TIME, createEmergencyState } from "../../utils/gameInitializationUtils";
+import { ActionTypes } from '../../types/actionTypes';
 
 /**
  * Hook to handle initialization timeout and provide emergency recovery
@@ -40,7 +41,7 @@ export const useInitializationTimeout = (
             const emergencyState = await createEmergencyState();
             
             // Now we have a proper GameState, not a Promise<GameState>
-            dispatch({ type: 'SET_STATE', payload: emergencyState });
+            dispatch({ type: ActionTypes.SET_STATE, payload: emergencyState }); // Use ActionTypes constant
 
             // Try to save this state
             if (saveGame) {

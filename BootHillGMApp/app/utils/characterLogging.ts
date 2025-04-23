@@ -3,7 +3,7 @@ import { StartData, AIResponseData, ParsedData, CompleteData, ErrorData } from '
 type LogStage = 'start' | 'aiResponse' | 'parsed' | 'complete' | 'error' | 'fallback';
 
 export class CharacterLogger {
-  constructor(private context: string) {}
+  constructor(private context: string) { /* Intentionally empty */ }
   
   start(data: StartData) {
     this.log('start', data);

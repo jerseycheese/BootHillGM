@@ -37,7 +37,7 @@ describe('ErrorBoundary', () => {
 
   it('renders fallback UI when a child component throws', () => {
     // React testing library will log the error but test will still run
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => { /* Intentionally empty */ });
     
     render(
       <ErrorBoundary>
@@ -51,7 +51,7 @@ describe('ErrorBoundary', () => {
   });
 
   it('can handle multiple children with one throwing an error', () => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => { /* Intentionally empty */ });
     
     // When one component throws inside an error boundary,
     // all children are replaced with the fallback UI

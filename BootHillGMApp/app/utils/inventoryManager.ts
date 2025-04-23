@@ -72,9 +72,8 @@ export class InventoryManager {
   static validateItemUse(
     item: InventoryItem,
     character: Character | undefined,
-    gameState: GameState // Updated to use GameState
+    gameState: GameState
   ): ItemValidationResult {
-    // Removed check for outdated isCampaignState
 
     if (!item) {
       return { valid: false, reason: 'Item not found' };

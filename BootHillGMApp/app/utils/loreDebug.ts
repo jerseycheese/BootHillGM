@@ -218,6 +218,15 @@ interface ContradictionOptions {
 }
 
 /**
+ * Helper function to extract years from a string
+ */
+function extractYears(text: string): number[] {
+  const yearRegex = /\b\d{4}\b/g;
+  const matches = text.match(yearRegex);
+  return matches ? matches.map(m => parseInt(m, 10)) : [];
+}
+
+/**
  * Find contradictions between facts
  * 
  * @param loreStore - The lore store to analyze
@@ -290,8 +299,8 @@ export function findContradictions(
         }
         
         // Check for conflicting dates
-        const yearsA = extractYears(factA.content);
-        const yearsB = extractYears(factB.content);
+        const yearsA = extractYears(factA.content); // Now defined before call
+        const yearsB = extractYears(factB.content); // Now defined before call
         
         if (yearsA.length > 0 && yearsB.length > 0 && 
             yearsA.some(year => !yearsB.includes(year))) {
@@ -308,14 +317,6 @@ export function findContradictions(
   return contradictions;
 }
 
-/**
- * Helper function to extract years from a string
- */
-function extractYears(text: string): number[] {
-  const yearRegex = /\b\d{4}\b/g;
-  const matches = text.match(yearRegex);
-  return matches ? matches.map(m => parseInt(m, 10)) : [];
-}
 
 /**
  * Generate a mermaid chart visualization of lore relationships

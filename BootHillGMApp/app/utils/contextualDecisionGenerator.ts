@@ -96,6 +96,30 @@ export const generateContextualDecision = (
 };
 
 /**
+ * Generate a decision based on the currently selected generation mode
+ */
+async function generateDecisionByMode(
+  gameState: GameState,
+  narrativeContext?: NarrativeContext,
+  locationType?: LocationType,
+  forceGeneration: boolean = false
+): Promise<PlayerDecision | null> {
+  switch (currentGenerationMode) {
+    case 'ai': 
+      return await generateAIDecision(gameState, narrativeContext, forceGeneration);
+    
+    case 'template':
+      return generateContextualDecision(gameState, narrativeContext, locationType);
+    
+    case 'hybrid':
+    default:
+      return await generateHybridDecision(
+        gameState, narrativeContext, locationType, forceGeneration
+      );
+  }
+}
+
+/**
  * Generate an enhanced decision using the current generation mode
  */
 export async function generateEnhancedDecision(
@@ -147,7 +171,7 @@ export async function generateEnhancedDecision(
       );
       
       // Generate decision using selected mode
-      const result = await generateDecisionByMode(
+      const result = await generateDecisionByMode( // Now defined before call
         freshGameState, 
         enhancedContext, 
         locationType, 
@@ -169,29 +193,6 @@ export async function generateEnhancedDecision(
   }
 }
 
-/**
- * Generate a decision based on the currently selected generation mode
- */
-async function generateDecisionByMode(
-  gameState: GameState,
-  narrativeContext?: NarrativeContext,
-  locationType?: LocationType,
-  forceGeneration: boolean = false
-): Promise<PlayerDecision | null> {
-  switch (currentGenerationMode) {
-    case 'ai': 
-      return await generateAIDecision(gameState, narrativeContext, forceGeneration);
-    
-    case 'template':
-      return generateContextualDecision(gameState, narrativeContext, locationType);
-    
-    case 'hybrid':
-    default:
-      return await generateHybridDecision(
-        gameState, narrativeContext, locationType, forceGeneration
-      );
-  }
-}
 
 /**
  * Enhanced contextual decision with background AI generation

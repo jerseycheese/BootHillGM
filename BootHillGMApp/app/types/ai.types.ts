@@ -6,10 +6,9 @@
  */
 
 import { LocationType } from '../services/locationService';
-import { NarrativeContext } from './narrative.types';
 import { Character } from './character'; 
 import { SuggestedAction } from './campaign'; 
-import { StoryProgressionData, PlayerDecision } from './narrative.types';
+import { NarrativeContext, StoryProgressionData, PlayerDecision } from './narrative.types';
 import { ItemCategory } from './item.types'; // Import ItemCategory
 
 /**

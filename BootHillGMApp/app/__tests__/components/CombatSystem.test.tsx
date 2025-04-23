@@ -3,7 +3,7 @@ import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import { CombatSystem } from '../../components/Combat/CombatSystem';
 import { Character } from '../../types/character';
 import * as combatUtils from '../../utils/combatUtils';
-import { CampaignStateProvider } from '../../components/CampaignStateManager';
+import CampaignStateProvider from '../../components/CampaignStateProvider';
 import { GameProvider } from '../../hooks/useGame';
 import { WEAPON_STATS } from '../../types/combat';
 
@@ -134,7 +134,7 @@ describe('CombatSystem', () => {
     mockLocalStorage.getItem.mockReturnValue(null);
   });
 
-  const renderCombatSystem = (props: Partial<Parameters<typeof CombatSystem>[0]> = {}) => {
+  const renderCombatSystem = (props: Partial<Parameters<typeof CombatSystem>[0]> = { /* Intentionally empty */ }) => {
     return render(
       <CampaignStateProvider>
         <GameProvider>

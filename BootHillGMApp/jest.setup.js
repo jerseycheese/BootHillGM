@@ -1,6 +1,9 @@
 // Add React Testing Library setup
 import '@testing-library/jest-dom';
 
+// Import our custom state matchers
+import './app/test/jest-setup';
+
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -120,7 +123,6 @@ Object.defineProperty(window, 'sessionStorage', {
 });
 
 // Clean up mocks between tests to prevent test pollution
-// This is similar to how Drupal's simpletest isolates each test
 afterEach(() => {
   jest.clearAllMocks();
   

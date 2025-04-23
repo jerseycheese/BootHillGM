@@ -10,21 +10,43 @@ import {
   LoreFact
 } from '../../../types/narrative/lore.types';
 
+import { ActionTypes } from '../../../types/actionTypes'; // Import ActionTypes
 import {
   updateFactVersionHistory,
   updateFactInStore,
   createUpdatedState
 } from '../loreReducerUtils';
 
+// Define payload and action types locally
+type InvalidateLoreFactPayload = string; // Payload is just the factId
+
+type InvalidateLoreFactAction = {
+  type: typeof ActionTypes.INVALIDATE_LORE_FACT;
+  payload: InvalidateLoreFactPayload;
+} & Omit<LoreAction, 'type' | 'payload'>;
+
+type ValidateLoreFactPayload = string; // Payload is just the factId
+
+type ValidateLoreFactAction = {
+  type: typeof ActionTypes.VALIDATE_LORE_FACT;
+  payload: ValidateLoreFactPayload;
+} & Omit<LoreAction, 'type' | 'payload'>;
+
+
 /**
  * Handle INVALIDATE_LORE_FACT action
  */
 export function handleInvalidateLoreFact(
   state: LoreStore,
-  action: Extract<LoreAction, { type: 'INVALIDATE_LORE_FACT' }>,
+  action: LoreAction, // Use base LoreAction type
   timestamp: number
 ): LoreStore {
-  const factId = action.payload;
+  // Type guard
+  if (action.type !== ActionTypes.INVALIDATE_LORE_FACT) {
+    return state;
+  }
+  // Use type assertion after guard
+  const factId = (action as InvalidateLoreFactAction).payload;
   const existingFact = state.facts[factId];
 
   // If fact doesn't exist, return state unchanged
@@ -58,10 +80,15 @@ export function handleInvalidateLoreFact(
  */
 export function handleValidateLoreFact(
   state: LoreStore,
-  action: Extract<LoreAction, { type: 'VALIDATE_LORE_FACT' }>,
+  action: LoreAction, // Use base LoreAction type
   timestamp: number
 ): LoreStore {
-  const factId = action.payload;
+  // Type guard
+  if (action.type !== ActionTypes.VALIDATE_LORE_FACT) {
+    return state;
+  }
+  // Use type assertion after guard
+  const factId = (action as ValidateLoreFactAction).payload;
   const existingFact = state.facts[factId];
 
   // If fact doesn't exist, return state unchanged

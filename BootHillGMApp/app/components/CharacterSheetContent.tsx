@@ -1,12 +1,7 @@
 'use client';
 
-// Removed unused import { useEffect } from 'react';
 import { useGameInitialization } from '../hooks/useGameInitialization';
-// Removed import { useGame } from '../hooks/useGame';
-// Removed import { useCampaignState } from '../components/CampaignStateManager';
-// Removed unused import { useGameState } from '../context/GameStateProvider';
 import { Wound } from '../types/wound';
-// Removed unused import { Character } from '../types/character';
 import StatDisplay from '../components/StatDisplay';
 import DerivedStatDisplay from '../components/DerivedStatDisplay';
 import useCharacterStats from '../hooks/useCharacterStats';
@@ -18,14 +13,7 @@ import useCharacterStats from '../hooks/useCharacterStats';
 export default function CharacterSheetContent() {
   const { isClient, isInitializing } = useGameInitialization();
   // Use the correct state hook
-  // Removed unused state and dispatch from useGameState
-  // const { state, dispatch } = useGameState();
-  // Removed loadGame/saveGame from useCampaignState
-  // Removed unused setCharacter from useCharacterStats
   const { character, derivedStats } = useCharacterStats();
-
-  // Removed useEffect that attempted manual state loading/saving.
-  // This should be handled by the main initialization and persistence hooks.
 
   if (!isClient || isInitializing || !character) {
     return (

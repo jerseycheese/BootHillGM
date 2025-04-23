@@ -77,7 +77,9 @@ export interface NarrativeContextOptions {
   prioritizeRecentEvents?: boolean;
   includeWorldState?: boolean;
   includeCharacterRelationships?: boolean;
-  includeLore?: boolean; // New option for lore inclusion
+  includeLore?: boolean;
+  focusTags?: string[];
+
   maxTokens?: number;
   tokenAllocation?: {
     narrativeHistory?: number;

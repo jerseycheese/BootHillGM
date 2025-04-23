@@ -4,7 +4,7 @@ import DevToolsPanel from '../../../components/Debug/DevToolsPanel';
 
 // Mock dependencies
 jest.mock('../../../components/CampaignStateManager', () => ({
-  useCampaignState: () => ({}),
+  useCampaignState: () => ({ /* Intentionally empty */ }),
 }));
 
 jest.mock('../../../context/NarrativeContext', () => ({

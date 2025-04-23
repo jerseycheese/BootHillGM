@@ -5,13 +5,12 @@
  */
 'use client';
 
-import { useEffect, useState } from 'react'; 
+import { useEffect, useState } from 'react';
 import StatusDisplayManager from '../StatusDisplayManager';
 import { Inventory } from '../Inventory';
 import JournalViewer from '../JournalViewer';
-import type { GameSessionProps } from './types';
-import { Character } from '../../types/character';
-import { JournalEntry, JournalEntryType, RawJournalEntry } from '../../types/journal'; // Removed EnhancedJournalEntry
+import { useCampaignState } from '../../hooks/useCampaignStateContext'; // Import the context hook
+import { JournalEntry, JournalEntryType, RawJournalEntry } from '../../types/journal';
 import GameStorage from '../../utils/gameStorage';
 
 /**
@@ -21,17 +20,6 @@ import GameStorage from '../../utils/gameStorage';
  * @returns The player Character object or null if not found.
  */
 // Helper function to extract player character from state
-const getPlayerFromState = (s: GameSessionProps['state']): Character | null => {
-    if (!s?.character) return null;
-    if (typeof s.character === 'object' && 'player' in s.character && s.character.player) {
-        return s.character.player;
-    }
-    // Handle case where state.character might be the Character object directly (legacy?)
-    if (typeof s.character === 'object' && 'id' in s.character) { 
-        return s.character as unknown as Character;
-    }
-    return null;
-};
 
 /**
  * Processes an array of raw journal entries, ensuring they are correctly typed
@@ -52,14 +40,11 @@ const processJournalEntries = (entries: Array<JournalEntry | RawJournalEntry>): 
       return null;
     }
     
-    // Removed debug comment
     // Check for narrativeSummary specifically before processing
     const hasNarrativeSummary = 'narrativeSummary' in entry && entry.narrativeSummary;
     
     // Store the original narrative summary
     const narrativeSummary = entry.narrativeSummary;
-    if (narrativeSummary) {
-    }
     
     // Determine the entry type and ensure it's a valid JournalEntryType
     let entryType: JournalEntryType = 'narrative';
@@ -123,34 +108,45 @@ const processJournalEntries = (entries: Array<JournalEntry | RawJournalEntry>): 
       (processedEntry as JournalEntry & { narrativeSummary?: string }).narrativeSummary = narrativeSummary;
     }
     
-    // Removed debug comment
     return processedEntry;
   }).filter(Boolean) as JournalEntry[]; // Remove any null entries
 };
 
+// Define specific props for SidePanel
+interface SidePanelProps {
+  handleEquipWeapon: (itemId: string) => void;
+  isLoading: boolean;
+}
+
 export function SidePanel({
-  state,
   handleEquipWeapon,
-  isLoading, // Add isLoading prop
-}: GameSessionProps) {
+  isLoading,
+}: SidePanelProps) { // Use the new props interface
+  // Get state for location, and the derived player character directly from context
+  const { state, player: playerCharacter } = useCampaignState();
+  
+  // No longer need to derive playerCharacter here
+  // const playerCharacter = getPlayerFromState(state);
+
   // Initialize state variables properly
-  const [characterData, setCharacterData] = useState<Character | null>(getPlayerFromState(state));
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   
-  // Update character when state changes
-  useEffect(() => {
-    if (state?.character) {
-      const player = getPlayerFromState(state);
-      if (player) {
-        setCharacterData(player);
-      }
-    }
-  }, [state]);
+  // Update character when state changes - Removed useEffect for characterData
+  // useEffect(() => {
+  //   if (state?.character) {
+  //     const player = getPlayerFromState(state);
+  //     if (player) {
+  //       setCharacterData(player);
+  //     }
+  //   } else {
+  //     // Handle case where state or character becomes null/undefined
+  //     setCharacterData(null);
+  //   }
+  // }, [state]); // Depend on context state
 
   // Journal entries processing
   useEffect(() => {
     if (!state) return;
-    
     
     let sourceEntries: Array<JournalEntry | RawJournalEntry> = []; // Allow both types
     
@@ -170,12 +166,9 @@ export function SidePanel({
     
     // Process entries to ensure narrativeSummary is preserved
     if (sourceEntries.length > 0) {
-      // Removed debug comment
       // Process entries to ensure all properties are maintained
       const processedEntries = processJournalEntries(sourceEntries);
       
-      
-      // Removed debug comment
       setJournalEntries(processedEntries);
     } else {
       // Fallback to storage only if we have no entries yet
@@ -185,17 +178,10 @@ export function SidePanel({
         setJournalEntries(processedStorageEntries);
       }
     }
-  }, [state]); // Only depend on state
+  }, [state]); // Depend on context state
   
   // Get inventory items from state
   const inventoryItems = state?.inventory?.items || [];
-  useEffect(() => {
-    if (state?.inventory?.items) {
-    } else if (inventoryItems.length === 0) {
-      // If no inventory items in state, try to get default items
-      // const defaultItems = GameStorage.getDefaultInventoryItems(); // Removed unused variable
-    }
-  }, [state, inventoryItems.length]);
   
   // If the main game state is initializing, show a loading indicator
   if (isLoading) {
@@ -219,8 +205,8 @@ export function SidePanel({
     );
   }
 
-  // Unavailable state if loading finished and character is still null
-  if (!characterData) {
+  // Unavailable state if loading finished and playerCharacter is still null
+  if (!playerCharacter) {
     return (
       <div className="h-full flex flex-col" data-testid="side-panel-unavailable">
         <div className="space-y-4">
@@ -232,13 +218,12 @@ export function SidePanel({
     );
   }
 
-  // Removed debug comments
   // Main content render when character data is available
   return (
     <div className="h-full flex flex-col" data-testid="side-panel">
       <div className="space-y-4">
         <StatusDisplayManager
-          character={characterData}
+          character={playerCharacter} // Pass locally derived character
           location={state.location}
         />
         <Inventory

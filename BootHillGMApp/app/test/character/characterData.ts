@@ -76,7 +76,7 @@ export const defaultCharacter: Character = {
 };
 
 // Dynamically generate mock character with AI-generated name
-export function createMockCharacter(overrides: Partial<Character> = {}): Character {
+export function createMockCharacter(overrides: Partial<Character> = { /* Intentionally empty */ }): Character {
   const names = [
     'Billy the Kid',
     'Wyatt Earp',

@@ -2,10 +2,11 @@ import { ExtendedGameState } from '../types/extendedState';
 import { Character } from '../types/character';
 import { CharacterState } from '../types/state/characterState';
 import { calculateUpdatedStrength } from '../utils/strengthSystem';
-// Removed the invalid import for UpdateCharacterPayload.
 import { Wound } from '../types/wound';
 import { InventoryItem } from '../types/item.types';
 import { Weapon } from '../types/weapon.types';
+import { ActionTypes } from '../types/actionTypes';
+import { GameEngineAction } from '../types/gameActions';
 
 // Local definition for UpdateCharacterPayload since it is not exported from '../types/gameActions'
 export interface UpdateCharacterPayload {
@@ -31,11 +32,11 @@ export interface CharacterPayload {
   wounds?: Wound[];
   isUnconscious?: boolean;
   weapon?: Weapon;
-  equippedWeapon?: InventoryItem; // Fixed type to InventoryItem instead of Weapon
+  equippedWeapon?: InventoryItem;
 }
 
 /**
- * Handles the SET_CHARACTER action
+ * Handles the SET_CHARACTER action (ActionTypes.SET_CHARACTER)
  */
 export function handleSetCharacter(state: ExtendedGameState, payload: CharacterPayload | null): ExtendedGameState {
   if (!payload) {
@@ -104,7 +105,7 @@ export function handleSetCharacter(state: ExtendedGameState, payload: CharacterP
 }
 
 /**
- * Handles the UPDATE_CHARACTER action
+ * Handles the UPDATE_CHARACTER action (ActionTypes.UPDATE_CHARACTER)
  */
 export function handleUpdateCharacter(state: ExtendedGameState, payload: UpdateCharacterPayload): ExtendedGameState {
   if (!state.character) {
@@ -119,7 +120,7 @@ export function handleUpdateCharacter(state: ExtendedGameState, payload: UpdateC
     return state;
   }
 
-  let updatedAttributes = payload.attributes || {};
+  let updatedAttributes = payload.attributes || { /* Intentionally empty */ };
   let updatedHistory = targetCharacter.strengthHistory;
 
   if (payload.attributes && payload.attributes.strength !== undefined && payload.damageInflicted !== undefined) {
@@ -181,7 +182,7 @@ export interface OpponentPayload {
 }
 
 /**
- * Handles the SET_OPPONENT action
+ * Handles the SET_OPPONENT action (ActionTypes.SET_OPPONENT)
  */
 export function handleSetOpponent(state: ExtendedGameState, payload: OpponentPayload | null): ExtendedGameState {
   if (!payload) {
@@ -212,7 +213,7 @@ export function handleSetOpponent(state: ExtendedGameState, payload: OpponentPay
     inventory: Array.isArray(payload.inventory) ? { items: [] } : payload.inventory ?? { items: [] },
     attributes: {
       ...defaultAttributes,
-      ...(payload.attributes || {})
+      ...(payload.attributes || { /* Intentionally empty */ })
     },
     wounds: payload.wounds ?? [],
     isUnconscious: payload.isUnconscious ?? false,
@@ -244,6 +245,7 @@ export function handleSetOpponent(state: ExtendedGameState, payload: OpponentPay
       bravery: 10,
       experience: 10,
     },
+    strengthHistory: { baseStrength: payload.attributes?.baseStrength ?? 5, changes: [] },
   };
 
   return { 
@@ -255,4 +257,25 @@ export function handleSetOpponent(state: ExtendedGameState, payload: OpponentPay
     },
     opponent // For backward compatibility
   };
+}
+
+// Root reducer function for character actions
+export default function characterReducer(state: ExtendedGameState, action: GameEngineAction): ExtendedGameState {
+  // Use ActionTypes constants for case matching
+  switch (action.type) {
+    case 'character/SET_CHARACTER':
+    case ActionTypes.SET_CHARACTER:
+      return handleSetCharacter(state, action.payload);
+      
+    case 'character/UPDATE_CHARACTER':
+    case ActionTypes.UPDATE_CHARACTER:
+      return handleUpdateCharacter(state, action.payload);
+      
+    case 'character/SET_OPPONENT':
+    case ActionTypes.SET_OPPONENT:
+      return handleSetOpponent(state, action.payload);
+      
+    default:
+      return state;
+  }
 }

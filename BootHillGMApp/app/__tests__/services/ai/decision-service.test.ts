@@ -1,14 +1,9 @@
-/**
- * Tests for the Decision Service
- */
-
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import DecisionService from '../../../services/ai/decision-service';
 import { NarrativeState, NarrativeDisplayMode, StoryPoint } from '../../../types/narrative.types';
 import { Character } from '../../../types/character';
 import { LocationType } from '../../../services/locationService';
 import { DecisionImportance } from '../../../types/narrative/decision.types';
-import { FetchMockProperties, AbortSignalTimeoutMock } from '../../../types/testing/test-types';
+import { FetchMockProperties, AbortSignalTimeoutMock, ServiceError } from '../../../types/testing/test-types';
 
 // Mock fetch globally with proper typing
 global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>;
@@ -19,7 +14,7 @@ global.AbortSignal.timeout = jest.fn().mockReturnValue({}) as AbortSignalTimeout
 (global.fetch as unknown as { _mockImplementationCallCount: number })._mockImplementationCallCount = 0;
 (global.fetch as unknown as { _mockRejectedValueOnce: boolean })._mockRejectedValueOnce = false;
 
-// Define a proper StoryPoint object first to ensure correct types
+// Define a proper StoryPoint object
 const testStoryPoint: StoryPoint = {
   id: 'test-story-point',
   title: 'Saloon Entrance',
@@ -28,7 +23,7 @@ const testStoryPoint: StoryPoint = {
   locationChange: 'SALOON' as unknown as LocationType
 };
 
-// Create mock narrative state using the properly typed StoryPoint
+// Mock data for testing with all required properties
 const mockNarrativeState: NarrativeState = {
   currentStoryPoint: testStoryPoint,
   narrativeHistory: [
@@ -55,7 +50,8 @@ const mockNarrativeState: NarrativeState = {
   },
   visitedPoints: [],
   availableChoices: [],
-  displayMode: 'standard' as NarrativeDisplayMode
+  displayMode: 'standard' as NarrativeDisplayMode,
+  context: ""
 };
 
 // Mock character with all required attributes
@@ -127,7 +123,7 @@ const mockApiResponse = {
             narrativeImpact: 'Sets the tone for town interactions',
             themeAlignment: 'Classic western standoff tension',
             pacing: 'medium',
-            importance: 'significant' // Use valid importance value
+            importance: 'significant'
           }
         })
       }
@@ -171,7 +167,7 @@ describe('DecisionService', () => {
   });
   
   describe('detectDecisionPoint', () => {
-    it('should detect a decision point in narrative with decision triggers', () => {
+    it('should detect when a decision point is appropriate', () => {
       // Create a properly typed story point with dialogue type
       const dialogueStoryPoint: StoryPoint = {
         id: 'dialogue-point',
@@ -241,28 +237,26 @@ describe('DecisionService', () => {
     });
     
     it('should handle API errors gracefully', async () => {
+      // Reset fetch mock to ensure we get a clean state
+      (global.fetch as jest.MockedFunction<typeof fetch>).mockReset();
       
       // Set flag to indicate this is the API error test
       (global.fetch as unknown as FetchMockProperties)._mockRejectedValueOnce = true;
       
       // Mock the fetch to throw the specific error
-      (global.fetch as jest.MockedFunction<typeof fetch>).mockRejectedValueOnce(
-        new Error('API connection error')
-      );
-      
-      console.log('[TEST] Mock setup complete, calling generateDecision...');
+      (global.fetch as jest.MockedFunction<typeof fetch>).mockRejectedValueOnce({
+        code: 'AI_SERVICE_ERROR',
+        message: 'API connection error',
+        retryable: true
+      } as ServiceError);
       
       try {
         await service.generateDecision(mockNarrativeState, mockCharacter);
-        console.log('[TEST] Failed: generateDecision did not throw an error');
         // If we get here without error, fail the test
-        expect(true).toBe(false); // This will fail the test if no error is thrown
+        expect(true).toBe(false);
       } catch (error) {
-        console.log('[TEST] Caught error:', error);
         // Type assertion to access properties safely
-        const serviceError = error as {code: string; message: string; retryable: boolean};
-        console.log('[TEST] Error code:', serviceError.code);
-        console.log('[TEST] Error message:', serviceError.message);
+        const serviceError = error as ServiceError;
         expect(serviceError.code).toBe('AI_SERVICE_ERROR');
         expect(serviceError.message).toBe('API connection error');
       }
@@ -298,7 +292,7 @@ describe('DecisionService', () => {
           narrativeImpact: 'Sets the tone for town interactions',
           themeAlignment: 'Classic western standoff tension',
           pacing: 'medium' as const,
-          importance: 'significant' as DecisionImportance // Type assertion for valid importance
+          importance: 'significant' as DecisionImportance
         }
       };
       
@@ -319,7 +313,7 @@ describe('DecisionService', () => {
   
   describe('recordDecision', () => {
     it('should record decisions and include them in future prompts', async () => {
-      // Important: We need to reset the fetch mock for each test case
+      // Reset fetch mock to ensure we get a clean state
       (global.fetch as jest.MockedFunction<typeof fetch>).mockReset();
       (global.fetch as jest.MockedFunction<typeof fetch>).mockResolvedValue({
         ok: true,

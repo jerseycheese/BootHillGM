@@ -8,7 +8,7 @@
 
 import { GameState } from '../../types/gameState';
 import { initialState } from '../../types/initialState';
-import { renderWithGameProvider } from './testWrappers';
+import { renderWithProviders as renderWithGameProvider } from './testWrappers'; // Alias import to maintain usage
 import { createMockLocalStorage } from './localStorageMock';
 
 /**
@@ -117,7 +117,7 @@ export const mockPlayerCharacter = {
  * @param overrides - Partial GameState object with values to override defaults
  * @returns Complete GameState object suitable for testing
  */
-export const createMockGameState = (overrides: Partial<GameState> = {}): GameState => ({
+export const createMockGameState = (overrides: Partial<GameState> = { /* Intentionally empty */ }): GameState => ({
   ...initialState,
   ...overrides
 });

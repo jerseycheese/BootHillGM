@@ -10,21 +10,49 @@ import {
   LoreFact
 } from '../../../types/narrative/lore.types';
 
+import { ActionTypes } from '../../../types/actionTypes'; // Import ActionTypes
 import {
   updateFactVersionHistory,
   updateFactInStore,
   createUpdatedState
 } from '../loreReducerUtils';
 
+// Define payload and action types locally
+interface AddRelatedFactsPayload {
+  factId: string;
+  relatedIds: string[];
+}
+
+type AddRelatedFactsAction = {
+  type: typeof ActionTypes.ADD_RELATED_FACTS;
+  payload: AddRelatedFactsPayload;
+} & Omit<LoreAction, 'type' | 'payload'>;
+
+interface RemoveRelatedFactsPayload {
+  factId: string;
+  relatedIds: string[];
+}
+
+type RemoveRelatedFactsAction = {
+  type: typeof ActionTypes.REMOVE_RELATED_FACTS;
+  payload: RemoveRelatedFactsPayload;
+} & Omit<LoreAction, 'type' | 'payload'>;
+
+
 /**
  * Handle ADD_RELATED_FACTS action
  */
 export function handleAddRelatedFacts(
   state: LoreStore,
-  action: Extract<LoreAction, { type: 'ADD_RELATED_FACTS' }>,
+  action: LoreAction, // Use base LoreAction type
   timestamp: number
 ): LoreStore {
-  const { factId, relatedIds } = action.payload;
+  // Type guard
+  if (action.type !== ActionTypes.ADD_RELATED_FACTS) {
+    return state;
+  }
+  // Use type assertion after guard
+  const { factId, relatedIds } = (action as AddRelatedFactsAction).payload;
   const existingFact = state.facts[factId];
 
   // If fact doesn't exist, return state unchanged
@@ -63,10 +91,15 @@ export function handleAddRelatedFacts(
  */
 export function handleRemoveRelatedFacts(
   state: LoreStore,
-  action: Extract<LoreAction, { type: 'REMOVE_RELATED_FACTS' }>,
+  action: LoreAction, // Use base LoreAction type
   timestamp: number
 ): LoreStore {
-  const { factId, relatedIds } = action.payload;
+   // Type guard
+  if (action.type !== ActionTypes.REMOVE_RELATED_FACTS) {
+    return state;
+  }
+  // Use type assertion after guard
+  const { factId, relatedIds } = (action as RemoveRelatedFactsAction).payload;
   const existingFact = state.facts[factId];
 
   // If fact doesn't exist, return state unchanged

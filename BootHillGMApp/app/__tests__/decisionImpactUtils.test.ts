@@ -54,7 +54,7 @@ describe('Decision Impact Utilities', () => {
   const mockImpactState: ImpactState = {
     reputationImpacts: { 'Dusty Gulch': 2 },
     relationshipImpacts: { 'player': { 'Sheriff Johnson': 3 } },
-    worldStateImpacts: {},
+    worldStateImpacts: { /* Intentionally empty */ },
     storyArcImpacts: { 'main': 10 },
     lastUpdated: Date.now()
   };
@@ -330,9 +330,9 @@ describe('Decision Impact Utilities', () => {
           'Town5': 1,
           'Town6': 0
         },
-        relationshipImpacts: {},
-        worldStateImpacts: {},
-        storyArcImpacts: {},
+        relationshipImpacts: { /* Intentionally empty */ },
+        worldStateImpacts: { /* Intentionally empty */ },
+        storyArcImpacts: { /* Intentionally empty */ },
         lastUpdated: Date.now()
       };
       

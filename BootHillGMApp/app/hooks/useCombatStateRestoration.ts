@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
 import { Character } from '../types/character';
 import { CombatState } from '../types/state/combatState';
 import { Weapon } from '../types/weapon.types';
 import { Wound } from '../types/wound';
 import { InventoryItem } from '../types/item.types';
+import { useGameSession } from './useGameSession';
 
 /**
  * Interface representing the structure we expect from state
@@ -55,13 +55,12 @@ interface WeaponLike {
 /**
  * Interface for objects that are "combat-state-like" with minimal required properties
  */
-// Update CombatStateLike to reflect state/combatState properties
 interface CombatStateLike {
   isActive?: boolean;
   combatType?: 'brawling' | 'weapon' | null;
   winner?: string | null;
   rounds?: number;
-  combatLog?: CombatState['combatLog']; // Use type from CombatState
+  combatLog?: CombatState['combatLog'];
   currentTurn?: CombatState['currentTurn'];
   playerCharacterId?: string;
   opponentCharacterId?: string;
@@ -107,10 +106,10 @@ export function adaptHealthChangeHandler(
  * Returns default values when properties don't exist
  */
 function getSafeCombatState(state: unknown): Partial<CombatStateLike> {
-  if (!state) return {};
+  if (!state) return { /* Intentionally empty */ };
   
   const typedState = state as CombatCapableState;
-  return typedState.combatState || typedState.combat || {};
+  return typedState.combatState || typedState.combat || { /* Intentionally empty */ };
 }
 
 /**
@@ -125,113 +124,126 @@ function getSafeOpponent(state: unknown): OpponentLike | null {
 }
 
 /**
- * Hook to handle combat state restoration after page refreshes or navigation.
- * Ensures combat can resume exactly where it left off by:
- * - Restoring opponent data with proper type conversion
- * - Maintaining exact strength values and turn state
- * - Preserving combat log history and wounds
+ * Function to handle combat state restoration
+ * This is now a regular function, not a React hook, to avoid hook-related issues
  */
-import { useGameSession } from './useGameSession'; // Import the hook itself
-
 export function useCombatStateRestoration(
     state: unknown,
     gameSession: ReturnType<typeof useGameSession> | null
-) {
-    useEffect(() => {
-        if (!state || !gameSession) return;
-        
-        // Cast state to our expected interface to check for properties
-        const typedState = state as CombatCapableState;
-        
-        // Use safe accessors to get values that might not exist
-        const safeOpponent = getSafeOpponent(state);
-        const safeCombatState = getSafeCombatState(state);
-        
-        const isCombatActive = typedState.isCombatActive === true;
-        const shouldRestoreCombat = isCombatActive &&
-            safeOpponent &&
-            safeCombatState &&
-            safeCombatState.isActive;
+): void {
+  // Guard clause to handle null/undefined values
+  if (!state || !gameSession || typeof window === 'undefined') return;
+  
+  try {
+    // Cast state to our expected interface to check for properties
+    const typedState = state as CombatCapableState;
+    
+    // Use safe accessors to get values that might not exist
+    const safeOpponent = getSafeOpponent(state);
+    const safeCombatState = getSafeCombatState(state);
+    
+    if (!safeOpponent || !safeCombatState) return;
+    
+    const isCombatActive = typedState.isCombatActive === true;
+    const shouldRestoreCombat = isCombatActive && 
+                                safeOpponent !== null && 
+                                safeCombatState !== null && 
+                                safeCombatState.isActive === true;
 
-        if (shouldRestoreCombat) {
-            // Create a restored opponent with all required Character properties
-            const restoredOpponent: Character = {
-                isNPC: true,
-                isPlayer: false,
-                id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // Unique ID
-                name: safeOpponent?.name ?? '',
-                inventory: { items: safeOpponent?.inventory ?? [] },
-                attributes: {
-                    speed: safeOpponent?.attributes?.speed ?? 5,
-                    gunAccuracy: safeOpponent?.attributes?.gunAccuracy ?? 5,
-                    throwingAccuracy: safeOpponent?.attributes?.throwingAccuracy ?? 5,
-                    strength: safeOpponent?.attributes?.strength ?? 5,
-                    baseStrength: safeOpponent?.attributes?.baseStrength ?? 5,
-                    bravery: safeOpponent?.attributes?.bravery ?? 5,
-                    experience: safeOpponent?.attributes?.experience ?? 5
-                },
-                // Add required minAttributes and maxAttributes properties
-                minAttributes: {
-                    speed: 1,
-                    gunAccuracy: 1,
-                    throwingAccuracy: 1,
-                    strength: 1,
-                    baseStrength: 1,
-                    bravery: 1,
-                    experience: 0
-                },
-                maxAttributes: {
-                    speed: 10,
-                    gunAccuracy: 10,
-                    throwingAccuracy: 10,
-                    strength: 20,
-                    baseStrength: 20,
-                    bravery: 10,
-                    experience: 11
-                },
-                weapon: safeOpponent?.weapon ? {
-                    id: safeOpponent.weapon.id,
-                    name: safeOpponent.weapon.name,
-                    modifiers: {
-                        accuracy: safeOpponent.weapon.modifiers.accuracy,
-                        range: safeOpponent.weapon.modifiers.range,
-                        reliability: safeOpponent.weapon.modifiers.reliability,
-                        damage: safeOpponent.weapon.modifiers.damage,
-                        speed: safeOpponent.weapon.modifiers.speed,
-                        ammunition: safeOpponent.weapon.modifiers.ammunition,
-                        maxAmmunition: safeOpponent.weapon.modifiers.maxAmmunition
-                    },
-                } as Weapon : undefined,
-                wounds: safeOpponent?.wounds ?? [],
-                isUnconscious: safeOpponent?.isUnconscious ?? false,
-                // Since we're creating a Character and not an NPC,
-                // we explicitly cast to Character
-            };
-            
-            // Handle type casting for array properties to avoid TypeScript errors
-            // Construct the state to pass to initiateCombat using state/CombatState properties
-            const restoredCombatState: Partial<CombatState> = {
-                isActive: safeCombatState?.isActive ?? false,
-                combatType: safeCombatState?.combatType ?? null,
-                winner: safeCombatState?.winner ?? null,
-                rounds: safeCombatState?.rounds ?? 0,
-                combatLog: safeCombatState?.combatLog ?? [],
-                currentTurn: safeCombatState?.currentTurn ?? null,
-                playerCharacterId: safeCombatState?.playerCharacterId,
-                opponentCharacterId: safeCombatState?.opponentCharacterId,
-                roundStartTime: safeCombatState?.roundStartTime,
-                modifiers: safeCombatState?.modifiers,
-                playerTurn: safeCombatState?.playerTurn,
-            };
-            
+    if (!shouldRestoreCombat) return;
 
-            gameSession.initiateCombat(restoredOpponent, restoredCombatState);
+    // Create a restored opponent with all required Character properties
+    const restoredOpponent: Character = {
+      isNPC: true,
+      isPlayer: false,
+      id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: safeOpponent?.name ?? 'Unknown Opponent',
+      inventory: { 
+        items: Array.isArray(safeOpponent?.inventory) ? safeOpponent.inventory : [] 
+      },
+      attributes: {
+        speed: safeOpponent?.attributes?.speed ?? 5,
+        gunAccuracy: safeOpponent?.attributes?.gunAccuracy ?? 5,
+        throwingAccuracy: safeOpponent?.attributes?.throwingAccuracy ?? 5,
+        strength: safeOpponent?.attributes?.strength ?? 5,
+        baseStrength: safeOpponent?.attributes?.baseStrength ?? 5,
+        bravery: safeOpponent?.attributes?.bravery ?? 5,
+        experience: safeOpponent?.attributes?.experience ?? 5
+      },
+      minAttributes: {
+        speed: 1,
+        gunAccuracy: 1,
+        throwingAccuracy: 1,
+        strength: 1,
+        baseStrength: 1,
+        bravery: 1,
+        experience: 0
+      },
+      maxAttributes: {
+        speed: 10,
+        gunAccuracy: 10,
+        throwingAccuracy: 10,
+        strength: 20,
+        baseStrength: 20,
+        bravery: 10,
+        experience: 11
+      },
+      wounds: Array.isArray(safeOpponent?.wounds) ? safeOpponent.wounds : [],
+      isUnconscious: safeOpponent?.isUnconscious ?? false,
+    };
+    
+    // Add weapon if it exists
+    if (safeOpponent?.weapon && 
+        typeof safeOpponent.weapon === 'object' && 
+        safeOpponent.weapon.id && 
+        safeOpponent.weapon.name && 
+        safeOpponent.weapon.modifiers) {
+      restoredOpponent.weapon = {
+        id: safeOpponent.weapon.id,
+        name: safeOpponent.weapon.name,
+        modifiers: {
+          accuracy: safeOpponent.weapon.modifiers.accuracy,
+          range: safeOpponent.weapon.modifiers.range,
+          reliability: safeOpponent.weapon.modifiers.reliability,
+          damage: safeOpponent.weapon.modifiers.damage,
+          speed: safeOpponent.weapon.modifiers.speed,
+          ammunition: safeOpponent.weapon.modifiers.ammunition,
+          maxAmmunition: safeOpponent.weapon.modifiers.maxAmmunition
+        },
+      } as Weapon;
+    }
+    
+    // Safely handle array properties with null checks
+    const combatLog = Array.isArray(safeCombatState?.combatLog) ? safeCombatState.combatLog : [];
+    
+    // Construct the state to pass to initiateCombat using state/CombatState properties
+    const restoredCombatState: Partial<CombatState> = {
+      isActive: safeCombatState?.isActive ?? false,
+      combatType: safeCombatState?.combatType ?? null,
+      winner: safeCombatState?.winner ?? null,
+      rounds: safeCombatState?.rounds ?? 0,
+      combatLog: combatLog,
+      currentTurn: safeCombatState?.currentTurn ?? null,
+      playerCharacterId: safeCombatState?.playerCharacterId,
+      opponentCharacterId: safeCombatState?.opponentCharacterId,
+      roundStartTime: safeCombatState?.roundStartTime,
+      modifiers: safeCombatState?.modifiers ?? { player: 0, opponent: 0 },
+      playerTurn: safeCombatState?.playerTurn ?? true,
+    };
+    
+    // Only run this in browser environment
+    if (typeof window !== 'undefined' && gameSession && gameSession.initiateCombat) {
+      // Use setTimeout to defer execution after all hooks have been processed
+      setTimeout(() => {
+        try {
+          gameSession.initiateCombat(restoredOpponent, restoredCombatState);
+        } catch (error) {
+          console.error("Error in deferred combat state restoration:", error);
         }
-    }, [
-        gameSession,
-        state,
-        // Only depend on the existence of state, not its properties
-        // This prevents TypeScript errors about accessing properties
-        // that might not exist on the state type
-    ]);
+      }, 0);
+    }
+  } catch (error) {
+    console.error("Error in combat state restoration:", error);
+    // No need to rethrow - handle gracefully
+  }
 }

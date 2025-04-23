@@ -5,7 +5,6 @@ import {
   isNarrativeChoice,
   NarrativeChoice,
   initialLoreState,
-  // Removed unused initialStoryProgressionState
 } from '../types/narrative.types';
 
 // Mock Date.now() for consistent timestamps
@@ -47,16 +46,15 @@ describe('Narrative Types', () => {
       context: '',
       storyProgression: {
         currentPoint: null,
-        progressionPoints: {},
+        progressionPoints: { /* Intentionally empty */ },
         mainStorylinePoints: [],
-        branchingPoints: {},
+        branchingPoints: { /* Intentionally empty */ },
         // lastUpdated is ignored here
       },
       currentDecision: undefined,
       error: null,
       needsInitialGeneration: false,
       lore: initialLoreState,
-      // narrativeContext: undefined // Removed as it's not in initialNarrativeState
     });
     // Separately check that lastUpdated is a number
     expect(initialNarrativeState.storyProgression).toBeDefined(); // Check if storyProgression exists

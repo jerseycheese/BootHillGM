@@ -1,10 +1,41 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"],
+  "extends": [
+    "next/core-web-vitals",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint",
+    "local"
+  ],
   "rules": {
-    "@typescript-eslint/no-unused-vars": ["error", { 
-      "varsIgnorePattern": "^_",
-      "argsIgnorePattern": "^_",
-      "ignoreRestSiblings": true
-    }]
-  }
+    "no-duplicate-imports": "error",
+    "local/no-action-literals": "warn",
+    "react-hooks/exhaustive-deps": "off",
+    "no-prototype-builtins": "off"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/__tests__/**/*.{ts,tsx}",
+        "**/*.test.{ts,tsx}",
+        "**/*.bench.{ts,tsx}",
+        "app/test/utils/**/*.{ts,tsx}"
+      ],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-empty": "off",
+        "@typescript-eslint/no-unsafe-function-type": "off",
+        "@typescript-eslint/no-require-imports": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
+        "no-prototype-builtins": "off",
+        "@typescript-eslint/no-use-before-define": "off",
+        "import/no-anonymous-default-export": "off",
+        "react-hooks/exhaustive-deps": "off",
+        "local/no-action-literals": "warn"
+      }
+    }
+  ]
 }

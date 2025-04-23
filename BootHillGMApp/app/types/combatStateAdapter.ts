@@ -1,14 +1,8 @@
-/**
- * This adapter file helps bridge the gap between our two different CombatState interfaces:
- * - CombatState from '../types/combat' which uses LogEntry
- * - CombatState from '../types/state/combatState' which uses CombatLogEntry
- */
-
+// BootHillGMApp/app/types/combatStateAdapter.ts (Reordered)
 import { CombatState as CombatStateFromCombat, LogEntry, CombatParticipant, BrawlingState } from './combat';
 import { CombatState as CombatStateFromState, CombatLogEntry } from './state/combatState';
 import { Character } from './character';
 import { GameAction } from './actions'; // Import GameAction instead
-// Removed unused GameEngineAction import
 import { Dispatch } from 'react'; // Import Dispatch
 
 /**
@@ -19,7 +13,7 @@ export interface UniversalCombatState {
   // Common properties from both interfaces
   isActive: boolean;
   combatType: 'brawling' | 'weapon' | null;
-  
+
   // Properties specific to CombatStateFromCombat
   winner?: string | null;
   brawling?: unknown;
@@ -37,9 +31,9 @@ export interface UniversalCombatState {
       damageTaken: number;
     }
   };
-  
+
   // Properties specific to CombatStateFromState
-  currentRound?: number; // Added for backward compatibility
+  currentRound?: number;
   playerTurn?: boolean;
   playerCharacterId?: string;
   opponentCharacterId?: string;
@@ -61,18 +55,18 @@ export interface CombatInitiator {
   handlePlayerHealthChange: (characterId: string, newHealth: number) => void;
   handleCombatEnd: (winner: "player" | "opponent", combatResults: string) => Promise<void>;
   handleStrengthChange: (characterType: "player" | "opponent", newStrength: number) => void;
-  
+
   // Player/character management
   onEquipWeapon: (itemId: string) => void;
   getCurrentOpponent: () => Character | null;
   opponent: Character | null;
-  
+
   // State management
   isCombatActive: boolean;
   isProcessing: boolean;
   combatQueueLength: number;
   dispatch: Dispatch<GameAction>;
-  
+
   // Additional properties for hooks
   isLoading?: boolean;
   error?: string | null;
@@ -81,30 +75,6 @@ export interface CombatInitiator {
   handleDebug?: (command: string) => void;
   handleSave?: () => void;
   handleLoad?: () => void;
-}
-
-/**
- * Convert a LogEntry to a CombatLogEntry to bridge between the two types
- */
-export function convertLogEntry(entry: LogEntry): CombatLogEntry {
-  return {
-    text: entry.text,
-    timestamp: entry.timestamp,
-    type: mapLogType(entry.type),
-    data: { originalType: entry.type }
-  };
-}
-
-/**
- * Convert a CombatLogEntry to a LogEntry to bridge between the two types
- */
-export function convertCombatLogEntry(entry: CombatLogEntry): LogEntry {
-  return {
-    text: entry.text,
-    timestamp: entry.timestamp,
-    // Default to 'info' if we can't map the type
-    type: mapCombatLogType(entry.type) || 'info'
-  };
 }
 
 /**
@@ -149,13 +119,37 @@ function mapCombatLogType(type?: 'action' | 'result' | 'system' | 'critical' | '
 }
 
 /**
+ * Convert a LogEntry to a CombatLogEntry to bridge between the two types
+ */
+export function convertLogEntry(entry: LogEntry): CombatLogEntry {
+  return {
+    text: entry.text,
+    timestamp: entry.timestamp,
+    type: mapLogType(entry.type), // Now defined above
+    data: { originalType: entry.type }
+  };
+}
+
+/**
+ * Convert a CombatLogEntry to a LogEntry to bridge between the two types
+ */
+export function convertCombatLogEntry(entry: CombatLogEntry): LogEntry {
+  return {
+    text: entry.text,
+    timestamp: entry.timestamp,
+    // Default to 'info' if we can't map the type
+    type: mapCombatLogType(entry.type) || 'info' // Now defined above
+  };
+}
+
+/**
  * Adapter function to convert from combat.ts CombatState to state/combatState.ts CombatState
  */
 export function adaptCombatToCombatState(state: Partial<CombatStateFromCombat>): Partial<CombatStateFromState> {
   // Extract playerCharacterId and opponentCharacterId from brawling or weapon state
   const playerCharacterId = state.brawling?.playerCharacterId || state.weapon?.playerCharacterId || '';
   const opponentCharacterId = state.brawling?.opponentCharacterId || state.weapon?.opponentCharacterId || '';
-  
+
   return {
     isActive: state.isActive,
     combatType: state.combatType,
@@ -163,7 +157,7 @@ export function adaptCombatToCombatState(state: Partial<CombatStateFromCombat>):
     playerTurn: state.currentTurn === 'player',
     playerCharacterId: playerCharacterId,
     opponentCharacterId: opponentCharacterId,
-    combatLog: state.combatLog?.map(convertLogEntry) || [],
+    combatLog: state.combatLog?.map(convertLogEntry) || [], // Uses convertLogEntry
     roundStartTime: Date.now(),
     modifiers: {
       player: state.brawling?.playerModifier || 0,
@@ -178,7 +172,7 @@ export function adaptCombatToCombatState(state: Partial<CombatStateFromCombat>):
 export function adaptCombatStateToCombat(state: Partial<CombatStateFromState>): Partial<CombatStateFromCombat> {
   // Map currentRound to rounds if it exists (for compatibility)
   const rounds = state.rounds || 0;
-  
+
   // Create a brawling state with required properties
   // Note: BrawlingState (not Partial) means all properties must be defined
   const brawlingState: BrawlingState = {
@@ -195,7 +189,7 @@ export function adaptCombatStateToCombat(state: Partial<CombatStateFromState>): 
     combatType: state.combatType,
     rounds: rounds,
     currentTurn: state.playerTurn ? 'player' : 'opponent',
-    combatLog: state.combatLog?.map(convertCombatLogEntry) || [],
+    combatLog: state.combatLog?.map(convertCombatLogEntry) || [], // Uses convertCombatLogEntry
     participants: [],
     winner: null,
     brawling: brawlingState

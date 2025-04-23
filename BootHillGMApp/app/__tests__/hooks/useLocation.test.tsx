@@ -1,11 +1,9 @@
-import React from 'react';
+import React, { ReactElement, ReactNode } from 'react'; // Combined import
 import { renderHook, act } from '@testing-library/react';
 import { useLocation } from '../../hooks/useLocation';
 import { LocationType } from '../../services/locationService';
-import { TestCampaignStateProvider } from '../../test/utils/campaignTestWrappers';
-import { ReactElement, ReactNode } from 'react';
+import { TestCampaignStateProvider, TestCampaignState } from '../../test/utils/campaignTestWrappers';
 import { CampaignStateContextType } from '../../types/campaignState.types';
-import { TestCampaignState } from '../../test/utils/campaignTestWrappers';
 
 // Mock the LocationService to prevent network calls during tests
 jest.mock('../../services/locationService', () => ({
@@ -13,7 +11,7 @@ jest.mock('../../services/locationService', () => ({
     getInstance: jest.fn(() => ({
       updateLocationHistory: jest.fn((history, newLocation) => 
         history ? [...history, newLocation] : [newLocation]),
-      getLocationDetail: jest.fn(() => ({})),
+      getLocationDetail: jest.fn(() => ({ /* Intentionally empty */ })),
       getLocationsByType: jest.fn(() => []),
       getLocationHistory: jest.fn(() => []),
     })),
@@ -27,7 +25,7 @@ describe('useLocation Hook', () => {
     
     // Mock localStorage to prevent browser API calls during tests
     jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => null);
-    jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {});
+    jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { /* Intentionally empty */ });
   });
 
   it('should initialize with default state if no location provided', () => {
@@ -76,7 +74,7 @@ describe('useLocation Hook', () => {
 
   it('should dispatch location update', () => {
     // Start with empty state
-    const initialState: Partial<TestCampaignState> = {};
+    const initialState: Partial<TestCampaignState> = { /* Intentionally empty */ };
     
     // Create a wrapper that tracks dispatches
     const mockDispatch = jest.fn();

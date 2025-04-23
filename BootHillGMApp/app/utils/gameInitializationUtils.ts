@@ -2,8 +2,7 @@
 import { InventoryState } from "../types/state/inventoryState";
 import { InventoryItem } from "../types/item.types";
 import { LocationType } from "../services/locationService";
-import { GameState } from "../types/gameState";
-import { initialGameState } from "../types/gameState";
+import { GameState, initialGameState } from "../types/gameState"; // Combined imports
 import { StoryPointType, NarrativeDisplayMode, NarrativeState } from "../types/narrative.types";
 import { getStartingInventory } from "../utils/startingInventory";
 import { Character } from "../types/character";

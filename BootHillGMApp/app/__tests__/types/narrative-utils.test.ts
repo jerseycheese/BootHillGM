@@ -177,7 +177,7 @@ describe('Narrative type guards', () => {
     
     it('should handle malformed objects', () => {
       // Empty object
-      expect(isNarrativeChoice({})).toBe(false);
+      expect(isNarrativeChoice({ /* Intentionally empty */ })).toBe(false);
       
       // Object with extra properties but missing required ones
       expect(isNarrativeChoice({

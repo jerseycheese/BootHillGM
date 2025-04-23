@@ -46,7 +46,7 @@ describe('useGameInitialization Hook', () => {
   beforeEach(() => {
     // Reset mocks before each test
     mockDispatch = jest.fn();
-    (useGameState as jest.Mock).mockReturnValue({ state: {}, dispatch: mockDispatch });
+    (useGameState as jest.Mock).mockReturnValue({ state: { /* Intentionally empty */ }, dispatch: mockDispatch });
 
     // Clear localStorage
     localStorage.clear();

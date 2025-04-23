@@ -3,8 +3,6 @@ import { LocationType } from "../services/locationService";
 import { GameState } from "../types/gameState";
 // Import types from our central definition file
 import { DebugCommandData } from "../types/global.d";
-// Import the global declarations
-import '../types/global.d';
 
 /**
  * Helper for conditional logging based on environment
@@ -15,9 +13,9 @@ import '../types/global.d';
 const debugLog = (message: string, data?: DebugCommandData | GameState | string | Error | undefined): void => {
   if (process.env.NODE_ENV !== 'production') {
     if (data !== undefined) {
-      // console.log(message, data); // Removed log
+      console.log(message, data);
     } else {
-      // console.log(message); // Removed log
+      console.log(message);
     }
   }
 };
@@ -130,7 +128,6 @@ export const initializeBrowserDebugTools = (
     }
   });
   
-  // Removed the Object.defineProperty section that was causing the error
 };
 
 /**

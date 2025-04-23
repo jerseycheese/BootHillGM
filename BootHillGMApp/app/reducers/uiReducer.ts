@@ -6,16 +6,27 @@
 
 import { GameAction } from '../types/actions';
 import { UIState, initialUIState, Notification } from '../types/state/uiState';
+import { ActionTypes } from '../types/actionTypes';
 
 /**
- * Safe helper to check if an action is of a specific type
+ * Define UI action types for backward compatibility
  */
-function isActionType(action: GameAction, type: string | string[]): boolean {
-  if (Array.isArray(type)) {
-    return type.includes(action.type);
-  }
-  return action.type === type;
-}
+const UI_ACTION_TYPES = {
+  SET_LOADING: ['ui/SET_LOADING', 'SET_LOADING'],
+  OPEN_MODAL: ['ui/OPEN_MODAL', 'OPEN_MODAL'],
+  CLOSE_MODAL: ['ui/CLOSE_MODAL', 'CLOSE_MODAL'],
+  ADD_NOTIFICATION: [ActionTypes.ADD_NOTIFICATION, 'ui/ADD_NOTIFICATION', 'ADD_NOTIFICATION'],
+  REMOVE_NOTIFICATION: [ActionTypes.REMOVE_NOTIFICATION, 'ui/REMOVE_NOTIFICATION', 'REMOVE_NOTIFICATION'],
+  CLEAR_NOTIFICATIONS: ['ui/CLEAR_NOTIFICATIONS', 'CLEAR_NOTIFICATIONS'],
+  SET_ACTIVE_TAB: [ActionTypes.SET_ACTIVE_TAB, 'ui/SET_ACTIVE_TAB', 'SET_ACTIVE_TAB']
+};
+
+/**
+ * Helper function to check if action matches any of the possible types
+ */
+const isUIAction = (action: GameAction, actionTypes: string[]): boolean => {
+  return actionTypes.includes(action.type);
+};
 
 /**
  * UI reducer
@@ -24,7 +35,7 @@ const uiReducer = (state: UIState = initialUIState, action: GameAction): UIState
   if (!action) return state;
   
   // SET_LOADING
-  if (isActionType(action, 'ui/SET_LOADING') && 'payload' in action) {
+  if (isUIAction(action, UI_ACTION_TYPES.SET_LOADING) && 'payload' in action) {
     return {
       ...state,
       isLoading: action.payload as boolean
@@ -32,7 +43,7 @@ const uiReducer = (state: UIState = initialUIState, action: GameAction): UIState
   }
   
   // OPEN_MODAL
-  if (isActionType(action, 'ui/OPEN_MODAL') && 'payload' in action) {
+  if (isUIAction(action, UI_ACTION_TYPES.OPEN_MODAL) && 'payload' in action) {
     return {
       ...state,
       modalOpen: action.payload as string
@@ -40,7 +51,7 @@ const uiReducer = (state: UIState = initialUIState, action: GameAction): UIState
   }
   
   // CLOSE_MODAL
-  if (isActionType(action, 'ui/CLOSE_MODAL')) {
+  if (isUIAction(action, UI_ACTION_TYPES.CLOSE_MODAL)) {
     return {
       ...state,
       modalOpen: null
@@ -48,7 +59,7 @@ const uiReducer = (state: UIState = initialUIState, action: GameAction): UIState
   }
   
   // ADD_NOTIFICATION
-  if (isActionType(action, 'ui/ADD_NOTIFICATION') && 'payload' in action) {
+  if (isUIAction(action, UI_ACTION_TYPES.ADD_NOTIFICATION) && 'payload' in action) {
     const notification = action.payload as Notification;
     return {
       ...state,
@@ -57,7 +68,7 @@ const uiReducer = (state: UIState = initialUIState, action: GameAction): UIState
   }
   
   // REMOVE_NOTIFICATION
-  if (isActionType(action, 'ui/REMOVE_NOTIFICATION') && 'payload' in action) {
+  if (isUIAction(action, UI_ACTION_TYPES.REMOVE_NOTIFICATION) && 'payload' in action) {
     const notificationId = action.payload as string;
     return {
       ...state,
@@ -68,15 +79,15 @@ const uiReducer = (state: UIState = initialUIState, action: GameAction): UIState
   }
   
   // CLEAR_NOTIFICATIONS
-  if (isActionType(action, 'ui/CLEAR_NOTIFICATIONS')) {
+  if (isUIAction(action, UI_ACTION_TYPES.CLEAR_NOTIFICATIONS)) {
     return {
       ...state,
       notifications: []
     };
   }
 
-  // SET_ACTIVE_TAB (handle both namespaced and non-namespaced versions)
-  if (isActionType(action, ['ui/SET_ACTIVE_TAB', 'SET_ACTIVE_TAB']) && 'payload' in action) {
+  // SET_ACTIVE_TAB
+  if (isUIAction(action, UI_ACTION_TYPES.SET_ACTIVE_TAB) && 'payload' in action) {
     return {
       ...state,
       activeTab: action.payload as string

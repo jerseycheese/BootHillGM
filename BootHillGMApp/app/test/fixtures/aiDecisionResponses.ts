@@ -33,20 +33,20 @@ export const createTestGameState = (): { narrative: NarrativeState; character: C
         themes: ['frontier-justice', 'strangers-in-town'],
         worldContext: 'The town of Redemption has been plagued by a series of stagecoach robberies.',
         importantEvents: [],
-        storyPoints: {},
-        narrativeArcs: {},
+        storyPoints: { /* Intentionally empty */ },
+        narrativeArcs: { /* Intentionally empty */ },
         impactState: {
-          reputationImpacts: {},
-          relationshipImpacts: {},
+          reputationImpacts: { /* Intentionally empty */ },
+          relationshipImpacts: { /* Intentionally empty */ },
           worldStateImpacts: {
             'TownSuspicion': 30
           },
-          storyArcImpacts: {},
+          storyArcImpacts: { /* Intentionally empty */ },
           lastUpdated: Date.now()
         },
-        narrativeBranches: {},
+        narrativeBranches: { /* Intentionally empty */ },
         decisionHistory: [],
-        pendingDecisions: [] // Added required field
+        pendingDecisions: []
       },
       context: "" // Add missing context property
     },
@@ -54,17 +54,17 @@ export const createTestGameState = (): { narrative: NarrativeState; character: C
       id: 'player-1',
       name: 'Hayes Cooper',
       isNPC: false,
-      isPlayer: true, // Added required field
+      isPlayer: true,
       attributes: {
         bravery: 7,
         speed: 8,
         gunAccuracy: 6,
-        throwingAccuracy: 5, // Added required field
-        strength: 70, // Added required field
-        baseStrength: 70, // Added required field
-        experience: 3 // Added required field
+        throwingAccuracy: 5,
+        strength: 70,
+        baseStrength: 70,
+        experience: 3
       },
-      minAttributes: { // Added required field
+      minAttributes: {
         speed: 1,
         gunAccuracy: 1,
         throwingAccuracy: 1,
@@ -73,7 +73,7 @@ export const createTestGameState = (): { narrative: NarrativeState; character: C
         bravery: 1,
         experience: 0
       },
-      maxAttributes: { // Added required field
+      maxAttributes: {
         speed: 20,
         gunAccuracy: 20,
         throwingAccuracy: 20,
@@ -82,9 +82,9 @@ export const createTestGameState = (): { narrative: NarrativeState; character: C
         bravery: 20,
         experience: 10
       },
-      wounds: [], // Added required field
-      isUnconscious: false, // Added required field
-      inventory: { items: [] } // Added required field
+      wounds: [],
+      isUnconscious: false,
+      inventory: { items: [] }
     }
   };
 };

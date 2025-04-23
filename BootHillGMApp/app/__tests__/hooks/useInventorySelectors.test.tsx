@@ -12,7 +12,7 @@ import { createMockGameState } from '../../test/utils/inventoryTestUtils';
 import { GameState } from '../../types/gameState';
 import { useGameState, GameStateProvider } from '../../context/GameStateProvider';
 import { InventoryItem } from '../../types/item.types';
-import { NarrativeProvider } from '../../hooks/narrative/NarrativeProvider'; // Added import
+import { NarrativeProvider } from '../../hooks/narrative/NarrativeProvider';
 
 // Mock the useGameState hook for most tests
 jest.mock('../../context/GameStateProvider', () => {
@@ -63,7 +63,7 @@ describe('Inventory Selector Hooks', () => {
   const createInventoryTestState = (items: InventoryItem[] | undefined = []): Partial<GameState> => ({
     // Use createMockGameState to ensure all slices are present, then override inventory
     ...createMockGameState(),
-    inventory: { items: items }
+    inventory: { items: items, equippedWeaponId: null } // Add missing equippedWeaponId
   });
 
   beforeEach(() => {

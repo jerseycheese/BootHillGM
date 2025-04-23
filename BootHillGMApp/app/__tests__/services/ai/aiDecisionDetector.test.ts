@@ -46,7 +46,7 @@ describe('aiDecisionDetector', () => {
       };
       
       const mockCharacter: MockCharacter = {
-        attributes: {}
+        attributes: { /* Intentionally empty */ }
       };
       
       // Last decision was just 5 seconds ago
@@ -91,7 +91,7 @@ describe('aiDecisionDetector', () => {
       };
       
       const mockCharacter: MockCharacter = {
-        attributes: {}
+        attributes: { /* Intentionally empty */ }
       };
       
       // Last decision was 60 seconds ago
@@ -130,7 +130,7 @@ describe('aiDecisionDetector', () => {
       };
       
       const mockCharacter: MockCharacter = {
-        attributes: {}
+        attributes: { /* Intentionally empty */ }
       };
       
       const lastDecisionTime = Date.now() - 60000;
@@ -169,7 +169,7 @@ describe('aiDecisionDetector', () => {
       };
       
       const mockCharacter: MockCharacter = {
-        attributes: {}
+        attributes: { /* Intentionally empty */ }
       };
       
       const lastDecisionTime = Date.now() - 60000;
@@ -210,7 +210,7 @@ describe('aiDecisionDetector', () => {
       };
       
       const mockCharacter: MockCharacter = {
-        attributes: {}
+        attributes: { /* Intentionally empty */ }
       };
       
       const lastDecisionTime = Date.now() - 60000;
@@ -242,7 +242,7 @@ describe('aiDecisionDetector', () => {
       };
       
       const mockCharacter: MockCharacter = {
-        attributes: {}
+        attributes: { /* Intentionally empty */ }
       };
       
       // Decision was recent

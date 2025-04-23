@@ -14,7 +14,6 @@ describe('InventoryList', () => {
     ];
     render(<InventoryList items={items} onItemAction={mockOnItemAction} isUsingItem={mockIsUsingItem} isLoading={false} />);
 
-    // Updated test to handle the new DOM structure
     // Use a regex pattern to find the text that contains 'Health Potion'
     expect(screen.getByText(/Health Potion/)).toBeInTheDocument();
     
@@ -38,7 +37,6 @@ describe('InventoryList', () => {
     ];
     render(<InventoryList items={items} onItemAction={mockOnItemAction} isUsingItem={mockIsUsingItem} isLoading={false} />);
     
-    // Updated test to handle the new DOM structure
     expect(screen.getByText(/Health Potion/)).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
     

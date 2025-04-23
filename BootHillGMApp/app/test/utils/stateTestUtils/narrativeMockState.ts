@@ -23,16 +23,16 @@ export function createNarrativeMockState(): BaseMockState {
         characterFocus: ['player', 'sheriff'],
         themes: ['revenge', 'justice'],
         importantEvents: ['Bank robbery'],
-        storyPoints: {},
-        narrativeArcs: {},
+        storyPoints: { /* Intentionally empty */ },
+        narrativeArcs: { /* Intentionally empty */ },
         impactState: {
-          reputationImpacts: {},
-          relationshipImpacts: {},
-          worldStateImpacts: {},
-          storyArcImpacts: {},
+          reputationImpacts: { /* Intentionally empty */ },
+          relationshipImpacts: { /* Intentionally empty */ },
+          worldStateImpacts: { /* Intentionally empty */ },
+          storyArcImpacts: { /* Intentionally empty */ },
           lastUpdated: currentTime
         },
-        narrativeBranches: {},
+        narrativeBranches: { /* Intentionally empty */ },
         pendingDecisions: [],
         decisionHistory: []
       },

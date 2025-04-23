@@ -16,6 +16,22 @@ import { compressNarrativeText, estimateTokenCount } from './narrativeCompressio
 import { formatDecisionForContext } from './narrativeContextFormatters';
 
 /**
+ * Create an empty compressed entry object
+ * Used as fallback for undefined entries
+ */
+function createEmptyCompressedEntry(): CompressedNarrativeEntry {
+  return {
+    original: '',
+    compressed: '',
+    compressionRatio: 0,
+    tokens: {
+      original: 0,
+      compressed: 0
+    }
+  };
+}
+
+/**
  * Compresses narrative history based on the specified compression level
  * 
  * @param history - Array of narrative history entries
@@ -44,7 +60,7 @@ export function compressNarrativeHistory(
   
   // Apply appropriate compression
   return entries.map(entry => {
-    if (!entry) return createEmptyCompressedEntry();
+    if (!entry) return createEmptyCompressedEntry(); // Now defined before call
     
     const compressed = compressNarrativeText(entry, validLevel);
     const originalTokens = estimateTokenCount(entry);
@@ -62,21 +78,6 @@ export function compressNarrativeHistory(
   });
 }
 
-/**
- * Create an empty compressed entry object
- * Used as fallback for undefined entries
- */
-function createEmptyCompressedEntry(): CompressedNarrativeEntry {
-  return {
-    original: '',
-    compressed: '',
-    compressionRatio: 0,
-    tokens: {
-      original: 0,
-      compressed: 0
-    }
-  };
-}
 
 /**
  * Extracts relevant decisions from the decision history

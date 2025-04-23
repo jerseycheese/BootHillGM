@@ -35,56 +35,6 @@ export const DEFAULT_RELEVANCE_CONFIG: RelevanceConfig = {
 };
 
 /**
- * Calculates a relevance score for a decision based on various factors
- * 
- * @param decision The decision record to score
- * @param currentTags Tags relevant to current context (location, NPCs, themes)
- * @param currentTimestamp Current timestamp for recency calculation
- * @param config Optional custom configuration
- * @returns A relevance score from 0 to 10, where 10 is most relevant
- */
-export function calculateRelevanceScore(
-  decision: PlayerDecisionRecord,
-  currentTags: string[] = [],
-  currentTimestamp: number = Date.now(),
-  config: RelevanceConfig = DEFAULT_RELEVANCE_CONFIG
-): number {
-  // Return 0 for expired decisions
-  if (hasDecisionExpired(decision)) {
-    return 0;
-  }
-
-  // Calculate recency score (1.0 for now, decreasing to 0.0 for maxAge)
-  const age = currentTimestamp - decision.timestamp;
-  const recencyScore = age > config.maxAge ? 0 : 1 - (age / config.maxAge);
-
-  // Calculate tag matching score (0.0 to 1.0)
-  const tagMatchScore = calculateTagMatchScore(decision.tags, currentTags);
-
-  // Calculate importance score (0.0 to 1.0)
-  const importanceScore = calculateImportanceScore(decision.relevanceScore);
-
-  // Calculate impact score if available (0.0 to 1.0)
-  const impactScore = calculateImpactScore(decision);
-
-  // Combine scores with weights based on configuration
-  // Rationale:
-  // - Recency:  Recent decisions are more likely to be relevant (default weight: 0.3)
-  // - Tag Match: Decisions matching current context tags are highly relevant (default weight: 0.4)
-  // - Importance: Decisions marked as important should have higher relevance (default weight: 0.2)
-  // - Impact: Decisions with significant narrative impact are also more relevant (default weight: 0.1)
-  // Weights are configurable via RelevanceConfig interface.
-  const weightedScore =
-    (recencyScore * config.recencyWeight) +
-    (tagMatchScore * config.tagMatchWeight) +
-    (importanceScore * config.importanceWeight) +
-    (impactScore * config.impactWeight);
-
-  // Convert the combined weighted score to a 0-10 scale and round to one decimal place for readability
-  return Math.round(weightedScore * 100) / 10;
-}
-
-/**
  * Calculate how well the decision's tags match current context tags.
  * This function compares the tags associated with a decision to the tags
  * representing the current narrative context. It calculates a score based on
@@ -174,6 +124,57 @@ function calculateImpactScore(decision: PlayerDecisionRecord): number {
   // For regular decisions without impact data, return a moderate score
   return 0.5;
 }
+
+/**
+ * Calculates a relevance score for a decision based on various factors
+ * 
+ * @param decision The decision record to score
+ * @param currentTags Tags relevant to current context (location, NPCs, themes)
+ * @param currentTimestamp Current timestamp for recency calculation
+ * @param config Optional custom configuration
+ * @returns A relevance score from 0 to 10, where 10 is most relevant
+ */
+export function calculateRelevanceScore(
+  decision: PlayerDecisionRecord,
+  currentTags: string[] = [],
+  currentTimestamp: number = Date.now(),
+  config: RelevanceConfig = DEFAULT_RELEVANCE_CONFIG
+): number {
+  // Return 0 for expired decisions
+  if (hasDecisionExpired(decision)) {
+    return 0;
+  }
+
+  // Calculate recency score (1.0 for now, decreasing to 0.0 for maxAge)
+  const age = currentTimestamp - decision.timestamp;
+  const recencyScore = age > config.maxAge ? 0 : 1 - (age / config.maxAge);
+
+  // Calculate tag matching score (0.0 to 1.0)
+  const tagMatchScore = calculateTagMatchScore(decision.tags, currentTags); // Now defined before call
+
+  // Calculate importance score (0.0 to 1.0)
+  const importanceScore = calculateImportanceScore(decision.relevanceScore); // Now defined before call
+
+  // Calculate impact score if available (0.0 to 1.0)
+  const impactScore = calculateImpactScore(decision); // Now defined before call
+
+  // Combine scores with weights based on configuration
+  // Rationale:
+  // - Recency:  Recent decisions are more likely to be relevant (default weight: 0.3)
+  // - Tag Match: Decisions matching current context tags are highly relevant (default weight: 0.4)
+  // - Importance: Decisions marked as important should have higher relevance (default weight: 0.2)
+  // - Impact: Decisions with significant narrative impact are also more relevant (default weight: 0.1)
+  // Weights are configurable via RelevanceConfig interface.
+  const weightedScore =
+    (recencyScore * config.recencyWeight) +
+    (tagMatchScore * config.tagMatchWeight) +
+    (importanceScore * config.importanceWeight) +
+    (impactScore * config.impactWeight);
+
+  // Convert the combined weighted score to a 0-10 scale and round to one decimal place for readability
+  return Math.round(weightedScore * 100) / 10;
+}
+
 
 /**
  * Generate a set of context tags based on current game state

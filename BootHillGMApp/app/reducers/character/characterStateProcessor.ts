@@ -160,7 +160,7 @@ export function processUpdateCharacter(state: ExtendedGameState, payload: Update
     return state;
   }
 
-  let updatedAttributes = payload.attributes || {};
+  let updatedAttributes = payload.attributes || { /* Intentionally empty */ };
   let updatedHistory = targetCharacter.strengthHistory;
 
   if (payload.attributes && payload.attributes.strength !== undefined && payload.damageInflicted !== undefined) {
@@ -275,7 +275,7 @@ export function processSetOpponent(state: ExtendedGameState, payload: OpponentSe
     inventory: Array.isArray(payload.inventory) ? { items: [] } : payload.inventory ?? { items: [] },
     attributes: {
       ...defaultAttributes,
-      ...(payload.attributes || {})
+      ...(payload.attributes || { /* Intentionally empty */ })
     },
     wounds: payload.wounds ?? [],
     isUnconscious: payload.isUnconscious ?? false,

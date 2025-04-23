@@ -2,13 +2,11 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MainGameArea } from '../../../components/GameArea/MainGameArea';
-import { GameState } from '../../../types/gameState'; // Corrected import path
-// Update the import path for NarrativeProvider
+import { GameState } from '../../../types/gameState';
 import { NarrativeProvider } from '../../../hooks/narrative/NarrativeProvider';
 
 // Mock NarrativeWithDecisions with proper rendering of newlines
 jest.mock('../../../components/narrative/NarrativeWithDecisions', () => {
-  // Added types for props
   return function MockNarrativeWithDecisions({ narrative, error, onRetry }: { narrative: string; error?: string | null; onRetry?: () => void }) {
     // Simplify mock: Render the raw narrative string directly
     // This avoids issues with <br> tags and complex fragments in textContent assertion
@@ -37,7 +35,6 @@ jest.mock('../../../components/GameArea/GameplayControls', () => ({
 }));
 
 // Wrap component with NarrativeProvider for testing
-// Added type for ui parameter
 const renderWithNarrativeProvider = (ui: React.ReactElement) => {
   return render(
     <NarrativeProvider>
@@ -67,9 +64,9 @@ describe('MainGameArea', () => {
     inventory: { items: [], equippedWeaponId: null }, // Example initial inventory state
     journal: { // Override journal entries for the test
       entries: [
-        { id: 'entry1', type: 'narrative', timestamp: 1, content: 'Line 1', title: 'Entry 1' }, // Added title
-        { id: 'entry2', type: 'narrative', timestamp: 2, content: 'Line 2', title: 'Entry 2' }, // Added title
-        { id: 'entry3', type: 'narrative', timestamp: 3, content: 'Line 3', title: 'Entry 3' }, // Added title
+        { id: 'entry1', type: 'narrative', timestamp: 1, content: 'Line 1', title: 'Entry 1', narrativeSummary: 'Summary 1' }, // Add narrativeSummary
+        { id: 'entry2', type: 'narrative', timestamp: 2, content: 'Line 2', title: 'Entry 2', narrativeSummary: 'Summary 2' }, // Add narrativeSummary
+        { id: 'entry3', type: 'narrative', timestamp: 3, content: 'Line 3', title: 'Entry 3', narrativeSummary: 'Summary 3' }, // Add narrativeSummary
       ]
     },
     narrative: { // Add initial narrative state parts
@@ -117,6 +114,7 @@ describe('MainGameArea', () => {
     // Add missing mock functions required by GameSessionProps
     handleUseItem: jest.fn(),
     handleEquipWeapon: jest.fn(),
+    handleStrengthChange: jest.fn(), // Add missing mock prop
   };
 
   beforeEach(() => {

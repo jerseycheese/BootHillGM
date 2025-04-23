@@ -1,13 +1,12 @@
 import { ExtendedGameState } from '../../types/extendedState';
 import { validateCombatEndState } from '../../utils/combatStateValidation';
 import { adaptEnsureCombatState, sliceToLegacyCombatState } from '../../utils/combatAdapter';
-import { CombatType } from '../../types/combat';
+import { CombatParticipant, CombatType } from '../../types/combat';
 import { CombatLogEntry, initialCombatState } from '../../types/state/combatState';
 
 /**
  * Combat update payload type definition
  */
-import { CombatParticipant } from '../../types/combat';
 
 export interface CombatUpdatePayload {
   isActive?: boolean;
@@ -92,7 +91,7 @@ export function processUpdateCombatState(state: ExtendedGameState, payload: Comb
   // Update the structured combat state
   const updatedCombat = {
     ...existingCombat,
-    ...(payload || {}),
+    ...(payload || { /* Intentionally empty */ }),
     isActive: true, // Force isActive to true
     combatLog: formattedCombatLog // Use properly formatted log
   };
@@ -108,13 +107,13 @@ export function processUpdateCombatState(state: ExtendedGameState, payload: Comb
   // For backward compatibility
   if (payload) {
     // Extract payload without combatLog
-    const { combatLog, ...otherPayloadProps } = payload;
+    const { ...otherPayloadProps } = payload;
     
     // Use the already formatted combat log from earlier in the function
     
     // Use adaptEnsureCombatState to bridge the gap between different interfaces
     newState.combatState = adaptEnsureCombatState({
-      ...(state.combatState || {}),
+      ...(state.combatState || { /* Intentionally empty */ }),
       ...otherPayloadProps,
       combatLog: formattedCombatLog,
       isActive: true
@@ -148,7 +147,7 @@ export function processSetCombatType(state: ExtendedGameState, payload: CombatTy
   
   // For backward compatibility
   newState.combatState = adaptEnsureCombatState({
-    ...(state.combatState || {}),
+    ...(state.combatState || { /* Intentionally empty */ }),
     combatType: payload,
     isActive: true
   });

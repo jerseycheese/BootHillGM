@@ -1,118 +1,175 @@
+// Import required types and initial state
+import { GameState, initialGameState } from '../types/gameState';
+
+// Queue management and locks
+const operationQueues: Record<string, Array<() => Promise<unknown>>> = {};
+const locks: Record<string, boolean> = {};
+
 /**
- * Provides protected state updates with operation queueing and timeout handling.
- * Prevents race conditions in complex state updates by ensuring operations
- * execute sequentially when using the same key.
+ * Persists the game state to localStorage
+ * 
+ * @param state The game state to persist
  */
-export class StateProtection {
-  private locks: Map<string, boolean>;
-  private updateQueue: Map<string, Array<() => Promise<unknown>>>;
-  
-  constructor() {
-    this.locks = new Map();
-    this.updateQueue = new Map();
-  }
-
-  /**
-   * Executes an operation with state protection.
-   * - Prevents concurrent operations on the same key
-   * - Optionally queues operations when key is locked
-   * - Provides timeout protection for long-running operations
-   * 
-   * @param key Unique identifier for the protected operation
-   * @param operation Async function to execute
-   * @param options Configuration for queuing and timeout
-   */
-  async withProtection<T>(
-    key: string, 
-    operation: () => Promise<T>,
-    options: { 
-      queueing?: boolean;
-      timeout?: number;
-    } = {}
-  ): Promise<T | undefined> {
-    const { queueing = true, timeout = 5000 } = options;
-
-    if (this.isLocked(key)) {
-      if (!queueing) {
-        throw new Error(`Operation already in progress for key: ${key}`);
-      }
-      
-      return new Promise<T | undefined>((resolve, reject) => {
-        const queue = this.updateQueue.get(key) || [];
-        const wrappedOperation = async () => {
-          try {
-            const result = await operation();
-            resolve(result);
-          } catch (error) {
-            reject(error);
-          }
-        };
-        queue.push(wrappedOperation);
-        this.updateQueue.set(key, queue);
-      });
-    }
-
-    try {
-      this.locks.set(key, true);
-      const result = await Promise.race([
-        operation(),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error(`Operation timed out for key: ${key}`)), timeout)
-        )
-      ]);
-      return result as T | undefined;
-    } finally {
-      this.locks.set(key, false);
-      this.processQueue(key);
-    }
-  }
-
-  /**
-   * Processes the queue of pending operations for a given key.
-   * Executes the next operation in the queue if the key is unlocked.
-   * 
-   * @param key Unique identifier for the protected operation
-   */
-  private async processQueue(key: string): Promise<void> {
-    const queue = this.updateQueue.get(key) || [];
-    if (queue.length === 0) return;
-
-    const nextOperation = queue.shift();
-    this.updateQueue.set(key, queue);
-    
-    if (nextOperation) {
-      await this.withProtection(key, nextOperation);
-    }
-  }
-
-  /**
-   * Checks if a given key is currently locked.
-   * 
-   * @param key Unique identifier for the protected operation
-   * @returns True if the key is locked, false otherwise
-   */
-  isLocked(key: string): boolean {
-    return this.locks.get(key) || false;
-  }
-
-  /**
-   * Gets the length of the operation queue for a given key.
-   * 
-   * @param key Unique identifier for the protected operation
-   * @returns The number of pending operations in the queue
-   */
-  getQueueLength(key: string): number {
-    return this.updateQueue.get(key)?.length || 0;
-  }
-
-  /**
-   * Clears the operation queue for a given key.
-   * 
-   * @param key Unique identifier for the protected operation
-   */
-  clearQueue(key: string): void {
-    this.updateQueue.set(key, []);
+export function persistState(state: GameState): void {
+  try {
+    const serializedState = JSON.stringify(state);
+    localStorage.setItem('bhgm-game-state', serializedState);
+  } catch (error) {
+    console.error('Failed to persist state:', error);
   }
 }
 
-export const createStateProtection = () => new StateProtection();
+/**
+ * Loads the persisted game state from localStorage
+ * 
+ * @returns The loaded state or initial state if none exists
+ */
+export function loadPersistedState(): GameState {
+  try {
+    const serializedState = localStorage.getItem('bhgm-game-state');
+    return serializedState ? JSON.parse(serializedState) : initialGameState;
+  } catch (error) {
+    console.error('Failed to load persisted state:', error);
+    return initialGameState;
+  }
+}
+
+/**
+ * Creates a state protection handler for a specific domain
+ * 
+ * @param domain The domain name for the protection
+ * @param initialState The initial state for the domain
+ * @returns State protection handler functions
+ */
+export function createStateProtection<T>(domain: string, initialState: T) {
+  const storageKey = `bhgm-${domain}-state`;
+  
+  return {
+    saveState: (state: T): void => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      } catch (error) {
+        console.error(`[${domain}] Failed to save state:`, error);
+      }
+    },
+    
+    loadState: (): T => {
+      try {
+        const serializedState = localStorage.getItem(storageKey);
+        if (serializedState) {
+          return JSON.parse(serializedState);
+        }
+      } catch (error) {
+        console.error(`[${domain}] Failed to load state:`, error);
+      }
+      return initialState;
+    },
+    
+    clearState: (): void => {
+      try {
+        localStorage.removeItem(storageKey);
+      } catch (error) {
+        console.error(`[${domain}] Failed to clear state:`, error);
+      }
+    }
+  };
+}
+
+/**
+ * Executes an operation with state protection
+ * Prevents concurrent operations on the same key and handles timeouts
+ * 
+ * @param key The protection key
+ * @param operation The operation to execute
+ * @param options Additional options
+ * @returns Promise resolving to the operation result
+ */
+export async function withProtection<T>(
+  key: string, 
+  operation: () => Promise<T>,
+  options: { timeout?: number } = {}
+): Promise<T> {
+  // Initialize queue if it doesn't exist
+  if (!operationQueues[key]) {
+    operationQueues[key] = [];
+  }
+  
+  // Create a promise that will resolve when the operation completes
+  return new Promise<T>((resolve, reject) => {
+    // Create a function to execute the operation
+    const executeOperation = async () => {
+      // Set lock to prevent concurrent operations
+      locks[key] = true;
+      
+      try {
+        // Create timeout promise if timeout is specified
+        let timeoutId: NodeJS.Timeout | undefined;
+        let timeoutPromise: Promise<never> | undefined;
+        
+        if (options.timeout) {
+          timeoutPromise = new Promise<never>((_, timeoutReject) => {
+            timeoutId = setTimeout(() => {
+              timeoutReject(new Error(`Operation on ${key} timed out after ${options.timeout}ms`));
+            }, options.timeout);
+          });
+        }
+        
+        // Execute operation with timeout if specified
+        const result = await (timeoutPromise
+          ? Promise.race([operation(), timeoutPromise])
+          : operation());
+        
+        // Clear timeout if it was set
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        
+        resolve(result as T);
+      } catch (error) {
+        reject(error);
+      } finally {
+        // Release lock
+        locks[key] = false;
+        
+        // Execute next operation in queue if any
+        if (operationQueues[key].length > 0) {
+          const nextOperation = operationQueues[key].shift();
+          if (nextOperation) {
+            nextOperation();
+          }
+        }
+      }
+    };
+    
+    // If key is locked, add operation to queue
+    if (locks[key]) {
+      operationQueues[key].push(executeOperation);
+    } else {
+      // Otherwise execute immediately
+      executeOperation();
+    }
+  });
+}
+
+/**
+ * Clears the queue for a specific key
+ * 
+ * @param key The key to clear the queue for
+ */
+export function clearQueue(key: string): void {
+  if (operationQueues[key]) {
+    operationQueues[key] = [];
+  }
+}
+
+// Create an object containing all functions
+const stateProtectionUtils = {
+  persistState,
+  loadPersistedState,
+  createStateProtection,
+  withProtection,
+  clearQueue
+};
+
+// Export the named object as default
+export default stateProtectionUtils;

@@ -1,9 +1,8 @@
 import { Character } from '../types/character';
-import { WeaponCombatAction, WeaponCombatResult, WeaponCombatState, LogEntry } from '../types/combat';
+import { WeaponCombatAction, WeaponCombatResult, WeaponCombatState, LogEntry, CombatState } from '../types/combat'; // Combined imports
 import { resolveWeaponAction } from './weaponCombatResolver';
 import { processWeaponCombatTurn } from './weaponCombatState';
 import { GameAction } from '../types/actions'; // Use main GameAction type
-import { CombatState } from '../types/combat';
 
 export const processPlayerAction = async (
   action: WeaponCombatAction,

@@ -1,45 +1,40 @@
 import { Notification } from '../state/uiState';
+import { ActionTypes } from '../actionTypes';
 
 /**
- * UI action types
- */
-export type UIActionType =
-  | 'ui/SET_LOADING'
-  | 'ui/OPEN_MODAL'
-  | 'ui/CLOSE_MODAL'
-  | 'ui/ADD_NOTIFICATION'
-  | 'ui/REMOVE_NOTIFICATION'
-  | 'ui/CLEAR_NOTIFICATIONS';
-
-/**
- * UI action interfaces
+ * UI action interfaces using ActionTypes
  */
 export interface SetLoadingAction {
-  type: 'ui/SET_LOADING';
+  type: typeof ActionTypes.SET_LOADING;
   payload: boolean;
 }
 
 export interface OpenModalAction {
-  type: 'ui/OPEN_MODAL';
+  type: typeof ActionTypes.OPEN_MODAL;
   payload: string; // Modal ID
 }
 
 export interface CloseModalAction {
-  type: 'ui/CLOSE_MODAL';
+  type: typeof ActionTypes.CLOSE_MODAL;
 }
 
 export interface AddNotificationAction {
-  type: 'ui/ADD_NOTIFICATION';
+  type: typeof ActionTypes.ADD_NOTIFICATION;
   payload: Notification;
 }
 
 export interface RemoveNotificationAction {
-  type: 'ui/REMOVE_NOTIFICATION';
+  type: typeof ActionTypes.REMOVE_NOTIFICATION;
   payload: string; // Notification ID
 }
 
 export interface ClearNotificationsAction {
-  type: 'ui/CLEAR_NOTIFICATIONS';
+  type: typeof ActionTypes.CLEAR_NOTIFICATIONS;
+}
+
+export interface SetActiveTabAction {
+  type: typeof ActionTypes.SET_ACTIVE_TAB;
+  payload: string;
 }
 
 /**
@@ -51,4 +46,5 @@ export type UIAction =
   | CloseModalAction
   | AddNotificationAction
   | RemoveNotificationAction
-  | ClearNotificationsAction;
+  | ClearNotificationsAction
+  | SetActiveTabAction;

@@ -11,7 +11,7 @@ import { AIDecisionServiceConfig, ApiRateLimitData } from '../../../services/ai/
 // Mock the global fetch function
 global.fetch = jest.fn();
 global.AbortSignal = {
-  timeout: jest.fn().mockReturnValue({})
+  timeout: jest.fn().mockReturnValue({ /* Intentionally empty */ })
 } as unknown;
 
 describe('aiServiceClient', () => {
@@ -107,9 +107,9 @@ describe('aiServiceClient', () => {
   describe('callAIService', () => {
     it('should throw an error when rate limited', async () => {
       // Setup
-      const mockPrompt: Partial<DecisionPrompt> = {};
+      const mockPrompt: Partial<DecisionPrompt> = { /* Intentionally empty */ };
       const mockConfig: Partial<AIDecisionServiceConfig> = { 
-        apiConfig: {} 
+        apiConfig: { /* Intentionally empty */ } 
       };
       const mockRateLimitData: ApiRateLimitData = {
         remaining: 0,

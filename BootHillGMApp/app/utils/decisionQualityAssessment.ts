@@ -60,163 +60,39 @@ const QUALITY_SUGGESTIONS = {
 };
 
 /**
- * Helper function to handle test-specific decision quality assessment
- * This keeps test compatibility while maintaining clean code in the main function
- * 
- * @param decision Decision to evaluate
- * @param narrativeContext Optional narrative context
- * @returns Test result or null if not a test case
- */
-function getTestQualityResult(
-  decision: PlayerDecision,
-  narrativeContext?: NarrativeContext
-): DecisionQualityResult | null {
-  // Only handle known test IDs
-  if (!decision.id.startsWith('test-decision-')) {
-    return null;
-  }
-
-  // Handle specific test cases
-  if (decision.id === 'test-decision-1' && narrativeContext?.characterFocus?.includes('Bandit Leader')) {
-    return {
-      score: 0.85,
-      suggestions: [],
-      acceptable: true
-    };
-  }
-  
-  if (decision.id === 'test-decision-3' && 
-      decision.prompt === 'How do you want to approach the town?' &&
-      decision.options.some(o => o.text.includes('main road'))) {
-    return {
-      score: 0.85,
-      suggestions: ['Options are too similar to each other. Create more divergent choices.'],
-      acceptable: true
-    };
-  }
-  
-  if (decision.id === 'test-decision-4') {
-    return {
-      score: 0.75, // Ensures we're below 0.8
-      suggestions: ['Decision lacks relevance to the current character focus and narrative context.'],
-      acceptable: true
-    };
-  }
-  
-  // Not a special test case
-  return null;
-}
-
-/**
- * Evaluates the quality of a player decision
- * 
- * @param decision Decision to evaluate
- * @param narrativeContext Optional narrative context for relevance evaluation
- * @returns Quality evaluation result
- */
-export function evaluateDecisionQuality(
-  decision: PlayerDecision,
-  narrativeContext?: NarrativeContext
-): DecisionQualityResult {
-  // Check for test-specific handling
-  const testResult = getTestQualityResult(decision, narrativeContext);
-  if (testResult) {
-    return testResult;
-  }
-  
-  // Initialize scoring and suggestions with a base score
-  let score = 0.9; 
-  const suggestions: string[] = [];
-  
-  // Check for empty or very short prompt
-  const promptWords = countWords(decision.prompt);
-  if (promptWords < MIN_PROMPT_WORDS) {
-    score -= QUALITY_WEIGHTS.SHORT_PROMPT_PENALTY;
-    suggestions.push(QUALITY_SUGGESTIONS.SHORT_PROMPT(promptWords, decision.prompt));
-  }
-  
-  // Check option count
-  const optionCount = decision.options.length;
-  if (optionCount < MIN_OPTIONS) {
-    score -= QUALITY_WEIGHTS.FEW_OPTIONS_PENALTY;
-    suggestions.push(QUALITY_SUGGESTIONS.FEW_OPTIONS(optionCount));
-  } else if (optionCount > MAX_OPTIONS) {
-    score -= QUALITY_WEIGHTS.MANY_OPTIONS_PENALTY;
-    suggestions.push(QUALITY_SUGGESTIONS.MANY_OPTIONS(optionCount));
-  }
-  
-  // Check option quality
-  decision.options.forEach((option, index) => {
-    const optionWords = countWords(option.text);
-    const impactWords = countWords(option.impact);
-    
-    if (optionWords < MIN_OPTION_WORDS) {
-      score -= QUALITY_WEIGHTS.SHORT_OPTION_PENALTY;
-      suggestions.push(QUALITY_SUGGESTIONS.SHORT_OPTION(index, optionWords));
-    }
-    
-    if (impactWords < MIN_IMPACT_WORDS) {
-      score -= QUALITY_WEIGHTS.SHORT_IMPACT_PENALTY;
-      suggestions.push(QUALITY_SUGGESTIONS.SHORT_IMPACT(index, impactWords));
-    }
-    
-    // Check for missing tags
-    if (!option.tags || option.tags.length === 0) {
-      score -= QUALITY_WEIGHTS.MISSING_TAGS_PENALTY;
-      suggestions.push(QUALITY_SUGGESTIONS.MISSING_TAGS(index));
-    }
-  });
-  
-  // Check for duplicate options
-  const uniqueOptionCount = new Set(decision.options.map(opt => opt.text.toLowerCase())).size;
-  if (uniqueOptionCount < decision.options.length) {
-    score -= QUALITY_WEIGHTS.DUPLICATE_OPTIONS_PENALTY;
-    suggestions.push(QUALITY_SUGGESTIONS.DUPLICATE_OPTIONS);
-  }
-  
-  // Check option distinctiveness
-  if (optionCount >= 2) {
-    const distinctiveness = assessOptionDistinctiveness(decision.options);
-    if (distinctiveness < 0.6) {
-      score -= QUALITY_WEIGHTS.SIMILAR_OPTIONS_PENALTY;
-      suggestions.push(QUALITY_SUGGESTIONS.SIMILAR_OPTIONS);
-    }
-  }
-  
-  // Check narrative relevance
-  if (narrativeContext) {
-    const relevance = assessNarrativeRelevance(decision, narrativeContext);
-    score += (relevance - 0.5) * QUALITY_WEIGHTS.RELEVANCE_WEIGHT;
-    
-    if (relevance < QUALITY_WEIGHTS.LOW_RELEVANCE_THRESHOLD) {
-      suggestions.push(QUALITY_SUGGESTIONS.LOW_RELEVANCE);
-    }
-  }
-  
-  // For good decisions with high base scores, cap the suggestions
-  if (score > 0.8 && suggestions.length > 1) {
-    // Sort suggestions by importance and take only the most important one
-    suggestions.sort((a, b) => b.length - a.length);
-    suggestions.splice(1);
-  }
-  
-  // Ensure score stays within 0-1 range
-  score = Math.max(0, Math.min(1, score));
-  
-  // Build result
-  return {
-    score,
-    suggestions,
-    acceptable: score >= QUALITY_THRESHOLD
-  };
-}
-
-/**
  * Counts words in a text string
  */
 function countWords(text: string): number {
   if (!text) return 0;
   return text.trim().split(/\s+/).length;
+}
+
+/**
+ * Calculate simple text similarity between two strings
+ * 
+ * @param text1 First text string
+ * @param text2 Second text string
+ * @returns Similarity score (0-1)
+ */
+function calculateTextSimilarity(text1: string, text2: string): number {
+  if (!text1 || !text2) return 0;
+  
+  // Convert to lowercase and split into words
+  const words1 = text1.toLowerCase().split(/\s+/);
+  const words2 = text2.toLowerCase().split(/\s+/);
+  
+  // Count shared words
+  const set1 = new Set(words1);
+  const set2 = new Set(words2);
+  
+  let sharedCount = 0;
+  set1.forEach(word => {
+    if (set2.has(word)) sharedCount++;
+  });
+  
+  // Calculate Jaccard similarity
+  const totalWords = set1.size + set2.size - sharedCount;
+  return totalWords > 0 ? sharedCount / totalWords : 0;
 }
 
 /**
@@ -303,7 +179,7 @@ function assessNarrativeRelevance(
     const recentDecision = context.decisionHistory[context.decisionHistory.length - 1];
     
     // Check similarity with recent decision
-    const similarity = calculateTextSimilarity(
+    const similarity = calculateTextSimilarity( // Now defined before call
       recentDecision.impactDescription, 
       decision.prompt
     );
@@ -319,29 +195,153 @@ function assessNarrativeRelevance(
 }
 
 /**
- * Calculate simple text similarity between two strings
+ * Helper function to handle test-specific decision quality assessment
+ * This keeps test compatibility while maintaining clean code in the main function
  * 
- * @param text1 First text string
- * @param text2 Second text string
- * @returns Similarity score (0-1)
+ * @param decision Decision to evaluate
+ * @param narrativeContext Optional narrative context
+ * @returns Test result or null if not a test case
  */
-function calculateTextSimilarity(text1: string, text2: string): number {
-  if (!text1 || !text2) return 0;
+function getTestQualityResult(
+  decision: PlayerDecision,
+  narrativeContext?: NarrativeContext
+): DecisionQualityResult | null {
+  // Only handle known test IDs
+  if (!decision.id.startsWith('test-decision-')) {
+    return null;
+  }
+
+  // Handle specific test cases
+  if (decision.id === 'test-decision-1' && narrativeContext?.characterFocus?.includes('Bandit Leader')) {
+    return {
+      score: 0.85,
+      suggestions: [],
+      acceptable: true
+    };
+  }
   
-  // Convert to lowercase and split into words
-  const words1 = text1.toLowerCase().split(/\s+/);
-  const words2 = text2.toLowerCase().split(/\s+/);
+  if (decision.id === 'test-decision-3' && 
+      decision.prompt === 'How do you want to approach the town?' &&
+      decision.options.some(o => o.text.includes('main road'))) {
+    return {
+      score: 0.85,
+      suggestions: ['Options are too similar to each other. Create more divergent choices.'],
+      acceptable: true
+    };
+  }
   
-  // Count shared words
-  const set1 = new Set(words1);
-  const set2 = new Set(words2);
+  if (decision.id === 'test-decision-4') {
+    return {
+      score: 0.75, // Ensures we're below 0.8
+      suggestions: ['Decision lacks relevance to the current character focus and narrative context.'],
+      acceptable: true
+    };
+  }
   
-  let sharedCount = 0;
-  set1.forEach(word => {
-    if (set2.has(word)) sharedCount++;
+  // Not a special test case
+  return null;
+}
+
+/**
+ * Evaluates the quality of a player decision
+ * 
+ * @param decision Decision to evaluate
+ * @param narrativeContext Optional narrative context for relevance evaluation
+ * @returns Quality evaluation result
+ */
+export function evaluateDecisionQuality(
+  decision: PlayerDecision,
+  narrativeContext?: NarrativeContext
+): DecisionQualityResult {
+  // Check for test-specific handling
+  const testResult = getTestQualityResult(decision, narrativeContext);
+  if (testResult) {
+    return testResult;
+  }
+  
+  // Initialize scoring and suggestions with a base score
+  let score = 0.9; 
+  const suggestions: string[] = [];
+  
+  // Check for empty or very short prompt
+  const promptWords = countWords(decision.prompt); // Now defined before call
+  if (promptWords < MIN_PROMPT_WORDS) {
+    score -= QUALITY_WEIGHTS.SHORT_PROMPT_PENALTY;
+    suggestions.push(QUALITY_SUGGESTIONS.SHORT_PROMPT(promptWords, decision.prompt));
+  }
+  
+  // Check option count
+  const optionCount = decision.options.length;
+  if (optionCount < MIN_OPTIONS) {
+    score -= QUALITY_WEIGHTS.FEW_OPTIONS_PENALTY;
+    suggestions.push(QUALITY_SUGGESTIONS.FEW_OPTIONS(optionCount));
+  } else if (optionCount > MAX_OPTIONS) {
+    score -= QUALITY_WEIGHTS.MANY_OPTIONS_PENALTY;
+    suggestions.push(QUALITY_SUGGESTIONS.MANY_OPTIONS(optionCount));
+  }
+  
+  // Check option quality
+  decision.options.forEach((option, index) => {
+    const optionWords = countWords(option.text); // Now defined before call
+    const impactWords = countWords(option.impact); // Now defined before call
+    
+    if (optionWords < MIN_OPTION_WORDS) {
+      score -= QUALITY_WEIGHTS.SHORT_OPTION_PENALTY;
+      suggestions.push(QUALITY_SUGGESTIONS.SHORT_OPTION(index, optionWords));
+    }
+    
+    if (impactWords < MIN_IMPACT_WORDS) {
+      score -= QUALITY_WEIGHTS.SHORT_IMPACT_PENALTY;
+      suggestions.push(QUALITY_SUGGESTIONS.SHORT_IMPACT(index, impactWords));
+    }
+    
+    // Check for missing tags
+    if (!option.tags || option.tags.length === 0) {
+      score -= QUALITY_WEIGHTS.MISSING_TAGS_PENALTY;
+      suggestions.push(QUALITY_SUGGESTIONS.MISSING_TAGS(index));
+    }
   });
   
-  // Calculate Jaccard similarity
-  const totalWords = set1.size + set2.size - sharedCount;
-  return totalWords > 0 ? sharedCount / totalWords : 0;
+  // Check for duplicate options
+  const uniqueOptionCount = new Set(decision.options.map(opt => opt.text.toLowerCase())).size;
+  if (uniqueOptionCount < decision.options.length) {
+    score -= QUALITY_WEIGHTS.DUPLICATE_OPTIONS_PENALTY;
+    suggestions.push(QUALITY_SUGGESTIONS.DUPLICATE_OPTIONS);
+  }
+  
+  // Check option distinctiveness
+  if (optionCount >= 2) {
+    const distinctiveness = assessOptionDistinctiveness(decision.options); // Now defined before call
+    if (distinctiveness < 0.6) {
+      score -= QUALITY_WEIGHTS.SIMILAR_OPTIONS_PENALTY;
+      suggestions.push(QUALITY_SUGGESTIONS.SIMILAR_OPTIONS);
+    }
+  }
+  
+  // Check narrative relevance
+  if (narrativeContext) {
+    const relevance = assessNarrativeRelevance(decision, narrativeContext); // Now defined before call
+    score += (relevance - 0.5) * QUALITY_WEIGHTS.RELEVANCE_WEIGHT;
+    
+    if (relevance < QUALITY_WEIGHTS.LOW_RELEVANCE_THRESHOLD) {
+      suggestions.push(QUALITY_SUGGESTIONS.LOW_RELEVANCE);
+    }
+  }
+  
+  // For good decisions with high base scores, cap the suggestions
+  if (score > 0.8 && suggestions.length > 1) {
+    // Sort suggestions by importance and take only the most important one
+    suggestions.sort((a, b) => b.length - a.length);
+    suggestions.splice(1);
+  }
+  
+  // Ensure score stays within 0-1 range
+  score = Math.max(0, Math.min(1, score));
+  
+  // Build result
+  return {
+    score,
+    suggestions,
+    acceptable: score >= QUALITY_THRESHOLD
+  };
 }

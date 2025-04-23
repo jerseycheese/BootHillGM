@@ -3,7 +3,7 @@ import { AIResponseParams, GameServiceResponse } from './types/gameService.types
 import { generateFallbackResponse, AI_RESPONSE_TIMEOUT_MS } from './fallback/fallbackService';
 import { fetchWithTimeout, cleanResponseText } from './utils/responseHelper';
 import { buildAIPrompt } from './utils/promptBuilder';
-import { validateAndEnhanceResponse } from './utils/responseValidator'; // Removed unused validateAndProcessResponse
+import { validateAndEnhanceResponse } from './utils/responseValidator';
 import { InventoryItem } from '../../types/item.types';
 import { NarrativeContext, LoreStore } from '../../types/narrative.types';
 

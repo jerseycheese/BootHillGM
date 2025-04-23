@@ -1,7 +1,6 @@
-import { WeaponCombatAction, WeaponCombatState } from '../types/combat';
+import { WeaponCombatAction, WeaponCombatState, CombatState } from '../types/combat'; // Combined imports, removed unused LogEntry
 import { Character } from '../types/character';
 import { GameAction } from '../types/actions'; // Use main GameAction type
-import { CombatState } from '../types/combat';
 import { processPlayerAction, processOpponentAction } from './weaponCombatActions';
 import { updateWeaponState } from './weaponCombatState';
 import { addLogEntry, createCombatSummary } from './weaponCombatLog';

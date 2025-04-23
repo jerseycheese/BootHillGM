@@ -26,9 +26,10 @@ import { useDecisionPresentation } from './useDecisionPresentation';
 import { useNarrativeGeneration } from './useNarrativeGeneration';
 import { useDecisionRecording } from './useDecisionRecording';
 import { useDecisionTriggering } from './useDecisionTriggering';
-import { UseNarrativeContextReturn, NarrativeGenerationDebug } from './types';
+import { UseNarrativeContextReturn, NarrativeGenerationDebug, NarrativeContextValue } from './types';
 import { DecisionImportance } from '../../types/narrative.types';
 import { useGameState } from '../../context/GameStateProvider';
+import { narrativeDispatchWrapper } from './NarrativeProvider';
 
 export function useNarrativeContext(): UseNarrativeContextReturn {
   try {
@@ -42,8 +43,24 @@ export function useNarrativeContext(): UseNarrativeContextReturn {
     
     // Create a context-like object for compatibility with existing hooks
     // Pass only the narrative slice and dispatch for compatibility with child hooks
-    const narrativeSlice = state.narrative || {};
-    const context = { state: narrativeSlice, dispatch };
+    const narrativeSlice = state.narrative || { /* Intentionally empty */ };
+    
+    // Wrap the dispatch with the narrative action filter
+    const narrativeDispatch = narrativeDispatchWrapper(dispatch);
+    
+    // Create a context value with the wrapped dispatch
+    const context: NarrativeContextValue = { 
+      state: {
+        ...narrativeSlice,
+        visitedPoints: narrativeSlice.visitedPoints || [],
+        availableChoices: narrativeSlice.availableChoices || [],
+        displayMode: narrativeSlice.displayMode || 'standard',
+        context: JSON.stringify(narrativeSlice.context || { decisionHistory: [] }),
+        narrativeHistory: narrativeSlice.narrativeHistory || [],
+        currentStoryPoint: narrativeSlice.currentStoryPoint,
+      }, 
+      dispatch: narrativeDispatch 
+    };
     
     // Extract functions from individual hook modules
     const { 
@@ -90,7 +107,7 @@ export function useNarrativeContext(): UseNarrativeContextReturn {
         // Create the debug object with proper typing
         const debugObject: NarrativeGenerationDebug = {
           generateNarrativeResponse,
-          addNarrativeHistory: (text: string) => dispatch(addNarrativeHistory(text))
+          addNarrativeHistory: (text: string) => narrativeDispatch(addNarrativeHistory(text))
         };
         
         // Set the debug property on window
@@ -103,7 +120,7 @@ export function useNarrativeContext(): UseNarrativeContextReturn {
           delete window.__debugNarrativeGeneration;
         }
       };
-    }, [generateNarrativeResponse, dispatch]);
+    }, [generateNarrativeResponse, narrativeDispatch]);
   
     // Create wrapped version of checkForDecisionTriggers that returns synchronous boolean
     const wrappedCheckForDecisionTriggers = useCallback((narrativeText: string): boolean => {

@@ -70,7 +70,7 @@ describe('Combat State Management', () => {
       opponent: mockOpponentCharacter,
       onCombatEnd: mockOnCombatEnd,
       dispatch: mockDispatch,
-      combatState: ensureCombatState({}) // Pass empty object to ensureCombatState
+      combatState: ensureCombatState({ /* Intentionally empty */ }) // Pass empty object to ensureCombatState
     }));
 
     const initialState = result.current.weaponState;

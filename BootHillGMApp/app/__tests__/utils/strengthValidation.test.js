@@ -1,3 +1,5 @@
+/* global describe, test, expect */
+
 import {
   validateStrength,
   MIN_STRENGTH,

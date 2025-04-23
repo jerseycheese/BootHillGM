@@ -5,9 +5,10 @@ import { EVENTS, triggerCustomEvent } from '../utils/events';
 import { initializeBrowserDebugTools, updateDebugCurrentDecision } from '../utils/debugConsole';
 import { generateEnhancedDecision } from '../utils/contextualDecisionGenerator';
 import { initializeDecisionDebugTools } from '../utils/decisionDebug';
-import { clearCurrentDecision, addNarrativeHistory } from '../actions/narrativeActions';
+import { clearCurrentDecision, addNarrativeHistory, updateNarrative, presentDecision } from '../actions/narrativeActions';
 import { createDecisionGameState } from '../utils/decisionStateUtils';
 import { GameState } from '../types/gameState';
+import { narrativeDispatchWrapper } from './narrative/NarrativeProvider';
 
 /**
  * Custom hook to manage DevTools state and functionality
@@ -29,8 +30,10 @@ export function useDevTools(gameState: GameState) {
   // Narrative context
   // Use the correct state hook
   const { state, dispatch } = useGameState();
-  // narrativeContext is no longer a separate object, access state directly
-
+  
+  // Create a wrapped dispatch that handles NarrativeAction types
+  const narrativeDispatch = narrativeDispatchWrapper(dispatch);
+  
   /**
    * Forces a re-render of all components via a custom event system.
    */
@@ -46,8 +49,8 @@ export function useDevTools(gameState: GameState) {
   const handleClearDecision = useCallback(() => {
     setLoading("clearing");
     try {
-      // Use the dispatch from useGameState
-      dispatch(clearCurrentDecision());
+      // Use the wrapper to dispatch NarrativeAction
+      narrativeDispatch(clearCurrentDecision());
       triggerCustomEvent(EVENTS.DECISION_CLEARED);
       forceRender();
     } catch (err) {
@@ -58,7 +61,7 @@ export function useDevTools(gameState: GameState) {
         setLoading(null);
       }, 100);
     }
-  }, [dispatch, forceRender]); // Update dependencies
+  }, [narrativeDispatch, forceRender]); // Update dependencies
 
   /**
    * Handles the generation and presentation of a contextual decision based on
@@ -70,12 +73,12 @@ export function useDevTools(gameState: GameState) {
     
     try {
       // First, notify the user that we're generating a decision
-      // Use the dispatch from useGameState
-      dispatch(addNarrativeHistory("\nGenerating a contextual decision based on current narrative context...\n"));
+      // Use the wrapper to dispatch NarrativeAction
+      narrativeDispatch(addNarrativeHistory("\nGenerating a contextual decision based on current narrative context...\n"));
       
       // Clear any existing decision to prevent conflicts
-      // Use the dispatch from useGameState
-      dispatch(clearCurrentDecision());
+      // Use the wrapper to dispatch NarrativeAction
+      narrativeDispatch(clearCurrentDecision());
       triggerCustomEvent(EVENTS.DECISION_CLEARED);
       
       // Add a slight delay to ensure the UI updates with our message
@@ -104,8 +107,8 @@ export function useDevTools(gameState: GameState) {
           // In case of generation failure
           if (!contextualDecision) {
             const errorMessage = `Failed to generate a decision for the current narrative context`;
-            // Use the dispatch from useGameState
-            dispatch(addNarrativeHistory(`\n${errorMessage}\n`));
+            // Use the wrapper to dispatch NarrativeAction
+            narrativeDispatch(addNarrativeHistory(`\n${errorMessage}\n`));
             setError(errorMessage);
             setLoading(null);
             return;
@@ -121,20 +124,14 @@ export function useDevTools(gameState: GameState) {
           const narrativeHistory = [...(state.narrative?.narrativeHistory || [])];
           narrativeHistory.pop(); // Remove the loading message
           
-          // Use the dispatch from useGameState
-          dispatch({
-            type: 'UPDATE_NARRATIVE',
-            payload: {
-              narrativeHistory: narrativeHistory
-            }
-          });
+          // Use the wrapper to dispatch NarrativeAction with action creator
+          narrativeDispatch(updateNarrative({
+            narrativeHistory: narrativeHistory
+          }));
           
           // Now present the new decision
-          // Use the dispatch from useGameState
-          dispatch({
-            type: 'PRESENT_DECISION',
-            payload: contextualDecision
-          });
+          // Use the wrapper to dispatch NarrativeAction with action creator
+          narrativeDispatch(presentDecision(contextualDecision));
           
           // Notify all components that a new decision is ready
           triggerCustomEvent(EVENTS.DECISION_READY, contextualDecision);
@@ -159,7 +156,7 @@ export function useDevTools(gameState: GameState) {
       console.error('BHGM Debug: Contextual decision error:', err);
       setLoading(null);
     }
-  }, [gameState, state.narrative, dispatch, selectedLocationType, forceRender]); // Update dependencies
+  }, [gameState, state.narrative, narrativeDispatch, selectedLocationType, forceRender]); // Update dependencies
 
   /**
    * Toggles visibility of the entire DevTools panel

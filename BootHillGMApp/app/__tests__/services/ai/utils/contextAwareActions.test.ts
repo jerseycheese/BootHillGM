@@ -46,15 +46,14 @@ describe('Context-Aware Suggested Actions', () => {
       //   ]
       // };
       // Act
-      const enhancedResponse = validateAndEnhanceResponse(aiResponse); // Removed gameContext
-      
+      const enhancedResponse = validateAndEnhanceResponse(aiResponse);
+
       // Assert
       // Removed length check as it's no longer guaranteed
       
       // Check for combat and danger action types in response
       // Assertions for combat context:
       // 1. Should have at least 4 actions (due to fallback addition)
-      // Removed length check as fallback addition is disabled
       // 2. Check if actions exist (type/diversity not guaranteed with empty initial input and no fallback addition)
       expect(enhancedResponse.suggestedActions).toBeInstanceOf(Array);
       // Optional: Check if *any* action was generated if needed, though it might be empty
@@ -72,15 +71,13 @@ describe('Context-Aware Suggested Actions', () => {
       //   ]
       // };
       // Act
-      const enhancedResponse = validateAndEnhanceResponse(aiResponse); // Removed gameContext
-      
+      const enhancedResponse = validateAndEnhanceResponse(aiResponse);
+
       // Assert
-      // Removed length check
-      
+
       // Check for interaction and social action types in response
       // Assertions for social context:
       // 1. Should have at least 4 actions (due to fallback addition)
-      // Removed length check
       // 2. Check if actions exist (type/diversity not guaranteed with empty initial input and no fallback addition)
       expect(enhancedResponse.suggestedActions).toBeInstanceOf(Array);
       // Optional: Check if *any* action was generated if needed, though it might be empty
@@ -102,22 +99,17 @@ describe('Context-Aware Suggested Actions', () => {
       //   ]
       // };
       // Act
-      const enhancedResponse = validateAndEnhanceResponse(aiResponse); // Removed gameContext
-      
+      const enhancedResponse = validateAndEnhanceResponse(aiResponse);
+
       // Assert
-      // Removed length check
-      
+
       // Should keep existing actions
       expect(enhancedResponse.suggestedActions[0].id).toBe('existing1');
       
       // Assertions for preserving actions:
       // 1. Should have at least 4 actions (due to fallback addition)
-      // Removed length check
       // 2. Should keep existing actions
       expect(enhancedResponse.suggestedActions.some(a => a.id === 'existing1')).toBe(true);
-      // 3. Diversity check removed (not guaranteed with only 1 initial action and no fallback addition)
-      // const actionTypesPreserve = new Set(enhancedResponse.suggestedActions.map(a => a.type));
-      // expect(actionTypesPreserve.size).toBeGreaterThan(1);
     });
   });
 

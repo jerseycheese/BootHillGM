@@ -105,7 +105,7 @@ export const useInventoryStats = () => {
     const totalItems = items.length;
     const totalQuantity = items.reduce((total, item) => total + (item.quantity || 1), 0);
     
-    const categoryCounts: Record<string, number> = {};
+    const categoryCounts: Record<string, number> = { /* Intentionally empty */ };
     items.forEach(item => {
       const category = item.category || 'unknown'; // Use only category
       categoryCounts[category] = (categoryCounts[category] || 0) + 1;

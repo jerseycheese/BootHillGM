@@ -7,7 +7,6 @@
 import { DecisionPrompt, DecisionResponse } from '../../../types/ai-service.types';
 import { NarrativeState, PlayerDecision, PlayerDecisionOption } from '../../../types/narrative.types';
 import { Character } from '../../../types/character';
-import { GameState } from '../../../types/gameState';
 import { LocationType } from '../../locationService';
 import { DecisionHistoryEntry, AIDecisionServiceConfig } from '../types/aiDecisionTypes';
 
@@ -17,14 +16,12 @@ import { DecisionHistoryEntry, AIDecisionServiceConfig } from '../types/aiDecisi
  * @param narrativeState Current narrative state
  * @param character Player character
  * @param decisionsHistory Recent decision history
- * @param _gameState Optional game state for additional context
  * @returns Formatted decision prompt
  */
 export function buildDecisionPrompt(
   narrativeState: NarrativeState,
   character: Character,
-  decisionsHistory: DecisionHistoryEntry[],
-  _gameState?: GameState
+  decisionsHistory: DecisionHistoryEntry[]
 ): DecisionPrompt {
   // Extract recent narrative content
   let narrativeContext = '';
@@ -50,7 +47,7 @@ export function buildDecisionPrompt(
   if (character.attributes.gunAccuracy >= 8) traits.push('sharpshooter');
   
   // Map relationships (simplified)
-  const relationships: Record<string, string> = {};
+  const relationships: Record<string, string> = { /* Intentionally empty */ };
   
   // Get recent events
   const recentEvents = narrativeState.narrativeHistory
@@ -153,14 +150,10 @@ export function aiResponseToPlayerDecision(
  * Generate a fallback decision when AI service is unavailable
  * 
  * @param narrativeState Current narrative state
- * @param _character Player character (unused)
- * @param _gameState Optional game state (unused)
  * @returns PlayerDecision using templates instead of AI
  */
 export function generateFallbackDecision(
-  narrativeState: NarrativeState,
-  _character: Character,
-  _gameState?: GameState
+  narrativeState: NarrativeState
 ): PlayerDecision {
   // In a real implementation, this would use your existing template system
   // For now, create a simple fallback decision

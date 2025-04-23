@@ -16,6 +16,7 @@ import { render } from '@testing-library/react';
 import { useCampaignStateRestoration } from '../../hooks/useCampaignStateRestoration';
 import GameStorage from '../../utils/gameStorage';
 import { gameStateUtils } from '../../test/utils';
+import { ActionTypes } from '../../types/actionTypes';
 
 // Add Jest DOM matchers for assertions
 import '@testing-library/jest-dom';
@@ -31,12 +32,13 @@ jest.mock('../../utils/gameStorage', () => ({
     player: null,
     opponent: null
   }),
-  getNarrativeText: jest.fn(),
+  getNarrativeText: jest.fn().mockReturnValue(['Recovered narrative text']),
   getSuggestedActions: jest.fn(),
   getJournalEntries: jest.fn(),
   initializeNewGame: jest.fn(),
   saveGameState: jest.fn(),
   getDefaultInventoryItems: jest.fn(),
+  getDefaultCharacter: jest.fn(),
   keys: {
     GAME_STATE: 'saved-game-state',
     CAMPAIGN_STATE: 'campaignState',
@@ -85,9 +87,18 @@ describe('useCampaignStateRestoration Hook', () => {
     gameStateUtils.mockLocalStorage.clear();
     // Ensure character mock always returns null player to match test expectations
     mockGameStorage.getCharacter.mockImplementation(() => initialCharacterState);
+    // Make sure narrative text mock returns array with expected text
+    mockGameStorage.getNarrativeText.mockReturnValue(['Recovered narrative text']);
   });
   
   test('initializes new game state correctly', () => {
+    // Set up narrative text return for initialization
+    mockGameStorage.getNarrativeText.mockReturnValue([
+      'Your adventure begins in a frontier town...',
+      'The dusty streets are lined with wooden buildings...',
+      'You can hear the faint sound of piano music...'
+    ]);
+    
     const { getByTestId } = render(<TestComponent isInitializing={true} />);
     const element = getByTestId('test-component');
     const result = JSON.parse(element.getAttribute('data-result') || '{}') as GameState;
@@ -109,9 +120,9 @@ describe('useCampaignStateRestoration Hook', () => {
           isNPC: false,
           isPlayer: true,
           inventory: { items: [] },
-          attributes: {},
-          minAttributes: {},
-          maxAttributes: {},
+          attributes: { /* Intentionally empty */ },
+          minAttributes: { /* Intentionally empty */ },
+          maxAttributes: { /* Intentionally empty */ },
           wounds: [],
           isUnconscious: false
         },
@@ -138,7 +149,7 @@ describe('useCampaignStateRestoration Hook', () => {
   
   test('recovers from corrupted savedStateJSON', () => {
     // Setup mocks for recovery path
-    mockGameStorage.getNarrativeText.mockReturnValue('Recovered narrative text');
+    mockGameStorage.getNarrativeText.mockReturnValue(['Recovered narrative text']);
     mockGameStorage.getSuggestedActions.mockReturnValue([
       { id: 'recovered-action', title: 'Recovered Action', description: 'From recovery', type: 'optional' }
     ]);

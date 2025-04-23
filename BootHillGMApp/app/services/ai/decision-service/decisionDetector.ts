@@ -7,7 +7,6 @@
 import { DEFAULT_DECISION_THRESHOLD } from '../../../constants/decision-service.constants';
 import { DecisionDetectionResult } from '../../../types/ai-service.types';
 import { NarrativeState, StoryPointType } from '../../../types/narrative.types';
-import { Character } from '../../../types/character';
 import { DecisionDetector } from '../../../types/decision-service/decision-service.types';
 
 /**
@@ -83,7 +82,6 @@ export class NarrativeDecisionDetector implements DecisionDetector {
    */
   public detectDecisionPoint(
     narrativeState: NarrativeState,
-    _character: Character
   ): DecisionDetectionResult {
     // Test scenarios need special handling to ensure tests pass
     if (isTestScenario(narrativeState)) {

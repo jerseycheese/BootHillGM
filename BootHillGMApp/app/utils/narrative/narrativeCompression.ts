@@ -17,29 +17,16 @@ export interface NarrativeSummary {
 }
 
 /**
- * Compresses a narrative text to reduce token count while preserving meaning
+ * Estimates token count based on text length
+ * This is a simplified version - in production, consider using a tokenizer like tiktoken
  * 
- * @param text The original narrative text
- * @param level Compression level to apply
- * @returns Compressed text with reduced token count
+ * @param text Text to estimate tokens for
+ * @returns Estimated token count
  */
-export function compressNarrativeText(text: string, level: CompressionLevel = 'medium'): string {
-  switch (level) {
-    case 'none':
-      // No compression
-      return text;
-    case 'low':
-      // Light compression - remove redundancies and filler words
-      return applyLowCompression(text);
-    case 'medium':
-      // Medium compression - more aggressive, focus on key information
-      return applyMediumCompression(text);
-    case 'high':
-      // High compression - extract only essential elements
-      return applyHighCompression(text);
-    default:
-      return text;
-  }
+export function estimateTokenCount(text: string): number {
+  const WORDS_PER_TOKEN = 0.75; // Approximate ratio
+  const words = text.split(/\s+/).length;
+  return Math.ceil(words / WORDS_PER_TOKEN);
 }
 
 /**
@@ -102,51 +89,6 @@ function applyMediumCompression(text: string): string {
     .trim();
   
   return result;
-}
-
-/**
- * Applies high-level compression techniques
- * 
- * @param text Original text
- * @returns Highly compressed text focused on essential information
- */
-function applyHighCompression(text: string): string {
-  // Start with medium compression
-  const compressed = applyMediumCompression(text);
-  
-  // Process sentence by sentence for high compression
-  const sentences = compressed.split(/(?<=[.!?])\s+/);
-  
-  return sentences.map(sentence => {
-    // Keep short sentences as is
-    if (sentence.split(/\s+/).length <= 8) {
-      return sentence;
-    }
-    
-    // Extract only the most important elements
-    
-    // Identify named entities (usually capitalized)
-    const entities = (sentence.match(/\b[A-Z][a-z]+\b/g) || []);
-    
-    // Extract key actions (verbs)
-    const verbs = extractKeyVerbs(sentence);
-    
-    // Extract important objects
-    const objects = extractImportantObjects(sentence);
-    
-    // Combine the essential elements
-    const keyElements = [...entities, ...verbs, ...objects];
-    
-    // If we have enough key elements, use them to reconstruct the sentence
-    // Otherwise, keep the original but remove articles and some prepositions
-    if (keyElements.length >= 4) {
-      return keyElements.join(' ');
-    } else {
-      return sentence
-        .replace(/\b(a|an|the)\b/gi, '')
-        .replace(/\b(of|for|with|by|at|from|to|in|on|under|over)\b/gi, '');
-    }
-  }).join('. ');
 }
 
 /**
@@ -214,42 +156,48 @@ function extractImportantObjects(sentence: string): string[] {
 }
 
 /**
- * Divides a long narrative into sections and creates summaries
+ * Applies high-level compression techniques
  * 
- * @param text Long narrative text
- * @param sectionCount Number of sections to divide into
- * @returns Array of section summaries
+ * @param text Original text
+ * @returns Highly compressed text focused on essential information
  */
-export function createNarrativeSummaries(text: string, sectionCount: number = 3): NarrativeSummary[] {
-  // Divide text into roughly equal sections
-  const textLength = text.length;
-  const sectionLength = Math.floor(textLength / sectionCount);
+function applyHighCompression(text: string): string {
+  // Start with medium compression
+  const compressed = applyMediumCompression(text);
   
-  const summaries: NarrativeSummary[] = [];
+  // Process sentence by sentence for high compression
+  const sentences = compressed.split(/(?<=[.!?])\s+/);
   
-  for (let i = 0; i < sectionCount; i++) {
-    const start = i * sectionLength;
-    // For the last section, include any remaining text
-    const end = (i === sectionCount - 1) ? textLength : (i + 1) * sectionLength;
+  return sentences.map(sentence => {
+    // Keep short sentences as is
+    if (sentence.split(/\s+/).length <= 8) {
+      return sentence;
+    }
     
-    // Find sentence boundaries to avoid cutting mid-sentence
-    const sectionText = extractCompleteSentences(text.substring(start, end));
-    const originalTokens = estimateTokenCount(sectionText);
+    // Extract only the most important elements
     
-    // Apply high compression to create summary
-    const summary = applyHighCompression(sectionText);
-    const summaryTokens = estimateTokenCount(summary);
+    // Identify named entities (usually capitalized)
+    const entities = (sentence.match(/\b[A-Z][a-z]+\b/g) || []);
     
-    summaries.push({
-      section: sectionText,
-      summary,
-      originalTokens,
-      summaryTokens,
-      compressionRatio: originalTokens > 0 ? 1 - (summaryTokens / originalTokens) : 0
-    });
-  }
-  
-  return summaries;
+    // Extract key actions (verbs)
+    const verbs = extractKeyVerbs(sentence); // Now defined before call
+    
+    // Extract important objects
+    const objects = extractImportantObjects(sentence); // Now defined before call
+    
+    // Combine the essential elements
+    const keyElements = [...entities, ...verbs, ...objects];
+    
+    // If we have enough key elements, use them to reconstruct the sentence
+    // Otherwise, keep the original but remove articles and some prepositions
+    if (keyElements.length >= 4) {
+      return keyElements.join(' ');
+    } else {
+      return sentence
+        .replace(/\b(a|an|the)\b/gi, '')
+        .replace(/\b(of|for|with|by|at|from|to|in|on|under|over)\b/gi, '');
+    }
+  }).join('. ');
 }
 
 /**
@@ -281,30 +229,6 @@ function extractCompleteSentences(text: string): string {
 }
 
 /**
- * Creates a very concise summary of a narrative text
- * 
- * @param text Original text
- * @param maxLength Maximum length for the summary
- * @returns Concise summary
- */
-export function createConciseSummary(text: string, maxLength: number = 100): string {
-  
-  // Extract key entities and events
-  const entities = extractEntities(text);
-  const keyEvents = extractKeyEvents(text);
-  
-  // Combine key elements
-  let summary = `${entities.join(', ')}. ${keyEvents.join('. ')}`;
-  
-  // Truncate if needed
-  if (summary.length > maxLength) {
-    summary = summary.substring(0, maxLength - 3) + '...';
-  }
-  
-  return summary;
-}
-
-/**
  * Extracts named entities from text
  * 
  * @param text Source text
@@ -320,29 +244,6 @@ function extractEntities(text: string): string[] {
   
   // Deduplicate
   return [...new Set(entities)];
-}
-
-/**
- * Extracts key events from text
- * 
- * @param text Source text
- * @returns Array of key event descriptions
- */
-function extractKeyEvents(text: string): string[] {
-  // Split into sentences
-  const sentences = text.split(/(?<=[.!?])\s+/);
-  
-  // Score sentences for event significance
-  const scoredSentences = sentences.map(sentence => ({
-    sentence,
-    score: scoreSentenceEventSignificance(sentence)
-  }));
-  
-  // Take the top 3 most significant event sentences
-  return scoredSentences
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
-    .map(item => item.sentence);
 }
 
 /**
@@ -381,14 +282,113 @@ function scoreSentenceEventSignificance(sentence: string): number {
 }
 
 /**
- * Estimates token count based on text length
- * This is a simplified version - in production, consider using a tokenizer like tiktoken
+ * Extracts key events from text
  * 
- * @param text Text to estimate tokens for
- * @returns Estimated token count
+ * @param text Source text
+ * @returns Array of key event descriptions
  */
-export function estimateTokenCount(text: string): number {
-  const WORDS_PER_TOKEN = 0.75; // Approximate ratio
-  const words = text.split(/\s+/).length;
-  return Math.ceil(words / WORDS_PER_TOKEN);
+function extractKeyEvents(text: string): string[] {
+  // Split into sentences
+  const sentences = text.split(/(?<=[.!?])\s+/);
+  
+  // Score sentences for event significance
+  const scoredSentences = sentences.map(sentence => ({
+    sentence,
+    score: scoreSentenceEventSignificance(sentence) // Now defined before call
+  }));
+  
+  // Take the top 3 most significant event sentences
+  return scoredSentences
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(item => item.sentence);
+}
+
+/**
+ * Compresses a narrative text to reduce token count while preserving meaning
+ * 
+ * @param text The original narrative text
+ * @param level Compression level to apply
+ * @returns Compressed text with reduced token count
+ */
+export function compressNarrativeText(text: string, level: CompressionLevel = 'medium'): string {
+  switch (level) {
+    case 'none':
+      // No compression
+      return text;
+    case 'low':
+      // Light compression - remove redundancies and filler words
+      return applyLowCompression(text); // Now defined before call
+    case 'medium':
+      // Medium compression - more aggressive, focus on key information
+      return applyMediumCompression(text); // Now defined before call
+    case 'high':
+      // High compression - extract only essential elements
+      return applyHighCompression(text); // Now defined before call
+    default:
+      return text;
+  }
+}
+
+/**
+ * Divides a long narrative into sections and creates summaries
+ * 
+ * @param text Long narrative text
+ * @param sectionCount Number of sections to divide into
+ * @returns Array of section summaries
+ */
+export function createNarrativeSummaries(text: string, sectionCount: number = 3): NarrativeSummary[] {
+  // Divide text into roughly equal sections
+  const textLength = text.length;
+  const sectionLength = Math.floor(textLength / sectionCount);
+  
+  const summaries: NarrativeSummary[] = [];
+  
+  for (let i = 0; i < sectionCount; i++) {
+    const start = i * sectionLength;
+    // For the last section, include any remaining text
+    const end = (i === sectionCount - 1) ? textLength : (i + 1) * sectionLength;
+    
+    // Find sentence boundaries to avoid cutting mid-sentence
+    const sectionText = extractCompleteSentences(text.substring(start, end)); // Now defined before call
+    const originalTokens = estimateTokenCount(sectionText); // Now defined before call
+    
+    // Apply high compression to create summary
+    const summary = applyHighCompression(sectionText); // Now defined before call
+    const summaryTokens = estimateTokenCount(summary); // Now defined before call
+    
+    summaries.push({
+      section: sectionText,
+      summary,
+      originalTokens,
+      summaryTokens,
+      compressionRatio: originalTokens > 0 ? 1 - (summaryTokens / originalTokens) : 0
+    });
+  }
+  
+  return summaries;
+}
+
+/**
+ * Creates a very concise summary of a narrative text
+ * 
+ * @param text Original text
+ * @param maxLength Maximum length for the summary
+ * @returns Concise summary
+ */
+export function createConciseSummary(text: string, maxLength: number = 100): string {
+  
+  // Extract key entities and events
+  const entities = extractEntities(text); // Now defined before call
+  const keyEvents = extractKeyEvents(text); // Now defined before call
+  
+  // Combine key elements
+  let summary = `${entities.join(', ')}. ${keyEvents.join('. ')}`;
+  
+  // Truncate if needed
+  if (summary.length > maxLength) {
+    summary = summary.substring(0, maxLength - 3) + '...';
+  }
+  
+  return summary;
 }

@@ -20,6 +20,47 @@ const STORAGE_KEYS = {
 };
 
 /**
+ * Get default suggested actions with varied types.
+ * Provides a mix of action types to test button styling.
+ * 
+ * @returns Array of default suggested actions for new games
+ */
+const getDefaultSuggestedActions = (): SuggestedAction[] => {
+  return [
+    { 
+      id: 'action-look-around', 
+      title: 'Look around', 
+      description: 'Examine your surroundings to get a better sense of where you are.', 
+      type: 'basic'
+    },
+    { 
+      id: 'action-check-inventory', 
+      title: 'Check inventory', 
+      description: 'Take stock of what you have with you.', 
+      type: 'main'
+    },
+    { 
+      id: 'action-talk-to-someone', 
+      title: 'Find someone to talk to', 
+      description: 'Look for another person to interact with.', 
+      type: 'interaction'
+    },
+    { 
+      id: 'action-explore', 
+      title: 'Explore the area', 
+      description: 'Move around to discover what\'s nearby.', 
+      type: 'side'
+    },
+    { 
+      id: 'action-challenge-stranger', 
+      title: 'Challenge a stranger', 
+      description: 'Pick a fight with someone you don\'t know.', 
+      type: 'chaotic'
+    }
+  ];
+};
+
+/**
  * Get suggested actions from any available source.
  * Checks GAME_STATE and CAMPAIGN_STATE for valid action arrays.
  * Falls back to default actions if none found.
@@ -53,8 +94,9 @@ const getSuggestedActions = (): SuggestedAction[] => {
   }
   
   // Return default actions with a variety of types to test all styling
-  return getDefaultSuggestedActions();
+  return getDefaultSuggestedActions(); // Now defined before call
 };
+
 
 /**
  * Get journal entries from any available source.
@@ -162,46 +204,6 @@ const getDefaultInventoryItems = (): InventoryItem[] => {
   ];
 };
 
-/**
- * Get default suggested actions with varied types.
- * Provides a mix of action types to test button styling.
- * 
- * @returns Array of default suggested actions for new games
- */
-const getDefaultSuggestedActions = (): SuggestedAction[] => {
-  return [
-    { 
-      id: 'action-look-around', 
-      title: 'Look around', 
-      description: 'Examine your surroundings to get a better sense of where you are.', 
-      type: 'basic'
-    },
-    { 
-      id: 'action-check-inventory', 
-      title: 'Check inventory', 
-      description: 'Take stock of what you have with you.', 
-      type: 'main'
-    },
-    { 
-      id: 'action-talk-to-someone', 
-      title: 'Find someone to talk to', 
-      description: 'Look for another person to interact with.', 
-      type: 'interaction'
-    },
-    { 
-      id: 'action-explore', 
-      title: 'Explore the area', 
-      description: 'Move around to discover what\'s nearby.', 
-      type: 'side'
-    },
-    { 
-      id: 'action-challenge-stranger', 
-      title: 'Challenge a stranger', 
-      description: 'Pick a fight with someone you don\'t know.', 
-      type: 'chaotic'
-    }
-  ];
-};
 
 export const gameElementsStorage = {
   getSuggestedActions,

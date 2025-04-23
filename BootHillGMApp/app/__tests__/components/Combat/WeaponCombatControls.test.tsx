@@ -52,7 +52,7 @@ describe('WeaponCombatControls', () => {
 
   const mockOnAction = jest.fn();
 
-  const renderComponent = (props = {}) => {
+  const renderComponent = (props = { /* Intentionally empty */ }) => {
     return render(
       <WeaponCombatControls
         isProcessing={false}

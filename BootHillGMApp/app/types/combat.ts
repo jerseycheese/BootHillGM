@@ -231,7 +231,7 @@ export const parseWeaponDamage = (damageString: string): number => {
   return total;
 };
 
-export function ensureCombatState(state?: Partial<CombatState>): CombatState {
+export function ensureCombatState(state?: Partial<CombatState> | CombatState): CombatState {
   return {
     isActive: state?.isActive ?? false,
     combatType: state?.combatType ?? null,
@@ -257,7 +257,7 @@ export function ensureCombatState(state?: Partial<CombatState>): CombatState {
     } : undefined,
     participants: state?.participants ?? [],
     rounds: state?.rounds ?? 0,
-    currentTurn: state?.currentTurn,
+    currentTurn: state?.currentTurn === null ? undefined : state?.currentTurn,
     combatLog: state?.combatLog ?? []
   };
 }

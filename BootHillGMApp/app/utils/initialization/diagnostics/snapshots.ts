@@ -9,54 +9,6 @@
 import { StateSnapshot, KeyDiagnosticData } from './types';
 
 /**
- * Captures current state in localStorage for diagnostic purposes
- * Creates a comprehensive snapshot of important game state keys
- * and their metadata for analysis and debugging.
- * 
- * @returns {StateSnapshot | null} Snapshot object with diagnostic information or null if execution fails
- */
-export const captureStateSnapshot = (): StateSnapshot | null => {
-  if (typeof window === 'undefined') return null;
-  
-  try {
-    // Get all localStorage keys
-    const allKeys: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key) {
-        allKeys.push(key);
-      }
-    }
-    
-    // Track important game state related keys
-    const importantKeys = [
-      'saved-game-state',
-      'character-creation-progress',
-      'completed-character',
-      'inventory-state',
-      'narrative-state',
-      '_boothillgm_reset_flag'
-    ];
-    
-    // Create snapshot of current state
-    const snapshot: StateSnapshot = {
-      timestamp: Date.now(),
-      totalKeys: allKeys.length,
-      gameStateKeys: {}
-    };
-    
-    // Add info for each important key
-    importantKeys.forEach(key => {
-      snapshot.gameStateKeys[key] = getKeyDiagnosticData(key);
-    });
-    
-    return snapshot;
-  } catch {
-    return null;
-  }
-};
-
-/**
  * Gets diagnostic data for a specific localStorage key
  * Analyzes the key's value, attempts to parse JSON content,
  * and extracts useful metadata for diagnostics.
@@ -112,3 +64,51 @@ function getKeyDiagnosticData(key: string): KeyDiagnosticData {
   
   return keyData;
 }
+
+/**
+ * Captures current state in localStorage for diagnostic purposes
+ * Creates a comprehensive snapshot of important game state keys
+ * and their metadata for analysis and debugging.
+ * 
+ * @returns {StateSnapshot | null} Snapshot object with diagnostic information or null if execution fails
+ */
+export const captureStateSnapshot = (): StateSnapshot | null => {
+  if (typeof window === 'undefined') return null;
+  
+  try {
+    // Get all localStorage keys
+    const allKeys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) {
+        allKeys.push(key);
+      }
+    }
+    
+    // Track important game state related keys
+    const importantKeys = [
+      'saved-game-state',
+      'character-creation-progress',
+      'completed-character',
+      'inventory-state',
+      'narrative-state',
+      '_boothillgm_reset_flag'
+    ];
+    
+    // Create snapshot of current state
+    const snapshot: StateSnapshot = {
+      timestamp: Date.now(),
+      totalKeys: allKeys.length,
+      gameStateKeys: {}
+    };
+    
+    // Add info for each important key
+    importantKeys.forEach(key => {
+      snapshot.gameStateKeys[key] = getKeyDiagnosticData(key); // Now defined before call
+    });
+    
+    return snapshot;
+  } catch {
+    return null;
+  }
+};

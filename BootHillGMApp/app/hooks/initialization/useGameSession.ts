@@ -6,6 +6,7 @@ import { useCampaignStatePersistence } from "../useCampaignStatePersistence";
 import { useInitializationTimeout } from "./useInitializationTimeout";
 import { useInitializationStrategies } from "./useInitializationStrategies";
 import { GameEngineAction } from "../../types/gameActions";
+import { ActionTypes } from '../../types/actionTypes';
 
 /**
  * Hook for handling game session initialization
@@ -149,11 +150,11 @@ export const useGameSession = (): { isInitializing: boolean; isClient: boolean }
 
           try {
             // We know initializedState is a proper GameState at this point
-            dispatch({ type: 'SET_STATE', payload: initializedState });
+            dispatch({ type: ActionTypes.SET_STATE, payload: initializedState }); // Use ActionTypes constant
 
             // Add safety check before saving
             if (saveGame) {
-              saveGame(initializedState);
+              saveGame();
             }
             // Set initializing false AFTER dispatch and save
             setIsInitializing(false);

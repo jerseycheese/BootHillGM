@@ -1,15 +1,6 @@
 import { Character } from '../character';
 import { Wound } from '../combat';
-
-/**
- * Character action types
- * Using string literals to avoid template literal type issues
- */
-export type CharacterActionType = 
-  | 'character/SET_CHARACTER'
-  | 'character/UPDATE_CHARACTER'
-  | 'character/SET_OPPONENT'
-  | 'character/UPDATE_OPPONENT';
+import { ActionTypes } from '../actionTypes'; // Import ActionTypes
 
 /**
  * Update character payload type
@@ -29,29 +20,28 @@ export interface UpdateCharacterPayload {
   };
   damageInflicted?: number;
   isUnconscious?: boolean;
-  [key: string]: unknown;
 }
 
 /**
- * Character action interfaces with string literal types
+ * Character action interfaces using ActionTypes
  */
 export interface SetCharacterAction {
-  type: 'character/SET_CHARACTER';
+  type: typeof ActionTypes.SET_CHARACTER; // Use ActionTypes
   payload: Character | null;
 }
 
 export interface UpdateCharacterAction {
-  type: 'character/UPDATE_CHARACTER';
+  type: typeof ActionTypes.UPDATE_CHARACTER; // Use ActionTypes
   payload: UpdateCharacterPayload;
 }
 
 export interface SetOpponentAction {
-  type: 'character/SET_OPPONENT';
+  type: typeof ActionTypes.SET_OPPONENT; // Use ActionTypes
   payload: Character | null;
 }
 
 export interface UpdateOpponentAction {
-  type: 'character/UPDATE_OPPONENT';
+  type: typeof ActionTypes.UPDATE_OPPONENT; // Use ActionTypes
   payload: UpdateCharacterPayload;
 }
 

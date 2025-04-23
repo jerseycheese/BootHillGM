@@ -14,7 +14,6 @@ import { BrawlingControls } from './BrawlingControls';
 import { WeaponCombatControls } from './WeaponCombatControls';
 import { useBrawlingCombat } from '../../hooks/useBrawlingCombat';
 import { useWeaponCombat } from '../../hooks/useWeaponCombat';
-// Removed unused import: import { GameEngineAction } from '../../types/gameActions';
 import { CombatTypeSelection } from './CombatTypeSelection';
 import { CombatSystemProps } from '../GameArea/types'; // Import the correct props type
 import {
@@ -23,11 +22,11 @@ import {
   WeaponCombatAction,
   ensureCombatState,
   CombatSummary,
-  // Removed unused LogEntry import
 } from '../../types/combat'; // Import from older types/combat
 import { Weapon } from '../../types/weapon.types';
 import { getDefaultWeapon } from '../../utils/weaponUtils';
 import { CombatLog } from './CombatLog';
+import { ActionTypes } from '../../types/actionTypes';
 
 // Use the imported CombatSystemProps
 export const CombatSystem: React.FC<CombatSystemProps> = ({
@@ -116,9 +115,9 @@ export const CombatSystem: React.FC<CombatSystemProps> = ({
 
   // Handle returning to narrative UI
   const handleReturnToNarrative = useCallback(() => {
-    // Use non-namespaced types expected by older logic/GameEngineAction
-    dispatch({ type: 'combat/SET_COMBAT_ACTIVE', payload: false });
-    dispatch({ type: 'combat/END_COMBAT' });
+    // Use standardized ActionTypes
+    dispatch({ type: ActionTypes.SET_COMBAT_ACTIVE, payload: false });
+    dispatch({ type: ActionTypes.END_COMBAT });
   }, [dispatch]);
 
   // Memoize combat log entries to prevent unnecessary re-renders
@@ -167,7 +166,7 @@ export const CombatSystem: React.FC<CombatSystemProps> = ({
 
     // Use ensureCombatState and older payload structure
     dispatch({
-      type: 'UPDATE_COMBAT_STATE',
+      type: ActionTypes.UPDATE_COMBAT_STATE,
       payload: ensureCombatState({
         isActive: true,
         combatType: type,
@@ -279,3 +278,6 @@ export const CombatSystem: React.FC<CombatSystemProps> = ({
     </div>
   );
 };
+
+// Default export for easier imports
+export default CombatSystem;

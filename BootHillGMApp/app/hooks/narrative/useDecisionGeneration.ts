@@ -2,8 +2,7 @@
  * Hook for generating decisions based on narrative context
  */
 import { useCallback, MutableRefObject } from 'react';
-import { DecisionImportance, PlayerDecision } from '../../types/narrative.types';
-import { NarrativeState } from '../../types/narrative.types';
+import { NarrativeState, DecisionImportance, PlayerDecision } from '../../types/narrative.types';
 import { detectPlayerNameFromText } from '../../utils/narrativeUtils';
 import { GameState } from '../../types/gameState';
 import { initialCharacterState } from '../../types/state/characterState';
@@ -123,7 +122,7 @@ export function useDecisionGeneration(
         quests: [],
         gameProgress: 0,
         character: initialCharacterState,
-        combat: {} as CombatState,
+        combat: { /* Intentionally empty */ } as CombatState,
         journal: initialJournalState,
         narrative: state,
         ui: initialUIState,

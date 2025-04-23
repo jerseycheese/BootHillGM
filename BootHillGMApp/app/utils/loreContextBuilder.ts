@@ -9,68 +9,6 @@ import { NarrativeContext } from '../types/narrative/context.types';
 import { estimateTokenCount } from './narrative/narrativeCompression';
 
 /**
- * Selects the most relevant lore facts for a given context, 
- * respecting token budget constraints.
- * 
- * @param loreStore - The lore store to select facts from
- * @param context - The current narrative context
- * @param tokenBudget - Maximum number of tokens to use for lore
- * @returns A formatted string containing the selected lore facts
- */
-export function selectLoreForContext(
-  loreStore: LoreStore,
-  context: NarrativeContext,
-  tokenBudget: number
-): string {
-  // If token budget is zero or store is empty, return empty string
-  if (tokenBudget <= 0 || Object.keys(loreStore.facts).length === 0) {
-    return '';
-  }
-
-  // Select only valid facts
-  const validFacts = Object.values(loreStore.facts).filter(fact => fact.isValid);
-  
-  if (validFacts.length === 0) {
-    return '';
-  }
-
-  // Score and prioritize facts
-  const scoredFacts = validFacts.map(fact => {
-    return {
-      fact,
-      score: calculateFactRelevance(fact, context)
-    };
-  });
-
-  // Sort by relevance score (highest first)
-  scoredFacts.sort((a, b) => b.score - a.score);
-
-  // Build lore context string, respecting token budget
-  let loreContext = '';
-  let currentTokens = 0;
-
-  for (const { fact } of scoredFacts) {
-    // Format the fact with its category
-    const factText = `${fact.content} (${fact.category})\n`;
-    
-    // Estimate tokens
-    const factTokens = estimateTokenCount(factText);
-    
-    // Check if adding this fact would exceed the budget
-    if (currentTokens + factTokens > tokenBudget) {
-      // Skip if it would exceed the budget
-      continue;
-    }
-    
-    // Add fact to context
-    loreContext += factText;
-    currentTokens += factTokens;
-  }
-
-  return loreContext;
-}
-
-/**
  * Calculates a relevance score for a fact in the current context.
  * 
  * @param fact - The fact to calculate relevance for
@@ -143,6 +81,69 @@ function calculateFactRelevance(
   
   return score;
 }
+
+/**
+ * Selects the most relevant lore facts for a given context, 
+ * respecting token budget constraints.
+ * 
+ * @param loreStore - The lore store to select facts from
+ * @param context - The current narrative context
+ * @param tokenBudget - Maximum number of tokens to use for lore
+ * @returns A formatted string containing the selected lore facts
+ */
+export function selectLoreForContext(
+  loreStore: LoreStore,
+  context: NarrativeContext,
+  tokenBudget: number
+): string {
+  // If token budget is zero or store is empty, return empty string
+  if (tokenBudget <= 0 || Object.keys(loreStore.facts).length === 0) {
+    return '';
+  }
+
+  // Select only valid facts
+  const validFacts = Object.values(loreStore.facts).filter(fact => fact.isValid);
+  
+  if (validFacts.length === 0) {
+    return '';
+  }
+
+  // Score and prioritize facts
+  const scoredFacts = validFacts.map(fact => {
+    return {
+      fact,
+      score: calculateFactRelevance(fact, context) // Now defined before call
+    };
+  });
+
+  // Sort by relevance score (highest first)
+  scoredFacts.sort((a, b) => b.score - a.score);
+
+  // Build lore context string, respecting token budget
+  let loreContext = '';
+  let currentTokens = 0;
+
+  for (const { fact } of scoredFacts) {
+    // Format the fact with its category
+    const factText = `${fact.content} (${fact.category})\n`;
+    
+    // Estimate tokens
+    const factTokens = estimateTokenCount(factText);
+    
+    // Check if adding this fact would exceed the budget
+    if (currentTokens + factTokens > tokenBudget) {
+      // Skip if it would exceed the budget
+      continue;
+    }
+    
+    // Add fact to context
+    loreContext += factText;
+    currentTokens += factTokens;
+  }
+
+  return loreContext;
+}
+
 
 /**
  * Builds a lore context extension for an AI prompt.

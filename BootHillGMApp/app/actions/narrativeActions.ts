@@ -11,6 +11,8 @@ import { NarrativeContext, ImpactState } from '../types/narrative/context.types'
 import { PlayerDecision, PlayerDecisionRecord } from '../types/narrative/decision.types';
 import { NarrativeErrorType } from '../types/narrative/error.types';
 import { DecisionImpact } from '../types/narrative/arc.types';
+import { ActionTypes } from '../types/actionTypes';
+import { NarrativeStateUpdate } from '../types/narrative.types';
 
 /**
  * Action creator for navigating to a specific story point.
@@ -18,7 +20,7 @@ import { DecisionImpact } from '../types/narrative/arc.types';
  * @returns Narrative action object.
  */
 export const navigateToPoint = (storyPointId: string): NarrativeAction => ({
-  type: 'NAVIGATE_TO_POINT',
+  type: ActionTypes.NAVIGATE_TO_POINT, // Use ActionTypes
   payload: storyPointId,
 });
 
@@ -28,7 +30,7 @@ export const navigateToPoint = (storyPointId: string): NarrativeAction => ({
  * @returns Narrative action object.
  */
 export const selectChoice = (choiceId: string): NarrativeAction => ({
-  type: 'SELECT_CHOICE',
+  type: ActionTypes.SELECT_CHOICE, // Use ActionTypes
   payload: choiceId,
 });
 
@@ -38,7 +40,7 @@ export const selectChoice = (choiceId: string): NarrativeAction => ({
  * @returns {NarrativeAction} Narrative action object.
  */
 export const addNarrativeHistory = (historyEntry: string): NarrativeAction => ({
-  type: 'ADD_NARRATIVE_HISTORY',
+  type: ActionTypes.ADD_NARRATIVE_HISTORY,
   payload: historyEntry,
 });
 
@@ -48,7 +50,7 @@ export const addNarrativeHistory = (historyEntry: string): NarrativeAction => ({
  * @returns {NarrativeAction} Narrative action object.
  */
 export const setDisplayMode = (mode: NarrativeDisplayMode): NarrativeAction => ({
-  type: 'SET_DISPLAY_MODE',
+  type: ActionTypes.SET_DISPLAY_MODE, // Use ActionTypes
   payload: mode,
 });
 
@@ -58,7 +60,7 @@ export const setDisplayMode = (mode: NarrativeDisplayMode): NarrativeAction => (
  * @returns {NarrativeAction} Narrative action object.
  */
 export const startNarrativeArc = (arcId: string): NarrativeAction => ({
-  type: 'START_NARRATIVE_ARC',
+  type: ActionTypes.START_NARRATIVE_ARC, // Use ActionTypes
   payload: arcId,
 });
 
@@ -68,7 +70,7 @@ export const startNarrativeArc = (arcId: string): NarrativeAction => ({
  * @returns {NarrativeAction} Narrative action object.
  */
 export const completeNarrativeArc = (arcId: string): NarrativeAction => ({
-  type: 'COMPLETE_NARRATIVE_ARC',
+  type: ActionTypes.COMPLETE_NARRATIVE_ARC, // Use ActionTypes
   payload: arcId,
 });
 
@@ -78,7 +80,7 @@ export const completeNarrativeArc = (arcId: string): NarrativeAction => ({
  * @returns {NarrativeAction} Narrative action object.
  */
 export const activateBranch = (branchId: string): NarrativeAction => ({
-  type: 'ACTIVATE_BRANCH',
+  type: ActionTypes.ACTIVATE_BRANCH, // Use ActionTypes
   payload: branchId,
 });
 
@@ -88,7 +90,7 @@ export const activateBranch = (branchId: string): NarrativeAction => ({
  * @returns {NarrativeAction} Narrative action object.
  */
 export const completeBranch = (branchId: string): NarrativeAction => ({
-  type: 'COMPLETE_BRANCH',
+  type: ActionTypes.COMPLETE_BRANCH, // Use ActionTypes
   payload: branchId,
 });
 
@@ -100,8 +102,20 @@ export const completeBranch = (branchId: string): NarrativeAction => ({
 export const updateNarrativeContext = (
   contextUpdate: Partial<NarrativeContext>
 ): NarrativeAction => ({
-  type: 'UPDATE_NARRATIVE_CONTEXT',
+  type: ActionTypes.SET_NARRATIVE_CONTEXT,
   payload: contextUpdate,
+});
+
+/**
+ * Action creator for updating the narrative state.
+ * @param {NarrativeStateUpdate} update - Partial narrative state update.
+ * @returns {NarrativeAction} Narrative action object.
+ */
+export const updateNarrative = (
+  update: NarrativeStateUpdate
+): NarrativeAction => ({
+  type: ActionTypes.UPDATE_NARRATIVE,
+  payload: update,
 });
 
 /**
@@ -109,7 +123,7 @@ export const updateNarrativeContext = (
  * @returns {NarrativeAction} Narrative action object.
  */
 export const resetNarrative = (): NarrativeAction => ({
-  type: 'RESET_NARRATIVE',
+  type: ActionTypes.RESET_NARRATIVE,
 });
 
 /**
@@ -118,7 +132,7 @@ export const resetNarrative = (): NarrativeAction => ({
  * @returns Narrative action object with type 'PRESENT_DECISION' and the decision as payload.
  */
 export const presentDecision = (decision: PlayerDecision): NarrativeAction => ({
-  type: 'PRESENT_DECISION',
+  type: ActionTypes.PRESENT_DECISION, // Use ActionTypes
   payload: decision,
 });
 
@@ -134,7 +148,7 @@ export const recordDecision = (
   selectedOptionId: string,
   narrative: string
 ): NarrativeAction => ({
-  type: 'RECORD_DECISION',
+  type: ActionTypes.RECORD_DECISION, // Use ActionTypes
   payload: {
     decisionId,
     selectedOptionId,
@@ -151,7 +165,7 @@ export const recordDecision = (
  * @returns Narrative action object with type 'CLEAR_CURRENT_DECISION'.
  */
 export const clearCurrentDecision = (): NarrativeAction => ({
-  type: 'CLEAR_CURRENT_DECISION',
+  type: ActionTypes.CLEAR_CURRENT_DECISION, // Use ActionTypes
 });
 
 /**
@@ -163,7 +177,7 @@ export const clearCurrentDecision = (): NarrativeAction => ({
  * @returns Narrative action object with type 'PROCESS_DECISION_IMPACTS'.
  */
 export const processDecisionImpacts = (impacts: DecisionImpact[]): NarrativeAction => ({
-  type: 'PROCESS_DECISION_IMPACTS',
+  type: ActionTypes.PROCESS_DECISION_IMPACTS, // Use ActionTypes
   payload: impacts,
 });
 
@@ -178,7 +192,7 @@ export const processDecisionImpacts = (impacts: DecisionImpact[]): NarrativeActi
 export const updateImpactState = (
   impactStateUpdate: Partial<ImpactState>
 ): NarrativeAction => ({
-  type: 'UPDATE_IMPACT_STATE',
+  type: ActionTypes.UPDATE_IMPACT_STATE, // Use ActionTypes
   payload: impactStateUpdate,
 });
 
@@ -190,7 +204,7 @@ export const updateImpactState = (
  * @returns Narrative action object with type 'EVOLVE_IMPACTS'.
  */
 export const evolveImpacts = (): NarrativeAction => ({
-  type: 'EVOLVE_IMPACTS',
+  type: ActionTypes.EVOLVE_IMPACTS, // Use ActionTypes
 });
 
 /**
@@ -208,7 +222,7 @@ export const narrativeError = (
   message: string,
   context?: Record<string, unknown>
 ): NarrativeAction => ({
-  type: 'NARRATIVE_ERROR',
+  type: ActionTypes.NARRATIVE_ERROR, // Use ActionTypes
   payload: {
     code,
     message,
@@ -224,5 +238,5 @@ export const narrativeError = (
  * @returns Narrative action object with type 'CLEAR_ERROR'
  */
 export const clearError = (): NarrativeAction => ({
-  type: 'CLEAR_ERROR'
+  type: ActionTypes.CLEAR_ERROR // Use ActionTypes
 });

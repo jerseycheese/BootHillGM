@@ -5,8 +5,8 @@
  * AI-driven decision generation and processing, as well as the AIDecisionGenerator.
  */
 
-import DecisionService from './decision-service';
-import AIDecisionGenerator from './decision-generator';
+import DecisionService from './decisionService';
+import AIDecisionGenerator from './decisionGenerator';
 
 // Export the main service as default
 export default DecisionService;

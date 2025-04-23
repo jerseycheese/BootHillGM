@@ -6,13 +6,8 @@
  */
 
 import { GameState } from '../../types/gameState';
-// Removed import of obsolete prepareStateForTesting
 import { GameEngineAction } from '../../types/gameActions';
-// Removed unused state slice imports
 
-// Removed obsolete TestState interface
-
-// Updated MockStateProvider to remove legacy properties
 interface MockStateProvider {
   state: GameState;
   dispatch: jest.Mock;
@@ -40,7 +35,7 @@ function isStateProvider(value: unknown): value is { state: GameState; dispatch:
  * @returns Context value with adapted state and legacy properties
  */
 export const createMockStateProvider = (
-  initialState: Partial<GameState> = {},
+  initialState: Partial<GameState> = { /* Intentionally empty */ },
   dispatch: jest.Mock<GameEngineAction, GameEngineAction[]> = jest.fn()
 ): MockStateProvider => {
   // Ensure it's in the new format and apply adapters
@@ -189,7 +184,7 @@ export const mockTestData = {
    * @returns Combined test data
    */
   combine: (...testData: Array<Partial<GameState>>) => {
-    const combinedState: Partial<GameState> = {};
+    const combinedState: Partial<GameState> = { /* Intentionally empty */ };
     for (const current of testData) {
       if (current.character) {
         combinedState.character = { ...combinedState.character, ...current.character };

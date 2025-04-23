@@ -12,7 +12,7 @@ import { ActionType } from '../../../types/campaign';
  */
 export function createMockResponse(prompt: string, context: string): GameServiceResponse {
   // Extract character name from context if available
-  const nameMatch = context.match(/character ([^\ ]+)/);
+  const nameMatch = context.match(/character ([^ ]+)/);
   const characterName = nameMatch ? nameMatch[1] : 'the stranger';
   
   // Create a narrative that's obviously a mock/test narrative

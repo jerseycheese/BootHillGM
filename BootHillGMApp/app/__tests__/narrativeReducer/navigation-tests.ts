@@ -9,6 +9,7 @@ import {
   setDisplayMode
 } from '../../actions/narrativeActions';
 import { createNarrativeTestState, getNarrativeState } from '../../test/utils/narrativeUtils';
+import { ActionTypes } from '../../types/actionTypes';
 
 describe('Navigation Actions', () => {
   let initialState: ReturnType<typeof createNarrativeTestState>;
@@ -20,6 +21,9 @@ describe('Navigation Actions', () => {
   describe('NAVIGATE_TO_POINT action', () => {
     it('should navigate to a valid story point', () => {
       const action = navigateToPoint('point1');
+      // Ensure the action is using the standardized ActionTypes
+      expect(action.type).toBe(ActionTypes.NAVIGATE_TO_POINT);
+      
       const newState = narrativeReducer(initialState, action);
       const narrativeState = getNarrativeState(newState);
 
@@ -30,6 +34,9 @@ describe('Navigation Actions', () => {
 
     it('should not navigate to an invalid story point', () => {
       const action = navigateToPoint('non-existent-point');
+      // Ensure the action is using the standardized ActionTypes
+      expect(action.type).toBe(ActionTypes.NAVIGATE_TO_POINT);
+      
       const newState = narrativeReducer(initialState, action);
       const narrativeState = getNarrativeState(newState);
       
@@ -51,6 +58,9 @@ describe('Navigation Actions', () => {
 
       // Then select a choice
       const action = selectChoice('choice1');
+      // Ensure the action is using the standardized ActionTypes
+      expect(action.type).toBe(ActionTypes.SELECT_CHOICE);
+      
       state = narrativeReducer(state, action);
       const narrativeState = getNarrativeState(state);
       expect(narrativeState?.selectedChoice).toBe('choice1');
@@ -62,6 +72,9 @@ describe('Navigation Actions', () => {
       
       // Try to select an invalid choice
       const action = selectChoice('non-existent-choice');
+      // Ensure the action is using the standardized ActionTypes
+      expect(action.type).toBe(ActionTypes.SELECT_CHOICE);
+      
       state = narrativeReducer(state, action);
       const narrativeState = getNarrativeState(state);
       
@@ -79,6 +92,9 @@ describe('Navigation Actions', () => {
     it('should add an entry to narrative history', () => {
       const historyEntry = 'The sheriff enters the saloon.';
       const action = addNarrativeHistory(historyEntry);
+      // Ensure the action is using the standardized ActionTypes
+      expect(action.type).toBe(ActionTypes.ADD_NARRATIVE_HISTORY);
+      
       const newState = narrativeReducer(initialState, action);
       const narrativeState = getNarrativeState(newState);
       expect(narrativeState?.narrativeHistory).toContain(historyEntry);
@@ -91,6 +107,9 @@ describe('Navigation Actions', () => {
   describe('SET_DISPLAY_MODE action', () => {
     it('should update the display mode', () => {
       const action = setDisplayMode('flashback');
+      // Ensure the action is using the standardized ActionTypes
+      expect(action.type).toBe(ActionTypes.SET_DISPLAY_MODE);
+      
       const newState = narrativeReducer(initialState, action);
       const narrativeState = getNarrativeState(newState);
       expect(narrativeState?.displayMode).toBe('flashback');

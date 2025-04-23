@@ -6,7 +6,8 @@
  */
 
 import { GameState } from '../../../types/gameState';
-import { ExtendedGameState } from '../types/aiDecisionTypes';
+// Import the correct ExtendedGameState type
+import { ExtendedGameState } from '../../../types/extendedState';
 import { safeExtendGameState, isExtendedGameState, convertToExtendedGameState } from './stateTypeGuards';
 
 /**
@@ -15,10 +16,11 @@ import { safeExtendGameState, isExtendedGameState, convertToExtendedGameState } 
  * @param state The GameState to extend
  * @returns ExtendedGameState with additional properties
  */
+// Update return type annotation
 export function extendGameState(state?: GameState): ExtendedGameState {
   // If no state is provided, return a default extended state
   if (!state) {
-    return safeExtendGameState({});
+    return safeExtendGameState({ /* Intentionally empty */ });
   }
   
   // If already extended, return as is
@@ -36,6 +38,7 @@ export function extendGameState(state?: GameState): ExtendedGameState {
  * @param state The GameState to extend
  * @returns ExtendedGameState with additional properties for contextual decisions
  */
+// Update return type annotation
 export function extendGameStateForContextual(state?: GameState): ExtendedGameState {
   // First extend the state normally
   const extendedState = extendGameState(state);

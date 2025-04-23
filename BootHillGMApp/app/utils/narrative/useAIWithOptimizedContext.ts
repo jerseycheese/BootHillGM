@@ -7,15 +7,12 @@
  */
 
 import { useState, useCallback } from 'react';
-// Update import path to use the correct NarrativeProvider
-import { useNarrative } from '../../hooks/narrative/NarrativeProvider';
 import { getAIResponse } from '../../services/ai/gameService';
 import { InventoryItem } from '../../types/item.types';
 import { useOptimizedNarrativeContext, useNarrativeContextSynchronization } from './narrativeContextIntegration';
 import { NarrativeContextOptions } from '../../types/narrative/context.types';
 import { estimateTokenCount } from './narrativeCompression';
 import { AIRequestResult, Opponent } from '../../types/ai.types';
-// Removed unused Character import: import { Character } from '../../types/character';
 
 /**
  * Hook that provides AI integration with optimized narrative context
@@ -23,7 +20,6 @@ import { AIRequestResult, Opponent } from '../../types/ai.types';
  * @returns Functions and state for AI interaction
  */
 export function useAIWithOptimizedContext() {
-  const { state: _narrativeState } = useNarrative();
   const { ensureFreshContext } = useNarrativeContextSynchronization();
   const { 
     buildOptimizedContext, 
@@ -115,21 +111,26 @@ export function useAIWithOptimizedContext() {
    * 
    * @param prompt User input prompt
    * @param inventory Current inventory items
-   * @param focusTags Tags to focus on
    * @returns AI response
    */
   const makeAIRequestWithFocus = useCallback(async (
-    prompt: string, inventory: InventoryItem[], _focusTags: string[]
+    prompt: string, inventory: InventoryItem[], focusTags: string[]
   ): Promise<AIRequestResult> => {
+    // Pass focusTags to contextOptions
     return makeAIRequest(prompt, inventory, {
-      compressionLevel: 'medium', 
-      maxTokens: 1500, 
+      compressionLevel: 'medium',
+      maxTokens: 1500,
       prioritizeRecentEvents: true,
-      relevanceThreshold: 6, 
+      relevanceThreshold: 6,
       includedContextSections: [
-        'narrative_history', 'decision_history', 'character_relationships', 
+        'narrative_history', 'decision_history', 'character_relationships',
         'world_state', 'story_progression'
-      ]
+      ],
+      // Include focusTags in the options passed to buildOptimizedContext via makeAIRequest
+      // Note: NarrativeContextOptions might need updating if it doesn't support focusTags directly
+      // For now, assuming makeAIRequest/buildOptimizedContext can handle extra options or ignore them.
+      // A better approach might be to explicitly add focusTags to NarrativeContextOptions type.
+      focusTags: focusTags // Pass the tags here
     });
   }, [makeAIRequest]);
   
@@ -159,6 +160,7 @@ export function useAIWithOptimizedContext() {
     makeAIRequestWithFocus, 
     makeAIRequestWithCompactContext,
     isLoading, 
-    error
+    error,
+    clearError: () => setError(null) // Add function to clear error
   };
 }

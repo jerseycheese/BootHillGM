@@ -24,7 +24,7 @@ jest.mock('react', () => {
 
 // Mock dependencies
 jest.mock('../../hooks/narrative/NarrativeProvider', () => ({
-  NarrativeProvider: ({ children }: { children: React.ReactNode }) => children, // Fixed typing
+  NarrativeProvider: ({ children }: { children: React.ReactNode }) => children,
   useNarrative: jest.fn(() => ({
     state: {
       narrative: {
@@ -88,8 +88,10 @@ describe('useAIWithOptimizedContext', () => {
       .mockImplementationOnce((initialValue) => [initialValue, setIsLoadingMock])  // For isLoading
       .mockImplementationOnce((initialValue) => [initialValue, setErrorMock]);     // For error
       
-    // Call the hook with the consolidated TestWrapper
-    const { result } = renderHook(() => useAIWithOptimizedContext(), { wrapper: TestWrapper });
+    // Call the hook with the TestWrapper
+    const { result } = renderHook(() => useAIWithOptimizedContext(), { 
+      wrapper: ({ children }) => <TestWrapper>{children}</TestWrapper>
+    });
     
     // Check expected API
     expect(result.current).toHaveProperty('isLoading');
@@ -122,8 +124,10 @@ describe('useAIWithOptimizedContext', () => {
       suggestedActions: []
     });
     
-    // Call the hook with renderHook using the consolidated TestWrapper
-    const { result } = renderHook(() => useAIWithOptimizedContext(), { wrapper: TestWrapper });
+    // Call the hook with renderHook using TestWrapper properly
+    const { result } = renderHook(() => useAIWithOptimizedContext(), { 
+      wrapper: ({ children }) => <TestWrapper>{children}</TestWrapper>
+    });
     
     // Call the makeAIRequest function with test data
     const inventory: InventoryItem[] = [
@@ -157,8 +161,10 @@ describe('useAIWithOptimizedContext', () => {
     const testError = new Error('AI service failed');
     (getAIResponse as jest.Mock).mockRejectedValueOnce(testError);
     
-    // Call the hook with renderHook
-    const { result } = renderHook(() => useAIWithOptimizedContext(), { wrapper: TestWrapper });
+    // Call the hook with renderHook using TestWrapper properly
+    const { result } = renderHook(() => useAIWithOptimizedContext(), { 
+      wrapper: ({ children }) => <TestWrapper>{children}</TestWrapper>
+    });
     
     // Make the request that will fail
     await act(async () => {

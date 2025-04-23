@@ -59,7 +59,6 @@ describe('getAIResponse', () => {
       expect(result.acquiredItems).toEqual(mockBasicResponse.acquiredItems);
       expect(result.removedItems).toEqual(mockBasicResponse.removedItems);
       expect(result.suggestedActions).toBeInstanceOf(Array);
-      // Removed length check as it's no longer guaranteed
       expect(mockGenerateContent).toHaveBeenCalledWith(expect.any(String));
     });
     
@@ -101,8 +100,7 @@ describe('getAIResponse', () => {
       expect(townResult.narrative).toEqual(mockTownResponse.narrative);
       expect(townResult.location).toEqual(mockTownResponse.location);
       expect(townResult.suggestedActions).toBeInstanceOf(Array);
-      // Removed length check
-      
+
       // Test wilderness location
       mockSuccessfulAIResponse(mockWildernessResponse);
       // Assert key properties for wilderness location
@@ -110,8 +108,7 @@ describe('getAIResponse', () => {
       expect(wildernessResult.narrative).toEqual(mockWildernessResponse.narrative);
       expect(wildernessResult.location).toEqual(mockWildernessResponse.location);
       expect(wildernessResult.suggestedActions).toBeInstanceOf(Array);
-      // Removed length check
-      
+
       // Test landmark location
       mockSuccessfulAIResponse(mockLandmarkResponse);
       // Assert key properties for landmark location
@@ -119,8 +116,7 @@ describe('getAIResponse', () => {
       expect(landmarkResult.narrative).toEqual(mockLandmarkResponse.narrative);
       expect(landmarkResult.location).toEqual(mockLandmarkResponse.location);
       expect(landmarkResult.suggestedActions).toBeInstanceOf(Array);
-      // Removed length check
-      
+
       // Test unknown location
       mockSuccessfulAIResponse(mockUnknownResponse);
       // Assert key properties for unknown location
@@ -128,7 +124,6 @@ describe('getAIResponse', () => {
       expect(unknownResult.narrative).toEqual(mockUnknownResponse.narrative);
       expect(unknownResult.location).toEqual(mockUnknownResponse.location);
       expect(unknownResult.suggestedActions).toBeInstanceOf(Array);
-      // Removed length check
     });
     
     it('should return fallback response for invalid location type', async () => {
@@ -171,7 +166,6 @@ describe('getAIResponse', () => {
       expect(result.opponent).toBeDefined(); // Keep this specific check
       expect(result.opponent!.name).toBe('Bandit'); // Keep this specific check
       expect(result.suggestedActions).toBeInstanceOf(Array);
-      // Removed length check
       expect(result.combatInitiated).toBe(true);
       expect(result.opponent).toBeDefined();
       expect(result.opponent!.name).toBe('Bandit');

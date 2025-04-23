@@ -4,9 +4,11 @@ import { adaptEnsureCombatState, sliceToLegacyCombatState } from '../utils/comba
 import { validateCombatEndState } from '../utils/combatStateValidation';
 import { CombatUpdatePayload } from './gameTypes';
 import { convertCombatLogEntries, transformCurrentTurn, combatTurnToString } from '../utils/gameReducerHelpers';
+import { ActionTypes } from '../types/actionTypes';
+import { GameEngineAction } from '../types/gameActions';
 
 /**
- * Handles the SET_COMBAT_ACTIVE action
+ * Handles the SET_COMBAT_ACTIVE action (ActionTypes.SET_COMBAT_ACTIVE)
  */
 export function handleSetCombatActive(state: ExtendedGameState, payload: boolean): ExtendedGameState {
   if (!payload) { // Only proceed if setting to false
@@ -47,14 +49,14 @@ export function handleSetCombatActive(state: ExtendedGameState, payload: boolean
 }
 
 /**
- * Handlers for UPDATE_COMBAT_STATE action
+ * Handlers for UPDATE_COMBAT_STATE action (ActionTypes.UPDATE_COMBAT_STATE)
  */
 export function handleUpdateCombatState(state: ExtendedGameState, payload: unknown): ExtendedGameState {
   // Cast to our working type
   const typedPayload = payload as CombatUpdatePayload;
   
   // Extract and transform payload parts that need type conversion
-  const extractedPayload = typedPayload || {};
+  const extractedPayload = typedPayload || { /* Intentionally empty */ };
   
   // Handle currentTurn conversion - could be string or CombatTurn object
   const currentTurn = transformCurrentTurn(extractedPayload.currentTurn, state);
@@ -94,7 +96,7 @@ export function handleUpdateCombatState(state: ExtendedGameState, payload: unkno
   
   // Create properly typed legacy state object for the adapter
   const transformedLegacyState: Partial<CombatState> = {
-    ...(state.combatState || {}),
+    ...(state.combatState || { /* Intentionally empty */ }),
     ...combatPayload,
     isActive: true
   };
@@ -110,7 +112,7 @@ export function handleUpdateCombatState(state: ExtendedGameState, payload: unkno
 }
 
 /**
- * Handles the SET_COMBAT_TYPE action
+ * Handles the SET_COMBAT_TYPE action (ActionTypes.SET_COMBAT_TYPE)
  */
 export function handleSetCombatType(state: ExtendedGameState, payload: 'brawling' | 'weapon' | null): ExtendedGameState {
   // Update the structured combat state
@@ -135,7 +137,7 @@ export function handleSetCombatType(state: ExtendedGameState, payload: 'brawling
   
   // For backward compatibility
   const legacyState: Partial<CombatState> = {
-    ...(state.combatState || {}),
+    ...(state.combatState || { /* Intentionally empty */ }),
     combatType: payload,
     isActive: true,
     currentTurn: mappedCurrentTurn
@@ -147,7 +149,7 @@ export function handleSetCombatType(state: ExtendedGameState, payload: 'brawling
 }
 
 /**
- * Handles the END_COMBAT action
+ * Handles the END_COMBAT action (ActionTypes.END_COMBAT)
  */
 export function handleEndCombat(state: ExtendedGameState): ExtendedGameState {
   // Create an updated combat state
@@ -183,4 +185,69 @@ export function handleEndCombat(state: ExtendedGameState): ExtendedGameState {
   newState.combatState = undefined;
   
   return newState;
+}
+
+/**
+ * Handles the RESET_COMBAT action (ActionTypes.RESET_COMBAT)
+ */
+export function handleResetCombat(state: ExtendedGameState): ExtendedGameState {
+  // Reset combat state entirely
+  const resetCombat: CombatState = {
+    isActive: false,
+    combatType: null,
+    combatLog: [],
+    rounds: 0,
+    playerTurn: true,
+    currentTurn: null,
+    playerCharacterId: '',
+    opponentCharacterId: '',
+    roundStartTime: 0,
+    modifiers: { player: 0, opponent: 0 }
+  };
+  
+  // Create new state with reset combat properties
+  const newState: ExtendedGameState = {
+    ...state,
+    combat: resetCombat,
+    character: {
+      ...state.character,
+      opponent: null,
+      player: state.character?.player || null
+    }
+  };
+  
+  // For backward compatibility
+  newState.opponent = null;
+  newState.combatState = undefined;
+  
+  return newState;
+}
+
+// Combat reducer function
+export default function combatReducer(state: ExtendedGameState, action: GameEngineAction): ExtendedGameState {
+  // Use ActionTypes constants in case statements
+  switch (action.type) {
+    case 'combat/SET_COMBAT_ACTIVE':
+    case ActionTypes.SET_COMBAT_ACTIVE:
+      return handleSetCombatActive(state, action.payload);
+      
+    case 'combat/UPDATE_STATE':
+    case ActionTypes.UPDATE_COMBAT_STATE:
+      return handleUpdateCombatState(state, action.payload);
+      
+    case 'combat/SET_COMBAT_TYPE':
+    case ActionTypes.SET_COMBAT_TYPE:
+      return handleSetCombatType(state, action.payload);
+      
+    case 'combat/END_COMBAT':  
+    case ActionTypes.END_COMBAT:
+      return handleEndCombat(state);
+      
+    case 'combat/RESET_COMBAT':
+    case ActionTypes.RESET_COMBAT:
+      return handleResetCombat(state);
+      
+    default:
+      return state;
+  }
 }

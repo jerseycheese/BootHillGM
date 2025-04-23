@@ -3,6 +3,7 @@ import { ensureCombatState, BrawlingState } from "../../types/combat";
 import { GameAction } from "../../types/actions";
 import { Character } from "../../types/character";
 import { BrawlingAction } from "../../types/brawling.types";
+import { ActionTypes } from '../../types/actionTypes';
 import { waitForStateUpdate } from "../../test/utils/testSyncUtils";
 
 interface UseBrawlingSyncProps {
@@ -50,7 +51,7 @@ export const useBrawlingSync = ({
       }
 
       dispatch({
-        type: 'UPDATE_COMBAT_STATE',
+        type: ActionTypes.UPDATE_COMBAT_STATE,
         payload: ensureCombatState({
           ...brawlingState,
           isActive: true,
@@ -73,7 +74,7 @@ export const useBrawlingSync = ({
       });
 
       dispatch({
-        type: 'character/UPDATE_CHARACTER',
+        type: ActionTypes.UPDATE_CHARACTER,
         payload: {
           ...playerCharacter,
           id: playerCharacter.id,
@@ -81,7 +82,7 @@ export const useBrawlingSync = ({
       });
 
       dispatch({
-        type: 'character/UPDATE_CHARACTER',
+        type: ActionTypes.UPDATE_CHARACTER,
         payload: {
           ...opponent,
           id: opponent.id,
@@ -107,7 +108,7 @@ export const useBrawlingSync = ({
   const syncWithGlobalState = useCallback(
     () => {
       dispatch({
-        type: 'UPDATE_COMBAT_STATE',
+        type: ActionTypes.UPDATE_COMBAT_STATE,
         payload: ensureCombatState({
           ...brawlingState,
           isActive: !isCombatEnded,

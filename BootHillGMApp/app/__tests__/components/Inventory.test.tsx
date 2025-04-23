@@ -22,7 +22,7 @@ jest.mock('../../utils/inventoryManager', () => ({
 // Removed createAdaptedMockState helper
 
 // Configure the mock GameSession hook with the new GameState structure
-const mockUseGameSession = (stateOverrides = {}, hookOverrides = {}) => {
+const mockUseGameSession = (stateOverrides = { /* Intentionally empty */ }, hookOverrides = { /* Intentionally empty */ }) => {
   // Use the new mock state utility
   // Removed unused mockState definition from helper
   
@@ -52,8 +52,6 @@ describe('Inventory', () => {
     unableToUse: 'Unable to use item',
     cannotUse: 'Cannot use item',
   };
-
-  // Removed renderWithContext helper, will render directly
 
   test('does not render items with missing properties', () => {
     const mockItems = [

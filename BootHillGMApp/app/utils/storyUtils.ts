@@ -57,7 +57,7 @@ export function extractStoryPointFromNarrative(narrative: string): StoryProgress
         // 3. Remove trailing commas before closing brackets
         const cleanedContent = content
           .replace(/(\w+)(?=:)/g, '"$1"') // Add quotes to keys
-          .replace(/:\s*(\[[^\]]*\]|[^",\s\{\}]+)/g, ': "$1"') // Add quotes to simple values, excluding arrays
+          .replace(/:\s*(\[[^\]]*\]|[^",\s{}]+)/g, ': "$1"') // Add quotes to simple values, excluding arrays (Removed unnecessary escapes)
           .replace(/,\s*}/g, '}'); // Remove trailing commas
         
         // Parse the JSON
@@ -105,38 +105,6 @@ export function extractStoryPointFromNarrative(narrative: string): StoryProgress
 }
 
 /**
- * Creates a new story progression point from extracted data.
- * 
- * Takes data extracted from an AI response and formats it into a complete
- * StoryProgressionPoint object with required metadata.
- * 
- * @param data - Extracted story progression data
- * @param narrative - Full narrative text for context
- * @param location - Current location where the story point occurred
- * @param previousPointId - ID of the previous story point, if any
- * @returns A complete StoryProgressionPoint object
- */
-export function createStoryProgressionPoint(
-  data: StoryProgressionData,
-  narrative: string,
-  location?: LocationType,
-  previousPointId?: string
-): StoryProgressionPoint {
-  return {
-    id: uuidv4(), // Generate a unique ID
-    title: data.title || 'Untitled Story Point',
-    description: data.description || extractDescriptionFromNarrative(narrative),
-    significance: data.significance || 'minor',
-    characters: data.characters || [],
-    timestamp: Date.now(),
-    location,
-    aiGenerated: true,
-    tags: [],
-    previousPoint: previousPointId
-  };
-}
-
-/**
  * Extracts a description from narrative text when not explicitly provided.
  * 
  * @param narrative - The narrative text
@@ -159,6 +127,39 @@ function extractDescriptionFromNarrative(narrative: string): string {
     ? cleanNarrative.substring(0, 200) + '...'
     : cleanNarrative;
 }
+
+/**
+ * Creates a new story progression point from extracted data.
+ * 
+ * Takes data extracted from an AI response and formats it into a complete
+ * StoryProgressionPoint object with required metadata.
+ * 
+ * @param data - Extracted story progression data
+ * @param narrative - Full narrative text for context
+ * @param location - Current location where the story point occurred
+ * @param previousPointId - ID of the previous story point, if any
+ * @returns A complete StoryProgressionPoint object
+ */
+export function createStoryProgressionPoint(
+  data: StoryProgressionData,
+  narrative: string,
+  location?: LocationType,
+  previousPointId?: string
+): StoryProgressionPoint {
+  return {
+    id: uuidv4(), // Generate a unique ID
+    title: data.title || 'Untitled Story Point',
+    description: data.description || extractDescriptionFromNarrative(narrative), // Now defined before call
+    significance: data.significance || 'minor',
+    characters: data.characters || [],
+    timestamp: Date.now(),
+    location,
+    aiGenerated: true,
+    tags: [],
+    previousPoint: previousPointId
+  };
+}
+
 
 /**
  * Adds a new story point to the progression state.

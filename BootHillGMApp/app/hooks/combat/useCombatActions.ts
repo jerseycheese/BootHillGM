@@ -1,8 +1,9 @@
 import { useCallback } from 'react';
-import { useGameState } from '../../context/GameStateProvider'; // Updated import
+import { useGameState } from '../../context/GameStateProvider';
 import { resolveCombatRound } from '../../utils/combat/combatResolver';
 import { CombatSituation } from '../../utils/combat/hitModifiers';
 import { Character } from '../../types/character';
+import { ActionTypes } from '../../types/actionTypes';
 
 /**
  * Custom hook for managing combat actions.
@@ -35,7 +36,7 @@ export const useCombatActions = () => {
       if (characterType === 'player' && player && player.attributes) {
         const currentAttributes = player.attributes;
         dispatch({
-          type: 'character/UPDATE_CHARACTER', // Use namespaced action type
+          type: ActionTypes.UPDATE_CHARACTER,
           payload: {
             id: player.id, 
             attributes: { ...currentAttributes, strength: Number(newStrength) },
@@ -44,7 +45,7 @@ export const useCombatActions = () => {
       } else if (characterType === 'opponent' && opponent && opponent.attributes) {
         const currentAttributes = opponent.attributes;
         dispatch({
-          type: 'character/SET_OPPONENT', // Use namespaced action type
+          type: ActionTypes.SET_OPPONENT,
           payload: {
             ...opponent,
             attributes: { ...currentAttributes, strength: Number(newStrength) },

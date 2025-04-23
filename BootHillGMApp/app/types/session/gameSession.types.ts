@@ -2,8 +2,7 @@ import { Character } from '../character';
 import { GameEngineAction } from '../gameActions';
 import { Dispatch } from 'react';
 import { GameState } from '../gameState';
-// Removed obsolete UniversalCombatState import
-import { CombatState } from '../state/combatState'; // Import standard CombatState
+import { CombatState } from '../state/combatState';
 
 /**
  * Represents the core structure of a game session with all its available methods

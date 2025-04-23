@@ -31,7 +31,7 @@ export interface Character {
   name: string;
 
   /** Character's inventory */
-  inventory: { items: InventoryItem[] }; // Updated to slice structure
+  inventory: { items: InventoryItem[] };
 
   /** Core character attributes */
   attributes: {
@@ -141,10 +141,11 @@ export class CharacterGenerationError extends Error {
 
 // Character update payload extends Character but adds damageInflicted
 // and includes index signature for compatibility with characterReducer
-export interface UpdateCharacterPayload extends Omit<Partial<Character>, 'attributes'> {
+export interface UpdateCharacterPayload extends Omit<Partial<Character>, 'attributes' | 'strengthHistory'> { // Exclude strengthHistory from Omit
   id: string;
   damageInflicted?: number;
   attributes?: Partial<Character['attributes']>;
   wounds?: Wound[];
+  strengthHistory?: StrengthHistory; // Add optional strengthHistory property
   [key: string]: unknown; // Add index signature for string keys
 }

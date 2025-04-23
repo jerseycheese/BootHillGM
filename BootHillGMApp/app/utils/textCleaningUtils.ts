@@ -2,6 +2,7 @@
  * Centralized utilities for cleaning metadata from game text and detecting inventory changes.
  * Handles both explicit metadata markers and natural language patterns.
  */
+import { trackTextCleaning } from './debugUtils';
 
 /**
  * Regex patterns for identifying and cleaning various types of metadata
@@ -47,11 +48,43 @@ export const cleanText = (text: string | undefined): string => {
 };
 
 /**
+ * Cleans character names by removing metadata markers.
+ */
+export const cleanCharacterName = (name: string): string => {
+  if (!name?.trim()) return '';
+  
+  // Remove any metadata markers and their content
+  let cleaned = name
+    .replace(/important:.*?(?=\n|$)/gi, '')
+    .replace(/note:.*?(?=\n|$)/gi, '')
+    .replace(/metadata:.*?(?=\n|$)/gi, '');
+    
+  // Split on any narrative indicators or sentence breaks
+  cleaned = cleaned.split(/[.!?\n]|(?:\s+(?:The|the|A|a|An|an)\s+)/)[0];
+  
+  // Remove any article at the start of the name
+  cleaned = cleaned.replace(/^(?:The|the|A|a|An|an)\s+/, '');
+  
+  // Split on spaces followed by narrative content
+  cleaned = cleaned.split(/\s+(?=[A-Z][a-z]+\s+(?:draws|rushes|attacks|fires|shoots|moves|runs|walks|stands|sits|lies|goes|comes|tries|attempts|begins|starts|looks|seems|appears|is|was|were|has|had|have))/)[0];
+  
+  // Remove any remaining narrative indicators
+  cleaned = cleaned
+    .replace(/\([^)]*\)/g, '')
+    .replace(/\[[^\]]*\]/g, '')
+    .replace(/\{[^}]*\}/g, '')
+    .replace(/:\s*.*$/, '')
+    .replace(/,.*$/, '');
+    
+  const result = cleaned.trim();
+  trackTextCleaning(name, result, 'CharacterName', 'cleanCharacterName');
+  return result;
+};
+
+/**
  * Specifically cleans combat log entries while preserving roll information
  * and important combat details. Handles multi-line combat descriptions.
  */
-import { trackTextCleaning } from './debugUtils';
-
 export const cleanCombatLogEntry = (text: string): string => {
   if (!text?.trim()) return '';
 
@@ -72,7 +105,7 @@ export const cleanCombatLogEntry = (text: string): string => {
   // Clean character names in the combat text
   const names = cleaned.match(/^[^.!?]+?(?=\s+(?:punches|grapples|hits|misses|fires|attacks|defends|blocks))/i);
   if (names) {
-    const cleanedName = cleanCharacterName(names[0]);
+    const cleanedName = cleanCharacterName(names[0]); // Now defined before call
     cleaned = cleaned.replace(names[0], cleanedName);
   }
   
@@ -87,9 +120,7 @@ export const cleanCombatLogEntry = (text: string): string => {
   return result;
 };
 
-/**
- * Converts text to sentence case, capitalizing the first letter of each sentence.
- */
+
 /**
  * Cleans location text by removing metadata and separating location from narrative content.
  * Handles cases where narrative content is appended to location text.
@@ -115,6 +146,9 @@ export const cleanLocationText = (text: string | null | undefined): string => {
   return cleaned;
 };
 
+/**
+ * Converts text to sentence case, capitalizing the first letter of each sentence.
+ */
 export const toSentenceCase = (text: string): string => {
   if (!text?.trim()) return '';
 
@@ -201,38 +235,4 @@ export const extractItemUpdates = (text: string): { acquired: string[]; removed:
   updates.removed = Array.from(new Set(updates.removed)).map(cleanText);
 
   return updates;
-};
-
-/**
- * Cleans character names by removing metadata markers.
- */
-export const cleanCharacterName = (name: string): string => {
-  if (!name?.trim()) return '';
-  
-  // Remove any metadata markers and their content
-  let cleaned = name
-    .replace(/important:.*?(?=\n|$)/gi, '')
-    .replace(/note:.*?(?=\n|$)/gi, '')
-    .replace(/metadata:.*?(?=\n|$)/gi, '');
-    
-  // Split on any narrative indicators or sentence breaks
-  cleaned = cleaned.split(/[.!?\n]|(?:\s+(?:The|the|A|a|An|an)\s+)/)[0];
-  
-  // Remove any article at the start of the name
-  cleaned = cleaned.replace(/^(?:The|the|A|a|An|an)\s+/, '');
-  
-  // Split on spaces followed by narrative content
-  cleaned = cleaned.split(/\s+(?=[A-Z][a-z]+\s+(?:draws|rushes|attacks|fires|shoots|moves|runs|walks|stands|sits|lies|goes|comes|tries|attempts|begins|starts|looks|seems|appears|is|was|were|has|had|have))/)[0];
-  
-  // Remove any remaining narrative indicators
-  cleaned = cleaned
-    .replace(/\([^)]*\)/g, '')
-    .replace(/\[[^\]]*\]/g, '')
-    .replace(/\{[^}]*\}/g, '')
-    .replace(/:\s*.*$/, '')
-    .replace(/,.*$/, '');
-    
-  const result = cleaned.trim();
-  trackTextCleaning(name, result, 'CharacterName', 'cleanCharacterName');
-  return result;
 };

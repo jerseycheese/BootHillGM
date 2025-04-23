@@ -3,7 +3,7 @@
  */
 
 import { initialNarrativeState } from '../../../types/narrative.types';
-import { _CompressionLevel } from '../../../types/narrative/context.types';
+import { CompressionLevel } from '../../../types/narrative/context.types'; // Corrected import name
 
 // Create explicit mock functions we can control
 const mockBuildContext = jest.fn();
@@ -11,10 +11,11 @@ const mockCompressText = jest.fn();
 const mockEstimateTokens = jest.fn();
 
 // Set up mock implementations with deterministic performance values
-mockBuildContext.mockImplementation((state, options = {}) => {
-  const compressionLevel = options.compressionLevel || 'medium';
-  
-  // Fixed processing times that ensure high > none
+// Add types for parameters
+mockBuildContext.mockImplementation((state: any, options: { compressionLevel?: CompressionLevel } = {}) => {
+  // Ensure compressionLevel is correctly typed
+  const compressionLevel: CompressionLevel = options.compressionLevel || 'medium';
+
   const processingTimes = {
     'none': 1,
     'low': 2, 
@@ -55,8 +56,9 @@ jest.mock('../../../utils/narrative/narrativeCompression', () => ({
 
 describe('Narrative Context Optimization Performance', () => {
   // Generate test data with varying sizes
-  const generateTestState = (historyLength) => {
-    const history = Array.from({ length: historyLength }, (_, i) => 
+  // Add type for historyLength parameter
+  const generateTestState = (historyLength: number) => {
+    const history = Array.from({ length: historyLength }, (_, i) =>
       `This is narrative entry ${i} in the history. It contains some typical western story elements like gunfights, saloons, and character interactions.`
     );
     
@@ -86,8 +88,8 @@ describe('Narrative Context Optimization Performance', () => {
             'law': 3,
             'outlaws': -2
           },
-          worldStateImpacts: {},
-          storyArcImpacts: {},
+          worldStateImpacts: { /* Intentionally empty */ },
+          storyArcImpacts: { /* Intentionally empty */ },
           lastUpdated: Date.now()
         }
       }
@@ -95,7 +97,8 @@ describe('Narrative Context Optimization Performance', () => {
   };
   
   // Deterministic benchmark function that extracts values from our mock
-  const benchmark = (fn) => {
+  // Add type for fn parameter (assuming it returns an object with metadata.buildTime)
+  const benchmark = (fn: () => { metadata: { buildTime: number } }) => {
     const result = fn();
     return result.metadata.buildTime;
   };
@@ -142,7 +145,8 @@ describe('Narrative Context Optimization Performance', () => {
       const state = generateTestState(100);
       const compressionLevels = ['none', 'low', 'medium', 'high'];
       
-      const results = {};
+      // Define a type for the results object
+      const results: Record<string, number> = {};
       
       compressionLevels.forEach(level => {
         const avgTime = benchmark(() => {

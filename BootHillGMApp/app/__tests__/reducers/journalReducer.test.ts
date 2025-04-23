@@ -4,13 +4,9 @@
 
 import { journalReducer } from '../../reducers/journal/journalReducer';
 import { initialJournalState } from '../../types/state/journalState';
-// import { initialState } from '../../types/initialState'; // Removed unused import
-
-// Removed imports for non-existent adapters: journalAdapter, adaptStateForTests, migrationAdapter
-// import { journalAdapter } from '../../utils/stateAdapters';
-// import { adaptStateForTests, migrationAdapter } from '../../utils/stateAdapters';
 import { GameState } from '../../types/gameState';
 import { GameAction } from '../../types/actions';
+import { ActionTypes } from '../../types/actionTypes';
 
 // Helper function to process state through the reducer and adapter layer
 // Simplified helper: directly apply reducer to the journal slice
@@ -25,15 +21,15 @@ describe('journalReducer', () => {
   // Base initial state slice for journal tests
   const createInitialJournalState = () => ({
     entries: [
-      { id: '1', title: 'First Entry', content: 'Test content', timestamp: 1615000000000, type: 'narrative' as const }
+      { id: '1', title: 'First Entry', content: 'Test content', timestamp: 1615000000000, type: 'narrative' as const, narrativeSummary: 'Summary 1' } // Add narrativeSummary
     ]
   });
 
   test('should access entries as an iterable', () => {
     const initialJournal = createInitialJournalState();
     // Pass only the relevant slice to the simplified helper
-    const newState = processJournalState({ journal: initialJournal }, { type: 'NO_OP' });
-    
+    const newState = processJournalState({ journal: initialJournal }, { type: ActionTypes.RESET_STATE }); // Use a valid action type
+
     // Access entries directly from the returned journal state slice
     expect(newState.entries).toBeDefined();
     expect(Array.isArray(newState.entries)).toBe(true); // Ensure it's an array
@@ -45,13 +41,14 @@ describe('journalReducer', () => {
     const initialJournal = createInitialJournalState();
     
     const action = {
-      type: 'journal/ADD_ENTRY',
-      payload: { 
-        id: '2', 
-        title: 'Second Entry', 
-        content: 'More test content', 
+      type: ActionTypes.ADD_ENTRY,
+      payload: {
+        id: '2',
+        title: 'Second Entry',
+        content: 'More test content',
         timestamp: 1615100000000,
-        type: 'narrative' // Explicitly add type
+        type: 'narrative', // Explicitly add type
+        narrativeSummary: 'Summary 2' // Add narrativeSummary
       }
     } as const;
 
@@ -66,8 +63,8 @@ describe('journalReducer', () => {
     const initialJournal = createInitialJournalState();
     
     const action = {
-      type: 'journal/REMOVE_ENTRY',
-      payload: { id: '1' }
+      type: ActionTypes.REMOVE_ENTRY,
+      payload: '1' // Payload should be the string ID
     } as const;
 
     const newState = processJournalState({ journal: initialJournal }, action);
@@ -80,12 +77,13 @@ describe('journalReducer', () => {
     const initialJournal = createInitialJournalState();
     
     const action = {
-      type: 'journal/UPDATE_ENTRY',
-      payload: { 
-        id: '1', 
-        title: 'Updated Title', 
+      type: ActionTypes.UPDATE_JOURNAL,
+      payload: {
+        id: '1',
+        title: 'Updated Title',
         content: 'Updated content',
-        type: 'narrative' // Explicitly add type
+        type: 'narrative', // Explicitly add type
+        narrativeSummary: 'Updated Summary 1' // Add narrativeSummary
       }
     } as const;
 
@@ -98,5 +96,4 @@ describe('journalReducer', () => {
     expect(newState.entries[0].timestamp).toBe(1615000000000);
   });
 
-  // Removed obsolete test for legacy state format
 });

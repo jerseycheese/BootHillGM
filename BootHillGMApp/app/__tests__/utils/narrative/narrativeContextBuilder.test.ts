@@ -102,9 +102,9 @@ describe('Narrative Context Builder', () => {
         relationshipImpacts: { 
           player: { 'Sheriff Johnson': 5 } 
         },
-        reputationImpacts: {},
-        worldStateImpacts: {},
-        storyArcImpacts: {},
+        reputationImpacts: { /* Intentionally empty */ },
+        worldStateImpacts: { /* Intentionally empty */ },
+        storyArcImpacts: { /* Intentionally empty */ },
         lastUpdated: Date.now()
       }
     }

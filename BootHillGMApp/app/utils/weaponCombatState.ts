@@ -2,6 +2,7 @@ import { Character } from '../types/character';
 import { WeaponCombatState, WeaponCombatResult, CombatState, LogEntry, WeaponCombatAction, Wound } from '../types/combat';
 import { GameAction } from '../types/actions'; // Use main GameAction type
 import { WOUND_EFFECTS } from './strengthSystem';
+import { ActionTypes } from '../types/actionTypes';
 
 /**
  * Updates the weapon combat state with new values.
@@ -22,53 +23,7 @@ export const updateWeaponState = (
     ...updates,
     round: prevState.round + 1,
     lastAction: action,
-    roundLog: prevState.roundLog,
-  };
-};
-
-/**
- * Processes a complete combat turn, updating the state and handling combat results.
- * @param result - The result of the combat action.
- * @param isPlayerAction - Indicates if the action was performed by the player.
- * @param attacker - The character performing the action.
- * @param defender - The character receiving the action.
- * @param dispatch - The dispatch function for updating the global state.
- * @param combatState - The current combat state.
- * @returns An object containing the updated character, log entry, and a flag indicating if the combat should end.
- */
-export const processWeaponCombatTurn = async (
-  result: WeaponCombatResult,
-  isPlayerAction: boolean,
-  attacker: Character,
-  defender: Character,
-  dispatch: React.Dispatch<GameAction>, // Use main GameAction type
-  combatState: CombatState
-): Promise<{
-  updatedCharacter: Character | null;
-  logEntry: LogEntry;
-  shouldEndCombat: boolean;
-}> => {
-  const logEntry = createLogEntry(result.message, result.hit ? 'hit' : 'miss');
-  
-  const updatedCharacter = handleCombatResult(
-    result,
-    isPlayerAction,
-    attacker,
-    defender,
-    dispatch,
-    combatState
-  );
-
-  // Ensure updatedCharacter is not null and attributes.strength is defined
-  const shouldEndCombat = Boolean(
-    (updatedCharacter?.attributes?.strength ?? 0) <= 0 ||
-    (result.damage && result.damage >= (defender.attributes.strength || 0))
-  );
-
-  return {
-    updatedCharacter,
-    logEntry,
-    shouldEndCombat
+    roundLog: prevState.roundLog, // Keep existing log entries
   };
 };
 
@@ -95,7 +50,7 @@ export const createLogEntry = (
  */
 export const createWound = (damage: number, turnReceived: number): Wound => ({
   damage,
-  location: 'chest' as const,
+  location: 'chest' as const, // Assuming chest for now, needs location logic
   severity: damage >= 7 ? 'mortal' : damage >= 3 ? 'serious' : 'light',
   strengthReduction: damage >= 7 ? WOUND_EFFECTS.MORTAL : damage >= 3 ? WOUND_EFFECTS.SERIOUS : WOUND_EFFECTS.LIGHT,
   turnReceived
@@ -151,38 +106,85 @@ export const handleCombatResult = (
   const newStrength = result.newStrength ?? defender.attributes.strength;
   const turnReceived = combatState.weapon?.round || 1;
 
-  let updatedOpponent = null;
-  if (isPlayerAction) {
-    // Update the opponent character
-    updatedOpponent = updateCharacterAfterHit(defender, damage, newStrength, turnReceived, true);
+  let updatedCharacter: Character | null = null;
+  if (damage > 0) { // Only update if damage occurred
+    if (isPlayerAction) {
+      // Update the opponent character
+      updatedCharacter = updateCharacterAfterHit(defender, damage, newStrength, turnReceived, true);
 
-    // Dispatch action to update opponent
-    dispatch({
-      type: 'character/UPDATE_CHARACTER',
-      payload: {
-        id: updatedOpponent.id,
-        attributes: updatedOpponent.attributes,
-        wounds: updatedOpponent.wounds,
-        strengthHistory: updatedOpponent.strengthHistory
-      }
-    });
+      // Dispatch action to update opponent
+      dispatch({
+        type: ActionTypes.UPDATE_CHARACTER,
+        payload: {
+          id: updatedCharacter.id,
+          attributes: updatedCharacter.attributes,
+          wounds: updatedCharacter.wounds,
+          strengthHistory: updatedCharacter.strengthHistory
+        }
+      });
+    } else {
+      // Update the player character
+      updatedCharacter = updateCharacterAfterHit(defender, damage, newStrength, turnReceived);
 
-    return updatedOpponent;
-  } else {
-    // Update the player character
-    const updatedPlayer = updateCharacterAfterHit(defender, damage, newStrength, turnReceived);
-
-    // Dispatch action to update player character
-    dispatch({
-      type: 'character/UPDATE_CHARACTER',
-      payload: {
-        id: updatedPlayer.id,
-        attributes: updatedPlayer.attributes,
-        wounds: updatedPlayer.wounds,
-        strengthHistory: updatedPlayer.strengthHistory
-      }
-    });
-
-    return updatedPlayer;
+      // Dispatch action to update player character
+      dispatch({
+        type: ActionTypes.UPDATE_CHARACTER,
+        payload: {
+          id: updatedCharacter.id,
+          attributes: updatedCharacter.attributes,
+          wounds: updatedCharacter.wounds,
+          strengthHistory: updatedCharacter.strengthHistory
+        }
+      });
+    }
   }
+
+  return updatedCharacter;
+};
+
+
+/**
+ * Processes a complete combat turn, updating the state and handling combat results.
+ * @param result - The result of the combat action.
+ * @param isPlayerAction - Indicates if the action was performed by the player.
+ * @param attacker - The character performing the action.
+ * @param defender - The character receiving the action.
+ * @param dispatch - The dispatch function for updating the global state.
+ * @param combatState - The current combat state.
+ * @returns An object containing the updated character, log entry, and a flag indicating if the combat should end.
+ */
+export const processWeaponCombatTurn = async (
+  result: WeaponCombatResult,
+  isPlayerAction: boolean,
+  attacker: Character,
+  defender: Character,
+  dispatch: React.Dispatch<GameAction>, // Use main GameAction type
+  combatState: CombatState
+): Promise<{
+  updatedCharacter: Character | null;
+  logEntry: LogEntry;
+  shouldEndCombat: boolean;
+}> => {
+  const logEntry = createLogEntry(result.message, result.hit ? 'hit' : 'miss');
+  
+  const updatedCharacter = handleCombatResult(
+    result,
+    isPlayerAction,
+    attacker,
+    defender,
+    dispatch,
+    combatState
+  );
+
+  // Ensure updatedCharacter is not null and attributes.strength is defined
+  const shouldEndCombat = Boolean(
+    (updatedCharacter?.attributes?.strength ?? defender.attributes.strength) <= 0 || // Check against defender's original strength if no update
+    (result.damage && result.damage >= (defender.attributes.strength || 0))
+  );
+
+  return {
+    updatedCharacter,
+    logEntry,
+    shouldEndCombat
+  };
 };

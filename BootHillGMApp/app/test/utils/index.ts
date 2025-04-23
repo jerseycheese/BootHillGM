@@ -11,8 +11,7 @@ import * as testWrappers from './testWrappers';
 export { campaignWrappers, testWrappers };
 
 // Re-export game state utilities 
-import * as gameStateUtils from './gameStateTestUtils';
-export { gameStateUtils };
+export { default as gameStateUtils } from './gameStateTestUtils.tsx';
 
 // Re-export state test utilities
 import * as stateTestUtils from './stateTestUtils';

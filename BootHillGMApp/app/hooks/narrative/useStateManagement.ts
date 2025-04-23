@@ -4,6 +4,7 @@
 import { useCallback } from 'react';
 import { NarrativeContextValue } from './types';
 import { addNarrativeHistory } from '../../actions/narrativeActions';
+import { ActionTypes } from '../../types/actionTypes';
 
 /**
  * Hook that provides functionality for managing state in the narrative context
@@ -23,8 +24,8 @@ export function useStateManagement(context: NarrativeContextValue) {
   const ensureFreshState = useCallback(async () => {
     // Force a state update to ensure we have the freshest state
     dispatch({
-      type: 'UPDATE_NARRATIVE',
-      payload: {}  // Empty object is valid and will trigger a state update
+      type: ActionTypes.UPDATE_NARRATIVE,
+      payload: { /* Intentionally empty */ }  // Empty object is valid and will trigger a state update
     });
 
     // Wait a small delay to ensure state has updated

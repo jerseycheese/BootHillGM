@@ -5,71 +5,48 @@ import { useGameSession } from '../hooks/useGameSession';
 import { useAIWithOptimizedContext } from '../utils/narrative';
 import { AIRequestResult } from '../types/ai.types';
 import { LocationType } from '../services/locationService';
-import { InventoryItem, ItemCategory } from '../types/item.types'; // Import ItemCategory
+import { InventoryItem, ItemCategory } from '../types/item.types';
 import { Character } from '../types/character';
 import { JournalUpdatePayload } from '../types/gameActions';
 import { v4 as uuidv4 } from 'uuid';
+import { ActionTypes } from '../types/actionTypes';
+import { /* removed updateNarrative, clearError */ } from '../actions/narrativeActions';
+import { updateJournal } from '../actions/journalActions';
 
 interface OpponentCharacter {
   name?: string;
   id?: string;
 }
 
-/**
- * Game prompt component that uses optimized narrative context
- * Drop-in replacement for the standard prompt component
- */
 export default function GamePromptWithOptimizedContext() {
-  const { state, dispatch } = useGameSession();
-  const { 
+  const session = useGameSession();
+  // Remove unused variables with underscore prefix
+  const { state, dispatch, updateNarrative } = session;
+  
+  // Remove unused functions
+  // const makeAIRequest = ...
+  // const makeAIRequestWithCompactContext = ...
+  
+  const {
     makeAIRequestWithFocus,
-    isLoading, 
-    error 
+    isLoading,
+    error,
+    clearError // Add clearError from the hook
   } = useAIWithOptimizedContext();
   
   const [inputText, setInputText] = useState('');
   const [debugMode, setDebugMode] = useState(false);
-  
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    
-    if (!inputText.trim() || isLoading) return;
-    
-    try {
-      const userPrompt = inputText;
-      setInputText('');
-      
-      const focusTags = getFocusTagsFromGameState();
-      
-      const inventoryItems = state.inventory && 'items' in state.inventory 
-        ? state.inventory.items 
-        : (state.inventory as unknown as InventoryItem[] || []);
-      
-      const response = await makeAIRequestWithFocus(
-        userPrompt,
-        inventoryItems,
-        focusTags
-      );
-      
-      handleAIResponse(response);
-      
-      if (debugMode && process.env.NODE_ENV !== 'production' && response.contextQuality) {
-      }
-    } catch {
-      // Error is handled by the hook
-    }
-  };
-  
+
   const getFocusTagsFromGameState = () => {
     const tags: string[] = [];
     
     if (state.location) {
-      if (typeof state.location === 'string') {
-        tags.push(`location:${state.location}`);
-      } else if (state.location.type === 'town' && state.location.name) {
-        tags.push(`town:${state.location.name}`);
-      } else if (state.location.type) {
-        tags.push(`location:${state.location.type}`);
+      // Access current location object for type
+      const loc = state.location;
+      if (loc.type === 'town' && loc.name) {
+        tags.push(`town:${loc.name}`);
+      } else if (loc.type) {
+        tags.push(`location:${loc.type}`);
       }
     }
     
@@ -77,20 +54,19 @@ export default function GamePromptWithOptimizedContext() {
       ? state.character.opponent 
       : (state as unknown as { opponent?: OpponentCharacter }).opponent;
     
-    // Access combat status via the combat slice
     if (state.combat?.isActive && opponent?.name) {
       tags.push(`character:${opponent.name}`);
     }
     
     if (state.narrative?.narrativeContext) {
       if (state.narrative.narrativeContext.characterFocus) {
-        state.narrative.narrativeContext.characterFocus.forEach(character => {
+        state.narrative.narrativeContext.characterFocus.forEach((character: string) => {
           tags.push(`character:${character}`);
         });
       }
       
       if (state.narrative.narrativeContext.themes) {
-        state.narrative.narrativeContext.themes.forEach(theme => {
+        state.narrative.narrativeContext.themes.forEach((theme: string) => {
           tags.push(`theme:${theme}`);
         });
       }
@@ -101,11 +77,9 @@ export default function GamePromptWithOptimizedContext() {
   
   const handleAIResponse = (response: AIRequestResult) => {
     if (response.narrative) {
-      dispatch({ 
-        type: 'UPDATE_NARRATIVE', 
-        payload: {
-          narrativeHistory: [...state.narrative?.narrativeHistory || [], response.narrative],
-        }
+      // Use hook-provided updater instead of dispatch
+      updateNarrative({
+        text: response.narrative, // Pass the new narrative text to the 'text' property
       });
     }
     
@@ -114,15 +88,15 @@ export default function GamePromptWithOptimizedContext() {
         ? { type: 'unknown', description: response.location } as LocationType 
         : response.location;
         
-      dispatch({ 
-        type: 'SET_LOCATION', 
-        payload: locationToSet 
+      dispatch({
+        type: ActionTypes.SET_LOCATION,
+        payload: locationToSet
       });
     }
     
     if (response.combatInitiated) {
       dispatch({ 
-        type: 'combat/SET_ACTIVE', // Use namespaced type
+        type: ActionTypes.SET_COMBAT_ACTIVE,
         payload: true 
       });
       
@@ -144,51 +118,44 @@ export default function GamePromptWithOptimizedContext() {
           inventory: { items: [] },
           wounds: [],
           isUnconscious: false,
-          // Add missing required properties with default values
           minAttributes: { speed: 1, gunAccuracy: 1, throwingAccuracy: 1, strength: 1, baseStrength: 1, bravery: 1, experience: 0 },
           maxAttributes: { speed: 20, gunAccuracy: 20, throwingAccuracy: 20, strength: 20, baseStrength: 20, bravery: 20, experience: 100 },
         };
         dispatch({ 
-          type: 'character/SET_OPPONENT', // Use namespaced type
-          payload: characterPayload as Character // Explicitly cast to Character
+          type: ActionTypes.SET_OPPONENT,
+          payload: characterPayload as Character
         });
       }
     }
     
     if (response.acquiredItems && response.acquiredItems.length > 0) {
-      // Handle potentially nested acquiredItems structure using type guards
       response.acquiredItems.forEach((acquiredItemData: unknown) => {
         let itemName: string | undefined;
         let itemCategory: ItemCategory | undefined;
         const validCategories: ItemCategory[] = ['general', 'weapon', 'consumable', 'medical'];
 
-        // Type guard for expected structure: { name: string; category?: ItemCategory }
         if (typeof acquiredItemData === 'object' && acquiredItemData !== null && 'name' in acquiredItemData && typeof acquiredItemData.name === 'string') {
           itemName = acquiredItemData.name;
           if ('category' in acquiredItemData && typeof acquiredItemData.category === 'string' && validCategories.includes(acquiredItemData.category as ItemCategory)) {
             itemCategory = acquiredItemData.category as ItemCategory;
           }
         }
-        // Type guard for observed nested structure: { name: { name: string; category: string }; ... }
         else if (typeof acquiredItemData === 'object' && acquiredItemData !== null && 'name' in acquiredItemData && typeof acquiredItemData.name === 'object' && acquiredItemData.name !== null && 'name' in acquiredItemData.name && typeof acquiredItemData.name.name === 'string') {
           itemName = acquiredItemData.name.name;
           if ('category' in acquiredItemData.name && typeof acquiredItemData.name.category === 'string' && validCategories.includes(acquiredItemData.name.category as ItemCategory)) {
             itemCategory = acquiredItemData.name.category as ItemCategory;
           }
         }
-        // Type guard for string fallback (old format)
         else if (typeof acquiredItemData === 'string') {
           itemName = acquiredItemData;
-          itemCategory = undefined; // No category info from string
+          itemCategory = undefined;
         }
 
-        // If we couldn't extract a valid name, skip this item
         if (typeof itemName !== 'string') {
           console.warn('[GamePrompt] Could not extract valid item name from acquiredItem structure:', acquiredItemData);
           return;
         }
 
-        // Default category if not found/invalid
         const category = itemCategory ?? 'general';
 
         const inventoryItem: InventoryItem = {
@@ -200,7 +167,7 @@ export default function GamePromptWithOptimizedContext() {
         };
 
         dispatch({
-          type: 'inventory/ADD_ITEM', // Use namespaced type
+          type: ActionTypes.ADD_ITEM,
           payload: inventoryItem
         });
       });
@@ -209,14 +176,13 @@ export default function GamePromptWithOptimizedContext() {
     if (response.removedItems && response.removedItems.length > 0) {
       response.removedItems.forEach((itemName: string) => {
         dispatch({ 
-          type: 'inventory/REMOVE_ITEM', // Use namespaced type
+          type: ActionTypes.REMOVE_ITEM,
           payload: itemName 
         });
       });
     }
     
     if (response.storyProgression) {
-      // Create a strongly typed journal entry
       const journalEntry: JournalUpdatePayload = {
         id: uuidv4(),
         content: response.storyProgression.description ?? '', 
@@ -225,10 +191,38 @@ export default function GamePromptWithOptimizedContext() {
         narrativeSummary: response.storyProgression.title || 'Story Development'
       };
       
-      dispatch({
-        type: 'UPDATE_JOURNAL',
-        payload: journalEntry
-      });
+      dispatch(updateJournal(journalEntry));
+    }
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    
+    if (!inputText.trim() || isLoading) return;
+    
+    try {
+      const userPrompt = inputText;
+      setInputText('');
+      
+      const focusTags = getFocusTagsFromGameState();
+      
+      const inventoryItems = state.inventory && 'items' in state.inventory 
+        ? state.inventory.items 
+        : (state.inventory as unknown as InventoryItem[]) || [];
+      
+      const response = await makeAIRequestWithFocus(
+        userPrompt,
+        inventoryItems,
+        focusTags
+      );
+      
+      handleAIResponse(response);
+      
+      if (debugMode && process.env.NODE_ENV !== 'production' && response.contextQuality) {
+        console.log('Context Quality:', response.contextQuality);
+      }
+    } catch {
+      // Error is handled by the hook
     }
   };
   
@@ -258,7 +252,7 @@ export default function GamePromptWithOptimizedContext() {
             <div className="font-bold">Error:</div>
             <div>{error.message}</div>
             <button 
-              onClick={() => dispatch({ type: 'CLEAR_ERROR' })} 
+              onClick={clearError} // Use the correct function to clear the error
               className="text-sm text-blue-600 hover:underline mt-1"
             >
               Dismiss

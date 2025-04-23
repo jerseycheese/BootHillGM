@@ -6,15 +6,16 @@
 import { mockPlayerCharacter, mockNPC } from '../fixtures';
 import { GameEngineAction, UpdateCharacterPayload } from '../../types/gameActions';
 import { BrawlingState } from '../../types/combat';
+import { ActionTypes } from '../../types/actionTypes'; // Import ActionTypes
 
 /**
  * Type guard for UPDATE_CHARACTER action with payload
  */
 export const isUpdateCharacterAction = (action: GameEngineAction): action is { 
-  type: "UPDATE_CHARACTER"; 
+  type: typeof ActionTypes.UPDATE_CHARACTER; 
   payload: UpdateCharacterPayload 
 } => {
-  return action.type === "UPDATE_CHARACTER" && 'payload' in action;
+  return action.type === ActionTypes.UPDATE_CHARACTER && 'payload' in action;
 };
 
 /**
@@ -84,7 +85,7 @@ export const createBrawlingResult = (options: Partial<{
   damage: number;
   location: string;
   nextRoundModifier: number;
-}> = {}) => ({
+}> = { /* Intentionally empty */ }) => ({
   roll: options.roll ?? 5,
   result: options.result ?? 'Hit',
   damage: options.damage ?? 2,

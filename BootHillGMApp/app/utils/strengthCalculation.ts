@@ -47,7 +47,7 @@ export function calculateReducedStrength(
   const isCharacter = (
     participant: CombatParticipant
   ): participant is Character => {
-    return participant.hasOwnProperty('attributes');
+    return Object.prototype.hasOwnProperty.call(participant, 'attributes'); // Use recommended hasOwnProperty call
   };
 
   const baseStrength = isCharacter(participant)

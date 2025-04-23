@@ -8,7 +8,6 @@ import { createDefaultMockGameState } from '../inventoryTestUtils'; // Import de
 
 // Forward declaration to avoid circular dependency
 // This is defined in index.ts but used here
-// Removed import of obsolete prepareStateForTesting
 
 /**
  * Helper function to create a mock state with properly typed getters

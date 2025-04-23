@@ -16,11 +16,11 @@ import {
   initialStoryProgressionState
 } from '../types/narrative.types';
 import {
-  // Removed unused addStoryPointUtil import alias
   extractStoryPointFromNarrative,
   createStoryProgressionPoint,
   containsSignificantStoryAdvancement
 } from '../utils/storyUtils';
+import { addStoryPoint, updateCurrentPoint } from '../actions/storyActions';
 
 /**
  * Ensures the story progression state has valid default values
@@ -153,16 +153,13 @@ export function useStoryProgression(): UseStoryProgressionResult {
   /**
    * Add a story point to the progression
    */
-  const addStoryPoint = useCallback((point: StoryProgressionPoint) => {
+  const addStoryPointHandler = useCallback((point: StoryProgressionPoint) => {
     // Dispatch the specific action for adding a story point
     if (dispatch) {
-      dispatch({
-        type: 'ADD_STORY_POINT', // Use the correct action type
-        payload: point // Pass the StoryProgressionPoint directly
-      });
+      dispatch(addStoryPoint(point));
     }
-  }, [dispatch]); // Removed unnecessary storyProgression dependency
-  
+  }, [dispatch]);
+
   /**
    * Create and add a story point from raw data
    */
@@ -183,8 +180,8 @@ export function useStoryProgression(): UseStoryProgressionResult {
       tags: []
     };
     
-    addStoryPoint(newPoint);
-  }, [addStoryPoint]);
+    addStoryPointHandler(newPoint);
+  }, [addStoryPointHandler]);
   
   /**
    * Set the current story point
@@ -197,10 +194,7 @@ export function useStoryProgression(): UseStoryProgressionResult {
     
     // Dispatch the specific action for updating the current point
     if (dispatch) {
-      dispatch({
-        type: 'UPDATE_CURRENT_POINT', // Use the correct action type
-        payload: pointId // Pass the point ID directly
-      });
+      dispatch(updateCurrentPoint(pointId));
     }
   }, [dispatch, storyProgression]);
   
@@ -254,7 +248,7 @@ export function useStoryProgression(): UseStoryProgressionResult {
       );
       
       // Add the story point to the progression
-      addStoryPoint(storyPoint);
+      addStoryPointHandler(storyPoint);
     } else if (containsSignificantStoryAdvancement(narrative)) {
       // If no explicit story point but the narrative contains significant advancement
       // Create a basic story point
@@ -264,14 +258,14 @@ export function useStoryProgression(): UseStoryProgressionResult {
         'minor'
       );
     }
-  }, [addStoryPoint, createAndAddStoryPoint, storyProgression.currentPoint, dispatch]);
+  }, [addStoryPointHandler, createAndAddStoryPoint, storyProgression.currentPoint, dispatch]);
   
   return {
     storyProgression,
     currentPoint,
-    allPoints: storyProgression.progressionPoints || {},
+    allPoints: storyProgression.progressionPoints || { /* Intentionally empty */ },
     mainStoryline,  // Return the pre-validated mainStoryline
-    addStoryPoint,
+    addStoryPoint: addStoryPointHandler,
     createAndAddStoryPoint,
     setCurrentPoint,
     getPointById,

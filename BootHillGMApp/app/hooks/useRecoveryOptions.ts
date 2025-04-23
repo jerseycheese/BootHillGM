@@ -1,10 +1,9 @@
-import { useCallback } from 'react';
+import { Dispatch, useCallback } from 'react';
 import { GameState } from '../types/gameState';
-// Removed unused import: Character
 import { GameAction } from '../types/actions'; // Use GameAction
-import { Dispatch } from 'react';
 import { StoryPointType, NarrativeDisplayMode } from '../types/narrative.types';
 import { getStartingInventory } from '../utils/startingInventory';
+import { ActionTypes } from '../types/actionTypes';
 
 /**
  * Custom hook to provide game recovery functionality
@@ -15,7 +14,6 @@ import { getStartingInventory } from '../utils/startingInventory';
  */
 export function useRecoveryOptions(
   dispatch: Dispatch<GameAction> | undefined, // Expect GameAction
-  // Removed unused playerCharacter parameter
   recoveryInProgress: React.MutableRefObject<boolean>
 ) {
   
@@ -41,7 +39,7 @@ export function useRecoveryOptions(
         let playerData = null;
         try {
           if (localStorage.getItem("character-creation-progress")) {
-            const parsed = JSON.parse(localStorage.getItem("character-creation-progress") || '{}');
+            const parsed = JSON.parse(localStorage.getItem("character-creation-progress") || '{ /* Intentionally empty */ }');
             if (parsed && parsed.character) {
               playerData = parsed.character;
             }
@@ -109,7 +107,7 @@ export function useRecoveryOptions(
         // Dispatch the emergency state
         if (dispatch) {
           // Cast payload as Partial<GameState> for SET_STATE action
-          dispatch({ type: 'SET_STATE', payload: emergencyState as Partial<GameState> });
+          dispatch({ type: ActionTypes.SET_STATE, payload: emergencyState as Partial<GameState> }); // Use ActionTypes constant
         }
         
         // Clear recovered flag to allow future recoveries if needed

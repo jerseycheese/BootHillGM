@@ -160,13 +160,13 @@ export function inventoryReducer(
       
       // Handle array of items
       if (Array.isArray(payload)) {
-        const items = payload.map(item => normalizeItem(item));
+        const items = payload.map((item: unknown) => normalizeItem(item));
         return { ...state, items };
       }
       
       // Handle object with items array
       if (payload && typeof payload === 'object' && 'items' in payload && Array.isArray(payload.items)) {
-        const items = payload.items.map(item => normalizeItem(item));
+        const items = payload.items.map((item: unknown) => normalizeItem(item));
         return { ...state, items };
       }
       

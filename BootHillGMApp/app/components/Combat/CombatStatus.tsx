@@ -15,9 +15,8 @@
 
 import React from 'react';
 import { Character } from '../../types/character';
-import { CombatParticipant, NPC } from '../../types/combat';
+import { CombatState, CombatParticipant, NPC } from '../../types/combat';
 import { Wound } from '../../types/wound';
-import { CombatState } from '../../types/combat';
 import { cleanCharacterName } from '../../utils/combatUtils';
 import { getCharacterStrength } from '../../utils/strengthSystem';
 
@@ -126,7 +125,7 @@ const BaseCombatStatus: React.FC<CombatStatusProps> = ({
   const isPlayerCharacter = (
     participant: CombatParticipant
   ): participant is Character => {
-    return participant.hasOwnProperty('attributes');
+    return Object.prototype.hasOwnProperty.call(participant, 'attributes');
   };
 
   // Get player strength using centralized strength system

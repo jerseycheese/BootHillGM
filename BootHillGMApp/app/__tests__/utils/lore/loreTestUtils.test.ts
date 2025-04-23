@@ -11,6 +11,7 @@ import {
 import { createTestState } from './loreTestFixtures';
 import { LoreStore, LoreAction } from '../../../types/narrative/lore.types';
 import { loreReducer } from '../../../reducers/loreReducer';
+import { ActionTypes } from '../../../types/actionTypes';
 
 describe('loreTestUtils', () => {
   let testState: LoreStore;
@@ -51,7 +52,7 @@ describe('loreTestUtils', () => {
   it('should apply multiple actions sequentially', () => {
     const actions: LoreAction[] = [
       {
-        type: 'ADD_LORE_FACT',
+        type: ActionTypes.ADD_LORE_FACT,
         payload: {
           content: 'Test fact content',
           category: 'concept',
@@ -63,10 +64,21 @@ describe('loreTestUtils', () => {
         }
       },
       {
-        type: 'ADD_FACT_TAGS',
+        type: ActionTypes.ADD_FACT_TAGS,
         payload: {
           factId: 'fact-1',
           tags: ['new-tag']
+        }
+      },
+      {
+        type: ActionTypes.ADD_LORE_FACT,
+        payload: {
+          content: 'Another test fact',
+          category: 'location',
+          confidence: 6,
+          importance: 6,
+          isValid: true,
+          tags: ['another-test']
         }
       }
     ];
@@ -75,9 +87,9 @@ describe('loreTestUtils', () => {
     const resultState = applyActions(testState, actions, loreReducer);
     
     // Verify results
-    // Should have one more fact
+    // Should have two more facts
     expect(Object.keys(resultState.facts).length).toBe(
-      Object.keys(testState.facts).length + 1
+      Object.keys(testState.facts).length + 2
     );
     
     // fact-1 should have the new tag

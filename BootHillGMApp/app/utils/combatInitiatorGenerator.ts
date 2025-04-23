@@ -1,6 +1,5 @@
 import { Character } from '../types/character';
 import { GameSessionProps } from '../components/GameArea/types';
-import { CombatState as _StandardCombatState } from '../types/state/combatState'; // Renamed and marked as unused
 import { CombatState as CombatStateFromCombat } from '../types/combat';
 import { GameEngineAction } from '../types/gameActions';
 import { GameAction } from '../types/actions'; // Import base GameAction
@@ -62,11 +61,11 @@ export function createCombatInitiator(
   };
 
   // Create a non-nullable dispatch, casting to the expected type for the interface
-  const safeDispatch: Dispatch<GameEngineAction> = dispatch as Dispatch<GameEngineAction> || (() => {});
+  const safeDispatch: Dispatch<GameEngineAction> = dispatch as Dispatch<GameEngineAction> || (() => { /* Intentionally empty */ });
 
   // Default initiator structure
   const defaultInitiator: CombatInitiator = {
-    initiateCombat: (_opponent: Character, _combatState?: Partial<CombatStateFromCombat>) => {
+    initiateCombat: () => {
       console.warn('initiateCombat default implementation called');
     },
     executeCombatRound: async () => { console.warn('executeCombatRound default implementation called'); },

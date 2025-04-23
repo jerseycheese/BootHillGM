@@ -22,6 +22,47 @@ const STORAGE_KEYS = {
 };
 
 /**
+ * Helper to find player character in multiple storage sources.
+ * Checks for direct character objects or nested character properties.
+ * 
+ * @param sources Array of storage keys to check
+ * @returns Character object if found, null otherwise
+ */
+const findPlayerCharacterInSources = (sources: string[]): Character | null => {
+  for (const source of sources) {
+    const data = localStorage.getItem(source);
+    if (!data) continue;
+    
+    try {
+      const parsed = JSON.parse(data);
+      
+      // Character is directly in source
+      if (source === STORAGE_KEYS.CHARACTER_PROGRESS || 
+          source === STORAGE_KEYS.COMPLETED_CHARACTER ||
+          source === STORAGE_KEYS.LAST_CHARACTER) {
+        
+        // Check if it has the expected Character structure
+        if (parsed && 
+            typeof parsed === 'object' && 
+            'attributes' in parsed) {
+          return parsed;
+        }
+      }
+      // Character is inside a nested property
+      else if (parsed.character && 
+              typeof parsed.character === 'object' && 
+              'attributes' in parsed.character) {
+        return parsed.character;
+      }
+    } catch (e) {
+      console.error(`${MODULE_NAME} - Error parsing ${source} for player character:`, e);
+    }
+  }
+  
+  return null;
+};
+
+/**
  * Get character data from any available source with type checking.
  * Tries sources in this priority order:
  * 1. GAME_STATE or CAMPAIGN_STATE (new format)
@@ -65,7 +106,7 @@ const getCharacter = (): CharacterState => {
   }
   
   // Second pass: look for direct character object
-  const playerCharacter = findPlayerCharacterInSources(sources);
+  const playerCharacter = findPlayerCharacterInSources(sources); // Now defined before call
   
   // If we found a player character, return proper CharacterState
   if (playerCharacter) {
@@ -79,46 +120,6 @@ const getCharacter = (): CharacterState => {
   return initialCharacterState;
 };
 
-/**
- * Helper to find player character in multiple storage sources.
- * Checks for direct character objects or nested character properties.
- * 
- * @param sources Array of storage keys to check
- * @returns Character object if found, null otherwise
- */
-const findPlayerCharacterInSources = (sources: string[]): Character | null => {
-  for (const source of sources) {
-    const data = localStorage.getItem(source);
-    if (!data) continue;
-    
-    try {
-      const parsed = JSON.parse(data);
-      
-      // Character is directly in source
-      if (source === STORAGE_KEYS.CHARACTER_PROGRESS || 
-          source === STORAGE_KEYS.COMPLETED_CHARACTER ||
-          source === STORAGE_KEYS.LAST_CHARACTER) {
-        
-        // Check if it has the expected Character structure
-        if (parsed && 
-            typeof parsed === 'object' && 
-            'attributes' in parsed) {
-          return parsed;
-        }
-      }
-      // Character is inside a nested property
-      else if (parsed.character && 
-              typeof parsed.character === 'object' && 
-              'attributes' in parsed.character) {
-        return parsed.character;
-      }
-    } catch (e) {
-      console.error(`${MODULE_NAME} - Error parsing ${source} for player character:`, e);
-    }
-  }
-  
-  return null;
-};
 
 export const characterStorage = {
   getCharacter

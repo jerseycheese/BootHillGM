@@ -8,7 +8,7 @@ import { AIDecisionService } from '../../../services/ai/aiDecisionService';
 import * as aiDecisionDetector from '../../../services/ai/utils/aiDecisionDetector';
 import * as aiDecisionGenerator from '../../../services/ai/utils/aiDecisionGenerator';
 import * as aiServiceClient from '../../../services/ai/clients/aiServiceClient';
-import { NarrativeState, PlayerDecision } from '../../../types/narrative.types';
+import { NarrativeState, PlayerDecision, StoryPoint } from '../../../types/narrative.types';
 import { Character } from '../../../types/character';
 import { GameState } from '../../../types/gameState';
 import { DecisionDetectionResult, DecisionResponse } from '../../../types/ai-service.types';
@@ -20,17 +20,15 @@ jest.mock('../../../services/ai/utils/aiDecisionGenerator');
 jest.mock('../../../services/ai/clients/aiServiceClient');
 
 // Define test-specific interfaces to avoid any
+// Update MockNarrativeState to use the actual StoryPoint type, making it optional
 interface MockNarrativeState extends Partial<NarrativeState> {
-  currentStoryPoint?: {
-    id?: string;
-    locationChange?: LocationType | string;
-    content: string;
-  };
-  narrativeHistory: string[];
+  currentStoryPoint?: StoryPoint | null; // Use the actual type, allow null/undefined
+  narrativeHistory?: string[]; // Make history optional too for flexibility
 }
 
-interface MockCharacter extends Partial<Character> {
-  attributes: Record<string, number>;
+// Use Omit to remove the original 'attributes' from Partial<Character> before redefining it
+interface MockCharacter extends Omit<Partial<Character>, 'attributes'> {
+  attributes?: Partial<Character['attributes']>; // Make attributes optional and its contents partial
 }
 
 describe('AIDecisionService', () => {
@@ -45,11 +43,14 @@ describe('AIDecisionService', () => {
   describe('detectDecisionPoint', () => {
     it('should call the detector utility', () => {
       // Setup
-      const mockNarrativeState: MockNarrativeState = { 
-        currentStoryPoint: { content: 'test content' },
+      // Adjust mock data creation to match updated interfaces
+      const mockNarrativeState: MockNarrativeState = {
+        // Provide a minimal valid StoryPoint or omit/set to null
+        currentStoryPoint: { id: 'sp1', type: 'narrative', title: 'Test Point', content: 'test content' },
         narrativeHistory: []
       };
-      const mockCharacter: MockCharacter = { attributes: {} };
+      // Ensure mockCharacter provides the required attributes object, even if empty or partial
+      const mockCharacter: MockCharacter = { attributes: { strength: 10 } };
       
       // Mock implementation
       const mockDetectionResult: DecisionDetectionResult = { 
@@ -64,7 +65,7 @@ describe('AIDecisionService', () => {
       const result = service.detectDecisionPoint(
         mockNarrativeState as NarrativeState, 
         mockCharacter as Character, 
-        {} as GameState
+        { /* Intentionally empty */ } as GameState
       );
       
       // Verify - instead of checking exact parameters, check the first three which we care about
@@ -82,11 +83,12 @@ describe('AIDecisionService', () => {
   describe('generateDecision', () => {
     it('should generate a fallback decision when API config is missing', async () => {
       // Setup
-      const mockNarrativeState: MockNarrativeState = { 
-        currentStoryPoint: { content: 'test content' },
+      // Adjust mock data creation
+      const mockNarrativeState: MockNarrativeState = {
+        currentStoryPoint: { id: 'sp1', type: 'narrative', title: 'Test Point', content: 'test content' },
         narrativeHistory: []
       };
-      const mockCharacter: MockCharacter = { attributes: {} };
+      const mockCharacter: MockCharacter = { attributes: { strength: 10 } };
       const mockFallbackDecision: Partial<PlayerDecision> = { id: 'fallback-123' };
       
       (aiDecisionGenerator.generateFallbackDecision as jest.Mock).mockReturnValue(mockFallbackDecision);
@@ -99,20 +101,19 @@ describe('AIDecisionService', () => {
       
       // Verify
       expect(aiDecisionGenerator.generateFallbackDecision).toHaveBeenCalledWith(
-        mockNarrativeState,
-        mockCharacter,
-        undefined
+        mockNarrativeState
       );
       expect(result).toEqual(mockFallbackDecision);
     });
     
     it('should call AI service when API config is available', async () => {
       // Setup
-      const mockNarrativeState: MockNarrativeState = { 
-        currentStoryPoint: { content: 'test content' },
+      // Adjust mock data creation
+      const mockNarrativeState: MockNarrativeState = {
+        currentStoryPoint: { id: 'sp1', type: 'narrative', title: 'Test Point', content: 'test content' },
         narrativeHistory: []
       };
-      const mockCharacter: MockCharacter = { attributes: {} };
+      const mockCharacter: MockCharacter = { attributes: { strength: 10 } };
       const mockPrompt = { narrativeContext: 'test' };
       const mockResponse: Partial<DecisionResponse> = { decisionId: 'ai-123' };
       const mockPlayerDecision: Partial<PlayerDecision> = { id: 'ai-123', options: [] };
@@ -152,11 +153,12 @@ describe('AIDecisionService', () => {
     
     it('should fallback to template if AI service call fails', async () => {
       // Setup
-      const mockNarrativeState: MockNarrativeState = { 
-        currentStoryPoint: { content: 'test content' },
+      // Adjust mock data creation
+      const mockNarrativeState: MockNarrativeState = {
+        currentStoryPoint: { id: 'sp1', type: 'narrative', title: 'Test Point', content: 'test content' },
         narrativeHistory: []
       };
-      const mockCharacter: MockCharacter = { attributes: {} };
+      const mockCharacter: MockCharacter = { attributes: { strength: 10 } };
       const mockFallbackDecision: Partial<PlayerDecision> = { id: 'fallback-123' };
       
       // Create service with API config
@@ -171,7 +173,7 @@ describe('AIDecisionService', () => {
         }
       });
       
-      (aiDecisionGenerator.buildDecisionPrompt as jest.Mock).mockReturnValue({});
+      (aiDecisionGenerator.buildDecisionPrompt as jest.Mock).mockReturnValue({ /* Intentionally empty */ });
       (aiServiceClient.callAIService as jest.Mock).mockRejectedValue(new Error('API error'));
       (aiDecisionGenerator.generateFallbackDecision as jest.Mock).mockReturnValue(mockFallbackDecision);
       

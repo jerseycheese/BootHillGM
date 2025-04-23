@@ -2,24 +2,65 @@
  * Test helpers for narrative-related hooks and utilities, specifically
  * focusing on AI context optimization tests.
  */
-// Remove unused imports
-// Mock types for test
-// Removed unused MockOptimizedContext and MockSynchronization types
-// Create mock functions instead of importing them
-export const mockUseNarrative = jest.fn();
-export const mockGetAIResponse = jest.fn();
-export const mockUseOptimizedNarrativeContext = jest.fn();
-export const mockUseNarrativeContextSynchronization = jest.fn();
-export const mockEstimateTokenCount = jest.fn();
+interface MockFunction {
+  (...args: any[]): any;
+  calls: any[][];
+  returnValue: any;
+  mockReturnValue(value: any): MockFunction;
+  mockImplementation(implementation: (...args: any[]) => any): MockFunction;
+  mockResolvedValue(value: any): MockFunction;
+}
 
-// Mock these modules at the top of the test file using:
-// jest.mock('../../hooks/useNarrative', () => ({ __esModule: true, default: mockUseNarrative }));
-// jest.mock('../../services/ai/gameService', () => ({ getAIResponse: mockGetAIResponse }));
-// jest.mock('../../utils/narrative/narrativeContextIntegration', () => ({
-//   useOptimizedNarrativeContext: mockUseOptimizedNarrativeContext,
-//   useNarrativeContextSynchronization: mockUseNarrativeContextSynchronization
-// }));
-// jest.mock('../../utils/narrative', () => ({ estimateTokenCount: mockEstimateTokenCount }));
+
+
+import { jest } from '@jest/globals';
+
+// Create browser-compatible mock functions
+const createMockFn = (): MockFunction => {
+  const fn = (function(...args: any[]): any {
+    if (typeof fn.calls !== 'undefined') {
+      fn.calls.push(args);
+    }
+    return fn.returnValue;
+  }) as MockFunction;
+  
+  fn.calls = [] as any[][];
+  fn.returnValue = undefined;
+  
+  fn.mockReturnValue = function(value: any) {
+    fn.returnValue = value;
+    return fn;
+  };
+  
+  fn.mockImplementation = function(implementation: (...args: any[]) => any): MockFunction {
+    const originalFn = fn;
+    const newFn = function(...args: any[]) {
+      if (typeof newFn.calls !== 'undefined') {
+        newFn.calls.push(args);
+      }
+      return implementation(...args);
+    };
+    newFn.calls = originalFn.calls;
+    newFn.returnValue = originalFn.returnValue;
+    newFn.mockReturnValue = originalFn.mockReturnValue;
+    newFn.mockImplementation = originalFn.mockImplementation;
+    newFn.mockResolvedValue = originalFn.mockResolvedValue;
+    return newFn as MockFunction;
+  };
+  
+  fn.mockResolvedValue = function(value: any) {
+    return fn.mockImplementation(() => Promise.resolve(value));
+  };
+  
+  return fn;
+};
+
+// Define mock functions using our browser-compatible implementation
+export const mockUseNarrative = createMockFn();
+export const mockGetAIResponse = createMockFn();
+export const mockUseOptimizedNarrativeContext = createMockFn();
+export const mockUseNarrativeContextSynchronization = createMockFn();
+export const mockEstimateTokenCount = createMockFn();
 
 const MOCK_OPTIMIZED_CONTEXT = "Recent events: You arrived in Tombstone.";
 
@@ -28,42 +69,47 @@ const MOCK_OPTIMIZED_CONTEXT = "Recent events: You arrived in Tombstone.";
  * Assumes jest.mock() calls are done in the test file itself.
  */
 export const setupAIContextMocks = () => {
-  // Reset mock function calls and implementations
-  jest.clearAllMocks();
+  // This function should only be called in a test environment
+  if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') {
+    // Reset mock function calls and implementations
+    jest.clearAllMocks();
+    
+    // Set default return values
+    mockUseNarrative.mockReturnValue({
+      state: {
+        narrativeHistory: ["You entered Tombstone.", "You met the sheriff."],
+        narrativeContext: {
+          tone: 'serious',
+          characterFocus: ['Sheriff'],
+          themes: ['justice'],
+          decisionHistory: [],
+          worldContext: "Wild West setting in the 1880s",
+          importantEvents: ["Gunfight at the O.K. Corral"]
+        }
+      },
+      dispatch: createMockFn()
+    });
 
-  // Set default return values
-  mockUseNarrative.mockReturnValue({
-    state: {
-      narrativeHistory: ["You entered Tombstone.", "You met the sheriff."],
-      narrativeContext: {
-        tone: 'serious',
-        characterFocus: ['Sheriff'],
-        themes: ['justice'],
-        decisionHistory: [],
-        worldContext: "Wild West setting in the 1880s",
-        importantEvents: ["Gunfight at the O.K. Corral"]
-      }
-    },
-    dispatch: jest.fn()
-  });
+    mockUseOptimizedNarrativeContext.mockReturnValue({
+      buildOptimizedContext: createMockFn().mockReturnValue(MOCK_OPTIMIZED_CONTEXT),
+      getDefaultContext: createMockFn().mockReturnValue(MOCK_OPTIMIZED_CONTEXT),
+      getFocusedContext: createMockFn().mockReturnValue(MOCK_OPTIMIZED_CONTEXT),
+      getCompactContext: createMockFn().mockReturnValue(MOCK_OPTIMIZED_CONTEXT)
+    });
 
-  mockUseOptimizedNarrativeContext.mockReturnValue({
-    buildOptimizedContext: jest.fn().mockReturnValue(MOCK_OPTIMIZED_CONTEXT),
-    getDefaultContext: jest.fn().mockReturnValue(MOCK_OPTIMIZED_CONTEXT),
-    getFocusedContext: jest.fn().mockReturnValue(MOCK_OPTIMIZED_CONTEXT),
-    getCompactContext: jest.fn().mockReturnValue(MOCK_OPTIMIZED_CONTEXT)
-  });
+    mockUseNarrativeContextSynchronization.mockReturnValue({
+      ensureFreshContext: createMockFn().mockResolvedValue(null)
+    });
 
-  mockUseNarrativeContextSynchronization.mockReturnValue({
-    ensureFreshContext: jest.fn().mockResolvedValue(null)
-  });
-
-  mockEstimateTokenCount.mockReturnValue(100);
-  
-  // Set up getAIResponse mock
-  mockGetAIResponse.mockResolvedValue({
-    response: "AI generated response",
-    success: true,
-    debugInfo: { tokens: 100, latency: 500 }
-  });
+    mockEstimateTokenCount.mockReturnValue(100);
+    
+    // Set up getAIResponse mock
+    mockGetAIResponse.mockResolvedValue({
+      response: "AI generated response",
+      success: true,
+      debugInfo: { tokens: 100, latency: 500 }
+    });
+  } else {
+    console.warn('setupAIContextMocks called outside of test environment');
+  }
 };

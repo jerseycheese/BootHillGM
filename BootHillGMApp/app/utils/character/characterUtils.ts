@@ -96,25 +96,24 @@ const ensureValidCharacter = (characterData: Partial<Character> | null): Charact
   // Ensure attributes object exists and has all required fields
   const attributes = {
     ...defaultChar.attributes,
-    ...(characterData.attributes || {})
+    ...(characterData.attributes || { /* Intentionally empty */ })
   };
   
   // Ensure minAttributes and maxAttributes exist
   const minAttributes = {
     ...defaultChar.minAttributes,
-    ...(characterData.minAttributes || {})
+    ...(characterData.minAttributes || { /* Intentionally empty */ })
   };
   
   const maxAttributes = {
     ...defaultChar.maxAttributes,
-    ...(characterData.maxAttributes || {})
+    ...(characterData.maxAttributes || { /* Intentionally empty */ })
   };
   
   // Ensure inventory with properly typed items
   let items: InventoryItem[] = defaultChar.inventory.items;
   
-  // Fixed TypeScript error by checking each part individually
-  if (characterData.inventory && 
+  if (characterData.inventory &&
       characterData.inventory.items && 
       Array.isArray(characterData.inventory.items) && 
       characterData.inventory.items.length > 0) {
@@ -129,9 +128,9 @@ const ensureValidCharacter = (characterData: Partial<Character> | null): Charact
         category: (item.category as ItemCategory) || 'misc',
         quantity: item.quantity || 1,
         // Only add optional properties if they exist in the original
-        ...(item.weight !== undefined ? { weight: item.weight } : {}),
-        ...(item.value !== undefined ? { value: item.value } : {}),
-        ...(item.durability !== undefined ? { durability: item.durability } : {})
+        ...(item.weight !== undefined ? { weight: item.weight } : { /* Intentionally empty */ }),
+        ...(item.value !== undefined ? { value: item.value } : { /* Intentionally empty */ }),
+        ...(item.durability !== undefined ? { durability: item.durability } : { /* Intentionally empty */ })
       };
     });
   } else {

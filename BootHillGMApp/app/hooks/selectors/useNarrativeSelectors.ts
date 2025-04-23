@@ -279,10 +279,10 @@ export const useNarrativeArcs = createStateHook<Record<string, unknown>, [Record
     
     if (hasLegacyContext(state)) {
       const legacyContext = (state.narrative as unknown as LegacyNarrativeProperties).context;
-      return legacyContext?.narrativeArcs || {};
+      return legacyContext?.narrativeArcs || { /* Intentionally empty */ };
     }
     
-    return {};
+    return { /* Intentionally empty */ };
   },
   (state) => [state.narrative?.narrativeContext?.narrativeArcs]
 );

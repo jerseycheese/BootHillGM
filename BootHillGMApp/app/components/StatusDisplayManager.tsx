@@ -11,9 +11,9 @@
 import React, { memo, useEffect } from 'react';
 import { Character } from '../types/character';
 import { getCharacterStrength } from '../utils/strengthSystem';
-// Removed import { useCampaignState } from './CampaignStateManager';
 import { useGameState } from '../context/GameStateProvider'; // Import correct hook
 import { LocationType } from '../services/locationService';
+import { ActionTypes } from '../types/actionTypes'; // Import ActionTypes
 
 interface StrengthBarProps {
     current: number;
@@ -103,7 +103,7 @@ interface WoundDisplayProps {
  * Wounds are sorted by severity (most severe first) and include strength
  * reduction information.
  */
-const WoundDisplay: React.FC<WoundDisplayProps> = ({ wounds }) => {
+const WoundDisplay: React.FC<WoundDisplayProps> = ({ wounds = [] }) => {
   const severityOrder = ['mortal', 'serious', 'light'] as const;
   
   // Sort wounds by severity (most severe first) and then by location
@@ -150,15 +150,32 @@ interface StatusDisplayManagerProps {
   location: LocationType | null;
 }
 
-function StatusDisplayManager({ character, location }: StatusDisplayManagerProps) {
+/**
+ * StatusDisplayManager Component
+ */
+export const StatusDisplayManager: React.FC<StatusDisplayManagerProps> = ({ 
+  character, 
+  location 
+}) => {
     // Use the correct state hook
     const { dispatch } = useGameState();
-    const currentStrength = getCharacterStrength(character);
-    const maxStrength = character.attributes.baseStrength;
+    
+    // Add null/undefined checks for character and attributes
+    const currentStrength = character ? getCharacterStrength(character) : 0;
+    const maxStrength = character?.attributes?.baseStrength ?? 10;
     const displayLocation = location;
+    
+    // Safely access character properties with null checks
+    const characterName = character?.name || 'Unknown Character';
+    const characterWounds = character?.wounds || [];
+    const isUnconscious = character?.isUnconscious || false;
+    const strengthHistory = character?.strengthHistory || { baseStrength: 0, changes: [] };
     
     // Debug log to see character data
     useEffect(() => {
+        if (!character) {
+            console.warn('StatusDisplayManager: Character is null or undefined');
+        }
     }, [character]);
 
     const getLocationDisplay = (location: LocationType): string => {
@@ -175,9 +192,11 @@ function StatusDisplayManager({ character, location }: StatusDisplayManagerProps
     };
 
     const handleResetStrength = () => {
+        if (!character || !character.attributes) return;
+        
         dispatch({
-            // Use the namespaced action type expected by characterReducer
-            type: 'character/SET_CHARACTER',
+            // Use the standardized action type from ActionTypes
+            type: ActionTypes.SET_CHARACTER,
             payload: {
                 ...character,
                 wounds: [],
@@ -191,11 +210,25 @@ function StatusDisplayManager({ character, location }: StatusDisplayManagerProps
         });
     };
 
+    // Render a fallback if character is null or undefined
+    if (!character) {
+        return (
+            <div id="bhgmStatusDisplayManager" data-testid="status-display-manager" className="wireframe-section space-y-4 bhgm-status-display-manager">
+                <div className="border-b pb-2">
+                    <h2 className="font-medium text-lg" data-testid="character-name">
+                        No Character Data
+                    </h2>
+                </div>
+                <p className="text-sm text-gray-600">Character information unavailable</p>
+            </div>
+        );
+    }
+
     return (
       <div id="bhgmStatusDisplayManager" data-testid="status-display-manager" className="wireframe-section space-y-4 bhgm-status-display-manager">
             <div className="border-b pb-2">
                 <h2 className="font-medium text-lg" data-testid="character-name">
-                    {character.name || 'Sheriff Wilson'}
+                    {characterName}
                 </h2>
                 <p className="text-sm text-gray-600" data-testid="character-location">
                     Location: {displayLocation ? getLocationDisplay(displayLocation) : 'Unknown'}
@@ -205,16 +238,16 @@ function StatusDisplayManager({ character, location }: StatusDisplayManagerProps
             <StrengthBar
               current={currentStrength}
               max={maxStrength}
-              isUnconscious={character.isUnconscious}
+              isUnconscious={isUnconscious}
               onReset={handleResetStrength}
             />
 
             {/* Strength History Section */}
-            {character.strengthHistory && character.strengthHistory.changes.length > 0 && (
+            {strengthHistory && strengthHistory.changes.length > 0 && (
                 <div className="strength-history text-sm" data-testid="strength-history">
                     <div className="text-gray-600 font-semibold mb-1">Strength History:</div>
                     <div className="max-h-32 overflow-y-auto">
-                        {character.strengthHistory.changes.slice().reverse().map((change, index) => (
+                        {strengthHistory.changes.slice().reverse().map((change, index) => (
                             <div
                                 key={index}
                                 className="flex justify-between text-xs py-1 border-b border-gray-200 last:border-0"
@@ -232,9 +265,10 @@ function StatusDisplayManager({ character, location }: StatusDisplayManagerProps
                 </div>
             )}
 
-            <WoundDisplay wounds={character.wounds} />
+            <WoundDisplay wounds={characterWounds} />
         </div>
     );
 };
 
+// Make the component memoized for better performance
 export default memo(StatusDisplayManager);

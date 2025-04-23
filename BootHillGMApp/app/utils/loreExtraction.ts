@@ -4,7 +4,7 @@
  * This file contains utilities for extracting lore from AI responses.
  */
 
-import { LoreExtractionResult, LoreStore, LoreCategory, isValidLoreCategory } from '../types/narrative/lore.types';
+import { LoreExtractionResult, LoreCategory, isValidLoreCategory } from '../types/narrative/lore.types';
 import { AIResponse } from '../types/ai.types';
 
 /**
@@ -15,8 +15,7 @@ import { AIResponse } from '../types/ai.types';
  * @returns A promise that resolves to an extraction result
  */
 export async function extractLoreFromAIResponse(
-  response: AIResponse,
-  _existingLore: LoreStore
+  response: AIResponse
 ): Promise<LoreExtractionResult> {
   // Default empty result
   const emptyResult: LoreExtractionResult = {

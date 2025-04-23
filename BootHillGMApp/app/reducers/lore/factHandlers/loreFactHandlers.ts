@@ -10,6 +10,7 @@ import {
   LoreFact,
   isValidLoreCategory
 } from '../../../types/narrative/lore.types';
+import { ActionTypes } from '../../../types/actionTypes';
 
 import {
   generateFactId,
@@ -27,7 +28,7 @@ import {
  */
 export function handleAddLoreFact(
   state: LoreStore,
-  action: Extract<LoreAction, { type: 'ADD_LORE_FACT' }>,
+  action: Extract<LoreAction, { type: typeof ActionTypes.ADD_LORE_FACT | 'ADD_LORE_FACT' }>,
   timestamp: number
 ): LoreStore {
   const factId = generateFactId();
@@ -78,7 +79,7 @@ export function handleAddLoreFact(
  */
 export function handleUpdateLoreFact(
   state: LoreStore,
-  action: Extract<LoreAction, { type: 'UPDATE_LORE_FACT' }>,
+  action: Extract<LoreAction, { type: typeof ActionTypes.UPDATE_LORE_FACT | 'UPDATE_LORE_FACT' }>,
   timestamp: number
 ): LoreStore {
   const { id, updates } = action.payload;

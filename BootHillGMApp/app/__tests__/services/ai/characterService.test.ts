@@ -43,9 +43,9 @@ describe('generateCompleteCharacter', () => {
         },
       }),
       apiKey: 'dummy-api-key',
-      _requestOptions: {},
+      _requestOptions: { /* Intentionally empty */ },
       model: 'dummy-model',
-      generationConfig: {},
+      generationConfig: { /* Intentionally empty */ },
       safetySettings: [], // Placeholder for safetySettings
       cachedContent: { contents: [] }, // Placeholder for cachedContent with contents property
       generateContentStream: jest.fn(), // Placeholder for generateContentStream
@@ -53,7 +53,7 @@ describe('generateCompleteCharacter', () => {
       countTokens: jest.fn(), // Placeholder for countTokens
       embedContent: jest.fn(), // Placeholder for embedContent
       batchEmbedContents: jest.fn(), // Placeholder for batchEmbedContents
-      ...{}, // Placeholder for any other missing properties
+      ...{ /* Intentionally empty */ }, // Placeholder for any other missing properties
     }) as unknown as GenerativeModel);
   });
 
@@ -81,7 +81,7 @@ describe('generateCompleteCharacter', () => {
   });
 
   it('should fall back to random generation on error', async () => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => { /* Intentionally empty */ });
     (validateCharacter as unknown as jest.Mock).mockImplementation(() => {
       throw new Error('Test error');
     });

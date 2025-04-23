@@ -15,6 +15,7 @@ import {
   createTestInventoryItem,
   createTestNarrativeState
 } from '../../utils/initialization/testHelpers';
+import { ActionTypes } from '../../types/actionTypes';
 
 // Mock AIService
 jest.mock('../../services/ai/aiService');
@@ -127,13 +128,13 @@ describe('Reset AI Content Generation', () => {
       
       // Verify that narrative was dispatched to state
       expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({
-        type: 'ADD_NARRATIVE_HISTORY',
+        type: ActionTypes.ADD_NARRATIVE_HISTORY, // Use ActionTypes constant
         payload: expect.any(String)
       }));
       
       // Verify that journal entry was dispatched with proper summary
       expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({
-        type: 'journal/ADD_ENTRY',
+        type: ActionTypes.ADD_ENTRY,
         payload: expect.objectContaining({
           type: 'narrative',
           content: expect.any(String),
@@ -217,7 +218,7 @@ describe('Reset AI Content Generation', () => {
     await waitFor(() => {
       // Verify that journal entry was still dispatched despite summary failure
       expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({
-        type: 'journal/ADD_ENTRY',
+        type: ActionTypes.ADD_ENTRY,
         payload: expect.objectContaining({
           type: 'narrative',
           narrativeSummary: expect.any(String)

@@ -55,7 +55,7 @@ describe('Game Service Optimization Patch', () => {
         // Build narrative state
         const narrativeState = {
           narrativeHistory: journalContext.split('\n').filter(Boolean),
-          narrativeContext: narrativeContext || {}
+          narrativeContext: narrativeContext || { /* Intentionally empty */ }
         };
         
         // Get optimized context

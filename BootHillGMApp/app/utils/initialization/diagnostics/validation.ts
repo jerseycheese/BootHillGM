@@ -10,42 +10,6 @@ import { ValidationResult } from './types';
 import { InventoryItem } from '../../../types/item.types';
 
 /**
- * Validates that game state is consistent across different storage sources
- * Performs a comprehensive check of character and inventory data
- * across multiple localStorage keys to ensure state consistency.
- * 
- * @returns {ValidationResult | null} Validation result with issues if any, or null if execution fails
- */
-export const validateStateConsistency = (): ValidationResult | null => {
-  if (typeof window === 'undefined') return null;
-  
-  try {
-    const validation: ValidationResult = {
-      timestamp: Date.now(),
-      isConsistent: true,
-      issues: []
-    };
-    
-    // Check character consistency
-    const characterData = getCharactersFromSources();
-    validateCharacterConsistency(characterData, validation);
-    
-    // Check inventory consistency
-    const inventoryData = getInventoryFromSources();
-    validateInventoryConsistency(inventoryData, validation);
-    
-    return validation;
-  } catch (error) {
-    return { 
-      timestamp: Date.now(),
-      isConsistent: false, 
-      error: String(error),
-      issues: ['Exception during validation'] 
-    };
-  }
-};
-
-/**
  * Character inventory type
  * Represents the inventory structure within a character object
  */
@@ -242,3 +206,39 @@ function validateInventoryConsistency(
     }
   }
 }
+
+/**
+ * Validates that game state is consistent across different storage sources
+ * Performs a comprehensive check of character and inventory data
+ * across multiple localStorage keys to ensure state consistency.
+ * 
+ * @returns {ValidationResult | null} Validation result with issues if any, or null if execution fails
+ */
+export const validateStateConsistency = (): ValidationResult | null => {
+  if (typeof window === 'undefined') return null;
+  
+  try {
+    const validation: ValidationResult = {
+      timestamp: Date.now(),
+      isConsistent: true,
+      issues: []
+    };
+    
+    // Check character consistency
+    const characterData = getCharactersFromSources();
+    validateCharacterConsistency(characterData, validation);
+    
+    // Check inventory consistency
+    const inventoryData = getInventoryFromSources();
+    validateInventoryConsistency(inventoryData, validation);
+    
+    return validation;
+  } catch (error) {
+    return { 
+      timestamp: Date.now(),
+      isConsistent: false, 
+      error: String(error),
+      issues: ['Exception during validation'] 
+    };
+  }
+};

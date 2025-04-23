@@ -2,25 +2,55 @@ import React, { createContext, useContext, useReducer, ReactNode, Dispatch, useC
 import { InventoryManager } from './inventoryManager';
 import { initialGameState } from '../types/gameState';
 import { ExtendedGameState } from '../types/extendedState';
-import { GameEngineAction } from '../types/gameActions';
+import { GameAction } from '../types/actions';
 import { gameReducer } from '../reducers/index';
 import { InventoryItem } from '../types/item.types';
+import { ActionTypes } from '../types/actionTypes';
 
 // Create a context for the game state and dispatch function
-const GameContext = createContext<{
+export const GameContext = createContext<{
   state: ExtendedGameState;
-  dispatch: Dispatch<GameEngineAction>;
+  dispatch: Dispatch<GameAction>;
 } | undefined>(undefined);
 
+// Props interface for better typing
+interface GameProviderProps {
+  children: ReactNode;
+  initialExtendedState?: ExtendedGameState;
+}
+
 // Provider component to wrap the app and provide game state and dispatch function
-export function GameProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(gameReducer, initialGameState as ExtendedGameState);
+export const GameProvider: React.FC<GameProviderProps> = ({ 
+  children, 
+  initialExtendedState
+}) => {
+  // Create an initial state that satisfies the ExtendedGameState interface
+  const defaultInitialState: ExtendedGameState = {
+    ...initialGameState,
+    opponent: null,
+    // Add any other properties required by ExtendedGameState but not in GameState
+  };
+  
+  const [state, dispatch] = useReducer<React.Reducer<ExtendedGameState, GameAction>>(
+    // We need to cast the gameReducer to ensure type compatibility
+    (state: ExtendedGameState, action: GameAction): ExtendedGameState => {
+      // Call the original reducer, then ensure the result adheres to ExtendedGameState
+      const newState = gameReducer(state, action);
+      return {
+        ...newState,
+        // Maintain the opponent from the previous state since it doesn't exist in GameState
+        opponent: state.opponent
+      };
+    },
+    initialExtendedState || defaultInitialState
+  );
+  
   return (
     <GameContext.Provider value={{ state, dispatch }}>
       {children}
     </GameContext.Provider>
   );
-}
+};
 
 // Custom hook to use the game context
 export function useGame() {
@@ -37,8 +67,8 @@ export function useGameSession() {
 
   // Handle combat end by setting combat status and updating narrative
   const handleCombatEnd = useCallback((winner: 'player' | 'opponent', summary: string) => {
-    dispatch({ type: 'SET_COMBAT_ACTIVE', payload: false });
-    dispatch({ type: 'SET_NARRATIVE', payload: { text: summary } });
+    dispatch({ type: ActionTypes.SET_COMBAT_ACTIVE, payload: false });
+    dispatch({ type: ActionTypes.UPDATE_NARRATIVE, payload: summary });
   }, [dispatch]);
 
   // Handle player health change by updating character attributes
@@ -54,7 +84,7 @@ export function useGameSession() {
     };
 
     dispatch({
-      type: 'UPDATE_CHARACTER',
+      type: ActionTypes.UPDATE_CHARACTER,
       payload: {
         id: state.character.player.id,
         attributes: updatedAttributes
@@ -64,7 +94,7 @@ export function useGameSession() {
 
   // Handle item usage by dispatching USE_ITEM action
   const handleUseItem = useCallback((itemId: string) => {
-    dispatch({ type: 'USE_ITEM', payload: itemId });
+    dispatch({ type: ActionTypes.USE_ITEM, payload: itemId });
   }, [dispatch]);
 
   // Handle weapon equipping by updating character's equipped weapon
@@ -80,7 +110,7 @@ export function useGameSession() {
     }
     
     InventoryManager.equipWeapon(state.character.player, item);
-    dispatch({ type: 'EQUIP_WEAPON', payload: itemId });
+    dispatch({ type: ActionTypes.EQUIP_WEAPON, payload: itemId });
   }, [state, dispatch]);
 
   // Handle weapon unequipping by clearing character's equipped weapon
@@ -90,11 +120,11 @@ export function useGameSession() {
     }
     
     InventoryManager.unequipWeapon();
-    dispatch({ type: 'UNEQUIP_WEAPON', payload: itemId });
+    dispatch({ type: ActionTypes.UNEQUIP_WEAPON, payload: itemId });
   }, [state, dispatch]);
 
   // Retry the last action by dispatching it again
-  const retryLastAction = useCallback((action: GameEngineAction) => {
+  const retryLastAction = useCallback((action: GameAction) => {
     dispatch(action);
   }, [dispatch]);
 
@@ -104,7 +134,7 @@ export function useGameSession() {
     isLoading: false,
     error: null,
     isCombatActive: state.combat?.isActive || false,
-    opponent: state.character?.opponent || null,
+    opponent: state.opponent,
     handleUserInput: () => {
       // Implementation here
     },
@@ -116,3 +146,6 @@ export function useGameSession() {
     onUnequipWeapon: handleUnequipWeapon
   };
 }
+
+// Default export for the GameProvider
+export default GameProvider;

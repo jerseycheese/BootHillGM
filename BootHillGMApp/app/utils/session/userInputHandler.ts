@@ -8,6 +8,7 @@
  */
 import { Dispatch } from 'react';
 import { GameAction } from '../../types/actions';
+import { ActionTypes } from '../../types/actionTypes';
 import { GameState } from '../../types/gameState';
 import { getAIResponse } from '../../services/ai/gameService';
 import { getJournalContext } from '../JournalManager';
@@ -48,93 +49,7 @@ interface SuggestedActionResponse {
   type?: string;
 }
 
-/**
- * Processes user input, updates journal/narrative history, and retrieves AI response
- * 
- * @param input - Player action text to process
- * @param actionType - Optional action type for the input
- * @param state - Current game state
- * @param dispatch - State dispatch function
- * @returns Promise resolving to an object containing:
- *  - success: Whether the processing completed successfully
- *  - lastInput: The input that was processed
- *  - lastActionType: The type of action that was processed
- */
-export async function processUserInput(
-  input: string, 
-  actionType: string | undefined, 
-  state: GameState, 
-  dispatch: Dispatch<GameAction>
-): Promise<{success: boolean, lastInput: string, lastActionType?: string}> {
-  // Mark as loading while processing
-  dispatch({ type: 'ui/SET_LOADING', payload: true } as const);
-
-  try {
-    // Extract existing journal entries and inventory items
-    const journalEntries = getEntriesFromJournal(state.journal);
-    const inventoryItems = getItemsFromInventory(state.inventory);
-
-    // Get the action type from the action itself if provided in the UI/state
-    const actionObj = state.suggestedActions?.find(action => action.title === input);
-    const effectiveActionType = actionType || (actionObj?.type as string) || 'basic';
-
-    // Add player input to narrative history
-    dispatch({
-      type: 'ADD_NARRATIVE_HISTORY',
-      payload: `Player: ${input}`
-    });
-
-    try {
-      // Get AI response
-      const response = await getAIResponse({
-        prompt: input,
-        journalContext: getJournalContext(journalEntries),
-        inventory: inventoryItems
-      }) as AIResponse;
-
-      // Add AI response to narrative history
-      dispatch({
-        type: 'ADD_NARRATIVE_HISTORY',
-        payload: response.narrative
-      });
-
-      // Generate summary using the dedicated AI function
-      const aiSummary = await generateNarrativeSummary(input, response.narrative);
-
-      // Add journal entry
-      addJournalEntry(dispatch, input, response.narrative, aiSummary);
-      
-      // Process suggested actions
-      processSuggestedActions(dispatch, response.suggestedActions);
-
-      // Handle inventory changes
-      processInventoryChanges(dispatch, response, inventoryItems);
-
-      // Update location if provided
-      if (response.location) {
-        dispatch({ 
-          type: 'SET_LOCATION', 
-          payload: response.location 
-        });
-      }
-
-      // Handle combat initiation
-      processCombatInitiation(dispatch, response);
-
-      return {success: true, lastInput: input, lastActionType: actionType};
-    } catch (error) {
-      console.error('Error getting AI response:', error);
-      processFallbackResponse(dispatch, input, effectiveActionType);
-      return {success: false, lastInput: input, lastActionType: actionType};
-    }
-  } catch (error) {
-    console.error('Error in processUserInput:', error);
-    return {success: false, lastInput: input, lastActionType: actionType};
-  } finally {
-    // Mark as not loading once complete
-    dispatch({ type: 'ui/SET_LOADING', payload: false });
-  }
-}
+// --- Helper Functions (Moved Before processUserInput) ---
 
 /**
  * Adds a journal entry to the game state
@@ -157,7 +72,7 @@ function addJournalEntry(
   };
   
   dispatch({
-    type: 'journal/ADD_ENTRY',
+    type: ActionTypes.ADD_ENTRY,
     payload: journalEntry
   });
 }
@@ -180,7 +95,7 @@ function processSuggestedActions(
   }));
   
   dispatch({
-    type: 'SET_SUGGESTED_ACTIONS',
+    type: ActionTypes.SET_SUGGESTED_ACTIONS,
     payload: typedSuggestedActions
   });
 }
@@ -208,7 +123,7 @@ function processInventoryChanges(
         category: itemCategory,
       };
       
-      dispatch({ type: 'inventory/ADD_ITEM', payload: newItem });
+      dispatch({ type: ActionTypes.ADD_ITEM, payload: newItem });
     });
   }
 
@@ -219,7 +134,7 @@ function processInventoryChanges(
         (item: InventoryItem) => item.name === itemName
       );
       if (itemToRemove) {
-        dispatch({ type: 'inventory/REMOVE_ITEM', payload: itemToRemove.id });
+        dispatch({ type: ActionTypes.REMOVE_ITEM, payload: itemToRemove.id });
       }
     });
   }
@@ -236,7 +151,7 @@ function processCombatInitiation(
   
   // Set combat as active
   dispatch({
-    type: 'combat/SET_ACTIVE',
+    type: ActionTypes.SET_COMBAT_ACTIVE, // Using SET_COMBAT_ACTIVE as SET_ACTIVE doesn't exist
     payload: true
   });
   
@@ -245,7 +160,7 @@ function processCombatInitiation(
   
   // Update combat state with participants and initial values
   dispatch({
-    type: 'combat/UPDATE_STATE',
+    type: ActionTypes.UPDATE_COMBAT_STATE, // Using UPDATE_COMBAT_STATE as UPDATE_STATE doesn't exist
     payload: {
       isActive: true,
       rounds: 1,
@@ -268,13 +183,13 @@ function processFallbackResponse(
   
   // Add fallback entry to journal
   dispatch({
-    type: 'journal/ADD_ENTRY',
+    type: ActionTypes.ADD_ENTRY,
     payload: fallbackEntry
   });
   
   // Fallback response for narrative history
   dispatch({
-    type: 'ADD_NARRATIVE_HISTORY',
+    type: ActionTypes.ADD_NARRATIVE_HISTORY, // Use ActionTypes constant
     payload: `You ${input.toLowerCase()}. ${fallbackEntry.content}`
   });
 
@@ -287,7 +202,97 @@ function processFallbackResponse(
   ];
   
   dispatch({
-    type: 'SET_SUGGESTED_ACTIONS',
+    type: ActionTypes.SET_SUGGESTED_ACTIONS,
     payload: fallbackActions 
   });
+}
+
+// --- Main Exported Function ---
+
+/**
+ * Processes user input, updates journal/narrative history, and retrieves AI response
+ * 
+ * @param input - Player action text to process
+ * @param actionType - Optional action type for the input
+ * @param state - Current game state
+ * @param dispatch - State dispatch function
+ * @returns Promise resolving to an object containing:
+ *  - success: Whether the processing completed successfully
+ *  - lastInput: The input that was processed
+ *  - lastActionType: The type of action that was processed
+ */
+export async function processUserInput(
+  input: string, 
+  actionType: string | undefined, 
+  state: GameState, 
+  dispatch: Dispatch<GameAction>
+): Promise<{success: boolean, lastInput: string, lastActionType?: string}> {
+  // Mark as loading while processing
+  dispatch({ type: ActionTypes.SET_LOADING, payload: true } as const);
+
+  try {
+    // Extract existing journal entries and inventory items
+    const journalEntries = getEntriesFromJournal(state.journal);
+    const inventoryItems = getItemsFromInventory(state.inventory);
+
+    // Get the action type from the action itself if provided in the UI/state
+    const actionObj = state.suggestedActions?.find(action => action.title === input);
+    const effectiveActionType = actionType || (actionObj?.type as string) || 'basic';
+
+    // Add player input to narrative history
+    dispatch({
+      type: ActionTypes.ADD_NARRATIVE_HISTORY, // Use ActionTypes constant
+      payload: `Player: ${input}`
+    });
+
+    try {
+      // Get AI response
+      const response = await getAIResponse({
+        prompt: input,
+        journalContext: getJournalContext(journalEntries),
+        inventory: inventoryItems
+      }) as AIResponse;
+
+      // Add AI response to narrative history
+      dispatch({
+        type: ActionTypes.ADD_NARRATIVE_HISTORY, // Use ActionTypes constant
+        payload: response.narrative
+      });
+
+      // Generate summary using the dedicated AI function
+      const aiSummary = await generateNarrativeSummary(input, response.narrative);
+
+      // Add journal entry
+      addJournalEntry(dispatch, input, response.narrative, aiSummary);
+      
+      // Process suggested actions
+      processSuggestedActions(dispatch, response.suggestedActions);
+
+      // Handle inventory changes
+      processInventoryChanges(dispatch, response, inventoryItems);
+
+      // Update location if provided
+      if (response.location) {
+        dispatch({ 
+          type: ActionTypes.SET_LOCATION,
+          payload: response.location 
+        });
+      }
+
+      // Handle combat initiation
+      processCombatInitiation(dispatch, response);
+
+      return {success: true, lastInput: input, lastActionType: actionType};
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      processFallbackResponse(dispatch, input, effectiveActionType);
+      return {success: false, lastInput: input, lastActionType: actionType};
+    }
+  } catch (error) {
+    console.error('Error in processUserInput:', error);
+    return {success: false, lastInput: input, lastActionType: actionType};
+  } finally {
+    // Mark as not loading once complete
+    dispatch({ type: ActionTypes.SET_LOADING, payload: false });
+  }
 }

@@ -19,43 +19,6 @@ const STORAGE_KEYS = {
 };
 
 /**
- * Get narrative text from any available source.
- * Tries sources in this priority order:
- * 1. NARRATIVE_STATE - dedicated narrative storage
- * 2. INITIAL_NARRATIVE - initial narrative storage
- * 3. GAME_STATE or CAMPAIGN_STATE - complete game state
- * 
- * @returns Narrative text string or default if not found
- */
-const getNarrativeText = (): string => {
-  if (typeof window === 'undefined') return DEFAULT_NARRATIVE;
-  
-  // Try all possible sources for narrative data
-  const sources = [
-    STORAGE_KEYS.NARRATIVE_STATE,
-    STORAGE_KEYS.INITIAL_NARRATIVE,
-    STORAGE_KEYS.GAME_STATE,
-    STORAGE_KEYS.CAMPAIGN_STATE
-  ];
-  
-  for (const source of sources) {
-    const data = localStorage.getItem(source);
-    if (!data) continue;
-    
-    try {
-      const parsed = JSON.parse(data);
-      const narrativeText = extractNarrativeText(parsed, source);
-      if (narrativeText) return narrativeText;
-    } catch (e) {
-      console.error(`${MODULE_NAME} - Error parsing ${source} for narrative:`, e);
-    }
-  }
-  
-  // Return default narrative if nothing found
-  return DEFAULT_NARRATIVE;
-};
-
-/**
  * Interface for possible narrative data structures
  */
 interface NarrativeData {
@@ -140,6 +103,44 @@ const extractNarrativeText = (parsed: Record<string, unknown> | NarrativeData | 
   
   return null;
 };
+
+/**
+ * Get narrative text from any available source.
+ * Tries sources in this priority order:
+ * 1. NARRATIVE_STATE - dedicated narrative storage
+ * 2. INITIAL_NARRATIVE - initial narrative storage
+ * 3. GAME_STATE or CAMPAIGN_STATE - complete game state
+ * 
+ * @returns Narrative text string or default if not found
+ */
+const getNarrativeText = (): string => {
+  if (typeof window === 'undefined') return DEFAULT_NARRATIVE;
+  
+  // Try all possible sources for narrative data
+  const sources = [
+    STORAGE_KEYS.NARRATIVE_STATE,
+    STORAGE_KEYS.INITIAL_NARRATIVE,
+    STORAGE_KEYS.GAME_STATE,
+    STORAGE_KEYS.CAMPAIGN_STATE
+  ];
+  
+  for (const source of sources) {
+    const data = localStorage.getItem(source);
+    if (!data) continue;
+    
+    try {
+      const parsed = JSON.parse(data);
+      const narrativeText = extractNarrativeText(parsed, source); // Now defined before call
+      if (narrativeText) return narrativeText;
+    } catch (e) {
+      console.error(`${MODULE_NAME} - Error parsing ${source} for narrative:`, e);
+    }
+  }
+  
+  // Return default narrative if nothing found
+  return DEFAULT_NARRATIVE;
+};
+
 
 export const narrativeStorage = {
   getNarrativeText

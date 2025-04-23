@@ -41,7 +41,6 @@ import {
   generateFallbackDecision 
 } from './utils/aiDecisionGenerator';
 import { extendGameState } from './utils/stateExtender';
-import { hasNarrativeState } from './utils/stateTypeGuards';
 
 // Import API client
 import { callAIService } from './clients/aiServiceClient';
@@ -143,8 +142,7 @@ export class AIDecisionService {
    */
   public async generateDecision(
     narrativeState: NarrativeState,
-    character: Character,
-    gameState?: GameState
+    character: Character
   ): Promise<PlayerDecision> {
     // Record this decision time
     this.lastDecisionTime = Date.now();
@@ -153,41 +151,12 @@ export class AIDecisionService {
       // Check if we have API configuration
       if (!this.config.apiConfig.apiKey || !this.config.apiConfig.endpoint) {
         // Fall back to template-based generation
-        return generateFallbackDecision(narrativeState, character, gameState);
+        return generateFallbackDecision(narrativeState);
       }
       
-      // Enhance the game state context if available
-      let enhancedGameState = gameState;
-      if (gameState) {
-        // Use type guard to safely check and enhance the state
-        if (hasNarrativeState(gameState) && gameState.narrative?.narrativeContext) {
-          // Create an extended state with properly typed narrative context
-          enhancedGameState = {
-            ...gameState,
-            narrative: {
-              ...gameState.narrative,
-              // Enhance context with more detailed information if needed
-              narrativeContext: {
-                ...gameState.narrative.narrativeContext,
-                // Store lastDecisionTime in the impactState.lastUpdated field
-                impactState: {
-                  ...(gameState.narrative.narrativeContext?.impactState || {
-                    reputationImpacts: {},
-                    relationshipImpacts: {},
-                    worldStateImpacts: {},
-                    storyArcImpacts: {},
-                    lastUpdated: 0
-                  }),
-                  lastUpdated: this.lastDecisionTime
-                }
-              }
-            }
-          };
-        }
-      }
-      
-      // Build decision prompt with enhanced state
-      const prompt = buildDecisionPrompt(narrativeState, character, this.decisionsHistory, enhancedGameState);
+      // Build decision prompt
+      // Note: enhancedGameState logic was removed as it was unused after removing it from buildDecisionPrompt call
+      const prompt = buildDecisionPrompt(narrativeState, character, this.decisionsHistory);
       
       // Call the AI service
       const aiResponse = await callAIService(prompt, this.config, this.rateLimitData);
@@ -203,7 +172,7 @@ export class AIDecisionService {
       console.error('Error generating AI decision:', error);
       
       // Fall back to template-based generation on error
-      return generateFallbackDecision(narrativeState, character, gameState);
+      return generateFallbackDecision(narrativeState);
     }
   }
   

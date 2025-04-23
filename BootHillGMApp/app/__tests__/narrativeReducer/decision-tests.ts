@@ -8,6 +8,7 @@ import {
   clearCurrentDecision
 } from '../../actions/narrativeActions';
 import { createNarrativeTestState, getNarrativeState, createMockDecision } from '../../test/utils/narrativeUtils';
+import { ActionTypes } from '../../types/actionTypes';
 
 describe('Decision Tracking Actions', () => {
   let initialState: ReturnType<typeof createNarrativeTestState>;
@@ -20,6 +21,9 @@ describe('Decision Tracking Actions', () => {
     const mockDecision = createMockDecision();
     
     const action = presentDecision(mockDecision);
+    // Ensure the action is using the standardized ActionTypes
+    expect(action.type).toBe(ActionTypes.PRESENT_DECISION);
+    
     const newState = narrativeReducer(initialState, action);
     const narrativeState = getNarrativeState(newState);
     
@@ -34,6 +38,9 @@ describe('Decision Tracking Actions', () => {
     
     // Record the decision
     const action = recordDecision('decision1', 'option1', 'Test narrative');
+    // Ensure the action is using the standardized ActionTypes
+    expect(action.type).toBe(ActionTypes.RECORD_DECISION);
+    
     state = narrativeReducer(state, action);
     const narrativeState = getNarrativeState(state);
     
@@ -50,6 +57,9 @@ describe('Decision Tracking Actions', () => {
     
     // Clear the decision
     const action = clearCurrentDecision();
+    // Ensure the action is using the standardized ActionTypes
+    expect(action.type).toBe(ActionTypes.CLEAR_CURRENT_DECISION);
+    
     state = narrativeReducer(state, action);
     const narrativeState = getNarrativeState(state);
     

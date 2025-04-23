@@ -107,4 +107,4 @@ declare global {
   }
 }
 
-export {};
+export { /* Intentionally empty */ };

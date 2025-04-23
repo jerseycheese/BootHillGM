@@ -6,11 +6,12 @@
  * the narrative context optimization with the existing game services.
  */
 
-import { NarrativeState, NarrativeContext as _NarrativeContext } from '../../types/narrative.types';
+import { NarrativeState } from '../../types/narrative.types';
 import { NarrativeContextOptions } from '../../types/narrative/context.types';
 import { buildNarrativeContext } from './narrativeContextBuilder';
 import { useNarrative } from '../../context/NarrativeContext';
 import { useMemo, useCallback, useRef } from 'react';
+import { ActionTypes } from '../../types/actionTypes'; // Import ActionTypes
 // Importing for type info only, won't add to bundle size
 import { NarrativeContextDebugTools } from '../../types/global.d';
 
@@ -74,10 +75,8 @@ export function useOptimizedNarrativeContext() {
   /**
    * Gets focused context optimized for a specific situation
    * This version prioritizes decisions and story elements related to current tags
-   * 
-   * @param _focusTags Tags to focus on (currently unused but kept for future implementation)
    */
-  const getFocusedContext = useCallback((_focusTags: string[]) => {
+  const getFocusedContext = useCallback(() => {
     return buildOptimizedContext({
       compressionLevel: 'high',
       maxTokens: 1500,
@@ -227,7 +226,7 @@ export function useNarrativeContextSynchronization() {
     // This addresses the stale context issue (#210)
     await new Promise<void>(resolve => {
       // Dispatch a minimal update to trigger state refresh
-      dispatch({ type: 'UPDATE_NARRATIVE', payload: {} });
+      dispatch({ type: ActionTypes.UPDATE_NARRATIVE, payload: {} }); // Use ActionTypes constant
       
       // Wait for next frame to ensure state is updated
       requestAnimationFrame(() => {

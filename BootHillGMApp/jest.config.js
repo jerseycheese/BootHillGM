@@ -1,7 +1,6 @@
-import nextJest from 'next/jest.js' // Use import syntax
+import nextJest from 'next/jest.js'
 
 const createJestConfig = nextJest({
-  // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
   dir: './',
 })
 
@@ -17,11 +16,11 @@ const customJestConfig = {
   testPathIgnorePatterns: [
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
-    '\\.d\\.ts$', // Exclude all .d.ts files using standard regex
+    '\\.d\\.ts$',
     '<rootDir>/app/__tests__/hooks/useCombatManager.test.ts',
     '<rootDir>/app/__tests__/hooks/useLocation.test.ts',
-    '<rootDir>/app/__tests__/services/ai/__mocks__/.*', // Ignore files in AI service mocks directory
-    '<rootDir>/app/__tests__/services/ai/helpers/.*', // Ignore files in AI service helpers directory
+    '<rootDir>/app/__tests__/services/ai/__mocks__/.*',
+    '<rootDir>/app/__tests__/services/ai/helpers/.*',
   ],
   collectCoverage: true,
   collectCoverageFrom: [
@@ -45,7 +44,11 @@ const customJestConfig = {
   testTimeout: 10000,
   // Prevent tests from running in parallel to avoid memory issues
   maxWorkers: '50%',
+  // Add transform config to fix JSX in TypeScript tests
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }]
+  }
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-export default createJestConfig(customJestConfig) // Use export default syntax
+export default createJestConfig(customJestConfig)

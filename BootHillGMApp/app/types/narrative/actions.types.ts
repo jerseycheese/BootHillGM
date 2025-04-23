@@ -12,6 +12,7 @@ import { PlayerDecision, PlayerDecisionRecord } from './decision.types';
 import { StoryPoint } from './story-point.types';
 import { DecisionImpact } from './arc.types';
 import { LoreAction } from './lore.types';
+import { ActionTypes } from '../actionTypes';
 
 /**
  * Internal interface for NarrativeState to avoid circular dependencies
@@ -33,81 +34,46 @@ interface NarrativeStateInternal {
 type NarrativeStateUpdate = Partial<NarrativeStateInternal>;
 
 /**
- * Defines a narrative action type for state management
- */
-export type NarrativeActionType =
-  | 'NAVIGATE_TO_POINT'
-  | 'SELECT_CHOICE'
-  | 'ADD_NARRATIVE_HISTORY'
-  | 'SET_DISPLAY_MODE'
-  | 'START_NARRATIVE_ARC'
-  | 'COMPLETE_NARRATIVE_ARC'
-  | 'ACTIVATE_BRANCH'
-  | 'COMPLETE_BRANCH'
-  | 'UPDATE_NARRATIVE_CONTEXT'
-  | 'RESET_NARRATIVE'
-  | 'UPDATE_NARRATIVE'
-  | 'PRESENT_DECISION'         
-  | 'RECORD_DECISION'          
-  | 'CLEAR_CURRENT_DECISION'
-  | 'PROCESS_DECISION_IMPACTS'
-  | 'UPDATE_IMPACT_STATE'
-  | 'EVOLVE_IMPACTS'
-  | 'NARRATIVE_ERROR'          
-  | 'CLEAR_ERROR'
-  // Lore action types would be added here, but we're using the LoreAction union directly
-  ;
-
-/**
- * Defines the narrative action for the reducer
+ * Defines the narrative action for the reducer using ActionTypes
  */
 export type NarrativeAction =
   // Navigation and choice actions
-  | { type: 'NAVIGATE_TO_POINT'; payload: string }
-  | { type: 'SELECT_CHOICE'; payload: string }
-  | { type: 'ADD_NARRATIVE_HISTORY'; payload: string }
-  | { type: 'SET_DISPLAY_MODE'; payload: NarrativeDisplayMode }
+  | { type: typeof ActionTypes.NAVIGATE_TO_POINT; payload: string }
+  | { type: typeof ActionTypes.SELECT_CHOICE; payload: string }
+  | { type: typeof ActionTypes.ADD_NARRATIVE_HISTORY; payload: string }
+  | { type: typeof ActionTypes.SET_DISPLAY_MODE; payload: NarrativeDisplayMode }
   
   // Arc and branch management
-  | { type: 'START_NARRATIVE_ARC'; payload: string }
-  | { type: 'COMPLETE_NARRATIVE_ARC'; payload: string }
-  | { type: 'ACTIVATE_BRANCH'; payload: string }
-  | { type: 'COMPLETE_BRANCH'; payload: string }
+  | { type: typeof ActionTypes.START_NARRATIVE_ARC; payload: string }
+  | { type: typeof ActionTypes.COMPLETE_NARRATIVE_ARC; payload: string }
+  | { type: typeof ActionTypes.ACTIVATE_BRANCH; payload: string }
+  | { type: typeof ActionTypes.COMPLETE_BRANCH; payload: string }
   
   // General state updates
-  | { type: 'UPDATE_NARRATIVE'; payload: NarrativeStateUpdate }
-  | { type: 'UPDATE_NARRATIVE_CONTEXT'; payload: Partial<NarrativeContext> }
-  | { type: 'RESET_NARRATIVE' }
+  | { type: typeof ActionTypes.UPDATE_NARRATIVE; payload: NarrativeStateUpdate }
+  | { type: typeof ActionTypes.SET_NARRATIVE_CONTEXT; payload: Partial<NarrativeContext> }
+  | { type: typeof ActionTypes.RESET_NARRATIVE }
 
   // Decision tracking actions
-  | { type: 'PRESENT_DECISION'; payload: PlayerDecision }
-  | { type: 'RECORD_DECISION'; payload: PlayerDecisionRecord }
-  | { type: 'CLEAR_CURRENT_DECISION' }
-  | { type: 'PROCESS_DECISION_IMPACTS'; payload: DecisionImpact[] }
-  | { type: 'UPDATE_IMPACT_STATE'; payload: Partial<ImpactState> }
-  | { type: 'EVOLVE_IMPACTS' }
+  | { type: typeof ActionTypes.PRESENT_DECISION; payload: PlayerDecision }
+  | { type: typeof ActionTypes.RECORD_DECISION; payload: PlayerDecisionRecord }
+  | { type: typeof ActionTypes.CLEAR_CURRENT_DECISION }
+  | { type: typeof ActionTypes.PROCESS_DECISION_IMPACTS; payload: DecisionImpact[] }
+  | { type: typeof ActionTypes.UPDATE_IMPACT_STATE; payload: Partial<ImpactState> }
+  | { type: typeof ActionTypes.EVOLVE_IMPACTS }
   
   // Error handling actions
-  | { type: 'NARRATIVE_ERROR'; payload: NarrativeErrorInfo }
-  | { type: 'CLEAR_ERROR' }
+  | { type: typeof ActionTypes.NARRATIVE_ERROR; payload: NarrativeErrorInfo }
+  | { type: typeof ActionTypes.CLEAR_ERROR }
   
   // Include lore actions
   | LoreAction;
 
 /**
- * Defines story progression actions for the reducer
- */
-export type StoryProgressionActionType =
-  | 'ADD_STORY_POINT'
-  | 'UPDATE_CURRENT_POINT'
-  | 'MARK_BRANCHING_POINT_TAKEN'
-  | 'RESET_STORY_PROGRESSION';
-
-/**
- * Defines the story progression actions for the reducer
+ * Defines the story progression actions for the reducer using ActionTypes
  */
 export type StoryProgressionAction =
-  | { type: 'ADD_STORY_POINT'; payload: StoryProgressionPoint }
-  | { type: 'UPDATE_CURRENT_POINT'; payload: string }
-  | { type: 'MARK_BRANCHING_POINT_TAKEN'; payload: string }
-  | { type: 'RESET_STORY_PROGRESSION' };
+  | { type: typeof ActionTypes.ADD_STORY_POINT; payload: StoryProgressionPoint }
+  | { type: typeof ActionTypes.UPDATE_CURRENT_POINT; payload: string }
+  | { type: typeof ActionTypes.MARK_BRANCHING_POINT_TAKEN; payload: string }
+  | { type: typeof ActionTypes.RESET_STORY_PROGRESSION };

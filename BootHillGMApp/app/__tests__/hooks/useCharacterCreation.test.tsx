@@ -29,7 +29,7 @@ jest.mock('../../components/CampaignStateManager', () => ({
   useCampaignState: () => ({
     saveGame: jest.fn(),
     cleanupState: jest.fn(),
-    state: {},
+    state: { /* Intentionally empty */ },
     dispatch: jest.fn()
   })
 }));
@@ -54,7 +54,7 @@ describe('useCharacterCreation', () => {
       
       const { result } = renderHook(() => useCharacterCreation(), {
         wrapper: ({ children }) => (
-          <TestCampaignStateProvider initialState={{}}>
+          <TestCampaignStateProvider initialState={{ /* Intentionally empty */ }}>
             {children}
           </TestCampaignStateProvider>
         )
@@ -75,7 +75,7 @@ describe('useCharacterCreation', () => {
       
       const { result } = renderHook(() => useCharacterCreation(), {
         wrapper: ({ children }) => (
-          <TestCampaignStateProvider initialState={{}}>
+          <TestCampaignStateProvider initialState={{ /* Intentionally empty */ }}>
             {children}
           </TestCampaignStateProvider>
         )
@@ -100,7 +100,7 @@ describe('useCharacterCreation', () => {
       
       const { result } = renderHook(() => useCharacterCreation(), {
         wrapper: ({ children }) => (
-          <TestCampaignStateProvider initialState={{}}>
+          <TestCampaignStateProvider initialState={{ /* Intentionally empty */ }}>
             {children}
           </TestCampaignStateProvider>
         )

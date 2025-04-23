@@ -1,18 +1,21 @@
-'use client';
+/**
+ * CampaignStateProviderWrapper
+ * 
+ * This is a wrapper component that provides the CampaignStateManager
+ * functionality with a simplified API for backward compatibility.
+ */
 
 import React from 'react';
-import { CampaignStateProvider } from './CampaignStateManager';
+import { CampaignStateManager } from './CampaignStateManager';
+
+// Re-export for compatibility
+export const CampaignStateProvider = CampaignStateManager;
 
 /**
- * This is a wrapper component that provides the CampaignStateProvider
- * with all the required types.
+ * Wrapper component that simplifies usage for legacy components
  */
-const CampaignStateProviderWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <CampaignStateProvider>
-      {children}
-    </CampaignStateProvider>
-  );
+export const CampaignStateProviderWrapper: React.FC<React.PropsWithChildren> = ({ children }) => {
+  return <CampaignStateManager>{children}</CampaignStateManager>;
 };
 
 export default CampaignStateProviderWrapper;

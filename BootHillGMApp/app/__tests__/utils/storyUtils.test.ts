@@ -165,7 +165,7 @@ describe('Story Utils', () => {
           }
         },
         mainStorylinePoints: ['point1', 'point2'],
-        branchingPoints: {},
+        branchingPoints: { /* Intentionally empty */ },
         lastUpdated: 3000
       };
       

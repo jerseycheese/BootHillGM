@@ -99,7 +99,7 @@ export const usePlayerExperience = createStateHook<number, [number | undefined]>
  * Returns all player character attributes
  */
 export const usePlayerAttributes = createStateHook<Record<string, number>, [Record<string, number> | undefined]>(
-  (state) => state.character?.player?.attributes ?? {},
+  (state) => state.character?.player?.attributes ?? { /* Intentionally empty */ },
   (state) => [state.character?.player?.attributes]
 );
 

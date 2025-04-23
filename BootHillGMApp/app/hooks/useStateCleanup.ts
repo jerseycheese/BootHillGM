@@ -2,9 +2,9 @@ import { useCallback } from 'react';
 import { GameState } from '../types/gameState';
 import { initialState as initialGameState } from '../types/initialState';
 import { initialNarrativeState } from '../types/narrative.types';
-import { getAIResponse } from '../services/ai/gameService';
 import { ExtendedGameState } from '../types/extendedState';
 import { GameEngineAction } from '../types/gameActions';
+import { ActionTypes } from '../types/actionTypes';
 
 /**
  * Hook for cleaning up and resetting the game state.
@@ -49,28 +49,7 @@ export const useStateCleanup = (state: GameState, dispatch: React.Dispatch<GameE
       };
     }
 
-    // After resetting the character and game state, fetch an initial narrative from the AI.
-    // This provides a starting point for the new game session.
-    if (state.character?.player) {
-      try {
-        const response = await getAIResponse({
-          prompt: `Initialize a new game session for ${state.character.player.name}. Describe their current situation and location in detail. Include suggestions for what they might do next.`,
-          journalContext: "", // No journal context for the initial narrative
-          inventory: state.inventory?.items || []
-        });
-        cleanState.narrative = {
-          ...initialNarrativeState,
-          narrativeHistory: [response.narrative],
-        };
-
-      } catch (error) {
-        console.error('Error fetching initial narrative:', error);
-        cleanState.narrative = {
-          ...initialNarrativeState,
-          narrativeHistory: ['Error initializing narrative. Please try again.'],
-        };
-      }
-    }
+    // Narrative state is already reset to initialNarrativeState above (line 31)
 
     // Create extended state version with backward compatibility fields
     // Ensure opponent is never undefined
@@ -82,8 +61,8 @@ export const useStateCleanup = (state: GameState, dispatch: React.Dispatch<GameE
     };
 
     // Dispatch an action to update the game state with the cleaned state.
-    dispatch({ type: 'SET_STATE', payload: extendedCleanState });
-  }, [dispatch, state.character, state.inventory]);
+    dispatch({ type: ActionTypes.SET_STATE, payload: extendedCleanState }); // Use ActionTypes constant
+  }, [dispatch, state.character]);
 
   return cleanupState;
 };

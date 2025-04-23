@@ -62,11 +62,9 @@ export type {
   ImpactSeverity
 } from './arc.types';
 
-export type { 
+export type {
   // From actions.types.ts
-  NarrativeActionType,
   NarrativeAction,
-  StoryProgressionActionType,
   StoryProgressionAction
 } from './actions.types';
 

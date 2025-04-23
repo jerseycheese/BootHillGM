@@ -3,7 +3,7 @@
  */
 import { useCallback } from 'react';
 import { PlayerDecision } from '../../types/narrative.types';
-import { presentDecision } from '../../actions/narrativeActions';
+import { presentDecision, clearCurrentDecision } from '../../actions/narrativeActions';
 import { EVENTS, triggerCustomEvent } from '../../utils/events';
 import { NarrativeContextValue } from './types';
 
@@ -41,7 +41,7 @@ export function useDecisionPresentation(context: NarrativeContextValue) {
    * This is useful for abandoning decisions or handling error cases.
    */
   const clearPlayerDecision = useCallback(() => {
-    dispatch({ type: 'CLEAR_CURRENT_DECISION' });
+    dispatch(clearCurrentDecision());
     
     // Trigger custom event for more reliable UI updates
     triggerCustomEvent(EVENTS.DECISION_CLEARED);

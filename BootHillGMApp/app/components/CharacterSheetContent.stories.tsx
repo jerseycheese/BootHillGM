@@ -39,6 +39,44 @@ interface CharacterData {
 }
 
 // Create a simple stub for the CharacterSheetContent component
+// Mock character data - this is our placeholder content
+const mockCharacter: CharacterData = {
+  id: 'mock-character-1',
+  name: 'Sheriff Johnson',
+  isNPC: false,
+  isPlayer: true,
+  inventory: [],
+  minAttributes: {
+    speed: 1,
+    gunAccuracy: 1,
+    throwingAccuracy: 1,
+    strength: 1,
+    baseStrength: 8,
+    bravery: 1,
+    experience: 0
+  },
+  maxAttributes: {
+    speed: 10,
+    gunAccuracy: 10,
+    throwingAccuracy: 10,
+    strength: 20,
+    baseStrength: 20,
+    bravery: 10,
+    experience: 11
+  },
+  attributes: {
+    speed: 10,
+    gunAccuracy: 12,
+    throwingAccuracy: 8,
+    strength: 14,
+    baseStrength: 14,
+    bravery: 10,
+    experience: 5
+  },
+  wounds: [],
+  isUnconscious: false
+};
+
 const CharacterSheetStub = ({ character }: { character?: CharacterData }) => {
   const displayCharacter = character || mockCharacter;
   
@@ -98,43 +136,6 @@ const CharacterSheetStub = ({ character }: { character?: CharacterData }) => {
   );
 };
 
-// Mock character data - this is our placeholder content
-const mockCharacter: CharacterData = {
-  id: 'mock-character-1',
-  name: 'Sheriff Johnson',
-  isNPC: false,
-  isPlayer: true,
-  inventory: [],
-  minAttributes: {
-    speed: 1,
-    gunAccuracy: 1,
-    throwingAccuracy: 1,
-    strength: 1,
-    baseStrength: 8,
-    bravery: 1,
-    experience: 0
-  },
-  maxAttributes: {
-    speed: 10,
-    gunAccuracy: 10,
-    throwingAccuracy: 10,
-    strength: 20,
-    baseStrength: 20,
-    bravery: 10,
-    experience: 11
-  },
-  attributes: {
-    speed: 10,
-    gunAccuracy: 12,
-    throwingAccuracy: 8,
-    strength: 14,
-    baseStrength: 14,
-    bravery: 10,
-    experience: 5
-  },
-  wounds: [],
-  isUnconscious: false
-};
 
 // Mock character with wounds
 const mockCharacterWithWounds: CharacterData = {

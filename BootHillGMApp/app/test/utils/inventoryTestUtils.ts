@@ -30,7 +30,7 @@ interface MockInventoryItemOverrides {
   isEquipped?: boolean;
 }
 
-export const createMockInventoryItem = (overrides: MockInventoryItemOverrides = {}): InventoryItem => ({
+export const createMockInventoryItem = (overrides: MockInventoryItemOverrides = { /* Intentionally empty */ }): InventoryItem => ({
   id: 'test-item',
   name: 'Test Item',
   quantity: 1,
@@ -93,7 +93,7 @@ const defaultMockCharacter: Character = {
   equippedWeapon: undefined
 };
 
-export const createMockCharacter = (overrides: MockCharacterOverrides = {}): Character => ({
+export const createMockCharacter = (overrides: MockCharacterOverrides = { /* Intentionally empty */ }): Character => ({
   ...defaultMockCharacter,
   ...overrides,
   attributes: {
@@ -122,8 +122,7 @@ interface MockGameStateOverrides {
 }
 
 // Create a factory for the mock state with the getter included
-// Rename and update function to return GameState with correct slice structure
-export const createDefaultMockGameState = (): GameState => { // Added export
+export const createDefaultMockGameState = (): GameState => {
   return {
     currentPlayer: 'test-player',
     npcs: [],
@@ -146,12 +145,11 @@ export const createDefaultMockGameState = (): GameState => { // Added export
     ui: initialUIState, // Use ui slice
     isClient: false,
     suggestedActions: [],
-    // Removed obsolete properties and player getter
   };
 };
 
 // Rename and update function to work with GameState and MockGameStateOverrides
-export const createMockGameState = (overrides: MockGameStateOverrides = {}): GameState => {
+export const createMockGameState = (overrides: MockGameStateOverrides = { /* Intentionally empty */ }): GameState => {
   // Start with the default GameState
   const baseState = createDefaultMockGameState();
   

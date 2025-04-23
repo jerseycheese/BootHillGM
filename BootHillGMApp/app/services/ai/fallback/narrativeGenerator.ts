@@ -38,15 +38,17 @@ export function generateNarrative(
       return `${characterName} tries to engage in conversation. The person regards you with a measured look, listening to what you have to say. "Interesting," they respond thoughtfully, considering your words. Their expression reveals little about their true thoughts.`;
       
     case ResponseContextType.INVENTORY:
-      const itemNames = inventoryItems.map(item => item.name.toLowerCase());
-      let narrative = `${characterName} checks their belongings. `;
-      
-      if (itemNames.length > 0) {
-        narrative += `You have ${itemNames.slice(0, -1).join(', ')}${itemNames.length > 1 ? ' and ' + itemNames[itemNames.length - 1] : itemNames[0]}. Everything seems in order and ready for use when needed.`;
-      } else {
-        narrative += "You don't seem to have much with you at the moment. Perhaps finding some supplies should be a priority before venturing further.";
-      }
-      return narrative;
+      { // Add opening brace for block scope
+        const itemNames = inventoryItems.map(item => item.name.toLowerCase());
+        let narrative = `${characterName} checks their belongings. `;
+        
+        if (itemNames.length > 0) {
+          narrative += `You have ${itemNames.slice(0, -1).join(', ')}${itemNames.length > 1 ? ' and ' + itemNames[itemNames.length - 1] : itemNames[0]}. Everything seems in order and ready for use when needed.`;
+        } else {
+          narrative += "You don't seem to have much with you at the moment. Perhaps finding some supplies should be a priority before venturing further.";
+        }
+        return narrative;
+      } // Add closing brace for block scope
       
     default: // Generic context
       return `${characterName} considers their next move. The western frontier stretches out before you, full of opportunity and danger. The decisions you make here could shape your fortune - for better or worse. A moment's consideration might be the difference between success and disaster.`;

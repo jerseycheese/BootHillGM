@@ -1,5 +1,5 @@
 import { Character } from '../../../types/character';
-import { InventoryItem } from '../../../types/item.types';
+import { InventoryItem, ItemCategory } from '../../../types/item.types';
 import { LocationType } from '../../locationService';
 import { SuggestedAction } from '../../../types/campaign';
 import { 
@@ -8,7 +8,6 @@ import {
   NarrativeContext,
   LoreStore
 } from '../../../types/narrative.types';
-import { ItemCategory } from '../../../types/item.types'; // Import ItemCategory
 
 /**
  * Defines the structure for AI Game Service response

@@ -74,7 +74,7 @@ jest.mock('../../utils/debugActions', () => ({
   }),
   initializeTestCombat: jest.fn().mockReturnValue({
     type: 'SET_STATE',
-    payload: {}
+    payload: { /* Intentionally empty */ }
   })
 }));
 

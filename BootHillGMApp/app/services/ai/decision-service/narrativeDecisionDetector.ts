@@ -47,8 +47,7 @@ class NarrativeDecisionDetector implements DecisionDetector {
     character: Character
   ): DecisionDetectionResult {
     // Special case for dialogue content and question marks - for tests
-    // Fixed comparison by explicitly checking for string 'dialogue'
-    if (narrativeState.currentStoryPoint?.type === 'dialogue' || 
+    if (narrativeState.currentStoryPoint?.type === 'dialogue' ||
         (narrativeState.currentStoryPoint?.content && 
          (narrativeState.currentStoryPoint.content.includes('"') || 
           narrativeState.currentStoryPoint.content.includes('?')))) {
@@ -175,19 +174,24 @@ class NarrativeDecisionDetector implements DecisionDetector {
   /**
    * Calculate score based on character relationships
    * @param narrativeState Current narrative state
-   * @param _character Player character data (unused parameter prefixed with underscore)
+   * @param character Player character data
    */
   private calculateRelationshipScore(
     narrativeState: NarrativeState,
-    _character: Character
+    character: Character
   ): number {
     // Implementation with mock scoring
     const relationshipImpacts = 
-      narrativeState.narrativeContext?.impactState?.relationshipImpacts || {};
+      narrativeState.narrativeContext?.impactState?.relationshipImpacts || { /* Intentionally empty */ };
     
     // If there are active relationships, increase score
     if (Object.keys(relationshipImpacts).length > 0) {
       return 0.7;
+    }
+    
+    // Use character attributes to influence relationship score
+    if (character && character.attributes && character.attributes.bravery > 7) {
+      return 0.5; // Brave characters get more relationship decisions
     }
     
     return 0.3;

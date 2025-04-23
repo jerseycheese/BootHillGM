@@ -36,7 +36,7 @@ describe('useBrawlingCombat - Processing State', () => {
     jest.useFakeTimers();
     jest.spyOn(global, 'setTimeout').mockImplementation((cb: () => void) => {
       cb();
-      return setTimeout(() => {}, 0);
+      return setTimeout(() => { /* Intentionally empty */ }, 0);
     });
     
     const { result } = renderHook(() =>

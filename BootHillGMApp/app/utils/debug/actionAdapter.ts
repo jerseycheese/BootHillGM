@@ -6,6 +6,8 @@
 import { GameAction } from "../../types/actions";
 import { GameEngineAction } from "../../types/gameActions";
 import { logDiagnostic } from "../initializationDiagnostics";
+import { ActionTypes } from '../../types/actionTypes';
+import { GameState } from "../../types/gameState";
 
 // Type for location that includes both variants
 interface SafeLocation {
@@ -24,43 +26,58 @@ export function adaptAction(action: GameEngineAction): GameAction {
   // Log action adaptation for diagnostics
   logDiagnostic('ActionAdapter', `Converting action: ${action.type}`, {
     originalType: action.type,
-    hasPayload: action.type !== "RESET_NARRATIVE"
+    hasPayload: 'payload' in action && action.type !== 'RESET_NARRATIVE' // Use string literal instead of ActionTypes
   });
 
+  // Create a typesafe way to check legacy strings
+  const actionType = action.type as string;
+
   // Handle specific type conversions
-  if (action.type === "SET_LOCATION" && typeof action.payload !== "string") {
+  // Check for the legacy action type format (not using ActionTypes)
+  if (actionType === "SET_LOCATION" && 'payload' in action && typeof action.payload !== "string") {
     const location = action.payload as SafeLocation;
     return {
-      type: action.type,
+      type: ActionTypes.SET_LOCATION,
       payload: location.name || location.description || "unknown"
     };
   }
   
   // Enhanced SET_STATE action validation
-  if (action.type === "SET_STATE") {
+  if (actionType === ActionTypes.SET_STATE && 'payload' in action) {
+    // Cast payload to GameState for proper typing
+    const payload = action.payload as GameState;
+    
     // Log character data for diagnostic purposes
-    if (action.payload?.character?.player) {
+    if (payload && 
+        typeof payload === 'object' && 
+        'character' in payload && 
+        payload.character && 
+        'player' in payload.character && 
+        payload.character.player) {
+      
+      const player = payload.character.player;
+      
       logDiagnostic('ActionAdapter', 'SET_STATE character data', {
-        name: action.payload.character.player.name,
-        attributeCount: Object.keys(action.payload.character.player.attributes || {}).length,
-        inventoryCount: action.payload.character.player.inventory?.items?.length || 0
+        name: player.name,
+        attributeCount: Object.keys(player.attributes || {}).length,
+        inventoryCount: player.inventory?.items?.length || 0
       });
     }
 
     return {
-      type: "SET_STATE",
-      payload: action.payload
+      type: ActionTypes.SET_STATE,
+      payload
     };
   }
   
   // Handle RESET_NARRATIVE actions
-  if (action.type === "RESET_NARRATIVE") {
-    return { type: "RESET_NARRATIVE" };
+  if (actionType === "RESET_NARRATIVE") {
+    return { type: ActionTypes.RESET_NARRATIVE };
   }
   
   // Handle RESET_STATE actions
-  if ((action.type as string) === "RESET_STATE") {
-    return { type: "RESET_STATE" };
+  if (actionType === "RESET_STATE") {
+    return { type: ActionTypes.RESET_STATE };
   }
   
   // Default case

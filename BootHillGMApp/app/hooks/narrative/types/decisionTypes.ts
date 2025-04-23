@@ -2,8 +2,7 @@
  * Types related to decision triggering and generation
  */
 import { MutableRefObject } from 'react';
-import { DecisionImportance, PlayerDecision } from '../../../types/narrative.types';
-import { NarrativeState } from '../../../types/narrative.types';
+import { DecisionImportance, PlayerDecision, NarrativeState } from '../../../types/narrative.types';
 
 /**
  * Context extracted from narrative for decision generation

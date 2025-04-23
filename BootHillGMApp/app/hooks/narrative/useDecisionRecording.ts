@@ -7,7 +7,8 @@ import {
   addNarrativeHistory,
   updateNarrativeContext,
   recordDecision,
-  processDecisionImpacts
+  processDecisionImpacts,
+  updateNarrative
 } from '../../actions/narrativeActions';
 import { createDecisionRecord } from '../../utils/decisionUtils';
 import { createDecisionImpacts } from '../../utils/decisionImpactGenerator';
@@ -88,12 +89,10 @@ export function useDecisionRecording(
       const narrativeHistory = [...state.narrativeHistory];
       narrativeHistory.pop(); // Remove the loading message
       
-      dispatch({
-        type: 'UPDATE_NARRATIVE',
-        payload: {
-          narrativeHistory: narrativeHistory
-        }
-      });
+      // Use updateNarrative action creator instead of direct dispatch
+      dispatch(updateNarrative({
+        narrativeHistory: narrativeHistory
+      }));
       
       // First, add the player's choice explicitly
       dispatch(addNarrativeHistory(playerChoiceNarrative));

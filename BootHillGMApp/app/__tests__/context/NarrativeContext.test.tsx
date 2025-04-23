@@ -47,7 +47,7 @@ describe('NarrativeContext', () => {
 
     // Get the state from the rendered component
     const stateElement = screen.getByTestId('state');
-    const actualState = JSON.parse(stateElement.textContent || '{}');
+    const actualState = JSON.parse(stateElement.textContent || '{ /* Intentionally empty */ }');
     
     // Verify expected initial state
     expect(actualState.narrative).toBeDefined();
@@ -91,7 +91,7 @@ describe('NarrativeContext', () => {
 
     // Check initial state - empty array
     const stateElement = screen.getByTestId('state');
-    const initialState = JSON.parse(stateElement.textContent || '{}');
+    const initialState = JSON.parse(stateElement.textContent || '{ /* Intentionally empty */ }');
     expect(initialState.narrative.narrativeHistory).toEqual([]);
 
     // Dispatch action
@@ -192,7 +192,7 @@ describe('NarrativeContext', () => {
 
     // Verify the rendered state contains our saved narrative
     const stateElement = screen.getByTestId('state');
-    const renderedState = JSON.parse(stateElement.textContent || '{}');
+    const renderedState = JSON.parse(stateElement.textContent || '{ /* Intentionally empty */ }');
     
     expect(renderedState.narrative.narrativeHistory).toContain('Saved narrative');
     expect(mockLocalStorage.getItem).toHaveBeenCalledWith('gameState');
@@ -232,7 +232,7 @@ describe('NarrativeContext', () => {
 
     // Check initial state has our test narrative
     const stateElement = screen.getByTestId('state');
-    const initialStateJson = JSON.parse(stateElement.textContent || '{}');
+    const initialStateJson = JSON.parse(stateElement.textContent || '{ /* Intentionally empty */ }');
     expect(initialStateJson.narrative.narrativeHistory).toEqual(['Test narrative']);
 
     // Reset the state

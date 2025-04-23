@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import StatusDisplayManager from '../../components/StatusDisplayManager';
 import { LocationType } from '../../services/locationService';
-import { CampaignStateProvider } from '../../components/CampaignStateManager';
+import CampaignStateProvider from '../../components/CampaignStateProvider';
 import { Character } from '../../types/character';
 import { useLocation } from '../../hooks/useLocation';
 

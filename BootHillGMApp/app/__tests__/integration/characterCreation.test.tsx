@@ -1,9 +1,8 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { GameState } from '../../types/gameState';
-import { GameProvider } from '../../hooks/useGame';
-import { useGame } from '../../hooks/useGame';
-import { CampaignStateProvider } from '../../components/CampaignStateManager';
+import { GameProvider, useGame } from '../../hooks/useGame';
+import CampaignStateProvider from '../../components/CampaignStateProvider';
 import { initialCharacterState } from '../../types/state';
 
 /**
@@ -79,7 +78,6 @@ describe('Character Creation Workflow', () => {
 
     // Wait for component to finish rendering cycles
     await waitFor(() => {
-      // Removed assertion expect(renderCount).toBeGreaterThan(1); as it's potentially flaky/unnecessary
     });
 
     // Character should never have been null during the rendering process

@@ -76,10 +76,11 @@ export const verifyFactVersions = (
  */
 export const applyActions = (
   initialState: LoreStore,
-  actions: LoreAction[]
+  actions: LoreAction[],
+  reducerFn: (state: LoreStore, action: LoreAction) => LoreStore
 ): LoreStore => {
   return actions.reduce(
-    (state, action) => loreReducer(state, action),
+    (state, action) => reducerFn(state, action),
     initialState
   );
 };
@@ -111,7 +112,7 @@ describe('loreTestUtils', () => {
       payload: 'fact-1'
     };
     
-    const updatedState = applyActions(testState, [testAction]);
+    const updatedState = applyActions(testState, [testAction], loreReducer);
     expect(updatedState).toBeDefined();
   });
 });

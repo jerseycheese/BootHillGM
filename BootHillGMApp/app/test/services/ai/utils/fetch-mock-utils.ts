@@ -10,7 +10,7 @@ export const setupFetchMocks = (): void => {
   // Mock fetch globally with proper typing
   global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>;
   // Mock AbortSignal.timeout
-  global.AbortSignal.timeout = jest.fn().mockReturnValue({}) as AbortSignalTimeoutMock;
+  global.AbortSignal.timeout = jest.fn().mockReturnValue({ /* Intentionally empty */ }) as AbortSignalTimeoutMock;
 
   // Initialize debug flags for fetch mock
   (global.fetch as unknown as FetchMockProperties)._mockImplementationCallCount = 0;
@@ -56,7 +56,7 @@ export const createRequestInspector = (
     const url = typeof input === 'string' ? input : 
                 input instanceof URL ? input.toString() : 
                 (input as Request).url;
-    const requestOptions = init || {} as RequestInit;
+    const requestOptions = init || { /* Intentionally empty */ } as RequestInit;
     const responseBody = responseCallback(url, requestOptions);
     
     return Promise.resolve({

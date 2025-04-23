@@ -18,7 +18,7 @@ export interface UIState {
   isLoading: boolean;
   modalOpen: string | null;
   notifications: Notification[];
-  activeTab: string; // Added to fix type errors
+  activeTab: string;
 }
 
 /**

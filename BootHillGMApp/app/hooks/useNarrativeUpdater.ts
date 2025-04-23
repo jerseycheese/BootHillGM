@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
-// Removed import { useCampaignState } from './useCampaignStateContext';
-import { useGameState } from '../context/GameStateProvider'; // Import correct hook
-import { addNarrativeHistory } from '../actions/narrativeActions';
+import { useGameState } from '../context/GameStateProvider';
 import { UpdateNarrativeParams } from '../types/gameSession.types';
+import { ActionTypes } from '../types/actionTypes';
 
 /**
  * Hook for handling narrative updates.
@@ -32,10 +31,13 @@ export const useNarrativeUpdater = () => {
         playerInput = textOrParams.playerInput;
       }
 
-      // Dispatch ADD_NARRATIVE_HISTORY action
+      // Dispatch ADD_NARRATIVE_HISTORY action with standardized action type
       // Prefix player input with "Player:" to ensure it's identified as a player action
       const combinedText = playerInput ? `Player: ${playerInput}\n${text}` : text;
-      dispatch(addNarrativeHistory(combinedText));
+      dispatch({
+        type: ActionTypes.ADD_NARRATIVE_HISTORY,
+        payload: combinedText
+      });
     }, 
     [dispatch]
   );

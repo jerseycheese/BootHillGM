@@ -9,6 +9,7 @@ import { GameState } from '../types/gameState';
 import { useLocation } from './useLocation';
 import { generateNarrativeSummary } from '../utils/ai/narrativeSummary';
 import { NarrativeJournalEntry } from '../types/journal';
+import { ActionTypes } from '../types/actionTypes';
 
 // Response type for narrative updates
 interface NarrativeUpdateParams {
@@ -32,7 +33,7 @@ export const useItemHandler = (
   const { updateLocation } = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [usingItems, setUsingItems] = useState<{ [itemId: string]: boolean }>({});
+  const [usingItems, setUsingItems] = useState<{ [itemId: string]: boolean }>({ /* Intentionally empty */ });
 
   /**
    * Checks if a specific item is currently being used
@@ -98,7 +99,7 @@ export const useItemHandler = (
       });
 
       // Now dispatch the USE_ITEM action *after* getting the AI response
-      dispatch({ type: 'inventory/USE_ITEM', payload: itemId }); // Use namespaced type
+      dispatch({ type: ActionTypes.USE_ITEM, payload: itemId }); // Use standardized action type
       
       // Generate narrative summary for the journal entry
       const narrativeText = response.narrative || `You use the ${item.name}.`;
@@ -118,11 +119,9 @@ export const useItemHandler = (
         narrativeSummary: narrativeSummary
       };
       
-      // Removed console log
-      
-      // Use the standard journal/ADD_ENTRY action 
+      // Use the standard journal/ADD_ENTRY action
       dispatch({
-        type: 'journal/ADD_ENTRY',
+        type: ActionTypes.ADD_ENTRY,
         payload: journalEntry
       });
 
@@ -141,7 +140,7 @@ export const useItemHandler = (
       // Handle suggested actions if any
       if (response.suggestedActions) {
         dispatch({
-          type: 'SET_SUGGESTED_ACTIONS',
+          type: ActionTypes.SET_SUGGESTED_ACTIONS,
           payload: response.suggestedActions,
         });
       }
@@ -164,7 +163,7 @@ export const useItemHandler = (
       
       // Add fallback entry to journal
       dispatch({
-        type: 'journal/ADD_ENTRY',
+        type: ActionTypes.ADD_ENTRY,
         payload: fallbackEntry
       });
     } finally {

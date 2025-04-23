@@ -1,12 +1,13 @@
 import { useCallback, useState } from 'react';
 import { cleanCharacterName } from '../utils/combatUtils';
 import { aiServiceInstance } from '../services/ai';
-import { GameState } from '../types/gameState'; // Updated import path
+import { GameState } from '../types/gameState';
 import { GameEngineAction } from '../types/gameActions';
 import { generateNarrativeSummary } from '../utils/aiService';
 import { WEAPON_STATS } from '../types/combat';
 import { GameServiceResponse } from '../services/ai/types/gameService.types';
 import { presentDecision } from '../actions/narrativeActions';
+import { ActionTypes } from '../types/actionTypes';
 
 // Export the service instance so it can be mocked in tests
 export const aiService = aiServiceInstance;
@@ -55,7 +56,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
   if (response.location && response.location.type &&
       (response.location.type === 'town' || response.location.type === 'landmark' ||
        (response.location.type === 'wilderness' && response.location.description))) {
-    dispatch({ type: 'SET_LOCATION', payload: response.location });
+    dispatch({ type: ActionTypes.SET_LOCATION, payload: response.location });
   }
 
   // Process player decision if present
@@ -130,13 +131,13 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
     };
 
     dispatch({
-      type: 'SET_OPPONENT',
+      type: ActionTypes.SET_OPPONENT,
       payload: structuredOpponent,
     });
 
     // Initialize combat state with null combat type to trigger selection
     dispatch({
-      type: 'UPDATE_COMBAT_STATE',
+      type: ActionTypes.UPDATE_COMBAT_STATE,
       payload: {
         isActive: true,
         combatType: null,
@@ -149,7 +150,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
     });
 
     dispatch({
-      type: 'SET_COMBAT_ACTIVE',
+      type: ActionTypes.SET_COMBAT_ACTIVE,
       payload: true,
     });
   }
@@ -169,7 +170,7 @@ const processAIResponse = async ({ input, response, state, dispatch }: ProcessRe
     );
 
     dispatch({
-      type: 'ADD_ITEM',
+      type: ActionTypes.ADD_ITEM,
       payload: {
         id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: itemName,

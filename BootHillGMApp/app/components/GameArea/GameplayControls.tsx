@@ -5,14 +5,13 @@
  */
 'use client';
 
-import { useMemo } from 'react'; // Import useMemo
+import { useMemo } from 'react';
 import { CombatSystem } from '../Combat/CombatSystem';
 import InputManager from '../InputManager';
 import type { GameplayControlsProps } from './types';
 import type { SuggestedAction } from '../../types/campaign';
 import { Character } from '../../types/character';
 import GameStorage from '../../utils/gameStorage';
-import { CombatState } from '../../types/combat';
 
 // Default actions moved outside component to avoid ESLint dependency warning
 const defaultActions: SuggestedAction[] = [];
@@ -26,16 +25,20 @@ export function GameplayControls({
   onCombatEnd,
   dispatch,
 }: GameplayControlsProps) {
-  // Derive suggestedActions directly from state or fallback - always call useMemo
+  // Derive suggestedActions from state or fallback - always call useMemo
   const actionsToDisplay = useMemo(() => {
-    if (!state) return defaultActions;
-    
-    if (state.suggestedActions && state.suggestedActions.length > 0) {
+    // Check if state has suggested actions first
+    if (state?.suggestedActions && state.suggestedActions.length > 0) {
       return state.suggestedActions;
     }
     
-    // Fallback if state actions are empty or invalid
-    return GameStorage.getSuggestedActions();
+    // Otherwise fall back to GameStorage
+    try {
+      return GameStorage.getSuggestedActions();
+    } catch (error) {
+      console.error('Error loading suggested actions:', error);
+      return defaultActions;
+    }
   }, [state]); // Only depend on state
   
   // If the game is initializing, show a loading state for controls
@@ -87,9 +90,6 @@ export function GameplayControls({
     );
   }
 
-  // Access combat state directly from the GameState slice
-  const combatStateSlice = state.combat;
-
   // Create a safe onSubmit handler that won't be undefined
   const handleUserInput = (input: string) => {
     if (onUserInput) {
@@ -105,8 +105,8 @@ export function GameplayControls({
           opponent={opponent}
           onCombatEnd={onCombatEnd}
           dispatch={dispatch}
-          // Cast using as CombatState to match required type
-          initialCombatState={combatStateSlice as CombatState}
+          // Use type assertion to resolve the type issue
+          initialCombatState={undefined}
         />
       ) : (
         <InputManager

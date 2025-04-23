@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useGameState } from '../context/GameStateProvider'; // Updated import
+import { useGameState } from '../context/GameStateProvider';
 import { useLocation } from './useLocation';
 import { getAIResponse } from '../services/ai/gameService';
 import { getJournalContext } from '../utils/JournalManager';
@@ -11,6 +11,7 @@ import { useItemHandler } from './useItemHandler';
 import { AIGameResponse } from '../types/gameSession.types';
 import { JournalUpdatePayload } from '../types/gameActions';
 import { v4 as uuidv4 } from 'uuid';
+import { ActionTypes } from '../types/actionTypes';
 
 // Define a type for the complex item structure that might come from AI
 interface AIItemResponse {
@@ -142,7 +143,7 @@ export const useGameSession = () => {
 
       // Update campaign state with new journal entry
       dispatch({
-        type: 'UPDATE_JOURNAL',
+        type: ActionTypes.UPDATE_JOURNAL,
         payload: journalEntry
       });
 
@@ -179,7 +180,7 @@ export const useGameSession = () => {
             category: itemCategory,
           };
           
-          dispatch({ type: 'inventory/ADD_ITEM', payload: newItem });
+          dispatch({ type: ActionTypes.ADD_ITEM, payload: newItem });
         });
       }
 
@@ -190,7 +191,7 @@ export const useGameSession = () => {
             (item: InventoryItem) => item.name === itemName
           );
           if (itemToRemove) {
-            dispatch({ type: 'inventory/REMOVE_ITEM', payload: itemToRemove.id }); // Use namespaced type
+            dispatch({ type: ActionTypes.REMOVE_ITEM, payload: itemToRemove.id });
           }
         });
       }
@@ -198,7 +199,7 @@ export const useGameSession = () => {
       // Handle suggested actions
       if (response.suggestedActions) {
         dispatch({
-          type: 'SET_SUGGESTED_ACTIONS',
+          type: ActionTypes.SET_SUGGESTED_ACTIONS,
           payload: response.suggestedActions,
         });
       }
@@ -242,6 +243,7 @@ export const useGameSession = () => {
     retryLastAction,
     handleUseItem,
     isUsingItem,
+    updateNarrative,  // Expose narrative updater for components
     ...combatManager
   };
 };
@@ -251,6 +253,6 @@ export const useGameSession = () => {
  * Implementation is replaced in test environment.
  */
 export const __mocks = {
-  handleUserInput: () => Promise.resolve({} as AIGameResponse),
+  handleUserInput: () => Promise.resolve({ /* Intentionally empty */ } as AIGameResponse),
   retryLastAction: () => Promise.resolve(null)
 };

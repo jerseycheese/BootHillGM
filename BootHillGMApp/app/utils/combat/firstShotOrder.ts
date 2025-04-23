@@ -15,7 +15,7 @@ export const getFirstShotOrder = (
     hipShooting?: boolean,
     consecutiveTurns?: number,
     consecutiveAims?: number
-  } = {}
+  } = { /* Intentionally empty */ }
 ): Character => {
   
   const calc = (char: Character): number => {

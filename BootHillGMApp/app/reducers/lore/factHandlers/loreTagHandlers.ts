@@ -10,6 +10,7 @@ import {
   LoreFact
 } from '../../../types/narrative/lore.types';
 
+import { ActionTypes } from '../../../types/actionTypes'; // Import ActionTypes
 import {
   addFactToTags,
   removeFactFromTags,
@@ -18,15 +19,42 @@ import {
   createUpdatedState
 } from '../loreReducerUtils';
 
+// Define payload and action types locally
+interface AddFactTagsPayload {
+  factId: string;
+  tags: string[];
+}
+
+type AddFactTagsAction = {
+  type: typeof ActionTypes.ADD_FACT_TAGS;
+  payload: AddFactTagsPayload;
+} & Omit<LoreAction, 'type' | 'payload'>;
+
+interface RemoveFactTagsPayload {
+  factId: string;
+  tags: string[];
+}
+
+type RemoveFactTagsAction = {
+  type: typeof ActionTypes.REMOVE_FACT_TAGS;
+  payload: RemoveFactTagsPayload;
+} & Omit<LoreAction, 'type' | 'payload'>;
+
+
 /**
  * Handle ADD_FACT_TAGS action
  */
 export function handleAddFactTags(
   state: LoreStore,
-  action: Extract<LoreAction, { type: 'ADD_FACT_TAGS' }>,
+  action: LoreAction, // Use base LoreAction type
   timestamp: number
 ): LoreStore {
-  const { factId, tags } = action.payload;
+  // Type guard
+  if (action.type !== ActionTypes.ADD_FACT_TAGS) {
+    return state;
+  }
+  // Use type assertion after guard
+  const { factId, tags } = (action as AddFactTagsAction).payload;
   const existingFact = state.facts[factId];
 
   // If fact doesn't exist, return state unchanged
@@ -67,10 +95,15 @@ export function handleAddFactTags(
  */
 export function handleRemoveFactTags(
   state: LoreStore,
-  action: Extract<LoreAction, { type: 'REMOVE_FACT_TAGS' }>,
+  action: LoreAction, // Use base LoreAction type
   timestamp: number
 ): LoreStore {
-  const { factId, tags } = action.payload;
+  // Type guard
+  if (action.type !== ActionTypes.REMOVE_FACT_TAGS) {
+    return state;
+  }
+  // Use type assertion after guard
+  const { factId, tags } = (action as RemoveFactTagsAction).payload;
   const existingFact = state.facts[factId];
 
   // If fact doesn't exist, return state unchanged

@@ -161,7 +161,7 @@ describe('Reset Functionality Tests', () => {
         
         try {
           // Simulate dispatching reset action
-          mockDispatch({ type: 'SET_STATE', payload: {} });
+          mockDispatch({ type: 'SET_STATE', payload: { /* Intentionally empty */ } });
           
           // Simulate setting timeout to clear loading state
           setTimeout(() => {
@@ -203,7 +203,7 @@ describe('Reset Functionality Tests', () => {
         
         try {
           // Simulate dispatching reset action - will throw
-          mockDispatch({ type: 'SET_STATE', payload: {} });
+          mockDispatch({ type: 'SET_STATE', payload: { /* Intentionally empty */ } });
         } catch {
           mockSetError('Error occurred');
           mockSetLoading(null);

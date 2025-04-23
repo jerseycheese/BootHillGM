@@ -4,7 +4,6 @@ import ErrorBoundary from './ErrorBoundary';
 import { useGameSession } from '../hooks/useGameSession';
 // Import from the correct context provider file
 import { useInventoryItems } from '../context/GameStateProvider';
-// Added imports for Inventory Item type
 import { InventoryItem } from '../types/item.types';
 
 /**

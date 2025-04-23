@@ -15,6 +15,7 @@ import {
   hasCharacterState,
   hasInventoryState 
 } from '../typeGuards';
+import { ActionTypes } from '../../types/actionTypes'; // Import ActionTypes
 
 // Type for character in combat
 interface CombatCharacter {
@@ -161,7 +162,7 @@ export const combatSystem = {
           };
         }
 
-      case 'END_COMBAT': // Legacy support
+      case ActionTypes.END_COMBAT: // Using ActionTypes constant
         return {
           ...state,
           combat: {
@@ -212,7 +213,7 @@ export const combatSystem = {
         return updateCharacter(state, targetId, { health: newHealth });
       }
 
-      case 'USE_ITEM': // Legacy support
+      case ActionTypes.USE_ITEM: // Using ActionTypes constant
       {
         // Safely access payload properties
         if (!isObject(action.payload)) {
@@ -250,7 +251,7 @@ export const combatSystem = {
         return updateCharacter(state, targetId, { health: newHealth });
       }
 
-      case 'combat/TOGGLE_TURN':
+      case ActionTypes.TOGGLE_TURN: // Using ActionTypes constant
       case 'NEXT_COMBAT_TURN': // Legacy support
       {
         const currentTurn = state.combat.currentTurn;
@@ -278,7 +279,7 @@ export const combatSystem = {
         };
       }
 
-      case 'combat/NEXT_ROUND':
+      case ActionTypes.NEXT_ROUND: // Using ActionTypes constant
       {
         return {
           ...state,
@@ -294,7 +295,7 @@ export const combatSystem = {
         };
       }
 
-      case 'combat/ADD_LOG_ENTRY':
+      case ActionTypes.ADD_LOG_ENTRY: // Using ActionTypes constant
       {
         if (!isObject(action.payload)) {
           return state;
@@ -335,7 +336,7 @@ export const combatSystem = {
         };
       }
 
-      case 'combat/RESET_COMBAT':
+      case ActionTypes.RESET_COMBAT: // Using ActionTypes constant
       {
         return {
           ...state,

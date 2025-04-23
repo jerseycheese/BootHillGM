@@ -3,6 +3,7 @@ import { GameAction } from '../../types/actions';
 import { calculateUpdatedStrength } from '../../utils/strengthSystem';
 import { Character } from '../../types/character';
 import { UpdateCharacterPayload } from '../../types/actions/characterActions';
+import { ActionTypes } from '../../types/actionTypes';
 import { isNonNullObject, isCharacter, hasId } from '../utils/typeGuards';
 
 /**
@@ -17,7 +18,7 @@ function isUpdateCharacterPayload(payload: unknown): payload is UpdateCharacterP
  */
 function updateCharacter(character: Character, payload: UpdateCharacterPayload): Character {
   // Initialize attributes with empty object if not provided
-  let updatedAttributes = payload.attributes || {};
+  let updatedAttributes = payload.attributes || { /* Intentionally empty */ };
   let updatedHistory = character.strengthHistory;
 
   // Handle strength calculation if damage is inflicted
@@ -119,7 +120,7 @@ export function characterReducer(
     }
     
     // Handle SET_STATE for state restoration
-    case 'SET_STATE': {
+    case ActionTypes.SET_STATE: { // Use ActionTypes constant
       if (!isNonNullObject(action.payload) || !('character' in action.payload)) {
         return state;
       }

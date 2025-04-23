@@ -3,6 +3,7 @@ import { InventoryState } from '../../types/state/inventoryState';
 import { InventoryItem, ItemCategory } from '../../types/item.types';
 import { GameAction } from '../../types/actions';
 import { UseItemAction, AddItemAction, SetInventoryAction, UpdateItemQuantityAction } from '../../types/actions/inventoryActions';
+import { ActionTypes } from '../../types/actionTypes';
 
 describe('inventoryReducer', () => {
   let initialState: InventoryState;
@@ -27,16 +28,16 @@ describe('inventoryReducer', () => {
     expect(inventoryReducer(undefined, { type: 'NO_OP' })).toEqual(initialInventoryState);
   });
 
-  describe("inventory/USE_ITEM", () => {
+  describe("USE_ITEM", () => {
     it('should decrease quantity for a medical item with quantity > 1', () => {
-      const action: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'med1' };
+      const action: UseItemAction = { type: ActionTypes.USE_ITEM, payload: 'med1' };
       const state = inventoryReducer(initialState, action);
       const updatedItem = state.items.find(item => item.id === 'med1');
       expect(updatedItem?.quantity).toBe(4);
     });
 
     it('should decrease quantity for a consumable item with quantity > 1', () => {
-      const action: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'con1' };
+      const action: UseItemAction = { type: ActionTypes.USE_ITEM, payload: 'con1' };
       const state = inventoryReducer(initialState, action);
       const updatedItem = state.items.find(item => item.id === 'con1');
       expect(updatedItem?.quantity).toBe(2);
@@ -48,40 +49,40 @@ describe('inventoryReducer', () => {
             ...initialState,
             items: initialState.items.map(item => item.id === 'con1' ? { ...item, quantity: 1 } : item)
         };
-      const action: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'con1' };
+      const action: UseItemAction = { type: ActionTypes.USE_ITEM, payload: 'con1' };
       const state = inventoryReducer(singleConsumableState, action);
       const updatedItem = state.items.find(item => item.id === 'con1');
       expect(updatedItem?.quantity).toBe(0);
     });
 
     it('should NOT decrease quantity for a general item', () => {
-      const action: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'gen1' };
+      const action: UseItemAction = { type: ActionTypes.USE_ITEM, payload: 'gen1' };
       const state = inventoryReducer(initialState, action);
       const updatedItem = state.items.find(item => item.id === 'gen1');
       expect(updatedItem?.quantity).toBe(1); // Quantity should remain unchanged
     });
 
     it('should NOT decrease quantity for a weapon item', () => {
-      const action: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'wep1' };
+      const action: UseItemAction = { type: ActionTypes.USE_ITEM, payload: 'wep1' };
       const state = inventoryReducer(initialState, action);
       const updatedItem = state.items.find(item => item.id === 'wep1');
       expect(updatedItem?.quantity).toBe(1); // Quantity should remain unchanged
     });
 
     it('should not change state if the item does not exist', () => {
-      const action: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'nonexistent_item' };
+      const action: UseItemAction = { type: ActionTypes.USE_ITEM, payload: 'nonexistent_item' };
       expect(inventoryReducer(initialState, action)).toEqual(initialState);
     });
 
     it('should not change state if the consumable/medical item quantity is already 0', () => {
-      const actionMed: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'med0' };
-      const actionCon: UseItemAction = { type: 'inventory/USE_ITEM', payload: 'con0' };
+      const actionMed: UseItemAction = { type: ActionTypes.USE_ITEM, payload: 'med0' };
+      const actionCon: UseItemAction = { type: ActionTypes.USE_ITEM, payload: 'con0' };
       expect(inventoryReducer(initialState, actionMed)).toEqual(initialState);
       expect(inventoryReducer(initialState, actionCon)).toEqual(initialState);
     });
 
     it('should not change state if payload is missing', () => {
-      const action = { type: 'inventory/USE_ITEM' }; // Missing payload
+      const action = { type: ActionTypes.USE_ITEM }; // Missing payload
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       // Using 'as any' to explicitly test reducer behavior with a malformed action (missing payload).
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -89,11 +90,11 @@ describe('inventoryReducer', () => {
     });
   });
 
-  describe("inventory/ADD_ITEM with malformed data", () => {
+  describe("ADD_ITEM with malformed data", () => {
     it('should normalize an item with nested name object', () => {
       // Use type casting to simulate malformed data
       const action: AddItemAction = { 
-        type: 'inventory/ADD_ITEM', 
+        type: ActionTypes.ADD_ITEM, 
         payload: {
           id: 'test1',
           // Use type assertion to bypass type checking for test
@@ -114,7 +115,7 @@ describe('inventoryReducer', () => {
 
     it('should normalize an item with nested category object', () => {
       const action: AddItemAction = { 
-        type: 'inventory/ADD_ITEM', 
+        type: ActionTypes.ADD_ITEM, 
         payload: {
           id: 'test2',
           name: 'Normal Name',
@@ -135,7 +136,7 @@ describe('inventoryReducer', () => {
 
     it('should normalize an item with both nested name and category', () => {
       const action: AddItemAction = { 
-        type: 'inventory/ADD_ITEM', 
+        type: ActionTypes.ADD_ITEM, 
         payload: {
           id: 'test3',
           // Use type assertion to bypass type checking for test
@@ -159,7 +160,7 @@ describe('inventoryReducer', () => {
 
     it('should default to general category for invalid categories', () => {
       const action: AddItemAction = { 
-        type: 'inventory/ADD_ITEM', 
+        type: ActionTypes.ADD_ITEM, 
         payload: {
           id: 'test4',
           name: 'Invalid Category Item',
@@ -180,7 +181,7 @@ describe('inventoryReducer', () => {
 
     it('should handle completely malformed item with minimum valid data', () => {
       const action = { 
-        type: 'inventory/ADD_ITEM', 
+        type: ActionTypes.ADD_ITEM, 
         payload: {
           // Minimal required property
           id: 'test5'
@@ -200,7 +201,7 @@ describe('inventoryReducer', () => {
 
     it('should normalize multiple items with SET_INVENTORY', () => {
       const action = { 
-        type: 'inventory/SET_INVENTORY', 
+        type: ActionTypes.SET_INVENTORY, 
         payload: [
           {
             id: 'set1',
@@ -232,10 +233,10 @@ describe('inventoryReducer', () => {
     });
   });
 
-  describe("inventory/UPDATE_ITEM_QUANTITY", () => {
+  describe("UPDATE_ITEM_QUANTITY", () => {
     it('should update the quantity of an existing item', () => {
       const action: UpdateItemQuantityAction = { 
-        type: 'inventory/UPDATE_ITEM_QUANTITY', 
+        type: ActionTypes.UPDATE_ITEM_QUANTITY, 
         payload: { id: 'med1', quantity: 10 }
       };
       
@@ -246,9 +247,9 @@ describe('inventoryReducer', () => {
     });
   });
 
-  describe("inventory/CLEAN_INVENTORY", () => {
+  describe("CLEAN_INVENTORY", () => {
     it('should remove items with quantity 0', () => {
-      const action: GameAction = { type: 'inventory/CLEAN_INVENTORY' };
+      const action: GameAction = { type: ActionTypes.CLEAN_INVENTORY };
       
       const state = inventoryReducer(initialState, action);
       

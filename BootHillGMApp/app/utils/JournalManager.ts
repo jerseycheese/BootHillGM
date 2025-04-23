@@ -1,7 +1,4 @@
-/**
- * JournalManager handles creation and management of game journal entries.
- * Supports multiple entry types with filtering and search capabilities.
- */
+// BootHillGMApp/app/utils/JournalManager.ts (Reordered)
 import { AIService } from '../services/ai/aiService';
 import { cleanText } from './textCleaningUtils';
 import { generateUUID } from './uuidGenerator';
@@ -19,35 +16,6 @@ import { createFallbackSummary, entryMatchesSearch } from './journal/journalUtil
 
 // Default AIService instance
 export const defaultAIService = new AIService();
-
-// Legacy exports for backward compatibility
-export const addJournalEntry = async (
-  journal: JournalEntry[],
-  entry: string | JournalEntry,
-  aiService = defaultAIService
-): Promise<JournalEntry[]> => {
-  return JournalManager.addJournalEntry(journal, entry, aiService);
-};
-
-export const addCombatJournalEntry = (
-  journal: JournalEntry[],
-  playerName: string,
-  opponentName: string,
-  outcome: CombatJournalEntry['outcome'],
-  summary: string
-): JournalEntry[] => {
-  return JournalManager.addCombatEntry(journal, playerName, opponentName, outcome, summary);
-};
-
-export const getJournalContext = (journal: JournalEntry[]): string => {
-  if (!journal || !journal.length) return '';
-  const recentEntries = journal.slice(-3);
-  return recentEntries.map(entry => entry.content).join('\n');
-};
-
-export const filterJournal = (journal: JournalEntry[], filter: JournalFilter): JournalEntry[] => {
-  return JournalManager.filterJournal(journal, filter);
-};
 
 // Type for unknown entry
 interface UnknownEntry {
@@ -71,7 +39,7 @@ export class JournalManager {
     aiService = defaultAIService
   ): Promise<JournalEntry[]> {
     if (!journal) journal = [];
-    
+
     try {
       const prevEntry = journal.length > 0 ? journal[journal.length - 1] : undefined;
       const newEntry = await createNarrativeEntry(content, context, prevEntry, aiService);
@@ -89,16 +57,16 @@ export class JournalManager {
   private static createFallbackNarrativeEntry(content: string): NarrativeJournalEntry {
     const characterNameMatch = content.match(/([A-Z][a-z]+)(?:\s+steps|\s+walks|\s+enters|\s+arrives)/);
     const characterName = characterNameMatch ? characterNameMatch[1] : 'The character';
-    
+
     let fallbackSummary = `${characterName} embarks on a new journey in the frontier town of Boot Hill.`;
-    
+
     // Ensure consistent punctuation
-    if (!fallbackSummary.endsWith('.') && 
-        !fallbackSummary.endsWith('!') && 
+    if (!fallbackSummary.endsWith('.') &&
+        !fallbackSummary.endsWith('!') &&
         !fallbackSummary.endsWith('?')) {
       fallbackSummary += '.';
     }
-    
+
     return {
       id: generateUUID(),
       title: 'New Adventure',
@@ -134,7 +102,7 @@ export class JournalManager {
     context: string
   ): JournalEntry[] {
     if (!journal) journal = [];
-    
+
     if (!acquiredItems?.length && !removedItems?.length) {
       return journal;
     }
@@ -148,7 +116,7 @@ export class JournalManager {
    */
   static filterJournal(journal: JournalEntry[], filter: JournalFilter): JournalEntry[] {
     if (!journal) return [];
-    
+
     return journal.filter(entry => {
       if (filter.type && entry.type !== filter.type) return false;
       if (filter.startDate && entry.timestamp < filter.startDate) return false;
@@ -167,16 +135,16 @@ export class JournalManager {
     aiService = defaultAIService
   ): Promise<JournalEntry[]> {
     if (!journal) journal = [];
-    
+
     // Handle string entries (narrative)
     if (typeof entry === 'string') {
       return this.addNarrativeEntry(journal, entry, undefined, aiService);
     }
-    
+
     // Handle existing JournalEntry objects
     const timestamp = entry.timestamp || Date.now();
     const id = entry.id || generateUUID();
-    
+
     // Process based on entry type
     switch (entry.type) {
       case 'narrative': {
@@ -204,10 +172,10 @@ export class JournalManager {
         // For unknown types, create a default narrative entry
         const unknownEntry = entry as UnknownEntry;
         const content = typeof unknownEntry.content === 'string' ? unknownEntry.content : '';
-        const narrativeSummary = typeof unknownEntry.narrativeSummary === 'string' 
-          ? unknownEntry.narrativeSummary 
+        const narrativeSummary = typeof unknownEntry.narrativeSummary === 'string'
+          ? unknownEntry.narrativeSummary
           : undefined;
-        
+
         return [...journal, {
           id,
           timestamp,
@@ -231,45 +199,45 @@ export class JournalManager {
     aiService: AIService
   ): Promise<JournalEntry[]> {
     const cleanedContent = cleanText(entry.content);
-    
+
     // Generate AI summary if one doesn't exist
     let narrativeSummary = entry.narrativeSummary;
     if (!narrativeSummary) {
       try {
         // Create context for summary generation
         const characterNameMatch = cleanedContent.match(/([A-Z][a-z]+)(?:\s+steps|\s+walks|\s+enters|\s+arrives)/);
-        const characterContext = characterNameMatch 
-          ? `Character ${characterNameMatch[1]} in Boot Hill.` 
+        const characterContext = characterNameMatch
+          ? `Character ${characterNameMatch[1]} in Boot Hill.`
           : 'Character in Boot Hill.';
-          
+
         // Generate AI summary
         narrativeSummary = await aiService.generateNarrativeSummary(
           cleanedContent,
           characterContext
         );
-        
+
         // Ensure consistent punctuation
-        if (narrativeSummary && !narrativeSummary.endsWith('.') && 
-            !narrativeSummary.endsWith('!') && 
+        if (narrativeSummary && !narrativeSummary.endsWith('.') &&
+            !narrativeSummary.endsWith('!') &&
             !narrativeSummary.endsWith('?')) {
           narrativeSummary += '.';
         }
       } catch (error) {
         console.error('Error generating narrative summary:', error);
-        
+
         // Create a fallback summary
         const characterNameMatch = cleanedContent.match(/([A-Z][a-z]+)(?:\s+steps|\s+walks|\s+enters|\s+arrives)/);
         const characterName = characterNameMatch ? characterNameMatch[1] : 'The character';
-        
+
         narrativeSummary = `${characterName} continues their adventure in Boot Hill.`;
       }
     }
-    
+
     // Final fallback if we still don't have a summary
     if (!narrativeSummary) {
       narrativeSummary = createFallbackSummary(cleanedContent);
     }
-    
+
     return [...journal, {
       ...entry,
       id,
@@ -295,7 +263,7 @@ export class JournalManager {
       const playerName = entry.combatants?.player || 'The character';
       const opponentName = entry.combatants?.opponent || 'an opponent';
       const outcome = entry.outcome || 'unknown';
-      
+
       switch(outcome) {
         case 'victory':
           combatSummary = `${playerName} defeated ${opponentName} in combat.`;
@@ -307,7 +275,7 @@ export class JournalManager {
           combatSummary = `${playerName} engaged in combat with ${opponentName}.`;
       }
     }
-    
+
     return [...journal, {
       ...entry,
       id,
@@ -328,7 +296,7 @@ export class JournalManager {
   ): JournalEntry[] {
     const acquiredItems = entry.items?.acquired || [];
     const removedItems = entry.items?.removed || [];
-    
+
     let inventorySummary = entry.narrativeSummary;
     if (!inventorySummary) {
       const parts: string[] = [];
@@ -338,12 +306,12 @@ export class JournalManager {
       if (removedItems.length) {
         parts.push(`Used/Lost: ${removedItems.join(', ')}`);
       }
-      
+
       // Ensure consistent punctuation
       inventorySummary = parts.join('. ');
       inventorySummary = inventorySummary.endsWith('.') ? inventorySummary : inventorySummary + '.';
     }
-    
+
     return [...journal, {
       ...entry,
       id,
@@ -353,3 +321,32 @@ export class JournalManager {
     } as InventoryJournalEntry];
   }
 }
+
+// Legacy exports for backward compatibility
+export const addJournalEntry = async (
+  journal: JournalEntry[],
+  entry: string | JournalEntry,
+  aiService = defaultAIService
+): Promise<JournalEntry[]> => {
+  return JournalManager.addJournalEntry(journal, entry, aiService); // Class defined above
+};
+
+export const addCombatJournalEntry = (
+  journal: JournalEntry[],
+  playerName: string,
+  opponentName: string,
+  outcome: CombatJournalEntry['outcome'],
+  summary: string
+): JournalEntry[] => {
+  return JournalManager.addCombatEntry(journal, playerName, opponentName, outcome, summary); // Class defined above
+};
+
+export const getJournalContext = (journal: JournalEntry[]): string => {
+  if (!journal || !journal.length) return '';
+  const recentEntries = journal.slice(-3);
+  return recentEntries.map(entry => entry.content).join('\n');
+};
+
+export const filterJournal = (journal: JournalEntry[], filter: JournalFilter): JournalEntry[] => {
+  return JournalManager.filterJournal(journal, filter); // Class defined above
+};

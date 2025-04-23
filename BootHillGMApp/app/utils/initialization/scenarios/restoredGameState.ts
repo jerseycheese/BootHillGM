@@ -3,6 +3,7 @@ import { Dispatch } from 'react';
 import { GameAction } from '../../../types/actions';
 import { Character } from '../../../types/character';
 import { debug } from '../initHelpers';
+import { ActionTypes } from '../../../types/actionTypes';
 
 /**
  * Handles normal state restoration when saved state exists
@@ -35,10 +36,10 @@ export async function handleRestoredGameState(params: {
     }
     
     dispatch({ 
-      type: 'SET_STATE', 
-      payload: parsedState 
-    } as GameAction);
-    
+      type: ActionTypes.SET_STATE, // Use ActionTypes constant
+      payload: parsedState
+    });
+
     if (process.env.NODE_ENV !== 'production') {
       debug('Game state restored');
     }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { NarrativeDisplay } from '../../components/NarrativeDisplay';
-import { CampaignStateContext } from '../../components/CampaignStateManager';
+import { CampaignStateContext } from '../../hooks/useCampaignStateContext';
 import { initialNarrativeState } from '../../types/narrative.types';
 import { initialGameState } from '../../types/gameState';
 import { MockNarrativeProvider } from '../../test/utils/narrativeProviderMock';
@@ -15,9 +15,9 @@ describe('Narrative Processing', () => {
         ...initialNarrativeState,
         storyProgression: {
           currentPoint: null,
-          progressionPoints: {},
+          progressionPoints: { /* Intentionally empty */ },
           mainStorylinePoints: [],
-          branchingPoints: {},
+          branchingPoints: { /* Intentionally empty */ },
           lastUpdated: Date.now()
         }
       }

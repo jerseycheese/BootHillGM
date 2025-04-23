@@ -4,18 +4,35 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { generateCharacterSummary, generateCompleteCharacter } from '../services/ai/characterService';
 import { generateName } from '../services/ai/nameGenerator';
-// Removed import { useCampaignState } from '../components/CampaignStateManager';
-import { useGameState } from '../context/GameStateProvider'; // Import correct hook
+import { useGameState } from '../context/GameStateProvider';
 import { Character } from "../types/character";
-import { GameState, initialGameState } from '../types/gameState';
-import { initialNarrativeState } from '../types/narrative.types';
-import { getStartingInventory } from "../utils/startingInventory";
-import { CharacterState } from '../types/state/characterState';
+import { ActionTypes } from '../types/actionTypes';
 
 // Storage key for character creation progress
 const STORAGE_KEY = "character-creation-progress";
 // Storage key for initial narrative
 const INITIAL_NARRATIVE_KEY = "initial-narrative";
+
+export function generateRandomValue(field: keyof Character["attributes"]): number {
+    switch (field) {
+        case "speed":
+            return 1;
+        case "gunAccuracy":
+            return 1;
+        case "throwingAccuracy":
+            return 1;
+        case "strength":
+        case "baseStrength":
+            return 8;
+        case "bravery":
+            return 1;
+        case "experience":
+            return 0;
+        default:
+            return 0;
+    }
+}
+
 
 export const initialCharacter: Character = {
   isNPC: false,
@@ -202,7 +219,7 @@ export function useCharacterCreation() {
           
           // This is a new character, so we want to clean up old game state
           // Dispatch an action to reset the state instead of calling cleanupState
-          dispatch({ type: 'RESET_STATE' });
+          dispatch({ type: ActionTypes.RESET_STATE }); // Use ActionTypes constant
           
           // Clear previous narrative state and reset previous game data
           if (typeof localStorage !== 'undefined') {
@@ -214,29 +231,6 @@ export function useCharacterCreation() {
             sessionStorage.setItem("initializing_new_character", "true");
           }
           
-          const startingInventory = getStartingInventory();
-          
-          // Create proper character state structure
-          const characterState: CharacterState = {
-            player: character,
-            opponent: null
-          };
-          
-          // Create game state with proper structure
-          const _gameState: GameState = {
-            ...initialGameState,
-            character: characterState,
-            inventory: {
-              ...initialGameState.inventory,
-              items: startingInventory
-            },
-            isClient: true,
-            currentPlayer: character.id,
-            npcs: [],
-            location: null,
-            narrative: initialNarrativeState,
-          };
-          
           // Save the character to localStorage
           localStorage.setItem(STORAGE_KEY, JSON.stringify({
             character,
@@ -244,11 +238,9 @@ export function useCharacterCreation() {
           }));
           
           // Save the game state
-          // Removed direct saveGame call. Assume saving is handled elsewhere or via dispatch.
-          // saveGame(gameState);
           // Optionally, dispatch a save request action if needed:
           // dispatch({ type: 'SAVE_GAME_REQUEST', payload: gameState });
-          
+
           // Navigate to game session
           router.push("/game-session");
         }
@@ -262,7 +254,6 @@ export function useCharacterCreation() {
         setIsGeneratingField(false);
       }
     },
-    // Updated dependencies
     [character, showSummary, dispatch, router]
   );
 
@@ -291,22 +282,3 @@ export function useCharacterCreation() {
   };
 }
 
-export function generateRandomValue(field: keyof Character["attributes"]): number {
-    switch (field) {
-        case "speed":
-            return 1;
-        case "gunAccuracy":
-            return 1;
-        case "throwingAccuracy":
-            return 1;
-        case "strength":
-        case "baseStrength":
-            return 8;
-        case "bravery":
-            return 1;
-        case "experience":
-            return 0;
-        default:
-            return 0;
-    }
-}

@@ -7,6 +7,7 @@ import { SuggestedAction } from '../../../types/campaign';
 import { debug } from '../initHelpers';
 import { InitializationRef } from '../initState';
 import { GameStorage } from '../../storage/gameStateStorage';
+import { ActionTypes } from '../../../types/actionTypes';
 
 /**
  * Handles generating content using direct AI generation from pre-existing content
@@ -60,7 +61,7 @@ export async function handleDirectAIGeneration(params: {
     if (typeof narrative === 'string') {
       // Add narrative to history
       dispatch({
-        type: 'ADD_NARRATIVE_HISTORY',
+        type: ActionTypes.ADD_NARRATIVE_HISTORY, // Use ActionTypes constant
         payload: narrative
       });
       
@@ -68,7 +69,7 @@ export async function handleDirectAIGeneration(params: {
       if (Array.isArray(journal)) {
         journal.forEach((entry: NarrativeJournalEntry) => {
           dispatch({
-            type: 'journal/ADD_ENTRY',
+            type: ActionTypes.ADD_ENTRY,
             payload: entry
           });
         });

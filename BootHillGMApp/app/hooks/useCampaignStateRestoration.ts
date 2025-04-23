@@ -81,7 +81,7 @@ export const useCampaignStateRestoration = ({
       character: characterState,
       narrative: {
         ...initialGameState.narrative,
-        narrativeHistory: [GameStorage.getNarrativeText()],
+        narrativeHistory: GameStorage.getNarrativeText(),
         needsInitialGeneration: true // Flag to trigger AI narrative generation
       },
       suggestedActions: GameStorage.getSuggestedActions()
@@ -115,7 +115,7 @@ export const useCampaignStateRestoration = ({
         character: characterState,
         narrative: {
           ...initialGameState.narrative,
-          narrativeHistory: [GameStorage.getNarrativeText()],
+          narrativeHistory: GameStorage.getNarrativeText(),
           needsInitialGeneration: true // Flag to trigger AI narrative generation
         },
         suggestedActions: GameStorage.getSuggestedActions()
@@ -157,27 +157,27 @@ export const useCampaignStateRestoration = ({
       character: characterState,
       combat: {
         ...initialGameState.combat,
-        ...(normalizedState.combat || {}),
+        ...(normalizedState.combat || { /* Intentionally empty */ }),
         // Ensure isActive is correctly set based on loaded data
         isActive: combatIsActive,
       },
       inventory: {
         ...initialGameState.inventory,
-        ...(normalizedState.inventory || {}),
+        ...(normalizedState.inventory || { /* Intentionally empty */ }),
       },
       journal: {
         ...initialGameState.journal,
-        ...(normalizedState.journal || {}),
+        ...(normalizedState.journal || { /* Intentionally empty */ }),
       },
       narrative: {
         ...initialGameState.narrative,
-        ...(normalizedState.narrative || {}),
+        ...(normalizedState.narrative || { /* Intentionally empty */ }),
         // Add flag to trigger narrative generation if needed
         needsInitialGeneration: needsNarrativeGeneration
       },
       ui: {
         ...initialGameState.ui,
-        ...(normalizedState.ui || {}),
+        ...(normalizedState.ui || { /* Intentionally empty */ }),
       },
       // Ensure suggested actions are available
       suggestedActions: normalizedState.suggestedActions || GameStorage.getSuggestedActions(),
@@ -226,7 +226,7 @@ export const useCampaignStateRestoration = ({
       character: characterState,
       narrative: {
         ...initialGameState.narrative,
-        narrativeHistory: [GameStorage.getNarrativeText()],
+        narrativeHistory: GameStorage.getNarrativeText(),
         needsInitialGeneration: true // Flag to trigger AI narrative generation
       },
       suggestedActions: GameStorage.getSuggestedActions()

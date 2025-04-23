@@ -13,6 +13,7 @@ import { GameAction } from '../types/actions';
 import { GameState, initialGameState } from '../types/gameState';
 import { Dispatch } from 'react';
 import { processUserInput } from './session/userInputHandler';
+import { ActionTypes } from '../types/actionTypes';
 
 /**
  * Generates session props for the game interface components
@@ -38,14 +39,14 @@ export function generateSessionProps(
   /**
    * Handles player strength/health changes
    */
-  const handleStrengthChange = (_characterType: 'player' | 'opponent', _newStrength: number) => {
+  const handleStrengthChange = () => { // Removed unused parameters
     // Implementation would update character strength
   };
 
   /**
    * Handles item usage from inventory
    */
-  const handleUseItem = (_itemId: string) => {
+  const handleUseItem = () => {
     // Implementation would handle item usage
   };
 
@@ -62,7 +63,7 @@ export function generateSessionProps(
     }
     
     InventoryManager.equipWeapon(playerCharacter, item);
-    dispatch({ type: 'inventory/EQUIP_WEAPON', payload: itemId });
+    dispatch({ type: ActionTypes.EQUIP_WEAPON, payload: itemId });
   };
 
   // Store the last action to potentially implement retryLastAction

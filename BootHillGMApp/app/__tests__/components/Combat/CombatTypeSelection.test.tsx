@@ -2,8 +2,6 @@ import React from 'react';
 import { screen } from '@testing-library/react'; // Keep screen import
 import CombatTypeSelection from '../../../components/Combat/CombatTypeSelection';
 import { Character } from '../../../types/character';
-// import { TestCampaignStateProvider } from '../../utils/testWrappers'; // Removed legacy wrapper
-// Remove GameStateProvider import
 import { createMockGameState } from '../../../test/utils/inventoryTestUtils'; // Import state utility
 import { renderWithProviders } from '../../testWrappers'; // Correct import path and function name
 

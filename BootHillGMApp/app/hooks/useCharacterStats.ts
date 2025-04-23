@@ -1,5 +1,6 @@
 import { useReducer } from 'react';
 import { Character } from '../types/character';
+import { ActionTypes } from '../types/actionTypes';
 
 /**
  * Custom hook for managing character stats, including derived stats.
@@ -11,7 +12,7 @@ interface CharacterState {
 }
 
 type CharacterAction =
-  | { type: 'SET_CHARACTER'; payload: Character }
+  | { type: typeof ActionTypes.SET_CHARACTER; payload: Character }
   | { type: 'UPDATE_STAT'; payload: { stat: keyof Character['attributes']; value: number } };
 
 const initialState: CharacterState = {
@@ -24,37 +25,39 @@ const initialState: CharacterState = {
  */
 function characterReducer(state: CharacterState, action: CharacterAction): CharacterState {
   switch (action.type) {
-    case 'SET_CHARACTER':
+    case ActionTypes.SET_CHARACTER:
       return { ...state, character: action.payload };
     case 'UPDATE_STAT':
-      if (!state.character) return state;
-      const { stat, value } = action.payload;
+      { // Add opening brace for block scope
+        if (!state.character) return state;
+        const { stat, value } = action.payload;
 
-      // Basic validation based on Boot Hill rules
-      if (
-        (stat === 'speed' ||
-          stat === 'gunAccuracy' ||
-          stat === 'throwingAccuracy' ||
-          stat === 'bravery') &&
-        (value < 1 || value > 10)
-      ) {
-        return state;
-      }
+        // Basic validation based on Boot Hill rules
+        if (
+          (stat === 'speed' ||
+            stat === 'gunAccuracy' ||
+            stat === 'throwingAccuracy' ||
+            stat === 'bravery') &&
+          (value < 1 || value > 10)
+        ) {
+          return state;
+        }
 
-      if (stat === 'baseStrength' && (value < 8 || value > 20)) {
-        return state;
-      }
+        if (stat === 'baseStrength' && (value < 8 || value > 20)) {
+          return state;
+        }
 
-      return {
-        ...state,
-        character: {
-          ...state.character,
-          attributes: {
-            ...state.character.attributes,
-            [stat]: value,
+        return {
+          ...state,
+          character: {
+            ...state.character,
+            attributes: {
+              ...state.character.attributes,
+              [stat]: value,
+            },
           },
-        },
-      };
+        };
+      } // Add closing brace for block scope
     default:
       return state;
   }
@@ -74,7 +77,7 @@ export default function useCharacterStats() {
    * @param character The character data to set.
    */
   const setCharacter = (character: Character) => {
-    dispatch({ type: 'SET_CHARACTER', payload: character });
+    dispatch({ type: ActionTypes.SET_CHARACTER, payload: character });
   };
 
   /**

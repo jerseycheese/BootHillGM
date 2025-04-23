@@ -1,9 +1,8 @@
 import { initializeBrowserDebugTools, updateDebugCurrentDecision } from '../../utils/debugConsole';
 import { LocationType } from '../../services/locationService';
-import { initialGameState } from '../../types/gameState';
+import { initialGameState, GameState } from '../../types/gameState';
 import { PlayerDecision, DecisionImportance } from '../../types/narrative.types';
 import { DebugCommandData } from '../../types/global.d';
-import { GameState } from '../../types/gameState';
 
 interface BHGMDebug {
   version: string;

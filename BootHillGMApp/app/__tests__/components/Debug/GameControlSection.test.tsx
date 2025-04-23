@@ -8,7 +8,7 @@ import { render, screen } from '@testing-library/react';
 jest.mock('../../../utils/debugActions', () => ({
   resetGame: jest.fn().mockReturnValue({
     type: 'SET_STATE',
-    payload: {}
+    payload: { /* Intentionally empty */ }
   }),
   initializeTestCombat: jest.fn(),
   extractCharacterData: jest.fn()

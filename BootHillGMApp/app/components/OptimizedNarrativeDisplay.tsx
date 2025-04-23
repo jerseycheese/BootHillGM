@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// Removed import { useNarrative } from '../context/NarrativeContext';
-import { useGameState } from '../context/GameStateProvider'; // Import correct hook
-import { useOptimizedNarrativeContext } from '../utils/narrative';
+import { useGameState } from '../context/GameStateProvider';
+import { useOptimizedNarrativeContext } from '../utils/narrative/narrativeContextIntegration';
 
 /**
  * A component that displays narrative content with optimization controls
@@ -12,10 +11,11 @@ import { useOptimizedNarrativeContext } from '../utils/narrative';
 export default function OptimizedNarrativeDisplay() {
   // Use the correct state hook
   const { state } = useGameState();
-  const { 
-    getDefaultContext, 
-    getFocusedContext, 
-    getCompactContext 
+  // Use optimized context hook
+  const {
+    getDefaultContext,
+    getFocusedContext,
+    getCompactContext
   } = useOptimizedNarrativeContext();
   
   const [optimizedContext, setOptimizedContext] = useState('');
@@ -28,7 +28,7 @@ export default function OptimizedNarrativeDisplay() {
     
     switch (optimizationMode) {
       case 'focused':
-        context = getFocusedContext(focusTags);
+        context = getFocusedContext();
         break;
       case 'compact':
         context = getCompactContext();

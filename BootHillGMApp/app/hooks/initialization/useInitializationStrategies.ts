@@ -50,7 +50,7 @@ export const useInitializationStrategies = () => {
       // Use enhanced actions for saving
       if (enhancedResponse.suggestedActions && enhancedResponse.suggestedActions.length > 0) {
         const savedGameState = localStorage.getItem("saved-game-state");
-        const gameState = savedGameState ? JSON.parse(savedGameState) : {};
+        const gameState = savedGameState ? JSON.parse(savedGameState) : { /* Intentionally empty */ };
         gameState.suggestedActions = enhancedResponse.suggestedActions;
         localStorage.setItem("saved-game-state", JSON.stringify(gameState));
       }
@@ -190,14 +190,12 @@ export const useInitializationStrategies = () => {
    * @returns A valid game state for recovery
    */
   const handleErrorRecovery = useCallback(async (state: GameState): Promise<GameState> => {
-    // Removed log
     try {
       // Make sure we have a valid character
       if (!state.character ||
           (!('player' in state.character) && !('attributes' in state.character))) {
 
         // Try to get character from localStorage
-        // Removed log
         const lastCharacterJSON = localStorage.getItem("character-creation-progress");
         let characterData = null;
 
@@ -205,20 +203,17 @@ export const useInitializationStrategies = () => {
           try {
             characterData = JSON.parse(lastCharacterJSON).character;
           } catch (e) {
-            // Removed log
             console.error("Failed to parse character data:", e);
           }
         }
 
         // If we still don't have a character, use basic recovery state
         if (!characterData) {
-          // Removed log
           const recoveryState = await createBasicRecoveryState();
           return recoveryState;
         }
 
         // Create a basic state with the character
-        // Removed log
         return {
           ...initialGameState,
           character: {
@@ -252,7 +247,6 @@ export const useInitializationStrategies = () => {
       }
 
       // If we have a character but need suggestions, generate fallback ones
-      // Removed log
       return createFinalFallbackState(state);
     } catch (finalError) {
       // Last resort fallback

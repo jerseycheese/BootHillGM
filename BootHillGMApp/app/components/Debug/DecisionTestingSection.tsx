@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { DecisionTestingSectionProps } from "../../types/debug.types";
 import { DecisionImportance } from "../../types/narrative.types";
 import { createTestDecision } from "../../utils/testNarrativeWithDecision";
-import { clearCurrentDecision } from "../../actions/narrativeActions";
+import { clearCurrentDecision, presentDecision } from "../../actions/narrativeActions";
 import { EVENTS, triggerCustomEvent } from "../../utils/events";
 
 /**
@@ -39,11 +39,8 @@ const DecisionTestingSection: React.FC<DecisionTestingSectionProps> = ({
       
       // Dispatch directly to context with a slight delay to ensure previous clear completed
       setTimeout(() => {
-        // Dispatch to narrative context
-        narrativeContext.dispatch({
-          type: 'PRESENT_DECISION',
-          payload: testDecision
-        });
+        // Dispatch to narrative context using presentDecision action creator
+        narrativeContext.dispatch(presentDecision(testDecision));
         
         // Notify all components that a new decision is ready
         triggerCustomEvent(EVENTS.DECISION_READY, testDecision);
@@ -93,11 +90,8 @@ const DecisionTestingSection: React.FC<DecisionTestingSectionProps> = ({
           aiGenerated: false
         };
         
-        // Use direct state management
-        narrativeContext.dispatch({
-          type: 'PRESENT_DECISION',
-          payload: simpleTestDecision
-        });
+        // Use presentDecision action creator
+        narrativeContext.dispatch(presentDecision(simpleTestDecision));
         
         // Notify all components that a new decision is ready
         triggerCustomEvent(EVENTS.DECISION_READY, simpleTestDecision);

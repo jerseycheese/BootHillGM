@@ -8,6 +8,7 @@ import {
   NarrativeAction,
   NarrativeState,
 } from '../../types/narrative.types';
+import { ActionTypes } from '../../types/actionTypes';
 
 // Import helper functions
 import { DEFAULT_NARRATIVE_CONTEXT } from '../../utils/narrative/narrativeContextDefaults';
@@ -24,9 +25,9 @@ import { createNarrativeError } from './errorHandling';
 export function handleArcActions(
   state: NarrativeState,
   action: Extract<NarrativeAction, 
-    { type: 'START_NARRATIVE_ARC' | 'COMPLETE_NARRATIVE_ARC' }>
+    { type: typeof ActionTypes.START_NARRATIVE_ARC | typeof ActionTypes.COMPLETE_NARRATIVE_ARC }>
 ): NarrativeState {
-  const arcs = state.narrativeContext?.narrativeArcs || {};
+  const arcs = state.narrativeContext?.narrativeArcs || { /* Intentionally empty */ };
   const arcId = action.payload;
   const arc = arcs[arcId];
 
@@ -39,7 +40,7 @@ export function handleArcActions(
     };
   }
 
-  if (action.type === 'START_NARRATIVE_ARC') {
+  if (action.type === ActionTypes.START_NARRATIVE_ARC) {
     // Mark the arc as active
     const updatedArcs = {
       ...arcs,
@@ -50,7 +51,7 @@ export function handleArcActions(
     };
 
     const startingBranchId = arc.startingBranch;
-    const branches = state.narrativeContext?.narrativeBranches || {};
+    const branches = state.narrativeContext?.narrativeBranches || { /* Intentionally empty */ };
 
     // Always set currentArcId if arcId is present
     // Provide default values for required NarrativeContext properties
@@ -97,7 +98,7 @@ export function handleArcActions(
       ...state,
       narrativeContext: {
         ...DEFAULT_NARRATIVE_CONTEXT,
-        ...(state.narrativeContext || {}),
+        ...(state.narrativeContext || { /* Intentionally empty */ }),
         narrativeArcs: updatedArcs,
         characterFocus: state.narrativeContext?.characterFocus ?? [],
         themes: state.narrativeContext?.themes ?? [],
@@ -118,9 +119,9 @@ export function handleArcActions(
 export function handleBranchActions(
   state: NarrativeState,
   action: Extract<NarrativeAction, 
-    { type: 'ACTIVATE_BRANCH' | 'COMPLETE_BRANCH' }>
+    { type: typeof ActionTypes.ACTIVATE_BRANCH | typeof ActionTypes.COMPLETE_BRANCH }>
 ): NarrativeState {
-  const branches = state.narrativeContext?.narrativeBranches || {};
+  const branches = state.narrativeContext?.narrativeBranches || { /* Intentionally empty */ };
   const branchId = action.payload;
   const branch = branches[branchId];
 
@@ -133,7 +134,7 @@ export function handleBranchActions(
     };
   }
 
-  if (action.type === 'ACTIVATE_BRANCH') {
+  if (action.type === ActionTypes.ACTIVATE_BRANCH) {
     // Mark the branch as active
     const updatedBranches = {
       ...branches,
@@ -147,7 +148,7 @@ export function handleBranchActions(
       ...state,
       narrativeContext: {
         ...DEFAULT_NARRATIVE_CONTEXT,
-        ...(state.narrativeContext || {}),
+        ...(state.narrativeContext || { /* Intentionally empty */ }),
         narrativeBranches: updatedBranches,
         currentBranchId: branchId,
       },
@@ -169,7 +170,7 @@ export function handleBranchActions(
       ...state,
       narrativeContext: {
         ...DEFAULT_NARRATIVE_CONTEXT,
-        ...(state.narrativeContext || {}),
+        ...(state.narrativeContext || { /* Intentionally empty */ }),
         narrativeBranches: updatedBranches,
         characterFocus: state.narrativeContext?.characterFocus ?? [],
         themes: state.narrativeContext?.themes ?? [],
@@ -188,13 +189,13 @@ export function handleBranchActions(
  */
 export function handleContextActions(
   state: NarrativeState,
-  action: Extract<NarrativeAction, { type: 'UPDATE_NARRATIVE_CONTEXT' }>
+  action: Extract<NarrativeAction, { type: typeof ActionTypes.SET_NARRATIVE_CONTEXT }>
 ): NarrativeState {
   const updatedContext = {
     ...state,
     narrativeContext: {
       ...DEFAULT_NARRATIVE_CONTEXT,
-      ...(state.narrativeContext || {}),
+      ...(state.narrativeContext || { /* Intentionally empty */ }),
       ...action.payload,
       characterFocus: action.payload.characterFocus ?? state.narrativeContext?.characterFocus ?? [],
       themes: action.payload.themes ?? state.narrativeContext?.themes ?? [],

@@ -89,7 +89,7 @@ export const CharacterForm: React.FC<CharacterFormProps> = ({
 
   // Create a wrapper function for the Review Summary button
   const handleReviewSummary = useCallback(() => {
-    onSubmit({ preventDefault: () => {} } as React.FormEvent);
+    onSubmit({ preventDefault: () => { /* Intentionally empty */ } } as React.FormEvent);
   }, [onSubmit]);
 
   return (

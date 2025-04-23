@@ -8,6 +8,7 @@ import {
   LoreAction,
   LoreCategory
 } from '../../types/narrative/lore.types';
+import { ActionTypes } from '../../types/actionTypes';
 
 // Import test fixtures and utilities
 import { 
@@ -21,7 +22,6 @@ import {
   verifyFactCategory,
   verifyFactTag,
   verifyFactVersions,
-  applyActions as _applyActions
 } from '../utils/lore/loreTestUtils';
 
 describe('loreReducer', () => {
@@ -40,7 +40,7 @@ describe('loreReducer', () => {
   describe('ADD_LORE_FACT', () => {
     it('should add a new fact to the store', () => {
       const payload = createTestFactPayload();
-      const action: LoreAction = { type: 'ADD_LORE_FACT', payload };
+      const action: LoreAction = { type: ActionTypes.ADD_LORE_FACT, payload };
       const result = loreReducer(initialLoreState, action);
 
       // Check basic fact properties
@@ -81,7 +81,7 @@ describe('loreReducer', () => {
       };
       
       const action: LoreAction = { 
-        type: 'UPDATE_LORE_FACT', 
+        type: ActionTypes.UPDATE_LORE_FACT, 
         payload: { id: factId, updates } 
       };
       const result = loreReducer(initialState, action);
@@ -109,7 +109,7 @@ describe('loreReducer', () => {
       };
       
       const action: LoreAction = { 
-        type: 'UPDATE_LORE_FACT', 
+        type: ActionTypes.UPDATE_LORE_FACT, 
         payload: { id: factId, updates } 
       };
       const result = loreReducer(initialState, action);
@@ -126,7 +126,7 @@ describe('loreReducer', () => {
     it('should not modify state if fact does not exist', () => {
       const initialState = createTestState();
       const action: LoreAction = { 
-        type: 'UPDATE_LORE_FACT', 
+        type: ActionTypes.UPDATE_LORE_FACT, 
         payload: { 
           id: 'non-existent-fact', 
           updates: { content: 'This should not be added' } 
@@ -145,7 +145,7 @@ describe('loreReducer', () => {
       
       // First invalidate the fact
       const invalidateAction: LoreAction = { 
-        type: 'INVALIDATE_LORE_FACT', 
+        type: ActionTypes.INVALIDATE_LORE_FACT, 
         payload: factId 
       };
       const invalidState = loreReducer(initialState, invalidateAction);
@@ -155,7 +155,7 @@ describe('loreReducer', () => {
       
       // Then validate it again
       const validateAction: LoreAction = { 
-        type: 'VALIDATE_LORE_FACT', 
+        type: ActionTypes.VALIDATE_LORE_FACT, 
         payload: factId 
       };
       const revalidatedState = loreReducer(invalidState, validateAction);
@@ -173,7 +173,7 @@ describe('loreReducer', () => {
       
       // Add related facts
       const addAction: LoreAction = { 
-        type: 'ADD_RELATED_FACTS', 
+        type: ActionTypes.ADD_RELATED_FACTS, 
         payload: { factId, relatedIds } 
       };
       const stateWithRelated = loreReducer(initialState, addAction);
@@ -184,7 +184,7 @@ describe('loreReducer', () => {
       
       // Remove a related fact
       const removeAction: LoreAction = { 
-        type: 'REMOVE_RELATED_FACTS', 
+        type: ActionTypes.REMOVE_RELATED_FACTS, 
         payload: { factId, relatedIds: ['fact-2'] } 
       };
       const finalState = loreReducer(stateWithRelated, removeAction);
@@ -202,7 +202,7 @@ describe('loreReducer', () => {
       
       // Add tags
       const addTagsAction: LoreAction = { 
-        type: 'ADD_FACT_TAGS', 
+        type: ActionTypes.ADD_FACT_TAGS, 
         payload: { factId, tags: ['western', 'town'] } 
       };
       const stateWithTags = loreReducer(initialState, addTagsAction);
@@ -214,7 +214,7 @@ describe('loreReducer', () => {
       
       // Remove tags
       const removeTagsAction: LoreAction = { 
-        type: 'REMOVE_FACT_TAGS', 
+        type: ActionTypes.REMOVE_FACT_TAGS, 
         payload: { factId, tags: ['history'] } 
       };
       const finalState = loreReducer(stateWithTags, removeTagsAction);
@@ -227,7 +227,7 @@ describe('loreReducer', () => {
   describe('Lore extraction processing', () => {
     it('should process lore extraction with new facts', () => {
       const action: LoreAction = { 
-        type: 'PROCESS_LORE_EXTRACTION', 
+        type: ActionTypes.PROCESS_LORE_EXTRACTION, 
         payload: testLoreExtractions.withNewFacts
       };
       const result = loreReducer(initialLoreState, action);
@@ -242,7 +242,7 @@ describe('loreReducer', () => {
     it('should process lore extraction with updated facts', () => {
       const initialState = createTestState();
       const action: LoreAction = { 
-        type: 'PROCESS_LORE_EXTRACTION', 
+        type: ActionTypes.PROCESS_LORE_EXTRACTION, 
         payload: testLoreExtractions.withUpdatedFacts
       };
       const result = loreReducer(initialState, action);
@@ -257,7 +257,7 @@ describe('loreReducer', () => {
     it('should handle invalid categories and missing fields', () => {
       // Test invalid category
       const invalidCategoryAction: LoreAction = { 
-        type: 'ADD_LORE_FACT', 
+        type: ActionTypes.ADD_LORE_FACT, 
         payload: {
           ...createTestFactPayload(),
           category: 'invalid-category' as unknown as LoreCategory
@@ -274,7 +274,7 @@ describe('loreReducer', () => {
       
       // Test missing fields in extraction
       const missingFieldsAction: LoreAction = { 
-        type: 'PROCESS_LORE_EXTRACTION', 
+        type: ActionTypes.PROCESS_LORE_EXTRACTION, 
         payload: testLoreExtractions.withMinimalFact
       };
       const resultWithMinimalFact = loreReducer(

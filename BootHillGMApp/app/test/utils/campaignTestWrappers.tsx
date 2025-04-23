@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import { CampaignStateContext } from '../../hooks/useCampaignStateContext';
 import { CampaignStateContextType } from '../../types/campaignState.types';
+import { GameAction } from '../../types/actions';
 import { GameEngineAction } from '../../types/gameActions';
 import { CombatState } from '../../types/state/combatState';
 import { UIState } from '../../types/state/uiState';
@@ -126,7 +127,7 @@ export interface TestWrapperProps {
  */
 export const TestCampaignStateProvider: React.FC<TestWrapperProps> = ({ 
   children, 
-  initialState = {} 
+  initialState = { /* Intentionally empty */ } 
 }) => {
   // Create a merged state by spreading the initial and default states
   const mergedState = { 
@@ -135,26 +136,27 @@ export const TestCampaignStateProvider: React.FC<TestWrapperProps> = ({
   } as TestCampaignState;
 
   // Add mock dispatch function that logs what's being dispatched
-  const mockDispatch = jest.fn((action: GameEngineAction) => {
+  // Using GameAction type to match CampaignStateContextType
+  const mockDispatch = (action: GameAction) => {
     // If in test environment, log dispatch calls to help with debugging
-    if (process.env.NODE_ENV === 'test') {
+    if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') {
       console.log('Test dispatch:', action.type);
     }
-  });
+  };
 
   // Create stub functions for context methods
-  const saveGame = jest.fn(() => {
+  const saveGame = () => {
     console.log('Mock saveGame called');
-  });
+  };
 
-  const loadGame = jest.fn(() => {
+  const loadGame = () => {
     console.log('Mock loadGame called');
     return null;
-  });
+  };
 
-  const cleanupState = jest.fn(() => {
+  const cleanupState = () => {
     console.log('Mock cleanupState called');
-  });
+  };
 
   // Create mock player object for legacy getter
   const player = mergedState.character;
@@ -275,41 +277,3 @@ export interface ProviderWrapperResult {
   };
   type: React.FC;
 }
-
-/**
- * This test file includes utilities that help set up test environments for
- * components and hooks that rely on the CampaignStateContext
- */
-describe('TestWrappers', () => {
-  it('should render with default state', () => {
-    expect(TestCampaignStateProvider).toBeDefined();
-  });
-
-  it('should provide default state values', () => {
-    expect(defaultCampaignState.inventory).toEqual([]);
-    expect(defaultCampaignState.character).toBeDefined();
-  });
-  
-  it('should maintain array references in test state', () => {
-    const testItems = [{ 
-      id: 'test1', 
-      name: 'Test Item',
-      description: 'A test item',
-      quantity: 1,
-      category: 'general' as const,
-    }];
-    
-    const wrapper = TestCampaignStateProvider({
-      children: null,
-      initialState: { 
-        inventory: testItems
-      }
-    }) as unknown as ProviderWrapperResult;
-    
-    // Access the value prop from the context provider
-    const contextValue = wrapper.props.value;
-    
-    // Check that the items array is the same reference
-    expect(contextValue.inventory).toBe(testItems);
-  });
-});

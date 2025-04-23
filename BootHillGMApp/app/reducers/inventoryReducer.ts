@@ -8,6 +8,7 @@ import { GameAction } from '../types/actions';
 import { InventoryState } from '../types/state/inventoryState';
 import { InventoryItem, ItemCategory, ItemRequirements, ItemEffect } from '../types/item.types';
 import { Weapon } from '../types/weapon.types';
+import { ActionTypes } from '../types/actionTypes';
 
 /**
  * Initial state for the inventory reducer
@@ -25,7 +26,7 @@ const normalizeItem = (item: unknown): InventoryItem => {
   const validCategories: ItemCategory[] = ['general', 'weapon', 'consumable', 'medical'];
   
   // Handle potentially malformed item objects
-  const itemObj = typeof item === 'object' && item !== null ? item : {};
+  const itemObj = typeof item === 'object' && item !== null ? item : { /* Intentionally empty */ };
   
   // Normalize the name property
   let normalizedName: string;
@@ -122,160 +123,186 @@ const normalizeItem = (item: unknown): InventoryItem => {
   };
 };
 
+// Define inventory action types now using our centralized types
+// but maintaining backward compatibility with legacy types
+const INVENTORY_ACTION_TYPES = {
+  ADD_ITEM: [ActionTypes.ADD_ITEM, 'inventory/ADD_ITEM', 'ADD_ITEM'],
+  REMOVE_ITEM: [ActionTypes.REMOVE_ITEM, 'inventory/REMOVE_ITEM', 'REMOVE_ITEM'],
+  USE_ITEM: ['inventory/USE_ITEM', 'USE_ITEM'],
+  UPDATE_ITEM_QUANTITY: ['inventory/UPDATE_ITEM_QUANTITY', 'UPDATE_ITEM_QUANTITY'],
+  EQUIP_WEAPON: [ActionTypes.EQUIP_WEAPON, 'inventory/EQUIP_WEAPON', 'EQUIP_WEAPON'],
+  UNEQUIP_WEAPON: ['inventory/UNEQUIP_WEAPON', 'UNEQUIP_WEAPON'],
+  SET_INVENTORY: ['inventory/SET_INVENTORY', 'SET_INVENTORY'],
+  CLEAN_INVENTORY: ['inventory/CLEAN_INVENTORY', 'CLEAN_INVENTORY']
+};
+
+/**
+ * Helper function to check if action matches any of the possible types
+ */
+const isInventoryAction = (action: GameAction, actionTypes: string[]): boolean => {
+  return actionTypes.includes(action.type);
+};
+
 /**
  * Inventory reducer
  */
 const inventoryReducer = (state: InventoryState = initialInventoryState, action: GameAction): InventoryState => {
-  switch (action.type) {
-    case 'inventory/ADD_ITEM': {
-      const rawNewItem = ('payload' in action) ? action.payload : null;
-      
-      if (!rawNewItem) return state;
-      
-      // Normalize the item to ensure all properties have proper formats
-      const newItem = normalizeItem(rawNewItem);
-      
-      // Check if item already exists
-      const existingItemIndex = state.items.findIndex(item => item.id === newItem.id);
-      
-      let updatedItems;
-      if (existingItemIndex >= 0) {
-        // Update quantity of existing item - More explicit approach
-        const oldItem = state.items[existingItemIndex];
-        const newQuantity = Number(oldItem.quantity) + Number(newItem.quantity);
-        // Create a completely new object, copying necessary fields
-        const updatedItem = {
-            ...oldItem,
-            quantity: newQuantity // Assign the calculated numeric quantity
-        };
-        // Create the updated items array immutably
-        updatedItems = [
-            ...state.items.slice(0, existingItemIndex),
-            updatedItem,
-            ...state.items.slice(existingItemIndex + 1)
-        ];
-      } else {
-        // Add new item
-        updatedItems = [...state.items, newItem];
+  // Handle ADD_ITEM action
+  if (isInventoryAction(action, INVENTORY_ACTION_TYPES.ADD_ITEM)) {
+    const rawNewItem = ('payload' in action) ? action.payload : null;
+    
+    if (!rawNewItem) return state;
+    
+    // Normalize the item to ensure all properties have proper formats
+    const newItem = normalizeItem(rawNewItem);
+    
+    // Check if item already exists
+    const existingItemIndex = state.items.findIndex(item => item.id === newItem.id);
+    
+    let updatedItems;
+    if (existingItemIndex >= 0) {
+      // Update quantity of existing item - More explicit approach
+      const oldItem = state.items[existingItemIndex];
+      const newQuantity = Number(oldItem.quantity) + Number(newItem.quantity);
+      // Create a completely new object, copying necessary fields
+      const updatedItem = {
+          ...oldItem,
+          quantity: newQuantity // Assign the calculated numeric quantity
+      };
+      // Create the updated items array immutably
+      updatedItems = [
+          ...state.items.slice(0, existingItemIndex),
+          updatedItem,
+          ...state.items.slice(existingItemIndex + 1)
+      ];
+    } else {
+      // Add new item
+      updatedItems = [...state.items, newItem];
+    }
+    
+    return {
+      ...state,
+      items: updatedItems
+    };
+  }
+  
+  // Handle REMOVE_ITEM action
+  if (isInventoryAction(action, INVENTORY_ACTION_TYPES.REMOVE_ITEM)) {
+    const itemId = ('payload' in action) ? action.payload as string : null;
+    
+    if (!itemId) return state;
+    
+    // Remove the item
+    return {
+      ...state,
+      items: state.items.filter(item => item.id !== itemId)
+    };
+  }
+
+  // Handle USE_ITEM action
+  if (isInventoryAction(action, INVENTORY_ACTION_TYPES.USE_ITEM)) {
+    const itemId = ('payload' in action) ? action.payload as string : null;
+
+    if (!itemId) return state;
+
+    const updatedItems = state.items.map(item => {
+      // Only decrement quantity if item matches ID, has quantity > 0, AND is consumable or medical
+      if (item.id === itemId && item.quantity > 0 && (item.category === 'consumable' || item.category === 'medical')) {
+        return { ...item, quantity: item.quantity - 1 };
       }
-      
+      return item;
+    });
+
+    // Only update state if an item was actually modified
+    if (updatedItems.some((item, index) => item.quantity !== state.items[index].quantity)) {
       return {
         ...state,
         items: updatedItems
       };
     }
-    
-    case 'inventory/REMOVE_ITEM': {
-      const itemId = ('payload' in action) ? action.payload as string : null;
-      
-      if (!itemId) return state;
-      
-      // Remove the item
-      return {
-        ...state,
-        items: state.items.filter(item => item.id !== itemId)
-      };
-    }
 
-    case 'inventory/USE_ITEM': {
-      const itemId = ('payload' in action) ? action.payload as string : null;
-
-      if (!itemId) return state;
-
-      const updatedItems = state.items.map(item => {
-        // Only decrement quantity if item matches ID, has quantity > 0, AND is consumable or medical
-        if (item.id === itemId && item.quantity > 0 && (item.category === 'consumable' || item.category === 'medical')) {
-          return { ...item, quantity: item.quantity - 1 };
-        }
-        return item;
-      });
-
-      // Only update state if an item was actually modified
-      if (updatedItems.some((item, index) => item.quantity !== state.items[index].quantity)) {
-        return {
-          ...state,
-          items: updatedItems
-        };
-      }
-
-      return state; // Return original state if no item was found or quantity was already 0
-    }
-    
-    case 'inventory/UPDATE_ITEM_QUANTITY': {
-      if (!('payload' in action)) return state;
-      
-      const { id, quantity } = action.payload as { id: string; quantity: number };
-      
-      // Update item quantity
-      return {
-        ...state,
-        items: state.items.map(item => 
-          item.id === id 
-            ? { ...item, quantity } 
-            : item
-        )
-      };
-    }
-    
-    case 'inventory/EQUIP_WEAPON': {
-      const weaponId = ('payload' in action) ? action.payload as string : null;
-      
-      if (!weaponId) return state;
-      
-      // Equip weapon and unequip others
-      return {
-        ...state,
-        equippedWeaponId: weaponId,
-        items: state.items.map(item => ({
-          ...item,
-          isEquipped: item.id === weaponId
-        }))
-      };
-    }
-    
-    case 'inventory/UNEQUIP_WEAPON': {
-      const weaponId = ('payload' in action) ? action.payload as string : null;
-      
-      if (!weaponId) return state;
-      
-      // Unequip the specified weapon
-      return {
-        ...state,
-        equippedWeaponId: state.equippedWeaponId === weaponId ? null : state.equippedWeaponId,
-        items: state.items.map(item => 
-          item.id === weaponId 
-            ? { ...item, isEquipped: false } 
-            : item
-        )
-      };
-    }
-    
-    case 'inventory/SET_INVENTORY': {
-      const rawItems = ('payload' in action) ? action.payload as unknown[] : null;
-      
-      if (!rawItems) return state;
-      
-      // Normalize all items to ensure proper data structure
-      const normalizedItems = rawItems.map(normalizeItem);
-      
-      // Set entire inventory
-      return {
-        ...state,
-        items: normalizedItems
-      };
-    }
-    
-    case 'inventory/CLEAN_INVENTORY': {
-      // Remove items with quantity 0
-      return {
-        ...state,
-        items: state.items.filter(item => item.quantity > 0)
-      };
-    }
-    
-    default:
-      return state;
+    return state; // Return original state if no item was found or quantity was already 0
   }
+  
+  // Handle UPDATE_ITEM_QUANTITY action
+  if (isInventoryAction(action, INVENTORY_ACTION_TYPES.UPDATE_ITEM_QUANTITY)) {
+    if (!('payload' in action)) return state;
+    
+    const { id, quantity } = action.payload as { id: string; quantity: number };
+    
+    // Update item quantity
+    return {
+      ...state,
+      items: state.items.map(item => 
+        item.id === id 
+          ? { ...item, quantity } 
+          : item
+      )
+    };
+  }
+  
+  // Handle EQUIP_WEAPON action
+  if (isInventoryAction(action, INVENTORY_ACTION_TYPES.EQUIP_WEAPON)) {
+    const weaponId = ('payload' in action) ? action.payload as string : null;
+    
+    if (!weaponId) return state;
+    
+    // Equip weapon and unequip others
+    return {
+      ...state,
+      equippedWeaponId: weaponId,
+      items: state.items.map(item => ({
+        ...item,
+        isEquipped: item.id === weaponId
+      }))
+    };
+  }
+  
+  // Handle UNEQUIP_WEAPON action
+  if (isInventoryAction(action, INVENTORY_ACTION_TYPES.UNEQUIP_WEAPON)) {
+    const weaponId = ('payload' in action) ? action.payload as string : null;
+    
+    if (!weaponId) return state;
+    
+    // Unequip the specified weapon
+    return {
+      ...state,
+      equippedWeaponId: state.equippedWeaponId === weaponId ? null : state.equippedWeaponId,
+      items: state.items.map(item => 
+        item.id === weaponId 
+          ? { ...item, isEquipped: false } 
+          : item
+      )
+    };
+  }
+  
+  // Handle SET_INVENTORY action
+  if (isInventoryAction(action, INVENTORY_ACTION_TYPES.SET_INVENTORY)) {
+    const rawItems = ('payload' in action) ? action.payload as unknown[] : null;
+    
+    if (!rawItems) return state;
+    
+    // Normalize all items to ensure proper data structure
+    const normalizedItems = rawItems.map(normalizeItem);
+    
+    // Set entire inventory
+    return {
+      ...state,
+      items: normalizedItems
+    };
+  }
+  
+  // Handle CLEAN_INVENTORY action
+  if (isInventoryAction(action, INVENTORY_ACTION_TYPES.CLEAN_INVENTORY)) {
+    // Remove items with quantity 0
+    return {
+      ...state,
+      items: state.items.filter(item => item.quantity > 0)
+    };
+  }
+  
+  // Default: return unchanged state
+  return state;
 };
 
 export default inventoryReducer;

@@ -42,9 +42,9 @@ export function isNarrativeChoice(obj: unknown): obj is NarrativeChoice {
  */
 export const initialStoryProgressionState: StoryProgressionState = {
   currentPoint: null,
-  progressionPoints: {},
+  progressionPoints: { /* Intentionally empty */ },
   mainStorylinePoints: [], // Initialize as empty array
-  branchingPoints: {},
+  branchingPoints: { /* Intentionally empty */ },
   lastUpdated: Date.now() // Initialize with current time
 };
 
@@ -53,10 +53,10 @@ export const initialStoryProgressionState: StoryProgressionState = {
  * Provides default values for all required properties
  */
 export const initialNarrativeState: NarrativeState = {
-  currentStoryPoint: null,
-  visitedPoints: [],
-  availableChoices: [],
-  narrativeHistory: [],
+    currentStoryPoint: null,
+    visitedPoints: [],
+    availableChoices: [],
+    narrativeHistory: [],
   displayMode: 'standard',
   context: '',
   storyProgression: initialStoryProgressionState,

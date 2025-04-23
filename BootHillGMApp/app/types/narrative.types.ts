@@ -31,10 +31,8 @@ import {
   ImpactSeverity
 } from './narrative/arc.types';
 import {
-  NarrativeActionType,
   NarrativeAction,
-  StoryProgressionActionType,
-  StoryProgressionAction
+  StoryProgressionAction // Remove StoryProgressionActionType
 } from './narrative/actions.types';
 import {
   UseNarrativeChoiceResult,
@@ -83,9 +81,9 @@ export type { DecisionImpact };
 export type { DecisionImpactType };
 export type { ImpactSeverity };
 export type { WorldStateImpactValue };
-export type { NarrativeActionType };
+// Remove re-export of non-existent type
 export type { NarrativeAction };
-export type { StoryProgressionActionType };
+// Remove re-export of non-existent type
 export type { StoryProgressionAction };
 export type { UseNarrativeChoiceResult };
 export type { UseNarrativeProcessorResult };

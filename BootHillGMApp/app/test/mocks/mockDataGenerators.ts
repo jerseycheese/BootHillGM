@@ -10,7 +10,7 @@
  * @param overrides Properties to override in the mock character
  * @returns A mock character object
  */
-export function generateMockCharacter(overrides = {}) {
+export function generateMockCharacter(overrides = { /* Intentionally empty */ }) {
   return {
     id: 'mock-character-1',
     name: 'Mock Character',
@@ -56,7 +56,7 @@ export function generateMockCharacter(overrides = {}) {
  * @param overrides Properties to override in the mock opponent
  * @returns A mock opponent object
  */
-export function generateMockOpponent(overrides = {}) {
+export function generateMockOpponent(overrides = { /* Intentionally empty */ }) {
   return {
     id: 'mock-opponent-1',
     name: 'Mock Opponent',
@@ -102,7 +102,7 @@ export function generateMockOpponent(overrides = {}) {
  * @param overrides Properties to override in the mock combat state
  * @returns A mock combat state object
  */
-export function generateMockCombatState(overrides = {}) {
+export function generateMockCombatState(overrides = { /* Intentionally empty */ }) {
   return {
     active: true,
     type: 'brawling',

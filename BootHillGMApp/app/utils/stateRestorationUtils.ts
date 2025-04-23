@@ -13,7 +13,7 @@ import { CharacterState } from '../types/state/characterState';
 // For now, keeping it here as it's used by createGameStateWithGetters.
 export interface GameStateWithTesting extends GameState {
   combatState?: unknown;
-  opponent: Character | null;  // Added opponent property for test compatibility
+  opponent: Character | null;
 }
 
 // Generate a UUID for use in tests and environments where crypto.randomUUID() is not available

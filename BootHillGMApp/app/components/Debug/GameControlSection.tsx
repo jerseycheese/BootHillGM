@@ -120,7 +120,7 @@ const GameControlSection: React.FC<GameControlSectionProps> = ({
         logDiagnostic('RESET', 'Character data extracted', {
           name: characterData.name,
           id: characterData.id,
-          attributeCount: Object.keys(characterData.attributes || {}).length,
+          attributeCount: Object.keys(characterData.attributes || { /* Intentionally empty */ }).length,
           inventoryCount: characterData.inventory?.items?.length || 0
         });
       } else {

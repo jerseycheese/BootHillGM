@@ -30,7 +30,14 @@ export interface GameState {
   gameProgress: number;
   savedTimestamp?: number;
   isClient?: boolean;
-  suggestedActions: SuggestedAction[]; 
+  suggestedActions: SuggestedAction[];
+  
+  // Meta information about the game state
+  meta?: {
+    savedAt?: number;
+    version?: string;
+    lastUpdated?: number;
+  };
 }
 
 // Re-export initialState as initialGameState for backward compatibility

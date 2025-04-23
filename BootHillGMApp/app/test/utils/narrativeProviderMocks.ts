@@ -20,8 +20,7 @@
  *   dispatch: jest.fn()
  * });
  */
-import { initialGameState } from '../../types/gameState';
-import { GameState } from '../../types/gameState';
+import { initialGameState, GameState } from '../../types/gameState';
 import { GameAction } from '../../types/actions';
 
 // Mock for useNarrative hook

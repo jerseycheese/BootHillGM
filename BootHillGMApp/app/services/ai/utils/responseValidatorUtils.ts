@@ -246,7 +246,7 @@ export function ensureDiverseActionTypes(actions: SuggestedAction[]): void {
   // Refined Multi-Pass Replacement Logic:
   if (missingTypes.length > 0) {
     const replaceableIndices: number[] = [];
-    const typeCounts: Record<string, number> = {};
+    const typeCounts: Record<string, number> = { /* Intentionally empty */ };
     actions.forEach(action => {
         typeCounts[action.type] = (typeCounts[action.type] || 0) + 1;
     });

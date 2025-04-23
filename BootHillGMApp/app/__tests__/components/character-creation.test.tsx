@@ -8,7 +8,7 @@ jest.mock('next/navigation', () => ({
     forward: jest.fn(),
     refresh: jest.fn(),
     pathname: '/',
-    query: {},
+    query: { /* Intentionally empty */ },
   }),
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
@@ -78,7 +78,7 @@ describe('Character Form', () => {
     (useCampaignState as jest.Mock).mockImplementation(() => ({
       cleanupState: jest.fn(),
       saveGame: mockSaveGame,
-      state: {}, // Add empty state to prevent undefined state errors
+      state: { /* Intentionally empty */ }, // Add empty state to prevent undefined state errors
       dispatch: jest.fn()
     }));
 

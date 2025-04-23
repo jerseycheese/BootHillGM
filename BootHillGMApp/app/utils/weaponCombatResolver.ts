@@ -1,8 +1,7 @@
 import { Character } from '../types/character';
-import { WeaponCombatAction, WeaponCombatResult, Weapon } from '../types/combat';
+import { WeaponCombatAction, WeaponCombatResult, Weapon, parseWeaponDamage } from '../types/combat'; // Combined imports
 import { calculateHitChance, isCritical } from './combatRules';
 import { calculateRangeModifier, getWeaponSpeedModifier } from './bootHillCombat';
-import { parseWeaponDamage } from '../types/combat';
 import { WOUND_EFFECTS } from './strengthSystem';
 import { resolveAimAction } from './weaponCombatAim';
 import { resolveMoveAction } from './weaponCombatMove';

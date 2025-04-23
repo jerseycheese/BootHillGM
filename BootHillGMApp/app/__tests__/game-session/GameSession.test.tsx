@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import GameSession from '../../components/GameSession';
-import { CampaignStateProvider } from '../../components/CampaignStateManager';
+import CampaignStateProvider from '../../components/CampaignStateProvider';
 
 describe('GameSession', () => {
   it('renders game session component', () => {

@@ -133,7 +133,6 @@ describe('PlayerDecisionCard', () => {
     fireEvent.click(screen.getByText('Confirm Decision'));
     
     // Immediately after clicking, it should show loading state
-    // Fixed test: look for 'Confirming...' instead of 'Deciding...'
     expect(screen.getByText('Confirming...')).toBeInTheDocument();
     
     // All buttons should be disabled

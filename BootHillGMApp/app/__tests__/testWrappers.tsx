@@ -51,7 +51,7 @@ export const createGameProviderWrapper = (initialState?: Partial<GameState>) => 
  */
 export const renderWithProviders = (
   ui: React.ReactElement, 
-  { initialState, ...renderOptions }: { initialState?: Partial<GameState> } & Omit<RenderOptions, 'wrapper'> = {}
+  { initialState, ...renderOptions }: { initialState?: Partial<GameState> } & Omit<RenderOptions, 'wrapper'> = { /* Intentionally empty */ }
 ) => {
   const Wrapper: React.FC<{children: React.ReactNode}> = ({ children }) => (
     <GameStateProvider initialState={initialState as GameState || initialState}>

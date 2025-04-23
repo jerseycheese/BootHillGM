@@ -17,7 +17,7 @@ export function createBasicMockState(): BaseMockState {
     },
     inventory: {
       items: [],
-      equippedWeaponId: null // Added the required equippedWeaponId property
+      equippedWeaponId: null
     },
     journal: {
       entries: []
@@ -48,16 +48,16 @@ export function createBasicMockState(): BaseMockState {
         characterFocus: [],
         themes: [],
         importantEvents: [],
-        storyPoints: {},
-        narrativeArcs: {},
+        storyPoints: { /* Intentionally empty */ },
+        narrativeArcs: { /* Intentionally empty */ },
         impactState: {
-          reputationImpacts: {},
-          relationshipImpacts: {},
-          worldStateImpacts: {},
-          storyArcImpacts: {},
+          reputationImpacts: { /* Intentionally empty */ },
+          relationshipImpacts: { /* Intentionally empty */ },
+          worldStateImpacts: { /* Intentionally empty */ },
+          storyArcImpacts: { /* Intentionally empty */ },
           lastUpdated: 0
         },
-        narrativeBranches: {},
+        narrativeBranches: { /* Intentionally empty */ },
         pendingDecisions: [],
         decisionHistory: []
       }

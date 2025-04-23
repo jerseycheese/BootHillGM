@@ -11,6 +11,7 @@ import {
   PlayerDecisionRecordWithImpact,
   DecisionImpact
 } from '../types/narrative.types';
+import { ActionTypes } from '../types/actionTypes';
 
 import { createDecisionRecord } from '../utils/decisionUtils';
 import {
@@ -27,7 +28,7 @@ import {
  */
 export const handlePresentDecision = (
   state: NarrativeState,
-  action: Extract<NarrativeAction, { type: 'PRESENT_DECISION' }>
+  action: Extract<NarrativeAction, { type: typeof ActionTypes.PRESENT_DECISION }>
 ): NarrativeState => {
   return {
     ...state,
@@ -44,7 +45,7 @@ export const handlePresentDecision = (
  */
 export const handleRecordDecision = (
   state: NarrativeState,
-  action: Extract<NarrativeAction, { type: 'RECORD_DECISION' }>
+  action: Extract<NarrativeAction, { type: typeof ActionTypes.RECORD_DECISION }>
 ): NarrativeState => {
   // Ensure we have a decision to record and a context to store it in
   if (!state.currentDecision) {
@@ -145,7 +146,7 @@ export const handleClearCurrentDecision = (
  */
 export const handleProcessDecisionImpacts = (
   state: NarrativeState,
-  action: Extract<NarrativeAction, { type: 'PROCESS_DECISION_IMPACTS' }>
+  action: Extract<NarrativeAction, { type: typeof ActionTypes.PROCESS_DECISION_IMPACTS }>
 ): NarrativeState => {
   // The payload is now an array of DecisionImpact objects rather than a decision ID
   const impacts: DecisionImpact[] = action.payload;
@@ -237,7 +238,7 @@ export const handleProcessDecisionImpacts = (
  */
 export const handleUpdateImpactState = (
   state: NarrativeState,
-  action: Extract<NarrativeAction, { type: 'UPDATE_IMPACT_STATE' }>
+  action: Extract<NarrativeAction, { type: typeof ActionTypes.UPDATE_IMPACT_STATE }>
 ): NarrativeState => {
   // Direct update to the impact state with provided values
   if (!state.narrativeContext?.impactState) {

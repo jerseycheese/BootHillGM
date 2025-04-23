@@ -8,6 +8,7 @@ import { calculateUpdatedStrength } from "../../utils/strengthSystem";
 import { BrawlingAction } from "../../types/brawling.types";
 import { checkKnockout } from '../../utils/combatUtils';
 import { GameAction } from "../../types/actions";
+import { ActionTypes } from '../../types/actionTypes';
 
 interface UseBrawlingActionsProps {
     playerCharacter: Character;
@@ -91,7 +92,7 @@ export const useBrawlingActions = ({
     
           // Update the correct character in the global state
           dispatch({
-            type: 'character/UPDATE_CHARACTER',
+            type: ActionTypes.UPDATE_CHARACTER,
             payload: {
               ...updatedTarget,
               id: target.id,

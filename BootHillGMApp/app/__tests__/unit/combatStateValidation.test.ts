@@ -2,6 +2,7 @@ import { validateCombatEndState } from '../../utils/combatStateValidation';
 import { CombatState as LegacyCombatState, CombatType } from '../../types/combat';
 import { ExtendedGameState } from '../../types/extendedState';
 import { gameReducer } from '../../reducers/gameReducer';
+import { ActionTypes } from '../../types/actionTypes';
 
 describe('combatStateValidation', () => {
   describe('validateCombatEndState', () => {
@@ -190,17 +191,20 @@ describe('combatStateValidation', () => {
           availableChoices: [],
           narrativeHistory: [],
           displayMode: 'standard',
+          context: "",
           error: null
         },
         ui: {
           isLoading: false,
           modalOpen: null,
-          notifications: []
-        }
+          notifications: [],
+          activeTab: 'default'
+        },
+        meta: {}
       };
     
-      // Test end combat with the ExtendedGameState
-      const state = gameReducer(initialState as ExtendedGameState, { type: 'END_COMBAT' });
+      // Test end combat with the ExtendedGameState using ActionTypes
+      const state = gameReducer(initialState as ExtendedGameState, { type: ActionTypes.END_COMBAT });
       
       // Test that combat is inactive after END_COMBAT action
       expect(state.combat.isActive).toBe(false);

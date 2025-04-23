@@ -29,7 +29,7 @@ export function createNarrativeError(
   return {
     code,
     message,
-    context: context || {},
+    context: context || { /* Intentionally empty */ },
     timestamp: Date.now()
   };
 }

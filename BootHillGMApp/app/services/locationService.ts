@@ -124,7 +124,7 @@ export class LocationService {
       return {
         type: 'landmark',
         name: location.name,
-        ...(location.description ? { description: location.description } : {})
+        ...(location.description ? { description: location.description } : { /* Intentionally empty */ })
       };
     }
     

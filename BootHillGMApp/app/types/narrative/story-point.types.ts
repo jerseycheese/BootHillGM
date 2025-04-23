@@ -11,8 +11,8 @@ import { NarrativeChoice } from './choice.types';
 /**
  * Represents the type of a story point
  */
-export type StoryPointType = 
-  | 'narrative'      // Added narrative type to fix test errors
+export type StoryPointType =
+  | 'narrative'
   | 'exposition'     // Background information and scene-setting
   | 'decision'       // Player needs to make a choice
   | 'action'         // Requires player to take an action
@@ -20,7 +20,7 @@ export type StoryPointType =
   | 'transition'     // Moving between scenes/areas
   | 'combat-intro'   // Leads into combat
   | 'resolution'     // Concludes a narrative arc
-  | 'dialogue';      // Added dialogue type to fix comparison errors
+  | 'dialogue';
 
 /**
  * Represents the significance level of a story point in the narrative

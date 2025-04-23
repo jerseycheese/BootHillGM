@@ -243,17 +243,17 @@ export function recordDecisionWithImpact(
     // Initialize impactState if it doesn't exist
     if (!context.impactState) {
       context.impactState = {
-        worldStateImpacts: {},
-        reputationImpacts: {},
-        relationshipImpacts: {},
-        storyArcImpacts: {},
+        worldStateImpacts: { /* Intentionally empty */ },
+        reputationImpacts: { /* Intentionally empty */ },
+        relationshipImpacts: { /* Intentionally empty */ },
+        storyArcImpacts: { /* Intentionally empty */ },
         lastUpdated: Date.now()
       };
     }
     
     // Initialize worldStateImpacts if it doesn't exist
     if (!context.impactState.worldStateImpacts) {
-      context.impactState.worldStateImpacts = {};
+      context.impactState.worldStateImpacts = { /* Intentionally empty */ };
     }
     
     // Now safely set the value

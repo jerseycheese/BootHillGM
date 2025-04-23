@@ -7,18 +7,53 @@ import { render, RenderResult, screen } from '@testing-library/react';
 import React from 'react';
 import { CharacterForm } from '../../components/CharacterCreation/CharacterForm';
 
+// Create browser-compatible mock functions
+const createMockFn = () => {
+  const fn = function(...args: any[]) {
+    if (typeof fn.calls !== 'undefined') {
+      fn.calls.push(args);
+    }
+    return fn.returnValue;
+  };
+  
+  fn.calls = [] as any[][]; // Explicitly type calls
+  fn.returnValue = undefined;
+  
+  fn.mockReturnValue = function(value: any) {
+    fn.returnValue = value;
+    return fn;
+  };
+  
+  fn.mockImplementation = function(implementation: (...args: any[]) => any) { // Use specific function type
+    const originalFn = fn;
+    const newFn = function(...args: any[]) {
+      if (typeof newFn.calls !== 'undefined') {
+        newFn.calls.push(args);
+      }
+      return implementation(...args);
+    };
+    newFn.calls = originalFn.calls;
+    newFn.returnValue = originalFn.returnValue;
+    newFn.mockReturnValue = originalFn.mockReturnValue;
+    newFn.mockImplementation = originalFn.mockImplementation;
+    return newFn;
+  };
+  
+  return fn;
+};
+
 /**
  * Render the CharacterForm component for testing
  * 
  * @returns RenderResult with additional helpers for character form tests
  */
-export const renderCharacterForm = (props = {}): RenderResult & { 
+export const renderCharacterForm = (props = { /* Intentionally empty */ }): RenderResult & { 
   generateButton: HTMLElement;
 } => {
   // Define default mock props for the CharacterForm
   const defaultProps = {
     character: {
-      id: 'test-character-id', // Added the required id field
+      id: 'test-character-id',
       name: 'Test Character',
       attributes: {
         speed: 10,
@@ -57,10 +92,10 @@ export const renderCharacterForm = (props = {}): RenderResult & {
     },
     isGeneratingField: false,
     error: undefined,
-    onFieldChange: jest.fn(),
-    onGenerateField: jest.fn(),
-    onSubmit: jest.fn(),
-    generateCharacter: jest.fn(),
+    onFieldChange: createMockFn(),
+    onGenerateField: createMockFn().mockImplementation(() => Promise.resolve()), // Return Promise<void>
+    onSubmit: createMockFn().mockImplementation(() => Promise.resolve()), // Return Promise<void>
+    generateCharacter: createMockFn().mockImplementation(() => Promise.resolve()), // Return Promise<void>
     isGeneratingCharacter: false,
     ...props
   };

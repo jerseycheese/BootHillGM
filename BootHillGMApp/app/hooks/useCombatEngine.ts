@@ -1,4 +1,3 @@
-import { calculateCombatDamage } from '../utils/combatRules';
 /**
  * Custom hook that manages the core combat logic for Boot Hill RPG combat.
  * Separates combat state management and calculations from UI rendering.
@@ -21,10 +20,11 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { debounce } from 'lodash';
 import { Character } from '../types/character';
 import { CombatState, ensureCombatState, LogEntry } from '../types/combat';
-import { calculateHitChance, rollD100, isCritical } from '../utils/combatRules';
+import { calculateCombatDamage, calculateHitChance, rollD100, isCritical } from '../utils/combatRules';
 import { getCharacterStrength, validateStrengthValue } from '../utils/strengthSystem';
 import { cleanCharacterName } from '../utils/combatUtils';
 import { GameEngineAction } from '../types/gameActions';
+import { ActionTypes } from '../types/actionTypes';
 
 interface UseCombatEngineProps {
   playerCharacter: Character;
@@ -214,7 +214,7 @@ export const useCombatEngine = ({
     });
 
     debouncedDispatch({
-      type: 'UPDATE_COMBAT_STATE',
+      type: ActionTypes.UPDATE_COMBAT_STATE,
       payload: formattedCombatState,
     });
 

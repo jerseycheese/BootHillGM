@@ -100,7 +100,7 @@ describe('generateCharacterSummary', () => {
         bravery: 10,
          experience: 5
        },
-       minAttributes: { // Added missing property
+       minAttributes: {
          speed: 1,
          gunAccuracy: 1,
          throwingAccuracy: 1,
@@ -109,7 +109,7 @@ describe('generateCharacterSummary', () => {
          bravery: 1,
          experience: 0
        },
-       maxAttributes: { // Added missing property
+       maxAttributes: {
          speed: 20,
          gunAccuracy: 20,
          throwingAccuracy: 20,
@@ -120,7 +120,7 @@ describe('generateCharacterSummary', () => {
        },
        wounds: [],
        isUnconscious: false,
-       inventory: { items: [] } // Corrected structure
+       inventory: { items: [] }
      };
 
     // Reset all mocks before the test

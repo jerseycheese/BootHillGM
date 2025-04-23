@@ -8,6 +8,7 @@
 import { GameAction } from '../types/actions';
 import { GameEngineAction } from '../types/gameActions';
 import { isNonNullObject, isString } from './utils/typeGuards';
+import { ActionTypes } from '../types/actionTypes';
 
 /**
  * Maps old action types to new domain-prefixed types
@@ -65,9 +66,9 @@ export function isGameEngineAction(action: GameAction | GameEngineAction): actio
     isString(action.type) && 
     (Object.keys(ACTION_TYPE_MAP).includes(action.type) || 
      // Add special handling for non-mapped actions that should be recognized
-     action.type === 'UPDATE_COMBAT_STATE' ||
+     action.type === ActionTypes.UPDATE_COMBAT_STATE || // Use ActionTypes constant
      action.type === 'UPDATE_JOURNAL' ||
-     action.type === 'UPDATE_CHARACTER' ||
+     action.type === ActionTypes.UPDATE_CHARACTER || // Use ActionTypes constant
      action.type === 'SET_NARRATIVE' ||
      action.type === 'SET_GAME_PROGRESS' ||
      action.type === 'SET_SUGGESTED_ACTIONS')
@@ -129,7 +130,7 @@ export function getDomainFromActionType(actionType: string): string | null {
   
   // Special cases
   if (actionType === 'UPDATE_JOURNAL') return 'journal';
-  if (actionType === 'UPDATE_CHARACTER') return 'character';
+  if (actionType === ActionTypes.UPDATE_CHARACTER) return 'character';
   if (actionType === 'SET_NARRATIVE') return 'narrative';
   if (actionType === 'SET_GAME_PROGRESS') return 'game';
   if (actionType === 'SET_SUGGESTED_ACTIONS') return 'game';

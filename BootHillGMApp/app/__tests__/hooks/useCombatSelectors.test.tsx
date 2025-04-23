@@ -9,8 +9,22 @@ import {
 } from '../../hooks/stateSelectors';
 import { CombatState } from '../../types/state/combatState';
 import { GameState } from '../../types/gameState';
-import { createGameProviderWrapper } from '../../test/utils/testWrappers';
+import { GameStateContext } from '../../context/GameStateProvider';
 import { CombatType } from '../../types/combat';
+import React from 'react';
+
+// Direct wrapper using GameStateContext
+const createWrapper = (mockState: GameState) => {
+  const Wrapper = ({ children }: { children: React.ReactNode }) => {
+    return (
+      <GameStateContext.Provider value={{ state: mockState, dispatch: jest.fn() }}>
+        {children}
+      </GameStateContext.Provider>
+    );
+  };
+  Wrapper.displayName = 'TestCombatStateWrapper'; // Add display name
+  return Wrapper;
+};
 
 describe('Combat Selector Hooks', () => {
   const mockCombatState: CombatState = {
@@ -22,19 +36,18 @@ describe('Combat Selector Hooks', () => {
     opponentCharacterId: 'opponent-1',
     combatLog: [
       { text: 'Combat started', timestamp: 1000, type: 'info' },
-      { text: 'Player attacks', timestamp: 2000, type: 'player' }
+      { text: 'Player attacks', timestamp: 2000, type: 'action' } // Changed 'player' to 'action'
     ],
     roundStartTime: 0,
     modifiers: { player: 2, opponent: -1 },
     currentTurn: null
   };
 
-  // Create a complete game state to ensure proper initialization
-  const mockGameState: Partial<GameState> = {
+  // Create a complete mock state
+  const mockGameState: GameState = {
     combat: mockCombatState,
-    // Ensure these required state properties exist to avoid undefined issues
     character: { player: null, opponent: null },
-    inventory: { items: [] },
+    inventory: { items: [], equippedWeaponId: null },
     journal: { entries: [] },
     narrative: {
       currentStoryPoint: null,
@@ -42,12 +55,14 @@ describe('Combat Selector Hooks', () => {
       availableChoices: [],
       narrativeHistory: [],
       displayMode: 'standard',
+      context: "",
       error: null
     },
     ui: {
       isLoading: false,
       modalOpen: null,
-      notifications: []
+      notifications: [],
+      activeTab: 'default'
     },
     currentPlayer: '',
     npcs: [],
@@ -56,12 +71,13 @@ describe('Combat Selector Hooks', () => {
     gameProgress: 0,
     suggestedActions: [],
     savedTimestamp: Date.now(),
-    isClient: true
+    isClient: true,
+    meta: {}
   };
 
   test('useCombatActive returns combat active state', () => {
     const { result } = renderHook(() => useCombatActive(), {
-      wrapper: createGameProviderWrapper(mockGameState)
+      wrapper: createWrapper(mockGameState)
     });
     
     expect(result.current).toBe(true);
@@ -69,7 +85,7 @@ describe('Combat Selector Hooks', () => {
 
   test('useCombatRound returns the current round number', () => {
     const { result } = renderHook(() => useCombatRound(), {
-      wrapper: createGameProviderWrapper(mockGameState)
+      wrapper: createWrapper(mockGameState)
     });
     
     expect(result.current).toBe(3);
@@ -77,7 +93,7 @@ describe('Combat Selector Hooks', () => {
 
   test('usePlayerTurn returns whether it is the player\'s turn', () => {
     const { result } = renderHook(() => usePlayerTurn(), {
-      wrapper: createGameProviderWrapper(mockGameState)
+      wrapper: createWrapper(mockGameState)
     });
     
     expect(result.current).toBe(true);
@@ -85,7 +101,7 @@ describe('Combat Selector Hooks', () => {
 
   test('useCombatType returns the current combat type', () => {
     const { result } = renderHook(() => useCombatType(), {
-      wrapper: createGameProviderWrapper(mockGameState)
+      wrapper: createWrapper(mockGameState)
     });
     
     expect(result.current).toBe('brawling');
@@ -93,7 +109,7 @@ describe('Combat Selector Hooks', () => {
 
   test('useCombatLog returns the combat log entries', () => {
     const { result } = renderHook(() => useCombatLog(), {
-      wrapper: createGameProviderWrapper(mockGameState)
+      wrapper: createWrapper(mockGameState)
     });
     
     expect(result.current).toHaveLength(2);
@@ -103,7 +119,7 @@ describe('Combat Selector Hooks', () => {
 
   test('useLastCombatLogEntry returns the most recent log entry', () => {
     const { result } = renderHook(() => useLastCombatLogEntry(), {
-      wrapper: createGameProviderWrapper(mockGameState)
+      wrapper: createWrapper(mockGameState)
     });
     
     expect(result.current).toEqual({
@@ -114,11 +130,12 @@ describe('Combat Selector Hooks', () => {
   });
 
   test('hooks handle missing state gracefully', () => {
-    // Create a minimal valid game state with empty combat
-    const emptyState: Partial<GameState> = {
+    // Empty state with inactive combat
+    const emptyState: GameState = {
+      ...mockGameState,
       combat: {
         isActive: false,
-        combatType: null, // Explicitly set to null, not 'brawling'
+        combatType: null,
         rounds: 0,
         playerTurn: true,
         playerCharacterId: '',
@@ -127,52 +144,36 @@ describe('Combat Selector Hooks', () => {
         roundStartTime: 0,
         modifiers: { player: 0, opponent: 0 },
         currentTurn: null
-      },
-      character: { player: null, opponent: null },
-      inventory: { items: [] },
-      journal: { entries: [] },
-      narrative: {
-        currentStoryPoint: null,
-        visitedPoints: [],
-        availableChoices: [],
-        narrativeHistory: [],
-        displayMode: 'standard',
-        error: null
-      },
-      ui: {
-        isLoading: false,
-        modalOpen: null,
-        notifications: []
       }
     };
     
     const { result: activeResult } = renderHook(() => useCombatActive(), {
-      wrapper: createGameProviderWrapper(emptyState)
+      wrapper: createWrapper(emptyState)
     });
     expect(activeResult.current).toBe(false);
     
     const { result: roundResult } = renderHook(() => useCombatRound(), {
-      wrapper: createGameProviderWrapper(emptyState)
+      wrapper: createWrapper(emptyState)
     });
     expect(roundResult.current).toBe(0);
     
     const { result: turnResult } = renderHook(() => usePlayerTurn(), {
-      wrapper: createGameProviderWrapper(emptyState)
+      wrapper: createWrapper(emptyState)
     });
     expect(turnResult.current).toBe(true);
     
     const { result: typeResult } = renderHook(() => useCombatType(), {
-      wrapper: createGameProviderWrapper(emptyState)
+      wrapper: createWrapper(emptyState)
     });
     expect(typeResult.current).toBe(null);
     
     const { result: logResult } = renderHook(() => useCombatLog(), {
-      wrapper: createGameProviderWrapper(emptyState)
+      wrapper: createWrapper(emptyState)
     });
     expect(logResult.current).toEqual([]);
     
     const { result: lastEntryResult } = renderHook(() => useLastCombatLogEntry(), {
-      wrapper: createGameProviderWrapper(emptyState)
+      wrapper: createWrapper(emptyState)
     });
     expect(lastEntryResult.current).toBeUndefined();
   });

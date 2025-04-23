@@ -19,91 +19,6 @@ import {
 import { estimateTokenCount } from './narrativeCompression';
 
 /**
- * Allocates tokens to content elements based on priorities and token allocation
- * 
- * @param elements - Prioritized list of context elements
- * @param maxTokens - Maximum tokens to allocate
- * @param allocation - Token allocation percentages across sections
- * @returns Array of content blocks that fit within token budget
- */
-export function allocateTokensToElements(
-  elements: ScoredContextElement[],
-  maxTokens: number,
-  allocation?: TokenAllocation
-): NarrativeContentBlock[] {
-  if (!elements || elements.length === 0 || maxTokens <= 0) {
-    return [];
-  }
-  
-  // Default allocation if not provided
-  const effectiveAllocation = allocation || {
-    narrativeHistory: 35,
-    decisionHistory: 25,
-    worldState: 15,
-    relationships: 10,
-    storyContext: 5,
-    lore: 10 // Default allocation for lore
-  };
-  
-  // Calculate token allocations for each block type
-  const tokenAllocations: Record<ContextBlockType, number> = {
-    'narrative_history': Math.floor((effectiveAllocation.narrativeHistory || 35) * maxTokens / 100),
-    'decision': Math.floor((effectiveAllocation.decisionHistory || 25) * maxTokens / 100),
-    'world_state': Math.floor((effectiveAllocation.worldState || 15) * maxTokens / 100),
-    'character': Math.floor((effectiveAllocation.relationships || 10) * maxTokens / 100),
-    'location': Math.floor((effectiveAllocation.worldState || 15) * maxTokens / 100) / 3, // Share with world state
-    'story_progression': Math.floor((effectiveAllocation.storyContext || 5) * maxTokens / 100),
-    'lore': Math.floor((effectiveAllocation.lore || 10) * maxTokens / 100), // Allocation for lore
-    'instruction': Math.floor(maxTokens * 0.05) // Reserve 5% for instructions
-  };
-  
-  // Group elements by block type
-  const blockGroups: BlockGroups = groupElementsByBlockType(elements);
-  
-  // Create content blocks respecting token allocations
-  const contentBlocks: NarrativeContentBlock[] = [];
-  
-  // Process each block type
-  Object.entries(blockGroups).forEach(([blockTypeStr, groupElements]) => {
-    const blockType = blockTypeStr as ContextBlockType;
-    const tokenBudget = tokenAllocations[blockType] || 0;
-    
-    if (tokenBudget <= 0 || !groupElements.length) {
-      return;
-    }
-    
-    // Sort elements by relevance
-    const sortedElements = [...groupElements].sort((a, b) => b.relevance - a.relevance);
-    
-    // Fill until token budget is exhausted
-    let remainingTokens = tokenBudget;
-    let blockContent = '';
-    const blockPriority = getBlockPriority(blockType);
-    
-    sortedElements.forEach(element => {
-      if (element.tokens <= remainingTokens) {
-        // Add element if it fits in the budget
-        blockContent += (blockContent ? '\n\n' : '') + element.content;
-        remainingTokens -= element.tokens;
-      }
-    });
-    
-    if (blockContent) {
-      contentBlocks.push({
-        type: blockType,
-        content: blockContent,
-        tokens: tokenBudget - remainingTokens,
-        priority: blockPriority,
-        metadata: { elements: groupElements.length }
-      });
-    }
-  });
-  
-  // Sort blocks by priority
-  return contentBlocks.sort((a, b) => a.priority - b.priority);
-}
-
-/**
  * Group elements by block type
  * 
  * @param elements - Array of context elements to group
@@ -144,6 +59,103 @@ export function getBlockPriority(blockType: ContextBlockType): number {
 }
 
 /**
+ * Format a content block as a section with appropriate header
+ * 
+ * @param block - Content block to format
+ * @returns Formatted section text with header
+ */
+function formatBlockAsSection(block: NarrativeContentBlock): string {
+  const title = blockSectionTitles[block.type] || 'Context';
+  return `## ${title}\n${block.content}`;
+}
+
+/**
+ * Allocates tokens to content elements based on priorities and token allocation
+ * 
+ * @param elements - Prioritized list of context elements
+ * @param maxTokens - Maximum tokens to allocate
+ * @param allocation - Token allocation percentages across sections
+ * @returns Array of content blocks that fit within token budget
+ */
+export function allocateTokensToElements(
+  elements: ScoredContextElement[],
+  maxTokens: number,
+  allocation?: TokenAllocation
+): NarrativeContentBlock[] {
+  if (!elements || elements.length === 0 || maxTokens <= 0) {
+    return [];
+  }
+  
+  // Default allocation if not provided
+  const effectiveAllocation = allocation || {
+    narrativeHistory: 35,
+    decisionHistory: 25,
+    worldState: 15,
+    relationships: 10,
+    storyContext: 5,
+    lore: 10 // Default allocation for lore
+  };
+  
+  // Calculate token allocations for each block type
+  const tokenAllocations: Record<ContextBlockType, number> = {
+    'narrative_history': Math.floor((effectiveAllocation.narrativeHistory || 35) * maxTokens / 100),
+    'decision': Math.floor((effectiveAllocation.decisionHistory || 25) * maxTokens / 100),
+    'world_state': Math.floor((effectiveAllocation.worldState || 15) * maxTokens / 100),
+    'character': Math.floor((effectiveAllocation.relationships || 10) * maxTokens / 100),
+    'location': Math.floor((effectiveAllocation.worldState || 15) * maxTokens / 100) / 3, // Share with world state
+    'story_progression': Math.floor((effectiveAllocation.storyContext || 5) * maxTokens / 100),
+    'lore': Math.floor((effectiveAllocation.lore || 10) * maxTokens / 100), // Allocation for lore
+    'instruction': Math.floor(maxTokens * 0.05) // Reserve 5% for instructions
+  };
+  
+  // Group elements by block type
+  const blockGroups: BlockGroups = groupElementsByBlockType(elements); // Now defined before call
+  
+  // Create content blocks respecting token allocations
+  const contentBlocks: NarrativeContentBlock[] = [];
+  
+  // Process each block type
+  Object.entries(blockGroups).forEach(([blockTypeStr, groupElements]) => {
+    const blockType = blockTypeStr as ContextBlockType;
+    const tokenBudget = tokenAllocations[blockType] || 0;
+    
+    if (tokenBudget <= 0 || !groupElements.length) {
+      return;
+    }
+    
+    // Sort elements by relevance
+    const sortedElements = [...groupElements].sort((a, b) => b.relevance - a.relevance);
+    
+    // Fill until token budget is exhausted
+    let remainingTokens = tokenBudget;
+    let blockContent = '';
+    const blockPriority = getBlockPriority(blockType); // Now defined before call
+    
+    sortedElements.forEach(element => {
+      if (element.tokens <= remainingTokens) {
+        // Add element if it fits in the budget
+        blockContent += (blockContent ? '\n\n' : '') + element.content;
+        remainingTokens -= element.tokens;
+      }
+    });
+    
+    if (blockContent) {
+      contentBlocks.push({
+        type: blockType,
+        content: blockContent,
+        tokens: tokenBudget - remainingTokens,
+        priority: blockPriority,
+        metadata: { elements: groupElements.length }
+      });
+    }
+  });
+  
+  // Sort blocks by priority
+  return contentBlocks.sort((a, b) => a.priority - b.priority);
+}
+
+
+/**
  * Builds structured context from content blocks
  * 
  * @param blocks - Array of content blocks
@@ -171,7 +183,7 @@ export function buildStructuredContext(
       return;
     }
     
-    const section = formatBlockAsSection(block);
+    const section = formatBlockAsSection(block); // Now defined before call
     const sectionTokens = estimateTokenCount(section);
     
     // Check if adding this section would exceed token limit
@@ -191,15 +203,4 @@ Use the above context to maintain narrative coherence in your responses. Referen
   `.trim());
   
   return sectionParts.join('\n\n');
-}
-
-/**
- * Format a content block as a section with appropriate header
- * 
- * @param block - Content block to format
- * @returns Formatted section text with header
- */
-function formatBlockAsSection(block: NarrativeContentBlock): string {
-  const title = blockSectionTitles[block.type] || 'Context';
-  return `## ${title}\n${block.content}`;
 }

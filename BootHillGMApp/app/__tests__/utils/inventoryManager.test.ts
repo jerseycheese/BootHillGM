@@ -11,11 +11,11 @@ import { InventoryItem } from '../../types/item.types';
 import { WEAPONS } from '../../utils/weaponDefinitions';
 
 const localStorageMock = (() => {
-  let store: { [key: string]: string } = {};
+  let store: { [key: string]: string } = { /* Intentionally empty */ };
   return {
     getItem: (key: string) => store[key] || null,
     setItem: (key: string, value: string) => { store[key] = String(value); },
-    clear: () => { store = {}; },
+    clear: () => { store = { /* Intentionally empty */ }; },
     removeItem: (key: string) => { delete store[key]; },
   };
 })();

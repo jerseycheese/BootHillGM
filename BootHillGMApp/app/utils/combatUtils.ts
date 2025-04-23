@@ -58,7 +58,7 @@ export const cleanCharacterName = (name: string): string => {
   cleanedName = cleanText(cleanedName);
 
   // Remove any remaining colons and special characters
-  cleanedName = cleanedName.replace(/[:{}\[\]]/g, '');
+  cleanedName = cleanedName.replace(/[:{ /* Intentionally empty */ }[]]/g, '');
 
   // Clean up any double spaces and trim
   cleanedName = cleanedName.replace(/\s+/g, ' ').trim();

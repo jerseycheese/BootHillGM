@@ -6,7 +6,6 @@
  * due to random data.
  */
 
-// Fixed timestamp for consistent date rendering
 export const FIXED_TIMESTAMP = 1648635000000; // March 30, 2022
 
 // Mock player decisions with different variations

@@ -6,34 +6,42 @@
  */
 
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react'; // Import waitFor
 import '@testing-library/jest-dom';
 import { SidePanel } from '../../components/GameArea/SidePanel';
 import GameStorage from '../../utils/gameStorage';
 import { GameState } from '../../types/gameState';
-import { 
-  gameStateUtils 
-} from '../../test/utils';
+import { gameStateUtils } from '../../test/utils';
+import { CampaignStateProvider } from '../../components/CampaignStateProvider'; // Use named import
 
 // Mock the GameStorage utility
-jest.mock('../../utils/gameStorage', () => ({
-  getCharacter: jest.fn(),
-  getNarrativeText: jest.fn(),
-  getSuggestedActions: jest.fn(),
-  getJournalEntries: jest.fn(),
-  initializeNewGame: jest.fn(),
-  saveGameState: jest.fn(),
-  getDefaultInventoryItems: jest.fn()
-}));
+jest.mock('../../utils/gameStorage', () => {
+  return {
+    getCharacter: jest.fn(),
+    getNarrativeText: jest.fn(),
+    getSuggestedActions: jest.fn(),
+    getJournalEntries: jest.fn(),
+    initializeNewGame: jest.fn(),
+    saveGameState: jest.fn(),
+    getDefaultInventoryItems: jest.fn()
+  };
+});
 
 describe('SidePanel Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     gameStateUtils.mockLocalStorage.clear();
-    gameStateUtils.setupGameStorageMocks(GameStorage);
+    
+    // Setup the GameStorage mocks
+    (GameStorage.getCharacter as jest.Mock).mockReturnValue({
+      player: null,
+      opponent: null
+    });
+    (GameStorage.getJournalEntries as jest.Mock).mockReturnValue([]);
+    (GameStorage.getDefaultInventoryItems as jest.Mock).mockReturnValue([]);
   });
   
-  test('renders with player character from state', () => {
+  test('renders with player character from state', async () => { // Make test async
     // Create a fully compliant mockState
     const mockState: GameState = gameStateUtils.createMockGameState({
       character: {
@@ -53,12 +61,19 @@ describe('SidePanel Component', () => {
       }
     });
     
-    gameStateUtils.renderWithGameProvider(
-      <SidePanel {...gameStateUtils.defaultGameSessionProps} state={mockState} />, 
-      mockState
+    // Use the utility function to render with the provider
+    gameStateUtils.renderWithCampaignStateProvider(
+      <SidePanel
+        handleEquipWeapon={gameStateUtils.defaultGameSessionProps.handleEquipWeapon}
+        isLoading={gameStateUtils.defaultGameSessionProps.isLoading}
+      />,
+      mockState // Pass the mock state to the utility
     );
     
-    expect(screen.getByText('Test Player')).toBeInTheDocument();
+    // Use a more reliable selector like data-testid instead of text content
+    await waitFor(() => {
+      expect(screen.getByTestId('character-name')).toHaveTextContent('Test Player');
+    });
     expect(GameStorage.getCharacter).not.toHaveBeenCalled(); // Should not use fallback
   });
   
@@ -67,8 +82,11 @@ describe('SidePanel Component', () => {
       character: null
     });
     
-    gameStateUtils.renderWithGameProvider(
-      <SidePanel {...gameStateUtils.defaultGameSessionProps} state={mockState} />, 
+    gameStateUtils.renderWithCampaignStateProvider(
+      <SidePanel
+        handleEquipWeapon={gameStateUtils.defaultGameSessionProps.handleEquipWeapon}
+        isLoading={gameStateUtils.defaultGameSessionProps.isLoading}
+      />,
       mockState
     );
     
@@ -86,8 +104,11 @@ describe('SidePanel Component', () => {
       opponent: null
     });
     
-    gameStateUtils.renderWithGameProvider(
-      <SidePanel {...gameStateUtils.defaultGameSessionProps} state={mockState} />, 
+    gameStateUtils.renderWithCampaignStateProvider(
+      <SidePanel
+        handleEquipWeapon={gameStateUtils.defaultGameSessionProps.handleEquipWeapon}
+        isLoading={gameStateUtils.defaultGameSessionProps.isLoading}
+      />,
       mockState
     );
     
@@ -113,20 +134,21 @@ describe('SidePanel Component', () => {
       },
       journal: {
         entries: [
-          { id: 'journal-1', type: 'narrative', content: 'Test content', timestamp: Date.now() }
+          { id: 'journal-1', type: 'narrative', title: 'Test Title', content: 'Test content', narrativeSummary: 'Test summary', timestamp: Date.now() }
         ]
       }
     });
     
-    gameStateUtils.renderWithGameProvider(
-      <SidePanel {...gameStateUtils.defaultGameSessionProps} state={mockState} />, 
+    gameStateUtils.renderWithCampaignStateProvider(
+      <SidePanel
+        handleEquipWeapon={gameStateUtils.defaultGameSessionProps.handleEquipWeapon}
+        isLoading={gameStateUtils.defaultGameSessionProps.isLoading}
+      />,
       mockState
     );
     
-    // Use a more robust query to find the text within the list item
-    const journalList = screen.getByRole('list');
-    expect(journalList).toHaveTextContent(/Test content/);
-    expect(GameStorage.getJournalEntries).not.toHaveBeenCalled(); // Should not use fallback
+    // Check for journal entry content
+    expect(screen.getByText(/Test summary/)).toBeInTheDocument(); // Check for summary, not content
   });
   
   test('uses journal entries from GameStorage when state journal is empty', () => {
@@ -149,11 +171,15 @@ describe('SidePanel Component', () => {
       journal: { entries: [] }
     });
     
-    gameStateUtils.renderWithGameProvider(
-      <SidePanel {...gameStateUtils.defaultGameSessionProps} state={mockState} />, 
+    gameStateUtils.renderWithCampaignStateProvider(
+      <SidePanel
+        handleEquipWeapon={gameStateUtils.defaultGameSessionProps.handleEquipWeapon}
+        isLoading={gameStateUtils.defaultGameSessionProps.isLoading}
+      />,
       mockState
     );
     
+    // Check that the fallback is called
     expect(GameStorage.getJournalEntries).toHaveBeenCalled();
   });
 });

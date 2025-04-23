@@ -1,21 +1,30 @@
-// Mock localStorage implementation with in-memory storage
+
+/**
+ * Mock implementation of browser localStorage using in-memory storage.
+ * Provides getItem, setItem, removeItem, clear, length, and key methods.
+ */
 export const createMockLocalStorage = () => {
-  let store: { [key: string]: string } = {};
-  
+  let store: Record<string, string> = {};
+
   return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => {
-      store[key] = value.toString();
-    }),
-    removeItem: jest.fn((key: string) => {
+    getItem(key: string): string | null {
+      return Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null;
+    },
+    setItem(key: string, value: string): void {
+      store[key] = value;
+    },
+    removeItem(key: string): void {
       delete store[key];
-    }),
-    clear: jest.fn(() => {
+    },
+    clear(): void {
       store = {};
-    }),
-    get length() { // Use a getter for length
+    },
+    get length(): number {
       return Object.keys(store).length;
     },
-    key: jest.fn((index: number) => Object.keys(store)[index] || null),
+    key(index: number): string | null {
+      const keys = Object.keys(store);
+      return keys[index] || null;
+    },
   };
 };

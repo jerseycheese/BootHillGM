@@ -1,10 +1,7 @@
 import React from 'react';
-import { useCampaignState } from '../../components/CampaignStateManager';
+import { useCampaignState } from '../../hooks/useCampaignStateContext';
 import { Character } from '../../types/character';
 import { createMockCharacter, initialCharacter } from './characterData';
-import { initialNarrativeState } from '../../types/narrative.types';
-import { GameState } from '../../types/gameState';
-import { initialInventoryState, initialJournalState, initialCombatState, initialUIState, initialCharacterState } from '../../types/state';
 
 type CharacterFieldKey = keyof Character['attributes'] | 'name';
 
@@ -14,7 +11,15 @@ const mockCharacterState = {
 };
 
 function useCharacterCreationHandler() {
-  const { cleanupState, saveGame } = useCampaignState();
+  const campaignStateContext = useCampaignState();
+
+  // Handle potential null context (though unlikely in a test with providers)
+  if (!campaignStateContext) {
+    // Throw an error if context is unexpectedly null
+    throw new Error('useCampaignState must be used within a CampaignStateProvider in this test.');
+  }
+
+  const { cleanupState, saveGame } = campaignStateContext;
 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -32,36 +37,10 @@ function useCharacterCreationHandler() {
         if (savedData.currentStep === 1) {
           window.localStorage.removeItem('character-creation-progress');
           cleanupState();
-
-          const gameState: GameState = {
-            // Update character slice to include player and opponent
-            character: {
-              ...initialCharacterState,
-              player: mockCharacter,
-              opponent: null
-            },
-            // Update combat slice to include isActive
-            combat: {
-              ...initialCombatState,
-              isActive: false
-            },
-            inventory: initialInventoryState,
-            journal: initialJournalState,
-            narrative: initialNarrativeState,
-            ui: initialUIState,
-            currentPlayer: '',
-            npcs: [],
-            location: null,
-            quests: [],
-            gameProgress: 0,
-            savedTimestamp: Date.now(),
-            isClient: true,
-            suggestedActions: [],
-            // Removed obsolete top-level properties
-          };
-          saveGame(gameState);
+          saveGame();
         }
-      } catch {
+      } catch { // Add error parameter
+        // Intentionally empty: Error handling for saving game state in mock is not needed
       }
     }
   };

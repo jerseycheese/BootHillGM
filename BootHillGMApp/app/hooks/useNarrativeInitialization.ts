@@ -27,14 +27,26 @@
 import { useState, useCallback } from 'react';
 import { useGameState } from '../context/GameStateProvider';
 import { Character } from '../types/character';
-import { buildNarrativeContext } from '../utils/narrative/narrativeContextBuilder';
 import { DEFAULT_NARRATIVE_CONTEXT } from '../utils/narrative/narrativeContextDefaults';
-import { StoryPoint } from '../types/narrative.types';
+import { 
+  updateNarrativeContext, 
+  addNarrativeHistory, 
+  navigateToPoint 
+} from '../actions/narrativeActions';
+import { narrativeDispatchWrapper } from '../utils/narrativeDispatchWrapper';
 
+/**
+ * Narrative initialization hook
+ * This is a proper React hook that should be called at the top level
+ * and returns functions that can be called during rendering
+ */
 export const useNarrativeInitialization = () => {
   const { state, dispatch } = useGameState();
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  
+  // Create a wrapped dispatch function that handles NarrativeAction conversion
+  const narrativeDispatch = narrativeDispatchWrapper(dispatch);
 
   /**
    * Initialize the narrative state with character data
@@ -56,47 +68,10 @@ export const useNarrativeInitialization = () => {
         decisionHistory: []
       };
       
-      // Create an initial StoryPoint object for intro
-      const introStoryPoint: StoryPoint = {
-        id: 'introduction',
-        type: 'exposition',
-        title: 'Welcome to Boot Hill',
-        content: `${characterData.name} begins their adventure in the Wild West.`
-      };
-      
-      // Build the initial narrative context
-      // We use the result only for reference but don't store it directly
-      // This is just setting up the initial context structure
-      const _ = buildNarrativeContext(
-        { 
-          narrativeContext: initialNarrativeContext, 
-          narrativeHistory: [],
-          currentStoryPoint: introStoryPoint,
-          visitedPoints: ['introduction'],
-          availableChoices: [],
-          displayMode: 'standard',
-          context: 'initial'
-        }, 
-        { maxTokens: 1000 }
-      );
-      
-      // Dispatch action to update narrative state
-      dispatch({
-        type: 'UPDATE_NARRATIVE_CONTEXT',
-        payload: initialNarrativeContext
-      });
-      
-      // Initialize narrative history
-      dispatch({
-        type: 'ADD_NARRATIVE_HISTORY',
-        payload: `Welcome to Boot Hill! ${characterData.name} is ready for adventure.`
-      });
-      
-      // Set initial story point
-      dispatch({
-        type: 'NAVIGATE_TO_POINT',
-        payload: 'introduction'
-      });
+      // Use the wrapped dispatch function that handles type conversion
+      narrativeDispatch(updateNarrativeContext(initialNarrativeContext));
+      narrativeDispatch(addNarrativeHistory(`Welcome to Boot Hill! ${characterData.name} is ready for adventure.`));
+      narrativeDispatch(navigateToPoint('introduction'));
       
       setIsInitializing(false);
       return true;
@@ -107,7 +82,7 @@ export const useNarrativeInitialization = () => {
       setIsInitializing(false);
       return false;
     }
-  }, [dispatch]);
+  }, [narrativeDispatch]);
 
   return {
     initializeNarrative,

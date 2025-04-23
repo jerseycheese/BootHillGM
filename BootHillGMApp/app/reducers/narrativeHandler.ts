@@ -1,6 +1,5 @@
 import { ExtendedGameState } from '../types/extendedState';
 import { NarrativeState } from '../types/state/narrativeState';
-// Removed migrateGameState import (obsolete)
 
 /**
  * Handles setting narrative text with proper history management
