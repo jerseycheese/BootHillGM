@@ -13,6 +13,11 @@ const customJestConfig = {
     '^@/(.*)$': '<rootDir>/app/$1',
   },
   moduleDirectories: ['node_modules', '<rootDir>/'],
+  // Explicitly define which files should be treated as tests
+  testMatch: [
+    '**/__tests__/**/*.test.[jt]s?(x)',
+    '**/?(*.)+(spec|test).[jt]s?(x)'
+  ],
   testPathIgnorePatterns: [
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
