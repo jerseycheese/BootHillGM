@@ -28,7 +28,7 @@ updated: 2025-03-19
 
 ## Development Tools
 - 🛠️ [[workflows/claude-app-mcp-optimization|MCP Optimization Guide]]
-- 📝 [[workflows/claude-app-prompt-templates|Prompt Templates]]
+- 📝 [[claude-app-prompt-templates|Prompt Templates]]
 - 🔄 [[workflows/claude-app-workflow-handoffs|Handoff Templates]]
 
 ## Templates

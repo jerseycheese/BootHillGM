@@ -1,19 +1,42 @@
 ---
-title: Claude App Prompt Templates
-aliases: [App Prompts, Claude Prompt Library]
+title: Claude App Prompt Templates (Updated)
+aliases: [App Prompts, Claude Prompt Library, Updated Prompt Templates]
 tags: [development, workflow, claude, prompt, templates]
 created: 2025-03-16
-updated: 2025-03-21
+updated: 2025-04-02
 ---
 
-# Claude App Prompt Templates
+# Claude App Prompt Templates (Updated)
 
 > [!note]
-> Optimized prompt templates for using Claude through the app interface with MCP tools, designed to strictly control scope.
+> Optimized prompt templates for using Claude through the app interface with MCP tools, designed to strictly control scope. These templates are designed for easy single-click copying from Obsidian.
+
+## Table of Contents
+- [How to Use These Templates](#how-to-use-these-templates)
+- [Analysis & Planning Phase](#analysis--planning-phase)
+- [Define Tests Phase](#define-tests-phase)
+- [Implementation Phase](#implementation-phase)
+- [Build Phase](#build-phase)
+- [Test Fixes Phase](#test-fixes-phase)
+- [Manual Testing](#manual-testing)
+- [Cleanup & Documentation Phase](#cleanup--documentation-phase)
+- [Component Refactoring](#component-refactoring)
+- [Bug Fix Request](#bug-fix-request)
+- [Feature-Specific Implementation](#feature-specific-implementation)
+- [IDE-Based Build & Test Request](#ide-based-build--test-request-clineroo)
+- [GitHub Issue Management](#github-issue-management)
+- [Related Documents](#related-documents)
+
+## How to Use These Templates
+
+Each template is contained in a single code block that you can copy with a single click in Obsidian. Simply:
+1. Click anywhere inside the code block
+2. Use the copy button that appears in the top right corner
+3. Paste directly into Claude.ai or your IDE's Cline/Roo extension
 
 ## Analysis & Planning Phase
 
-```markdown
+```
 # Project Analysis Request
 
 ## Context
@@ -103,9 +126,46 @@ FUTURE TASKS
 - [ ] [future task]
 ```
 
+## Define Tests Phase
+
+```
+# Test Definition Request
+
+## Context
+I'm implementing this technical spec:
+
+[PASTE SPEC ARTIFACT HERE]
+
+## Request
+Help me define the tests for this feature before implementation.
+
+## Information Access
+Please use MCP tools to:
+1. Review existing test patterns at `/Users/jackhaas/Projects/BootHillGM/BootHillGMApp/app/tests`
+2. Check component test examples at `/Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/component-testing.md`
+
+## Test Requirements
+1. Write tests before implementation (TDD approach)
+2. Only test what's in scope (as defined in the spec)
+3. Follow our naming conventions in `/Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/coding-naming-conventions.md`
+4. Use data-testid attributes for element selection
+5. Keep tests focused and minimal
+
+## Output Format
+Please provide:
+1. A test specification artifact with:
+   - Test file structure
+   - Test cases covering functionality
+   - Clear data-testid names following our convention
+2. An explanation of your testing approach
+3. A verification list of what is covered and what is not
+
+Please only test what's explicitly in the spec - don't test edge cases or features outside the defined scope.
+```
+
 ## Implementation Phase
 
-```markdown
+```
 # Implementation Request
 
 ## Context
@@ -113,13 +173,18 @@ I'm implementing this technical specification:
 
 [PASTE SPEC ARTIFACT HERE]
 
+And I've defined these tests:
+
+[PASTE TEST ARTIFACT HERE]
+
 ## Request
-Help me implement this spec using a test-driven approach.
+Help me implement this specification to make the tests pass.
 
 ## Information Access
 Please use MCP tools to:
 1. Review related files at [specific paths]
 2. Check our existing patterns for similar components
+3. Follow our naming conventions in `/Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/coding-naming-conventions.md`
 
 ## Scope Constraints
 - Implement ONLY what's specified in the technical spec
@@ -129,12 +194,12 @@ Please use MCP tools to:
 - Do not introduce additional state management approaches
 
 ## Implementation Approach
-1. Test-driven development
+1. Test-driven development (make the defined tests pass)
 2. Incremental implementation
 3. Clean code principles
 4. Error handling for specified cases only
 5. Stay within the defined scope boundaries
-6. Use existing utils and helpers in /BootHillGM/BootHillGMApp/app/tests or /BootHillGM/BootHillGMApp/app/test or /BootHillGM/BootHillGMApp/app/utils
+6. Use existing utils and helpers in /BootHillGM/BootHillGMApp/app/tests or /BootHillGM/BootHillGMApp/app/utils
 
 ## Output Format
 Please provide implementation in this format:
@@ -152,137 +217,49 @@ CODE CHANGES
 [Actual code changes]
 ```
 
-VERIFICATION
-- [ ] Unit tests for specified functionality only
-- [ ] Integration tests as defined in spec
-- [ ] Code standards
-- [ ] Error handling for defined cases
+## Build Phase
 
-Please create separate artifacts for:
-1. Types (if substantial)
-2. Tests (covering only specified cases)
-3. Component implementation (limited to spec)
-4. Any utility functions needed for implementation
-
-For each implementation step, follow our coding standards:
-- React functional components with hooks
-- Proper TypeScript typing
-- JSDoc comments for functions
-- Error handling for specified edge cases only
 ```
-
-## Component-Specific Implementation
-
-```markdown
-# Component Implementation Request
+# Build Phase Request
 
 ## Context
-I need to implement this specific component:
+I've implemented this component:
 
-## Component Definition
-Name: [component name]
-Purpose: [specific purpose]
-Location: [file path]
-
-## Required Functionality
-This component must:
-1. [functionality 1]
-2. [functionality 2]
-3. [functionality 3]
-
-## Technical Requirements
-- Props: [list specific props and types]
-- State: [list specific state variables]
-- Events: [list specific events to handle]
-
-## Scope Boundaries
-This component should NOT:
-- [excluded functionality 1]
-- [excluded functionality 2]
-- [pattern to avoid]
-
-## Existing Patterns
-Please follow these specific patterns:
-- State management: [specific approach]
-- Event handling: [specific approach]
-- Styling: [specific approach]
-
-## Dependencies
-Only use these imports:
-- [specific import 1]
-- [specific import 2]
-
-## Output Format
-Please provide a focused implementation with no additional features beyond what I've specified.
-```
-
-## Implementation Summary
-
-```markdown
-# Implementation Summary Request
-
-## Context
-I've completed the implementation for this feature. 
+[PASTE COMPONENT CODE]
 
 ## Request
-Help me create a summary of the implementation to track what's been done.
+Help me resolve any potential build issues before moving to testing.
 
-## Information
-The implementation involved these files:
-[LIST FILES]
+## Information Access
+Please use MCP tools to:
+1. Check related component implementations
+2. Review our TypeScript configuration
+3. Follow our naming conventions in `/Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/coding-naming-conventions.md`
 
-## Scope Focus
-Please focus only on what was actually implemented, not on potential enhancements or improvements.
+## Scope Constraints
+- Fix only build-related issues
+- Do not enhance functionality
+- Do not refactor unrelated code
+- Stay within the original implementation approach
 
 ## Output Format
 Please provide a summary in this format:
 
-IMPLEMENTATION COMPLETE
-Component: [name]
-Issue: #[number]
-
-CHANGES MADE
-Files Modified:
-- [file]: [changes]
-- [file]: [changes]
-
-Files Created:
-- [file]: [purpose]
-- [file]: [purpose]
-
-TEST STATUS
-- Unit Tests: [status]
-- Integration: [status]
-- Coverage: [percentage]
-
-MANUAL TESTING STEPS
-- [manual testing step]
-- [manual testing step]
-
-CLEANUP NOTES (console logs to remove, comments to add, etc...)
-- [cleanup task]
-- [cleanup task]
-
-SCOPE BOUNDARIES MAINTAINED
-- [confirm specific constraints were respected]
-- [confirm no extra features were added]
+Note: This phase can also be handled in your IDE using Cline/Roo with auto-approve enabled.
 ```
 
 ## Test Fixes Phase
 
-```markdown
+```
 # Test Fixes Request
 
 ## Context
-I'm working on fixing tests for this implementation:
+My implementation is now building successfully, but I need to fix the tests:
 
-[PASTE COMPONENT CODE OR DESCRIBE FEATURE]
-
-## Current Test Issues
-[DESCRIBE FAILING TESTS OR WHAT NEEDS TO BE FIXED]
+[PASTE COMPONENT AND TEST CODE]
 
 ## Request
-Help me fix these test issues, focusing only on the existing functionality.
+Help me fix any failing tests without changing the core functionality.
 
 ## Scope Boundaries
 - Fix only the failing tests for existing functionality
@@ -292,10 +269,11 @@ Help me fix these test issues, focusing only on the existing functionality.
 
 ## Information Access
 Please use MCP tools to:
-1. Read the failing test file at [path]
-2. Examine the component implementation at [path]
+1. Review the failing test file
+2. Examine the component implementation
 3. Review similar test patterns if needed
-4. Use existing utils and helpers in /BootHillGM/BootHillGMApp/app/tests or /BootHillGM/BootHillGMApp/app/test or /BootHillGM/BootHillGMApp/app/utils
+4. Use existing utils and helpers in /BootHillGM/BootHillGMApp/app/tests
+5. Follow our naming conventions in `/Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/coding-naming-conventions.md`
 
 ## Test Requirements
 1. Use Jest and React Testing Library
@@ -309,46 +287,42 @@ Please provide:
 1. Analysis of why tests are failing
 2. Updated test code as an artifact
 3. Only necessary component modifications to make tests pass
+
+Note: This phase can also be handled in your IDE using Cline/Roo with auto-approve enabled.
 ```
 
-## Build Issues Phase
+## Manual Testing
 
-```markdown
-# Build Issues Request
+```
+# Manual Testing Request
 
 ## Context
-I'm facing build issues with this implementation:
+I've implemented this feature and all automated tests are now passing:
 
-[PASTE ERROR MESSAGES OR DESCRIBE ISSUES]
+[PASTE COMPONENT SUMMARY]
 
 ## Request
-Help me diagnose and fix these build problems without changing the approach.
+Help me plan manual testing steps to verify this implementation works as expected in real usage.
 
 ## Scope Boundaries
-- Fix only the specific build errors
-- Maintain the current implementation approach
-- Do not introduce new patterns or restructuring
-- Do not add dependencies or alter the build configuration
-- Keep changes minimal and focused on the errors
-
-## Information Access
-Please use MCP tools to:
-1. Check the component code at [path]
-2. Review related files that might be causing conflicts
-3. Examine our build configuration if needed
-4. Use existing utils and helpers in /BootHillGM/BootHillGMApp/app/tests or /BootHillGM/BootHillGMApp/app/test or /BootHillGM/BootHillGMApp/app/utils
+- Only test functionality within the defined scope
+- Focus on user experience and edge cases automated tests might miss
+- Do not suggest testing features outside the implemented scope
 
 ## Output Format
-Please provide:
-1. Analysis of the build issues
-2. Specific, minimal solutions as code artifacts
-3. Only necessary configuration changes
-4. Verification steps
+Please provide a testing plan including:
+1. User scenarios to test
+2. Edge cases to verify
+3. Visual/UX aspects to check
+4. Integration points to validate
+5. Potential issues to watch for
+
+These steps will help ensure the implementation works correctly in the real application environment.
 ```
 
 ## Cleanup & Documentation Phase
 
-```markdown
+```
 # Cleanup & Documentation Request
 
 ## Context
@@ -371,9 +345,10 @@ Please use MCP to:
 1. Review the implemented files
 2. Check for cleanup opportunities
 3. Review existing documentation structure in `/Users/jackhaas/Projects/BootHillGM/Docs`
+4. Follow our naming conventions in `/Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/coding-naming-conventions.md`
 
 ## Output Format
-Please provide a response in this format:
+Please provide a response with these sections:
 
 CLEANUP & DOCS
 GitHub Issue: #[number] [title]
@@ -382,8 +357,8 @@ CODE REVIEW
 Quality:
 - [ ] Code standards & style
 - [ ] Error handling
-- [ ] Performance
-- [ ] Security
+- [ ] Performance considerations
+- [ ] Security concerns
 - [ ] Debug cleanup (logs, test outputs, flags)
 
 Documentation:
@@ -394,8 +369,8 @@ Documentation:
 - [ ] System documentation
 
 TEST COVERAGE
-- Unit Tests: [percentage]
-- Integration Tests: [percentage]
+- Unit Tests: [coverage]
+- Integration Tests: [coverage]
 - Edge Cases: [list]
 - Missing Coverage: [areas]
 
@@ -421,7 +396,7 @@ Issue: #[number]
 
 ## Component Refactoring
 
-```markdown
+```
 # Component Refactoring Request
 
 ## Context
@@ -460,6 +435,7 @@ Please use MCP to:
 2. Review our coding standards
 3. Check similar components for patterns
 4. Use existing utils and helpers in /BootHillGM/BootHillGMApp/app/tests or /BootHillGM/BootHillGMApp/app/test or /BootHillGM/BootHillGMApp/app/utils
+5. Follow our naming conventions in `/Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/coding-naming-conventions.md
 
 ## Requirements
 ### Must Have
@@ -494,7 +470,7 @@ Please provide:
 
 ## Bug Fix Request
 
-```markdown
+```
 # Bug Fix Request
 
 ## Context
@@ -517,6 +493,9 @@ Please use MCP to:
 1. Examine related components at [paths]
 2. Check test coverage
 3. Review error handling
+4. Check project documentation in `/Users/jackhaas/Projects/BootHillGM/Docs`
+5. Follow our naming conventions in `/Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/coding-naming-conventions.md`
+6. Use existing utils and helpers in /BootHillGM/BootHillGMApp/app/tests or /BootHillGM/BootHillGMApp/app/utils
 
 ## Output Format
 Please provide:
@@ -528,7 +507,7 @@ Please provide:
 
 ## Feature-Specific Implementation
 
-```markdown
+```
 # Feature-Specific Implementation Request
 
 ## Context
@@ -558,6 +537,7 @@ I need to implement this specific feature:
 - Must use only specified dependencies
 - Must only modify listed files
 - Must implement exactly what's specified, no more
+- Follow our naming conventions in `/Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/coding-naming-conventions.md`
 
 ## Information Access
 Please use MCP to:
@@ -573,7 +553,105 @@ Please provide:
 3. Verification that implementation meets all constraints
 ```
 
+## IDE-Based Build & Test Request (Cline/Roo)
+
+```
+# IDE-Based Build & Test Request
+
+## Context
+I'm implementing this feature via Cline/Roo in my IDE to conserve Claude.ai usage:
+
+[PASTE IMPLEMENTATION SUMMARY]
+
+## Request
+Help me efficiently fix build issues and test failures via the IDE.
+
+## Process
+1. First fix any build errors until the code compiles
+2. Then address test failures one by one
+3. Loop through build and test phases until both are successful
+
+## Scope Boundaries
+- Fix only issues that prevent building or passing tests
+- Do not add features or enhancements
+- Do not refactor unrelated code
+- Follow our naming conventions in `/Users/jackhaas/Projects/BootHillGM/Docs/technical-guides/coding-naming-conventions.md`
+
+## IDE Efficiency Tips
+- I'll use the auto-approve option to speed up iteration
+- Focus on one issue at a time
+- Provide clear, concise explanations for changes
+- Let me know when we should switch from build fixes to test fixes
+
+## Output Format
+Please start with:
+1. A quick analysis of the implementation
+2. A plan to address build issues first
+3. Specific changes to fix each issue
+4. A clear indication when we're transitioning to test fixes
+```
+
+## GitHub Issue Management
+
+```
+# GitHub Issue Management Request
+
+## Context
+I've completed this feature:
+
+[PASTE IMPLEMENTATION SUMMARY]
+
+## Request
+Help me prepare GitHub issue updates and draft a commit message.
+
+## Scope Focus
+- Focus only on what was actually implemented
+- Do not suggest enhancements outside the original scope
+- Keep issue comments focused on completed work
+
+## Information Access
+Please use MCP to:
+1. Review the original issue at [issue URL]
+2. Check related issues
+3. Review project conventions for commits
+
+## Output Format
+Please provide:
+
+GITHUB ISSUE UPDATE
+Issue #[number]
+Status Update:
+```
+Feature completed with the following changes:
+- [change 1]
+- [change 2]
+- [change 3]
+
+All tests are passing and the feature has been manually verified.
+```
+
+FOLLOW-UP ISSUES
+Create these issues:
+1. Title: [issue title]
+   Description: [brief description]
+   Labels: [labels]
+   
+2. Title: [issue title]
+   Description: [brief description]
+   Labels: [labels]
+
+COMMIT MESSAGE
+```
+[type](scope): Brief description
+
+- Change detail 1
+- Change detail 2
+
+Issue: #[number]
+```
+```
+
 ## Related Documents
-- [[claude-app-workflow|Claude App Workflow]]
-- [[claude-app-workflow-handoffs|Handoff Templates]]
+- [[updated-claude-app-workflow|Updated Claude App Workflow]]
+- [[coding-naming-conventions|Coding Naming Conventions]]
 - [[claude-app-mcp-optimization|MCP Optimization Guide]]
