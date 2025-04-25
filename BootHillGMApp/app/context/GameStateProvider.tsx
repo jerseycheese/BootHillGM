@@ -119,7 +119,10 @@ export const useOpponentCharacter = createSelector(
 
 // Inventory selectors
 export const useInventoryItems = createSelector(
-  state => state.inventory?.items || [],
+  state => {
+    const items = state.inventory?.items || [];
+    return items;
+  },
   state => [state.inventory?.items]
 );
 

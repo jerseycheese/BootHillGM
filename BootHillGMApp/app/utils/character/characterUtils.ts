@@ -7,16 +7,9 @@
 
 import { Character } from '../../types/character';
 import { InventoryItem, ItemCategory } from '../../types/item.types';
-import { gameElementsStorage } from '../storage/gameElementsStorage';
 import { storageKeys } from '../storage/storageKeys';
 import { storageUtils } from '../storage/storageUtils';
-
-/**
- * Debug console function for internal logging
- */
-const debug = (...args: Array<unknown>): void => {
-  console.log('[DEBUG CharacterUtils]', ...args);
-};
+import { getStartingInventory } from '../startingInventory';
 
 /**
  * Create a properly typed character with default values.
@@ -25,14 +18,8 @@ const debug = (...args: Array<unknown>): void => {
  * @returns A new character with default values
  */
 const createDefaultCharacter = (): Character => {
-  // Get default items and ensure they have all required properties
-  const items: InventoryItem[] = gameElementsStorage.getDefaultInventoryItems().map(item => {
-    return {
-      ...item,
-      description: item.description || `Basic ${item.name}`,
-      category: item.category as ItemCategory || 'misc'
-    };
-  });
+  // Get default items directly from startingInventory
+  const items: InventoryItem[] = getStartingInventory();
 
   return {
     isNPC: false,
@@ -135,8 +122,7 @@ const ensureValidCharacter = (characterData: Partial<Character> | null): Charact
     });
   } else {
     // Use default inventory items if character has no items
-    debug('Character had no inventory items, using defaults');
-    items = gameElementsStorage.getDefaultInventoryItems();
+    items = getStartingInventory(); // Get directly from startingInventory
   }
   
   // Define a type-safe function to get or default properties
@@ -145,8 +131,8 @@ const ensureValidCharacter = (characterData: Partial<Character> | null): Charact
     return (obj[key] !== undefined ? obj[key] : defaultValue) as T[K];
   };
   
-  // Combine default and provided values
-  return {
+  // Create the final character with proper inventory
+  const finalCharacter = {
     isNPC: getOrDefault(characterData, 'isNPC', defaultChar.isNPC),
     isPlayer: getOrDefault(characterData, 'isPlayer', defaultChar.isPlayer),
     id: getOrDefault(characterData, 'id', defaultChar.id),
@@ -163,6 +149,8 @@ const ensureValidCharacter = (characterData: Partial<Character> | null): Charact
     equippedWeapon: getOrDefault(characterData, 'equippedWeapon', defaultChar.equippedWeapon),
     strengthHistory: getOrDefault(characterData, 'strengthHistory', defaultChar.strengthHistory)
   };
+  
+  return finalCharacter;
 };
 
 /**
@@ -175,13 +163,10 @@ const ensureValidCharacter = (characterData: Partial<Character> | null): Charact
 const findExistingCharacter = (existingCharacter: Partial<Character> | null = null): Partial<Character> | null => {
   // Use provided character if available
   if (existingCharacter) {
-    debug(`Using provided character: ${existingCharacter.name}`);
     return existingCharacter;
   }
   
   if (typeof window === 'undefined') return null;
-  
-  debug('No character provided, checking storage');
   
   // Try to get character from different sources
   const sources = [
@@ -199,11 +184,10 @@ const findExistingCharacter = (existingCharacter: Partial<Character> | null = nu
       const value = storageUtils.getNestedProperty<Partial<Character>>(parsed, source.path);
       
       if (value && typeof value === 'object' && 'name' in value) {
-        debug(`Found character in ${source.key}: ${value.name}`);
         return value;
       }
     } catch (e) {
-      debug(`Error checking ${source.key} for character:`, e);
+      console.error(`Error checking ${source.key} for character:`, e);
     }
   }
   
@@ -220,7 +204,6 @@ const findExistingCharacter = (existingCharacter: Partial<Character> | null = nu
 const getValidCharacter = (existingCharacter: Partial<Character> | null = null): Character => {
   const characterData = findExistingCharacter(existingCharacter);
   const character = ensureValidCharacter(characterData);
-  debug(`Final character being used: ${character.name}`);
   return character;
 };
 
@@ -238,11 +221,10 @@ const getDefaultCharacter = (): Character => {
       return ensureValidCharacter(foundCharacter);
     }
   } catch (e) {
-    debug('Error getting existing character:', e);
+    console.error('Error getting existing character:', e);
   }
   
   // If no existing character, create a default one
-  debug('No existing character found, creating default');
   return createDefaultCharacter();
 };
 

@@ -38,8 +38,12 @@ const STARTING_ITEMS: Omit<InventoryItem, 'id'>[] = [
 ];
 
 /**
- * Creates a randomized selection of starting inventory items for new characters.
- * Returns 4-5 non-combat items appropriate for the Western setting.
+ * Generates the default set of inventory items for a new character.
+ * This function creates a standardized starting inventory containing basic
+ * equipment needed for a new character to begin gameplay.
+ * 
+ * @returns {InventoryItem[]} An array of starting inventory items with 
+ * appropriate properties (id, name, type, etc.) already configured.
  */
 export function getStartingInventory(): InventoryItem[] {
   // Randomly select 4-5 items from the starting items list
@@ -49,10 +53,12 @@ export function getStartingInventory(): InventoryItem[] {
     .slice(0, numItems);
 
   // Generate unique IDs for each item
-  return selectedItems.map(item => ({
+  const items = selectedItems.map(item => ({
     ...item,
     id: `starting_${item.name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`
   }));
+  
+  return items;
 }
 
 /**

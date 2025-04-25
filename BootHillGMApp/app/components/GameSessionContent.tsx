@@ -17,8 +17,7 @@ import { RecoveryOptions } from "./GameArea/RecoveryOptions";
 import { useCombatStateRestoration as combatStateRestoration } from "../hooks/useCombatStateRestoration";
 import { DEFAULT_NARRATIVE_CONTEXT } from '../utils/narrative/narrativeContextDefaults';
 import { 
-  updateNarrativeContext, 
-  addNarrativeHistory, 
+  updateNarrativeContext,
   navigateToPoint 
 } from '../actions/narrativeActions';
 import { narrativeDispatchWrapper } from '../utils/narrativeDispatchWrapper';
@@ -119,7 +118,6 @@ export default function GameSessionContent(): JSX.Element {
       
       // Use the wrapped dispatch function that handles type conversion
       narrativeDispatch(updateNarrativeContext(initialNarrativeContext));
-      narrativeDispatch(addNarrativeHistory(`Welcome to Boot Hill! ${playerCharacter.name} is ready for adventure.`));
       narrativeDispatch(navigateToPoint('introduction'));
       
       console.log('[DEBUG] Narrative initialization completed successfully');

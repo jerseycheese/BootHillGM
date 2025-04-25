@@ -13,26 +13,18 @@ import { GameAction } from '../../types/actions';
 import { Character } from '../../types/character';
 import { SuggestedAction } from '../../types/campaign';
 import { NarrativeJournalEntry } from '../../types/journal';
-import { gameElementsStorage } from './gameElementsStorage';
+import { getStartingInventory } from '../startingInventory';
 import { ActionTypes } from '../../types/actionTypes';
 
 /**
- * Debug console function for internal logging.
- * Only outputs when in development environment.
- * 
- * @param args - Arguments to log to console
- */
-const debug = (...args: Array<unknown>): void => {
-  console.log('[DEBUG GameInitializer]', ...args);
-};
-
-/**
  * Get default inventory items for a new character.
+ * Uses the official getStartingInventory function to generate proper starting items.
  * 
  * @returns Array of default inventory items
  */
-const getDefaultInventoryItems = (): unknown => {
-  return gameElementsStorage.getDefaultInventoryItems();
+const getDefaultInventoryItems = () => {
+  // Get starting inventory directly from the source
+  return getStartingInventory();
 };
 
 /**
@@ -64,8 +56,9 @@ const initializeGameState = (
       payload: initialState
     });
 
-    // Set inventory
+    // Set inventory - Using the original getStartingInventory directly
     const defaultItems = character.inventory?.items || getDefaultInventoryItems();
+    
     dispatch({
       type: ActionTypes.SET_INVENTORY,
       payload: defaultItems
@@ -151,8 +144,6 @@ const saveContentToLocalStorage = (
   if (journalEntry.narrativeSummary) {
     localStorage.setItem('narrative_summary', journalEntry.narrativeSummary);
   }
-  
-  debug('Successfully saved content to localStorage');
 };
 
 /**

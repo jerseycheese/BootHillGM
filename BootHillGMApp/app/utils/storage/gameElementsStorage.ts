@@ -9,6 +9,7 @@
 import { JournalEntry } from '../../types/journal';
 import { SuggestedAction } from '../../types/campaign';
 import { InventoryItem } from '../../types/item.types';
+import { getStartingInventory } from '../startingInventory';
 
 // Module constants
 const MODULE_NAME = 'GameStorage:GameElements';
@@ -143,65 +144,14 @@ const getJournalEntries = (): JournalEntry[] => {
 
 /**
  * Get default starting inventory items.
- * Creates items with unique IDs based on current timestamp.
+ * Uses the official getStartingInventory function to ensure
+ * characters have proper starting items.
  * 
  * @returns Array of default inventory items for new characters
  */
 const getDefaultInventoryItems = (): InventoryItem[] => {
-  // Create unique IDs for each item to prevent conflicts
-  const timestamp = Date.now();
-  
-  return [
-    {
-      id: `item-${timestamp}-1`,
-      name: "Revolver",
-      description: "A reliable six-shooter, well-maintained and ready for action",
-      quantity: 1,
-      category: "weapon"
-    },
-    {
-      id: `item-${timestamp}-2`,
-      name: "Ammunition",
-      description: "A box of bullets for your revolver",
-      quantity: 24,
-      category: "general" // Changed from "ammo"
-    },
-    {
-      id: `item-${timestamp}-3`,
-      name: "Canteen",
-      description: "A metal canteen for carrying water",
-      quantity: 1,
-      category: "general"
-    },
-    {
-      id: `item-${timestamp}-4`,
-      name: "Bandana",
-      description: "A faded red bandana",
-      quantity: 1,
-      category: "general" // Changed from "clothing"
-    },
-    {
-      id: `item-${timestamp}-5`,
-      name: "Pocket Knife",
-      description: "A small folding knife",
-      quantity: 1,
-      category: "general"
-    },
-    {
-      id: `item-${timestamp}-6`,
-      name: "Gold Coins",
-      description: "A small pouch of gold coins",
-      quantity: 25,
-      category: "general" // Changed from "currency"
-    }, // Add comma after the last existing item
-    {
-      id: `item-${timestamp}-7`,
-      name: "Hardtack Biscuit",
-      description: "A very hard, dry biscuit. Lasts forever.",
-      quantity: 3,
-      category: "consumable"
-    } // New item added here
-  ];
+  // Use the official starting inventory generator
+  return getStartingInventory();
 };
 
 
