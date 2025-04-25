@@ -3,6 +3,22 @@ import { Character, STORAGE_KEYS } from "../types/character";
 import { getStartingInventory } from "./startingInventory";
 import { logDiagnostic } from "./initializationDiagnostics";
 import { GameStateWithCharacter } from "./debugActionTypes";
+import { GameState } from "../types/gameState";
+
+/**
+ * Extracts player character from the game state
+ * This is a simplified helper that works with the unified GameState
+ * 
+ * @param state Current game state from GameStateProvider
+ * @returns The player character or null if not found
+ */
+export const getPlayerCharacter = (state: GameState): Character | null => {
+  if (!state || !state.character || !state.character.player) {
+    return null;
+  }
+  
+  return state.character.player;
+};
 
 /**
  * Creates a base character with required attributes and inventory

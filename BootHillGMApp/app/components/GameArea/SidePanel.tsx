@@ -2,6 +2,11 @@
  * SidePanel displays supplementary game information.
  * Shows character status, inventory, and journal entries.
  * Positioned on the right side of the game interface.
+ * 
+ * NOTE: This component has been updated to use the unified GameState model
+ * instead of CampaignState. It handles both state formats for backward
+ * compatibility according to the state unification strategy outlined in
+ * the technical-guides/state-management documentation.
  */
 'use client';
 
@@ -9,17 +14,11 @@ import { useEffect, useState } from 'react';
 import StatusDisplayManager from '../StatusDisplayManager';
 import { Inventory } from '../Inventory';
 import JournalViewer from '../JournalViewer';
-import { useCampaignState } from '../../hooks/useCampaignStateContext'; // Import the context hook
+import { useGameState } from '../../context/GameStateProvider';
 import { JournalEntry, JournalEntryType, RawJournalEntry } from '../../types/journal';
 import GameStorage from '../../utils/gameStorage';
-
-/**
- * Extracts the player character object from the game state.
- *
- * @param s - The current game state.
- * @returns The player Character object or null if not found.
- */
-// Helper function to extract player character from state
+import { Character } from '../../types/character';
+import { GameState } from '../../types/gameState';
 
 /**
  * Processes an array of raw journal entries, ensuring they are correctly typed
@@ -118,32 +117,45 @@ interface SidePanelProps {
   isLoading: boolean;
 }
 
+/**
+ * Helper function to extract the player character from GameState
+ * Handles both legacy and domain-specific state formats for backward compatibility.
+ * 
+ * @param state - The game state
+ * @returns The player character or null
+ */
+const getPlayerCharacter = (state: GameState | null | undefined): Character | null => {
+  if (!state || !state.character) return null;
+  
+  // Check both formats: {player, opponent} and direct character object
+  if ('player' in state.character && state.character.player) {
+    return state.character.player;
+  } else if ('attributes' in state.character) {
+    return state.character as unknown as Character;
+  }
+  
+  return null;
+};
+
+/**
+ * SidePanel component for displaying supplementary game information
+ * 
+ * Shows the character status, inventory, and journal entries in a side column.
+ * Handles different state formats for backward compatibility.
+ */
 export function SidePanel({
   handleEquipWeapon,
   isLoading,
-}: SidePanelProps) { // Use the new props interface
-  // Get state for location, and the derived player character directly from context
-  const { state, player: playerCharacter } = useCampaignState();
+}: SidePanelProps) {
+  // Get state using useGameState instead of useCampaignState
+  const { state } = useGameState();
   
-  // No longer need to derive playerCharacter here
-  // const playerCharacter = getPlayerFromState(state);
+  // Extract player character from state
+  const playerCharacter = getPlayerCharacter(state);
 
   // Initialize state variables properly
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   
-  // Update character when state changes - Removed useEffect for characterData
-  // useEffect(() => {
-  //   if (state?.character) {
-  //     const player = getPlayerFromState(state);
-  //     if (player) {
-  //       setCharacterData(player);
-  //     }
-  //   } else {
-  //     // Handle case where state or character becomes null/undefined
-  //     setCharacterData(null);
-  //   }
-  // }, [state]); // Depend on context state
-
   // Journal entries processing
   useEffect(() => {
     if (!state) return;

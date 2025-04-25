@@ -15,7 +15,13 @@ import { useCampaignStateAdapter } from "../hooks/useCampaignStateAdapter";
 import { RecoveryOptions } from "./GameArea/RecoveryOptions";
 // Import as regular functions rather than hooks
 import { useCombatStateRestoration as combatStateRestoration } from "../hooks/useCombatStateRestoration";
-import { useNarrativeInitialization as narrativeInitialization } from "../hooks/useNarrativeInitialization";
+import { DEFAULT_NARRATIVE_CONTEXT } from '../utils/narrative/narrativeContextDefaults';
+import { 
+  updateNarrativeContext, 
+  addNarrativeHistory, 
+  navigateToPoint 
+} from '../actions/narrativeActions';
+import { narrativeDispatchWrapper } from '../utils/narrativeDispatchWrapper';
 
 // Maximum loading time before showing recovery options
 const MAX_LOADING_TIME = 5000; // 5 seconds
@@ -29,6 +35,8 @@ export default function GameSessionContent(): JSX.Element {
   // Refs for tracking state
   const initialized = useRef(false);
   const loadingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const recoveryAttempted = useRef(false);
+  const narrativeInitialized = useRef(false);
   
   // Core hooks
   const { isInitializing, isClient } = useGameInitialization();
@@ -84,19 +92,41 @@ export default function GameSessionContent(): JSX.Element {
     }
   }, [isBrowser, state, gameSessionForClient]);
   
-  // Initialize narrative separately - do not call a hook in useEffect
-  const narrativeInit = narrativeInitialization();
-  
-  // Use the initialized narrative functions in the effect
+  // Direct narrative initialization without using a hook
   useEffect(() => {
-    if (isBrowser && playerCharacter) {
-      try {
-        narrativeInit.initializeNarrative(playerCharacter);
-      } catch (error) {
-        console.error("Error initializing narrative:", error);
-      }
+    // Only run once, when we have character data, and only on the client
+    if (!isBrowser || !playerCharacter || narrativeInitialized.current) {
+      return;
     }
-  }, [isBrowser, playerCharacter, narrativeInit]);
+    
+    console.log('[DEBUG] Initializing narrative directly in GameSessionContent');
+    
+    // Mark as initialized to prevent multiple initializations
+    narrativeInitialized.current = true;
+    
+    try {
+      // Create a wrapped dispatch for narrative actions
+      const narrativeDispatch = narrativeDispatchWrapper(dispatch);
+      
+      // Create a basic narrative state based on the character
+      const initialNarrativeContext = {
+        ...DEFAULT_NARRATIVE_CONTEXT,
+        characterFocus: [playerCharacter.name],
+        // Use default western themes since traits may not be available
+        themes: ['adventure', 'western'],
+        decisionHistory: []
+      };
+      
+      // Use the wrapped dispatch function that handles type conversion
+      narrativeDispatch(updateNarrativeContext(initialNarrativeContext));
+      narrativeDispatch(addNarrativeHistory(`Welcome to Boot Hill! ${playerCharacter.name} is ready for adventure.`));
+      narrativeDispatch(navigateToPoint('introduction'));
+      
+      console.log('[DEBUG] Narrative initialization completed successfully');
+    } catch (error) {
+      console.error('[DEBUG] Error initializing narrative:', error);
+    }
+  }, [isBrowser, playerCharacter, dispatch]);
   
   // Set up loading time tracker - only on client side
   useEffect(() => {
@@ -143,9 +173,24 @@ export default function GameSessionContent(): JSX.Element {
   // Handle character recovery if needed - only on client side
   useEffect(() => {
     if (!isBrowser) return;
-    if (!playerCharacterError || characterRecovered.current || recoveryInProgress.current) return;
+    
+    // Added check for playerCharacter to prevent recovery when we already have a valid character
+    // Also check if recovery has already been attempted to prevent multiple attempts
+    if (!playerCharacterError || 
+        characterRecovered.current || 
+        recoveryInProgress.current || 
+        playerCharacter || 
+        recoveryAttempted.current) {
+      return;
+    }
+    
+    // Mark that we've attempted recovery to prevent infinite loops
+    recoveryAttempted.current = true;
     
     const attemptRecovery = async () => {
+      // Set recovery flag first to prevent multiple attempts
+      recoveryInProgress.current = true;
+      
       try {
         // Already checked for isBrowser above
         const savedCharacter = localStorage.getItem("character-creation-progress");
@@ -162,22 +207,31 @@ export default function GameSessionContent(): JSX.Element {
               
               characterRecovered.current = true;
               
-              // Use requestAnimationFrame to defer state updates until after render
-              window.requestAnimationFrame(() => {
+              // Use setTimeout instead of requestAnimationFrame for better error handling
+              setTimeout(() => {
                 handleRecoverGame();
-              });
+              }, 50);
+            } else {
+              // Failed to recover, reset flag
+              recoveryInProgress.current = false;
             }
           } catch (parseError) {
             console.error("Error parsing saved character:", parseError);
+            recoveryInProgress.current = false;
           }
+        } else {
+          // No saved character to recover
+          recoveryInProgress.current = false;
         }
       } catch (error) {
         console.error("Error recovering character:", error);
+        recoveryInProgress.current = false;
       }
     };
     
     attemptRecovery();
-  }, [playerCharacterError, handleRecoverGame, characterRecovered, recoveryInProgress, isBrowser]);
+  }, [playerCharacterError, handleRecoverGame, playerCharacter, isBrowser]);
+  // Removed characterRecovered and recoveryInProgress from dependencies since they're refs
   
   // For server-side rendering, always show the loading screen
   if (!isBrowser || !isClient) {

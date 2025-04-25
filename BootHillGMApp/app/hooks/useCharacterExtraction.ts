@@ -15,10 +15,28 @@ export function useCharacterExtraction(state: GameState | null | undefined) {
   // Refs for tracking recovery state
   const recoveryInProgress = useRef(false);
   const characterRecovered = useRef(false);
+  
+  // Track character processing to prevent re-processing the same state
+  const processedStateRef = useRef<string | null>(null);
 
   // Extract player character safely
   useEffect(() => {
-    if (!state || !state.character || characterRecovered.current) return;
+    // Skip if no state or no character
+    if (!state || !state.character) return;
+    
+    // Skip if character already recovered
+    if (characterRecovered.current) return;
+    
+    // Skip if we've already processed this exact state object
+    const stateId = state.character && typeof state.character === 'object' ? 
+      JSON.stringify(state.character) : null;
+    
+    if (stateId === processedStateRef.current) {
+      return; // Skip processing if we've seen this exact state before
+    }
+    
+    // Update the processed state ref
+    processedStateRef.current = stateId;
 
     try {
       let extractedCharacter = null;

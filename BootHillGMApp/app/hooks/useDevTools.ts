@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useGameState } from '../context/GameStateProvider';
+import { useState, useEffect, useCallback, Dispatch } from 'react';
 import { LocationType } from '../services/locationService';
 import { EVENTS, triggerCustomEvent } from '../utils/events';
 import { initializeBrowserDebugTools, updateDebugCurrentDecision } from '../utils/debugConsole';
@@ -8,15 +7,23 @@ import { initializeDecisionDebugTools } from '../utils/decisionDebug';
 import { clearCurrentDecision, addNarrativeHistory, updateNarrative, presentDecision } from '../actions/narrativeActions';
 import { createDecisionGameState } from '../utils/decisionStateUtils';
 import { GameState } from '../types/gameState';
-import { narrativeDispatchWrapper } from './narrative/NarrativeProvider';
+import { GameAction } from '../types/actions';
+import { narrativeDispatchWrapper } from '../utils/narrativeDispatchWrapper';
 
 /**
- * Custom hook to manage DevTools state and functionality
+ * Custom hook to manage DevTools state and functionality.
+ * 
+ * This hook can be used in two ways:
+ * 1. With a gameState parameter (from GameStateProvider context)
+ * 2. With both gameState and dispatch parameters for direct use without context
+ * 
+ * @param gameState - Current game state from GameStateProvider
+ * @param externalDispatch - Optional dispatch function, if not using GameStateProvider context
+ * @returns Collection of utility functions and state values for DevTools components
  */
-export function useDevTools(gameState: GameState) {
+export function useDevTools(gameState: GameState, externalDispatch?: Dispatch<GameAction>) {
   // Core state
   const [loading, setLoading] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingIndicator, setLoadingIndicator] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [renderCount, setRenderCount] = useState(0);
@@ -27,12 +34,17 @@ export function useDevTools(gameState: GameState) {
   const [selectedLocationType, setSelectedLocationType] = useState<LocationType>({ type: 'town', name: 'Starting Town' });
   const [decisionScore, setDecisionScore] = useState<number | undefined>(undefined);
 
-  // Narrative context
-  // Use the correct state hook
-  const { state, dispatch } = useGameState();
-  
   // Create a wrapped dispatch that handles NarrativeAction types
-  const narrativeDispatch = narrativeDispatchWrapper(dispatch);
+  // Use the provided dispatch or the one from GameStateProvider
+  const dispatch = externalDispatch;
+  
+  // Ensure we have a dispatch function
+  if (!dispatch) {
+    console.warn('useDevTools: No dispatch function provided');
+  }
+
+  // Create a wrapped dispatch that handles NarrativeAction types
+  const narrativeDispatch = narrativeDispatchWrapper(dispatch!);
   
   /**
    * Forces a re-render of all components via a custom event system.
@@ -47,6 +59,8 @@ export function useDevTools(gameState: GameState) {
    * Clears the current decision from the narrative context.
    */
   const handleClearDecision = useCallback(() => {
+    if (!dispatch) return;
+    
     setLoading("clearing");
     try {
       // Use the wrapper to dispatch NarrativeAction
@@ -61,23 +75,25 @@ export function useDevTools(gameState: GameState) {
         setLoading(null);
       }, 100);
     }
-  }, [narrativeDispatch, forceRender]); // Update dependencies
+  }, [narrativeDispatch, forceRender, dispatch]);
 
   /**
    * Handles the generation and presentation of a contextual decision based on
    * the current game state and selected location type.
+   * 
+   * @param locationType - Optional location type to use for decision generation
    */
   const handleContextualDecision = useCallback((locationType?: LocationType) => {
+    if (!dispatch) return;
+    
     setLoading("contextual-decision");
     setError(null);
     
     try {
       // First, notify the user that we're generating a decision
-      // Use the wrapper to dispatch NarrativeAction
       narrativeDispatch(addNarrativeHistory("\nGenerating a contextual decision based on current narrative context...\n"));
       
       // Clear any existing decision to prevent conflicts
-      // Use the wrapper to dispatch NarrativeAction
       narrativeDispatch(clearCurrentDecision());
       triggerCustomEvent(EVENTS.DECISION_CLEARED);
       
@@ -88,15 +104,12 @@ export function useDevTools(gameState: GameState) {
           const locationToUse = locationType || selectedLocationType;
           
           // Make sure we're using the most up-to-date narrative state
-          // Access narrative state directly from the main state object
-          const currentNarrativeState = state.narrative;
+          const currentNarrativeState = gameState.narrative;
           
           // Create a properly structured game state for decision generation
-          // Ensure currentNarrativeState is not null before passing
           const decisionGameState = currentNarrativeState ? createDecisionGameState(gameState, currentNarrativeState) : null;
           
           // Generate a contextual decision using the AI-enhanced generator with current context
-          // Pass narrativeContext from the state slice
           const contextualDecision = decisionGameState ? await generateEnhancedDecision(
             decisionGameState,
             currentNarrativeState?.narrativeContext,
@@ -107,7 +120,6 @@ export function useDevTools(gameState: GameState) {
           // In case of generation failure
           if (!contextualDecision) {
             const errorMessage = `Failed to generate a decision for the current narrative context`;
-            // Use the wrapper to dispatch NarrativeAction
             narrativeDispatch(addNarrativeHistory(`\n${errorMessage}\n`));
             setError(errorMessage);
             setLoading(null);
@@ -120,17 +132,15 @@ export function useDevTools(gameState: GameState) {
           }
           
           // Remove the generating message
-          // Access narrativeHistory from the main state object
-          const narrativeHistory = [...(state.narrative?.narrativeHistory || [])];
+          const narrativeHistory = [...(gameState.narrative?.narrativeHistory || [])];
           narrativeHistory.pop(); // Remove the loading message
           
-          // Use the wrapper to dispatch NarrativeAction with action creator
+          // Update narrative with action creator
           narrativeDispatch(updateNarrative({
             narrativeHistory: narrativeHistory
           }));
           
           // Now present the new decision
-          // Use the wrapper to dispatch NarrativeAction with action creator
           narrativeDispatch(presentDecision(contextualDecision));
           
           // Notify all components that a new decision is ready
@@ -146,17 +156,15 @@ export function useDevTools(gameState: GameState) {
         } catch (innerError) {
           const error = innerError instanceof Error ? innerError : new Error('Unknown error occurred');
           setError(`Failed to generate contextual decision: ${error.message}`);
-          console.error('BHGM Debug: Contextual decision error:', innerError);
           setLoading(null);
         }
       }, 300); // Short delay for UI updates
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error occurred');
       setError(`Failed to generate contextual decision: ${error.message}`);
-      console.error('BHGM Debug: Contextual decision error:', err);
       setLoading(null);
     }
-  }, [gameState, state.narrative, narrativeDispatch, selectedLocationType, forceRender]); // Update dependencies
+  }, [gameState, narrativeDispatch, selectedLocationType, forceRender, dispatch]);
 
   /**
    * Toggles visibility of the entire DevTools panel
@@ -167,13 +175,13 @@ export function useDevTools(gameState: GameState) {
 
   // Initialize browser debug tools
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !dispatch) return;
 
     // Create a safe getter function that will never return null
     const safeGameStateGetter = (): GameState => {
-      // If state.narrative exists, create a decision game state, otherwise return gameState directly
-      if (state.narrative) {
-        const decisionState = createDecisionGameState(gameState, state.narrative);
+      // If gameState.narrative exists, create a decision game state, otherwise return gameState directly
+      if (gameState.narrative) {
+        const decisionState = createDecisionGameState(gameState, gameState.narrative);
         // Ensure we never return null by providing a fallback
         return decisionState || gameState;
       }
@@ -200,35 +208,32 @@ export function useDevTools(gameState: GameState) {
         console.error('Failed to trigger AI decision:', error);
       }
     };
-  }, [gameState, handleClearDecision, handleContextualDecision, state.narrative]); // Update dependencies
+  }, [gameState, handleClearDecision, handleContextualDecision, dispatch]);
 
   // Update the debug namespace with current decision
   useEffect(() => {
-    // Access currentDecision from the main state object
-    updateDebugCurrentDecision(state.narrative?.currentDecision || null);
+    updateDebugCurrentDecision(gameState.narrative?.currentDecision || null);
     
-    // Access currentDecision from the main state object
-    if (state.narrative?.currentDecision) {
+    if (gameState.narrative?.currentDecision) {
       triggerCustomEvent(EVENTS.UI_STATE_CHANGED, {
         type: 'decision',
         active: true,
-        id: state.narrative.currentDecision.id
+        id: gameState.narrative.currentDecision.id
       });
     }
-  }, [state.narrative?.currentDecision]); // Update dependencies
+  }, [gameState.narrative?.currentDecision]);
 
   // Get decision history for display
-  // Access decisionHistory from the main state object
-  const decisionHistory = state.narrative?.narrativeContext?.decisionHistory || [];
+  const decisionHistory = gameState.narrative?.narrativeContext?.decisionHistory || [];
   
   // Check if there's currently an active decision
-  // Access currentDecision from the main state object
-  const hasActiveDecision = !!state.narrative?.currentDecision;
+  const hasActiveDecision = !!gameState.narrative?.currentDecision;
 
   return {
     // State
     loading,
     error,
+    loadingIndicator,
     renderCount,
     isPanelCollapsed,
     showDecisionHistory,
@@ -247,8 +252,20 @@ export function useDevTools(gameState: GameState) {
     toggleDevPanel,
     
     // Narrative info
-    // narrativeContext is no longer needed here, state is accessed directly
     decisionHistory,
     hasActiveDecision
   };
+}
+
+// TypeScript definitions for browser debug namespace
+declare global {
+  interface Window {
+    bhgmDebug?: {
+      gameState?: () => GameState;
+      triggerDecision?: (locationType?: LocationType) => Promise<void>;
+      decisions?: {
+        lastDetectionScore?: number;
+      };
+    }
+  }
 }

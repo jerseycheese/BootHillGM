@@ -12,7 +12,7 @@ import { SidePanel } from '../../components/GameArea/SidePanel';
 import GameStorage from '../../utils/gameStorage';
 import { GameState } from '../../types/gameState';
 import { gameStateUtils } from '../../test/utils';
-import { CampaignStateProvider } from '../../components/CampaignStateProvider'; // Use named import
+import { GameStateProvider } from '../../context/GameStateProvider';
 
 // Mock the GameStorage utility
 jest.mock('../../utils/gameStorage', () => {
@@ -26,6 +26,20 @@ jest.mock('../../utils/gameStorage', () => {
     getDefaultInventoryItems: jest.fn()
   };
 });
+
+/**
+ * Render helper to use GameStateProvider instead of CampaignStateProvider
+ */
+const renderWithGameStateProvider = (
+  ui: React.ReactElement, 
+  state: GameState
+) => {
+  return render(
+    <GameStateProvider initialState={state}>
+      {ui}
+    </GameStateProvider>
+  );
+};
 
 describe('SidePanel Component', () => {
   beforeEach(() => {
@@ -61,13 +75,13 @@ describe('SidePanel Component', () => {
       }
     });
     
-    // Use the utility function to render with the provider
-    gameStateUtils.renderWithCampaignStateProvider(
+    // Use the new render helper with GameStateProvider
+    renderWithGameStateProvider(
       <SidePanel
         handleEquipWeapon={gameStateUtils.defaultGameSessionProps.handleEquipWeapon}
         isLoading={gameStateUtils.defaultGameSessionProps.isLoading}
       />,
-      mockState // Pass the mock state to the utility
+      mockState
     );
     
     // Use a more reliable selector like data-testid instead of text content
@@ -82,7 +96,7 @@ describe('SidePanel Component', () => {
       character: null
     });
     
-    gameStateUtils.renderWithCampaignStateProvider(
+    renderWithGameStateProvider(
       <SidePanel
         handleEquipWeapon={gameStateUtils.defaultGameSessionProps.handleEquipWeapon}
         isLoading={gameStateUtils.defaultGameSessionProps.isLoading}
@@ -104,7 +118,7 @@ describe('SidePanel Component', () => {
       opponent: null
     });
     
-    gameStateUtils.renderWithCampaignStateProvider(
+    renderWithGameStateProvider(
       <SidePanel
         handleEquipWeapon={gameStateUtils.defaultGameSessionProps.handleEquipWeapon}
         isLoading={gameStateUtils.defaultGameSessionProps.isLoading}
@@ -139,7 +153,7 @@ describe('SidePanel Component', () => {
       }
     });
     
-    gameStateUtils.renderWithCampaignStateProvider(
+    renderWithGameStateProvider(
       <SidePanel
         handleEquipWeapon={gameStateUtils.defaultGameSessionProps.handleEquipWeapon}
         isLoading={gameStateUtils.defaultGameSessionProps.isLoading}
@@ -171,7 +185,7 @@ describe('SidePanel Component', () => {
       journal: { entries: [] }
     });
     
-    gameStateUtils.renderWithCampaignStateProvider(
+    renderWithGameStateProvider(
       <SidePanel
         handleEquipWeapon={gameStateUtils.defaultGameSessionProps.handleEquipWeapon}
         isLoading={gameStateUtils.defaultGameSessionProps.isLoading}

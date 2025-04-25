@@ -1,7 +1,6 @@
 // DevToolsPanel.tsx
-import React, { useEffect, Dispatch } from "react"; // Combine imports
+import React, { useEffect, Dispatch } from "react";
 import { DevToolsPanelProps } from "../../types/debug.types";
-// import { Dispatch } from 'react'; // Remove duplicate
 import { NarrativeAction } from "../../types/narrative/actions.types";
 
 // Import components
@@ -14,7 +13,7 @@ import GameStateDisplay from "./GameStateDisplay";
 import DevToolsHeader from "./DevToolsHeader";
 import RenderingDebugTools from "./RenderingDebugTools";
 
-// Import custom hook for DevTools functionality
+// Import custom hook for DevTools functionality - now using the updated version
 import { useDevTools } from "../../hooks/useDevTools";
 
 // Import content monitor for debug purposes
@@ -29,11 +28,10 @@ import { initialNarrativeState } from "../../types/state/narrativeState";
  * test decision flows, and view game state.
  */
 const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) => {
-  // Use our custom hook to handle all DevTools functionality
+  // Use the updated useDevTools hook with explicit dispatch parameter
   const {
     loading,
     error,
-    setLoadingIndicator,
     renderCount,
     isPanelCollapsed,
     showDecisionHistory,
@@ -42,6 +40,7 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
     
     setLoading,
     setError,
+    setLoadingIndicator,
     setShowDecisionHistory,
     setSelectedLocationType,
     handleContextualDecision,
@@ -51,7 +50,7 @@ const DevToolsPanel: React.FC<DevToolsPanelProps> = ({ gameState, dispatch }) =>
     
     decisionHistory,
     hasActiveDecision
-  } = useDevTools(gameState);
+  } = useDevTools(gameState, dispatch);
 
   // Initialize content monitor in development mode
   useEffect(() => {

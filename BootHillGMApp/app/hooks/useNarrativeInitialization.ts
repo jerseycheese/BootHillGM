@@ -24,7 +24,7 @@
  * }, [isNewGame, characterData, initializeNarrative]);
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useGameState } from '../context/GameStateProvider';
 import { Character } from '../types/character';
 import { DEFAULT_NARRATIVE_CONTEXT } from '../utils/narrative/narrativeContextDefaults';
@@ -45,6 +45,9 @@ export const useNarrativeInitialization = () => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   
+  // Ref to track initialization and prevent duplicate attempts
+  const hasInitialized = useRef(false);
+
   // Create a wrapped dispatch function that handles NarrativeAction conversion
   const narrativeDispatch = narrativeDispatchWrapper(dispatch);
 
@@ -55,6 +58,11 @@ export const useNarrativeInitialization = () => {
    * @returns {Promise<boolean>} Whether initialization was successful
    */
   const initializeNarrative = useCallback(async (characterData: Character): Promise<boolean> => {
+    // Skip if already initialized or initializing
+    if (hasInitialized.current || isInitializing) {
+      return true;
+    }
+    
     setIsInitializing(true);
     setError(null);
     
@@ -73,16 +81,18 @@ export const useNarrativeInitialization = () => {
       narrativeDispatch(addNarrativeHistory(`Welcome to Boot Hill! ${characterData.name} is ready for adventure.`));
       narrativeDispatch(navigateToPoint('introduction'));
       
+      // Mark as initialized
+      hasInitialized.current = true;
+      
       setIsInitializing(false);
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to initialize narrative';
-      console.error('Narrative initialization error:', errorMessage);
       setError(err instanceof Error ? err : new Error(errorMessage));
       setIsInitializing(false);
       return false;
     }
-  }, [narrativeDispatch]);
+  }, [narrativeDispatch, isInitializing]);
 
   return {
     initializeNarrative,
