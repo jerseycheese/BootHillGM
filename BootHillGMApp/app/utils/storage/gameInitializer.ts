@@ -30,7 +30,8 @@ const getDefaultInventoryItems = () => {
 /**
  * Initializes basic game state for initialization scenarios.
  * Used by the initialization code paths to set up initial state.
- * Uses dynamic import to avoid circular dependencies.
+ * Ensures inventory items are properly initialized with the character
+ * before the first render to avoid the empty inventory issue.
  * 
  * @param character - Character object to initialize with
  * @param dispatch - Redux dispatch function for state updates
@@ -39,12 +40,23 @@ const initializeGameState = (
   character: Character,
   dispatch: Dispatch<GameAction>
 ): void => {
+  // Generate starting inventory immediately
+  const startingItems = getStartingInventory();
+  
+  // Make sure character has the starting inventory
+  if (!character.inventory || !Array.isArray(character.inventory.items) || character.inventory.items.length === 0) {
+    character.inventory = {
+      ...(character.inventory || {}),
+      items: startingItems
+    };
+  }
+  
   // Import GameStorage to avoid circular dependency
   import('./gameStateStorage').then(({ GameStorage }) => {
-    // Initialize a new game state
+    // Initialize a new game state with character already containing inventory
     const initialState = GameStorage.initializeNewGame(character);
     
-    // Set character first
+    // Set character first (now with inventory)
     dispatch({
       type: ActionTypes.SET_CHARACTER,
       payload: character
@@ -52,16 +64,14 @@ const initializeGameState = (
     
     // Set initial state
     dispatch({ 
-      type: ActionTypes.SET_STATE, // Use ActionTypes constant
+      type: ActionTypes.SET_STATE,
       payload: initialState
     });
 
-    // Set inventory - Using the original getStartingInventory directly
-    const defaultItems = character.inventory?.items || getDefaultInventoryItems();
-    
+    // Also explicitly set inventory (as a safety measure)
     dispatch({
       type: ActionTypes.SET_INVENTORY,
-      payload: defaultItems
+      payload: startingItems
     } as GameAction);
   }).catch(error => {
     console.error('Error initializing game state:', error);
